@@ -6,6 +6,22 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DD808EB22F694B2A00F4956A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EAF2F694B2A00F4956A /* ContentView.swift */; };
+		DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */; };
+		DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DD808EAE2F694B2A00F4956A /* Assets.xcassets */; };
+		DD808EB72F694B2C00F4956A /* Dozy_AITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB52F694B2C00F4956A /* Dozy_AITests.swift */; };
+		DD808EBB2F694B2F00F4956A /* Dozy_AIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */; };
+		DD808EBC2F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB92F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift */; };
+		DD808EC52F694BFD00F4956A /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EC42F694BFD00F4956A /* PermissionManager.swift */; };
+		DD808EC82F694C1500F4956A /* Date+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EC72F694C1500F4956A /* Date+Ext.swift */; };
+		DD808ECB2F694C2F00F4956A /* TaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ECA2F694C2F00F4956A /* TaskProvider.swift */; };
+		DD808ECE2F694C4400F4956A /* WorkContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ECD2F694C4400F4956A /* WorkContext.swift */; };
+		DD808ED12F694C5D00F4956A /* WorkItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ED02F694C5D00F4956A /* WorkItemRow.swift */; };
+		DD808ED42F694C6F00F4956A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ED32F694C6F00F4956A /* HomeView.swift */; };
+		DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ED52F694C7800F4956A /* HomeViewModel.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		DD808E922F694B2200F4956A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,25 +43,20 @@
 		DD808E842F694B2100F4956A /* Dozy AI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dozy AI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD808E912F694B2200F4956A /* Dozy AITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD808E9B2F694B2200F4956A /* Dozy AIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AIUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD808EAE2F694B2A00F4956A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DD808EAF2F694B2A00F4956A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIApp.swift; sourceTree = "<group>"; };
+		DD808EB52F694B2C00F4956A /* Dozy_AITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AITests.swift; sourceTree = "<group>"; };
+		DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIUITests.swift; sourceTree = "<group>"; };
+		DD808EB92F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		DD808EC42F694BFD00F4956A /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
+		DD808EC72F694C1500F4956A /* Date+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Ext.swift"; sourceTree = "<group>"; };
+		DD808ECA2F694C2F00F4956A /* TaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskProvider.swift; sourceTree = "<group>"; };
+		DD808ECD2F694C4400F4956A /* WorkContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkContext.swift; sourceTree = "<group>"; };
+		DD808ED02F694C5D00F4956A /* WorkItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemRow.swift; sourceTree = "<group>"; };
+		DD808ED32F694C6F00F4956A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		DD808ED52F694C7800F4956A /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		DD808E862F694B2100F4956A /* Dozy AI */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Dozy AI";
-			sourceTree = "<group>";
-		};
-		DD808E942F694B2200F4956A /* Dozy AITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Dozy AITests";
-			sourceTree = "<group>";
-		};
-		DD808E9E2F694B2200F4956A /* Dozy AIUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Dozy AIUITests";
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		DD808E812F694B2100F4956A /* Frameworks */ = {
@@ -75,9 +86,9 @@
 		DD808E7B2F694B2100F4956A = {
 			isa = PBXGroup;
 			children = (
-				DD808E862F694B2100F4956A /* Dozy AI */,
-				DD808E942F694B2200F4956A /* Dozy AITests */,
-				DD808E9E2F694B2200F4956A /* Dozy AIUITests */,
+				DD808EB12F694B2A00F4956A /* Dozy AI */,
+				DD808EB62F694B2C00F4956A /* Dozy AITests */,
+				DD808EBA2F694B2F00F4956A /* Dozy AIUITests */,
 				DD808E852F694B2100F4956A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +101,136 @@
 				DD808E9B2F694B2200F4956A /* Dozy AIUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DD808EB12F694B2A00F4956A /* Dozy AI */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EC22F694BDC00F4956A /* App */,
+				DD808EC12F694BD700F4956A /* Core */,
+				DD808EC02F694BD300F4956A /* Data */,
+				DD808EBF2F694BCD00F4956A /* Domain */,
+				DD808EBE2F694BC600F4956A /* Presentation */,
+				DD808EBD2F694BBB00F4956A /* Resources */,
+				DD808EAE2F694B2A00F4956A /* Assets.xcassets */,
+				DD808EAF2F694B2A00F4956A /* ContentView.swift */,
+			);
+			path = "Dozy AI";
+			sourceTree = "<group>";
+		};
+		DD808EB62F694B2C00F4956A /* Dozy AITests */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EB52F694B2C00F4956A /* Dozy_AITests.swift */,
+			);
+			path = "Dozy AITests";
+			sourceTree = "<group>";
+		};
+		DD808EBA2F694B2F00F4956A /* Dozy AIUITests */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */,
+				DD808EB92F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift */,
+			);
+			path = "Dozy AIUITests";
+			sourceTree = "<group>";
+		};
+		DD808EBD2F694BBB00F4956A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		DD808EBE2F694BC600F4956A /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				DD808ED22F694C6000F4956A /* Home */,
+				DD808ECF2F694C4800F4956A /* Components */,
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		DD808EBF2F694BCD00F4956A /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				DD808ECC2F694C3500F4956A /* Models */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		DD808EC02F694BD300F4956A /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EC92F694C2100F4956A /* Providers */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		DD808EC12F694BD700F4956A /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EC32F694BEB00F4956A /* Utils */,
+				DD808EC62F694C0300F4956A /* Extensions */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		DD808EC22F694BDC00F4956A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		DD808EC32F694BEB00F4956A /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EC42F694BFD00F4956A /* PermissionManager.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		DD808EC62F694C0300F4956A /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				DD808EC72F694C1500F4956A /* Date+Ext.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		DD808EC92F694C2100F4956A /* Providers */ = {
+			isa = PBXGroup;
+			children = (
+				DD808ECA2F694C2F00F4956A /* TaskProvider.swift */,
+			);
+			path = Providers;
+			sourceTree = "<group>";
+		};
+		DD808ECC2F694C3500F4956A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				DD808ECD2F694C4400F4956A /* WorkContext.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		DD808ECF2F694C4800F4956A /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				DD808ED02F694C5D00F4956A /* WorkItemRow.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		DD808ED22F694C6000F4956A /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				DD808ED32F694C6F00F4956A /* HomeView.swift */,
+				DD808ED52F694C7800F4956A /* HomeViewModel.swift */,
+			);
+			path = Home;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -106,9 +247,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				DD808E862F694B2100F4956A /* Dozy AI */,
 			);
 			name = "Dozy AI";
 			packageProductDependencies = (
@@ -130,9 +268,6 @@
 			dependencies = (
 				DD808E932F694B2200F4956A /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				DD808E942F694B2200F4956A /* Dozy AITests */,
-			);
 			name = "Dozy AITests";
 			packageProductDependencies = (
 			);
@@ -152,9 +287,6 @@
 			);
 			dependencies = (
 				DD808E9D2F694B2200F4956A /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				DD808E9E2F694B2200F4956A /* Dozy AIUITests */,
 			);
 			name = "Dozy AIUITests";
 			packageProductDependencies = (
@@ -212,6 +344,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,6 +369,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD808ED12F694C5D00F4956A /* WorkItemRow.swift in Sources */,
+				DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */,
+				DD808ECB2F694C2F00F4956A /* TaskProvider.swift in Sources */,
+				DD808EB22F694B2A00F4956A /* ContentView.swift in Sources */,
+				DD808ECE2F694C4400F4956A /* WorkContext.swift in Sources */,
+				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
+				DD808ED42F694C6F00F4956A /* HomeView.swift in Sources */,
+				DD808EC52F694BFD00F4956A /* PermissionManager.swift in Sources */,
+				DD808EC82F694C1500F4956A /* Date+Ext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,6 +385,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD808EB72F694B2C00F4956A /* Dozy_AITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,6 +393,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD808EBB2F694B2F00F4956A /* Dozy_AIUITests.swift in Sources */,
+				DD808EBC2F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
