@@ -13,13 +13,56 @@
 		DD808EB72F694B2C00F4956A /* Dozy_AITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB52F694B2C00F4956A /* Dozy_AITests.swift */; };
 		DD808EBB2F694B2F00F4956A /* Dozy_AIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */; };
 		DD808EBC2F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB92F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift */; };
-		DD808EC52F694BFD00F4956A /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EC42F694BFD00F4956A /* PermissionManager.swift */; };
-		DD808EC82F694C1500F4956A /* Date+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EC72F694C1500F4956A /* Date+Ext.swift */; };
-		DD808ECB2F694C2F00F4956A /* TaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ECA2F694C2F00F4956A /* TaskProvider.swift */; };
-		DD808ECE2F694C4400F4956A /* WorkContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ECD2F694C4400F4956A /* WorkContext.swift */; };
-		DD808ED12F694C5D00F4956A /* WorkItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ED02F694C5D00F4956A /* WorkItemRow.swift */; };
 		DD808ED42F694C6F00F4956A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ED32F694C6F00F4956A /* HomeView.swift */; };
 		DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ED52F694C7800F4956A /* HomeViewModel.swift */; };
+		DD9F68DE2F6ACCB2001952F6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68DD2F6ACCB2001952F6 /* AppDelegate.swift */; };
+		DD9F68E22F6ACCF4001952F6 /* DependencyContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E12F6ACCF4001952F6 /* DependencyContainer.swift */; };
+		DD9F68E42F6ACD08001952F6 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E32F6ACD08001952F6 /* Date+Extensions.swift */; };
+		DD9F68E62F6ACD14001952F6 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E52F6ACD14001952F6 /* String+Extensions.swift */; };
+		DD9F68E82F6ACD20001952F6 /* Publisher+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */; };
+		DD9F68EA2F6ACD2E001952F6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E92F6ACD2E001952F6 /* Logger.swift */; };
+		DD9F68EC2F6ACD36001952F6 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68EB2F6ACD36001952F6 /* Constants.swift */; };
+		DD9F68EE2F6ACD5B001952F6 /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
+		DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68EF2F6ACD62001952F6 /* TaskItem.swift */; };
+		DD9F68F22F6ACD74001952F6 /* CalendarEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F12F6ACD74001952F6 /* CalendarEvent.swift */; };
+		DD9F68F42F6ACD80001952F6 /* DailySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F32F6ACD80001952F6 /* DailySummary.swift */; };
+		DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
+		DD9F68F92F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */; };
+		DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FA2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift */; };
+		DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FC2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift */; };
+		DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */; };
+		DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69012F6ACE5C001952F6 /* CalendarServiceProtocol.swift */; };
+		DD9F69042F6ACE69001952F6 /* ReminderServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */; };
+		DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69052F6ACE74001952F6 /* AIServiceProtocol.swift */; };
+		DD9F69082F6ACE7E001952F6 /* SpeechServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */; };
+		DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F690A2F6ACEC2001952F6 /* WorkLogRepository.swift */; };
+		DD9F690D2F6ACEEB001952F6 /* UserPatternRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F690C2F6ACEEB001952F6 /* UserPatternRepository.swift */; };
+		DD9F69102F6ACF04001952F6 /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F690F2F6ACF04001952F6 /* CalendarService.swift */; };
+		DD9F69122F6ACF2B001952F6 /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69112F6ACF2B001952F6 /* ReminderService.swift */; };
+		DD9F69142F6ACF33001952F6 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69132F6ACF33001952F6 /* AIService.swift */; };
+		DD9F69162F6ACF3B001952F6 /* SpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69152F6ACF3B001952F6 /* SpeechService.swift */; };
+		DD9F69182F6ACF52001952F6 /* PatternAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */; };
+		DD9F691B2F6ACF74001952F6 /* SwiftDataContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F691A2F6ACF74001952F6 /* SwiftDataContainer.swift */; };
+		DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F691C2F6ACF7F001952F6 /* SchemaV1.swift */; };
+		DD9F69232F6ACFF2001952F6 /* CalendarEventDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69212F6ACFF2001952F6 /* CalendarEventDTO.swift */; };
+		DD9F69252F6ACFFD001952F6 /* WorkLogDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69242F6ACFFD001952F6 /* WorkLogDTO.swift */; };
+		DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69282F6AD073001952F6 /* DailySummaryView.swift */; };
+		DD9F692B2F6AD082001952F6 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
+		DD9F692E2F6AD0A1001952F6 /* WorkLogListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692D2F6AD0A1001952F6 /* WorkLogListView.swift */; };
+		DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692F2F6AD0B1001952F6 /* WorkLogDetailView.swift */; };
+		DD9F69322F6AD0BF001952F6 /* WorkLogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69312F6AD0BF001952F6 /* WorkLogViewModel.swift */; };
+		DD9F69352F6AD144001952F6 /* VoiceInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69342F6AD144001952F6 /* VoiceInputView.swift */; };
+		DD9F69372F6AD14D001952F6 /* VoiceInputViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69362F6AD14D001952F6 /* VoiceInputViewModel.swift */; };
+		DD9F693A2F6AD1AE001952F6 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69392F6AD1AE001952F6 /* InsightsView.swift */; };
+		DD9F693C2F6AD1B8001952F6 /* InsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F693B2F6AD1B8001952F6 /* InsightsViewModel.swift */; };
+		DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F693D2F6AD1CD001952F6 /* TaskCard.swift */; };
+		DD9F69402F6AD1D5001952F6 /* SummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F693F2F6AD1D5001952F6 /* SummaryCard.swift */; };
+		DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69412F6AD1DE001952F6 /* PatternChart.swift */; };
+		DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69432F6AD1EB001952F6 /* VoiceWaveformView.swift */; };
+		DD9F69462F6AD21C001952F6 /* DozyAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69452F6AD21C001952F6 /* DozyAppIntents.swift */; };
+		DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */; };
+		DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */; };
+		DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DD9F694D2F6AD2CF001952F6 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,13 +92,56 @@
 		DD808EB52F694B2C00F4956A /* Dozy_AITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AITests.swift; sourceTree = "<group>"; };
 		DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIUITests.swift; sourceTree = "<group>"; };
 		DD808EB92F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		DD808EC42F694BFD00F4956A /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
-		DD808EC72F694C1500F4956A /* Date+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Ext.swift"; sourceTree = "<group>"; };
-		DD808ECA2F694C2F00F4956A /* TaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskProvider.swift; sourceTree = "<group>"; };
-		DD808ECD2F694C4400F4956A /* WorkContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkContext.swift; sourceTree = "<group>"; };
-		DD808ED02F694C5D00F4956A /* WorkItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemRow.swift; sourceTree = "<group>"; };
 		DD808ED32F694C6F00F4956A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		DD808ED52F694C7800F4956A /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		DD9F68DD2F6ACCB2001952F6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DD9F68E12F6ACCF4001952F6 /* DependencyContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyContainer.swift; sourceTree = "<group>"; };
+		DD9F68E32F6ACD08001952F6 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		DD9F68E52F6ACD14001952F6 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
+		DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+Extensions.swift"; sourceTree = "<group>"; };
+		DD9F68E92F6ACD2E001952F6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		DD9F68EB2F6ACD36001952F6 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLog.swift; sourceTree = "<group>"; };
+		DD9F68EF2F6ACD62001952F6 /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
+		DD9F68F12F6ACD74001952F6 /* CalendarEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEvent.swift; sourceTree = "<group>"; };
+		DD9F68F32F6ACD80001952F6 /* DailySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummary.swift; sourceTree = "<group>"; };
+		DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPattern.swift; sourceTree = "<group>"; };
+		DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateDailySummaryUseCase.swift; sourceTree = "<group>"; };
+		DD9F68FA2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsUseCase.swift; sourceTree = "<group>"; };
+		DD9F68FC2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzeWorkPatternUseCase.swift; sourceTree = "<group>"; };
+		DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendNextTaskUseCase.swift; sourceTree = "<group>"; };
+		DD9F69012F6ACE5C001952F6 /* CalendarServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarServiceProtocol.swift; sourceTree = "<group>"; };
+		DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderServiceProtocol.swift; sourceTree = "<group>"; };
+		DD9F69052F6ACE74001952F6 /* AIServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIServiceProtocol.swift; sourceTree = "<group>"; };
+		DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechServiceProtocol.swift; sourceTree = "<group>"; };
+		DD9F690A2F6ACEC2001952F6 /* WorkLogRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogRepository.swift; sourceTree = "<group>"; };
+		DD9F690C2F6ACEEB001952F6 /* UserPatternRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPatternRepository.swift; sourceTree = "<group>"; };
+		DD9F690F2F6ACF04001952F6 /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
+		DD9F69112F6ACF2B001952F6 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
+		DD9F69132F6ACF33001952F6 /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
+		DD9F69152F6ACF3B001952F6 /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
+		DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternAnalysisService.swift; sourceTree = "<group>"; };
+		DD9F691A2F6ACF74001952F6 /* SwiftDataContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataContainer.swift; sourceTree = "<group>"; };
+		DD9F691C2F6ACF7F001952F6 /* SchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaV1.swift; sourceTree = "<group>"; };
+		DD9F69212F6ACFF2001952F6 /* CalendarEventDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventDTO.swift; sourceTree = "<group>"; };
+		DD9F69242F6ACFFD001952F6 /* WorkLogDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogDTO.swift; sourceTree = "<group>"; };
+		DD9F69282F6AD073001952F6 /* DailySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryView.swift; sourceTree = "<group>"; };
+		DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryViewModel.swift; sourceTree = "<group>"; };
+		DD9F692D2F6AD0A1001952F6 /* WorkLogListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogListView.swift; sourceTree = "<group>"; };
+		DD9F692F2F6AD0B1001952F6 /* WorkLogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogDetailView.swift; sourceTree = "<group>"; };
+		DD9F69312F6AD0BF001952F6 /* WorkLogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogViewModel.swift; sourceTree = "<group>"; };
+		DD9F69342F6AD144001952F6 /* VoiceInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputView.swift; sourceTree = "<group>"; };
+		DD9F69362F6AD14D001952F6 /* VoiceInputViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputViewModel.swift; sourceTree = "<group>"; };
+		DD9F69392F6AD1AE001952F6 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		DD9F693B2F6AD1B8001952F6 /* InsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModel.swift; sourceTree = "<group>"; };
+		DD9F693D2F6AD1CD001952F6 /* TaskCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCard.swift; sourceTree = "<group>"; };
+		DD9F693F2F6AD1D5001952F6 /* SummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryCard.swift; sourceTree = "<group>"; };
+		DD9F69412F6AD1DE001952F6 /* PatternChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternChart.swift; sourceTree = "<group>"; };
+		DD9F69432F6AD1EB001952F6 /* VoiceWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceWaveformView.swift; sourceTree = "<group>"; };
+		DD9F69452F6AD21C001952F6 /* DozyAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyAppIntents.swift; sourceTree = "<group>"; };
+		DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkShortcut.swift; sourceTree = "<group>"; };
+		DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarizeShortcut.swift; sourceTree = "<group>"; };
+		DD9F694D2F6AD2CF001952F6 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,11 +194,11 @@
 			children = (
 				DD808EC22F694BDC00F4956A /* App */,
 				DD808EC12F694BD700F4956A /* Core */,
-				DD808EC02F694BD300F4956A /* Data */,
 				DD808EBF2F694BCD00F4956A /* Domain */,
+				DD808EC02F694BD300F4956A /* Data */,
 				DD808EBE2F694BC600F4956A /* Presentation */,
+				DD9F68DC2F6ACC8B001952F6 /* Intents */,
 				DD808EBD2F694BBB00F4956A /* Resources */,
-				DD808EAE2F694B2A00F4956A /* Assets.xcassets */,
 				DD808EAF2F694B2A00F4956A /* ContentView.swift */,
 			);
 			path = "Dozy AI";
@@ -138,6 +224,9 @@
 		DD808EBD2F694BBB00F4956A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DD808EAE2F694B2A00F4956A /* Assets.xcassets */,
+				DD9F694C2F6AD252001952F6 /* CoreML */,
+				DD9F694D2F6AD2CF001952F6 /* Localizable.strings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -146,6 +235,10 @@
 			isa = PBXGroup;
 			children = (
 				DD808ED22F694C6000F4956A /* Home */,
+				DD9F69272F6AD062001952F6 /* DailySummary */,
+				DD9F692C2F6AD08B001952F6 /* WorkLog */,
+				DD9F69332F6AD0CC001952F6 /* VoiceInput */,
+				DD9F69382F6AD160001952F6 /* Insights */,
 				DD808ECF2F694C4800F4956A /* Components */,
 			);
 			path = Presentation;
@@ -155,6 +248,8 @@
 			isa = PBXGroup;
 			children = (
 				DD808ECC2F694C3500F4956A /* Models */,
+				DD9F68F72F6ACD92001952F6 /* UseCases */,
+				DD9F69002F6ACE3C001952F6 /* Protocols */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -162,7 +257,10 @@
 		DD808EC02F694BD300F4956A /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				DD808EC92F694C2100F4956A /* Providers */,
+				DD9F69092F6ACEAB001952F6 /* Repositories */,
+				DD9F690E2F6ACEF2001952F6 /* Services */,
+				DD9F69192F6ACF5B001952F6 /* Persistence */,
+				DD9F69222F6ACFF2001952F6 /* DTO */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -170,8 +268,9 @@
 		DD808EC12F694BD700F4956A /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				DD808EC32F694BEB00F4956A /* Utils */,
+				DD9F68DF2F6ACCD2001952F6 /* DI */,
 				DD808EC62F694C0300F4956A /* Extensions */,
+				DD9F68E02F6ACCD9001952F6 /* Utilities */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -180,38 +279,29 @@
 			isa = PBXGroup;
 			children = (
 				DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */,
+				DD9F68DD2F6ACCB2001952F6 /* AppDelegate.swift */,
 			);
 			path = App;
-			sourceTree = "<group>";
-		};
-		DD808EC32F694BEB00F4956A /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				DD808EC42F694BFD00F4956A /* PermissionManager.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 		DD808EC62F694C0300F4956A /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				DD808EC72F694C1500F4956A /* Date+Ext.swift */,
+				DD9F68E32F6ACD08001952F6 /* Date+Extensions.swift */,
+				DD9F68E52F6ACD14001952F6 /* String+Extensions.swift */,
+				DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */,
 			);
 			path = Extensions;
-			sourceTree = "<group>";
-		};
-		DD808EC92F694C2100F4956A /* Providers */ = {
-			isa = PBXGroup;
-			children = (
-				DD808ECA2F694C2F00F4956A /* TaskProvider.swift */,
-			);
-			path = Providers;
 			sourceTree = "<group>";
 		};
 		DD808ECC2F694C3500F4956A /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				DD808ECD2F694C4400F4956A /* WorkContext.swift */,
+				DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */,
+				DD9F68EF2F6ACD62001952F6 /* TaskItem.swift */,
+				DD9F68F12F6ACD74001952F6 /* CalendarEvent.swift */,
+				DD9F68F32F6ACD80001952F6 /* DailySummary.swift */,
+				DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -219,7 +309,10 @@
 		DD808ECF2F694C4800F4956A /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				DD808ED02F694C5D00F4956A /* WorkItemRow.swift */,
+				DD9F693D2F6AD1CD001952F6 /* TaskCard.swift */,
+				DD9F693F2F6AD1D5001952F6 /* SummaryCard.swift */,
+				DD9F69412F6AD1DE001952F6 /* PatternChart.swift */,
+				DD9F69432F6AD1EB001952F6 /* VoiceWaveformView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -231,6 +324,138 @@
 				DD808ED52F694C7800F4956A /* HomeViewModel.swift */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		DD9F68DC2F6ACC8B001952F6 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F69452F6AD21C001952F6 /* DozyAppIntents.swift */,
+				DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */,
+				DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
+		DD9F68DF2F6ACCD2001952F6 /* DI */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F68E12F6ACCF4001952F6 /* DependencyContainer.swift */,
+			);
+			path = DI;
+			sourceTree = "<group>";
+		};
+		DD9F68E02F6ACCD9001952F6 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F68E92F6ACD2E001952F6 /* Logger.swift */,
+				DD9F68EB2F6ACD36001952F6 /* Constants.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		DD9F68F72F6ACD92001952F6 /* UseCases */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */,
+				DD9F68FA2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift */,
+				DD9F68FC2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift */,
+				DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */,
+			);
+			path = UseCases;
+			sourceTree = "<group>";
+		};
+		DD9F69002F6ACE3C001952F6 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F69012F6ACE5C001952F6 /* CalendarServiceProtocol.swift */,
+				DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */,
+				DD9F69052F6ACE74001952F6 /* AIServiceProtocol.swift */,
+				DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		DD9F69092F6ACEAB001952F6 /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F690A2F6ACEC2001952F6 /* WorkLogRepository.swift */,
+				DD9F690C2F6ACEEB001952F6 /* UserPatternRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		DD9F690E2F6ACEF2001952F6 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F690F2F6ACF04001952F6 /* CalendarService.swift */,
+				DD9F69112F6ACF2B001952F6 /* ReminderService.swift */,
+				DD9F69132F6ACF33001952F6 /* AIService.swift */,
+				DD9F69152F6ACF3B001952F6 /* SpeechService.swift */,
+				DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		DD9F69192F6ACF5B001952F6 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F691A2F6ACF74001952F6 /* SwiftDataContainer.swift */,
+				DD9F691C2F6ACF7F001952F6 /* SchemaV1.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		DD9F69222F6ACFF2001952F6 /* DTO */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F69212F6ACFF2001952F6 /* CalendarEventDTO.swift */,
+				DD9F69242F6ACFFD001952F6 /* WorkLogDTO.swift */,
+			);
+			path = DTO;
+			sourceTree = "<group>";
+		};
+		DD9F69272F6AD062001952F6 /* DailySummary */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F69282F6AD073001952F6 /* DailySummaryView.swift */,
+				DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */,
+			);
+			path = DailySummary;
+			sourceTree = "<group>";
+		};
+		DD9F692C2F6AD08B001952F6 /* WorkLog */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F692D2F6AD0A1001952F6 /* WorkLogListView.swift */,
+				DD9F692F2F6AD0B1001952F6 /* WorkLogDetailView.swift */,
+				DD9F69312F6AD0BF001952F6 /* WorkLogViewModel.swift */,
+			);
+			path = WorkLog;
+			sourceTree = "<group>";
+		};
+		DD9F69332F6AD0CC001952F6 /* VoiceInput */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F69342F6AD144001952F6 /* VoiceInputView.swift */,
+				DD9F69362F6AD14D001952F6 /* VoiceInputViewModel.swift */,
+			);
+			path = VoiceInput;
+			sourceTree = "<group>";
+		};
+		DD9F69382F6AD160001952F6 /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				DD9F69392F6AD1AE001952F6 /* InsightsView.swift */,
+				DD9F693B2F6AD1B8001952F6 /* InsightsViewModel.swift */,
+			);
+			path = Insights;
+			sourceTree = "<group>";
+		};
+		DD9F694C2F6AD252001952F6 /* CoreML */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = CoreML;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -345,6 +570,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */,
+				DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -369,15 +595,57 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD808ED12F694C5D00F4956A /* WorkItemRow.swift in Sources */,
+				DD9F69042F6ACE69001952F6 /* ReminderServiceProtocol.swift in Sources */,
+				DD9F68F42F6ACD80001952F6 /* DailySummary.swift in Sources */,
+				DD9F692B2F6AD082001952F6 /* DailySummaryViewModel.swift in Sources */,
+				DD9F69252F6ACFFD001952F6 /* WorkLogDTO.swift in Sources */,
+				DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */,
+				DD9F69352F6AD144001952F6 /* VoiceInputView.swift in Sources */,
+				DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */,
+				DD9F68E62F6ACD14001952F6 /* String+Extensions.swift in Sources */,
+				DD9F69402F6AD1D5001952F6 /* SummaryCard.swift in Sources */,
+				DD9F69232F6ACFF2001952F6 /* CalendarEventDTO.swift in Sources */,
 				DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */,
-				DD808ECB2F694C2F00F4956A /* TaskProvider.swift in Sources */,
+				DD9F69082F6ACE7E001952F6 /* SpeechServiceProtocol.swift in Sources */,
+				DD9F69322F6AD0BF001952F6 /* WorkLogViewModel.swift in Sources */,
+				DD9F692E2F6AD0A1001952F6 /* WorkLogListView.swift in Sources */,
+				DD9F69122F6ACF2B001952F6 /* ReminderService.swift in Sources */,
+				DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */,
+				DD9F693C2F6AD1B8001952F6 /* InsightsViewModel.swift in Sources */,
+				DD9F68E42F6ACD08001952F6 /* Date+Extensions.swift in Sources */,
+				DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */,
+				DD9F69182F6ACF52001952F6 /* PatternAnalysisService.swift in Sources */,
+				DD9F69372F6AD14D001952F6 /* VoiceInputViewModel.swift in Sources */,
 				DD808EB22F694B2A00F4956A /* ContentView.swift in Sources */,
-				DD808ECE2F694C4400F4956A /* WorkContext.swift in Sources */,
+				DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */,
 				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
+				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,
+				DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */,
+				DD9F68E22F6ACCF4001952F6 /* DependencyContainer.swift in Sources */,
+				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
+				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
+				DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */,
+				DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */,
+				DD9F68EA2F6ACD2E001952F6 /* Logger.swift in Sources */,
+				DD9F68F22F6ACD74001952F6 /* CalendarEvent.swift in Sources */,
 				DD808ED42F694C6F00F4956A /* HomeView.swift in Sources */,
-				DD808EC52F694BFD00F4956A /* PermissionManager.swift in Sources */,
-				DD808EC82F694C1500F4956A /* Date+Ext.swift in Sources */,
+				DD9F69142F6ACF33001952F6 /* AIService.swift in Sources */,
+				DD9F69462F6AD21C001952F6 /* DozyAppIntents.swift in Sources */,
+				DD9F690D2F6ACEEB001952F6 /* UserPatternRepository.swift in Sources */,
+				DD9F69102F6ACF04001952F6 /* CalendarService.swift in Sources */,
+				DD9F68EC2F6ACD36001952F6 /* Constants.swift in Sources */,
+				DD9F68F92F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift in Sources */,
+				DD9F69162F6ACF3B001952F6 /* SpeechService.swift in Sources */,
+				DD9F68EE2F6ACD5B001952F6 /* WorkLog.swift in Sources */,
+				DD9F691B2F6ACF74001952F6 /* SwiftDataContainer.swift in Sources */,
+				DD9F693A2F6AD1AE001952F6 /* InsightsView.swift in Sources */,
+				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
+				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,
+				DD9F68E82F6ACD20001952F6 /* Publisher+Extensions.swift in Sources */,
+				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
+				DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */,
+				DD9F68DE2F6ACCB2001952F6 /* AppDelegate.swift in Sources */,
+				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
