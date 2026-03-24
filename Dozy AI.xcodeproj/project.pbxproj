@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD22F72C44100EEE463 /* DozyError.swift */; };
+		DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */; };
 		DD808EB22F694B2A00F4956A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EAF2F694B2A00F4956A /* ContentView.swift */; };
 		DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */; };
 		DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DD808EAE2F694B2A00F4956A /* Assets.xcassets */; };
@@ -83,6 +85,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DD44DDD22F72C44100EEE463 /* DozyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyError.swift; sourceTree = "<group>"; };
+		DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogRepositoryProtocol.swift; sourceTree = "<group>"; };
 		DD808E842F694B2100F4956A /* Dozy AI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dozy AI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD808E912F694B2200F4956A /* Dozy AITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD808E9B2F694B2200F4956A /* Dozy AIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AIUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -349,6 +353,7 @@
 			children = (
 				DD9F68E92F6ACD2E001952F6 /* Logger.swift */,
 				DD9F68EB2F6ACD36001952F6 /* Constants.swift */,
+				DD44DDD22F72C44100EEE463 /* DozyError.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -371,6 +376,7 @@
 				DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */,
 				DD9F69052F6ACE74001952F6 /* AIServiceProtocol.swift */,
 				DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */,
+				DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -641,7 +647,9 @@
 				DD9F693A2F6AD1AE001952F6 /* InsightsView.swift in Sources */,
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
 				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,
+				DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */,
 				DD9F68E82F6ACD20001952F6 /* Publisher+Extensions.swift in Sources */,
+				DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */,
 				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
 				DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */,
 				DD9F68DE2F6ACCB2001952F6 /* AppDelegate.swift in Sources */,

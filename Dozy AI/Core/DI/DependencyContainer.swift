@@ -6,3 +6,10 @@
 //
 
 import Foundation
+import Combine
+
+final class DependencyContainer: ObservableObject {
+    
+    // MARK: - Services
+//    lazy var calendarService: CalendarServiceProtocol = CalendarService()
+}
