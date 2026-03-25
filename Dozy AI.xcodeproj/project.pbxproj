@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD22F72C44100EEE463 /* DozyError.swift */; };
 		DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */; };
-		DD808EB22F694B2A00F4956A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EAF2F694B2A00F4956A /* ContentView.swift */; };
 		DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */; };
 		DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DD808EAE2F694B2A00F4956A /* Assets.xcassets */; };
 		DD808EB72F694B2C00F4956A /* Dozy_AITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB52F694B2C00F4956A /* Dozy_AITests.swift */; };
@@ -65,6 +64,11 @@
 		DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */; };
 		DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */; };
 		DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DD9F694D2F6AD2CF001952F6 /* Localizable.strings */; };
+		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
+		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
+		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
+		F6BC59972F739B010090DF3A /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59962F739B010090DF3A /* TaskRow.swift */; };
+		F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59982F739B470090DF3A /* RecentLogRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,7 +95,6 @@
 		DD808E912F694B2200F4956A /* Dozy AITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD808E9B2F694B2200F4956A /* Dozy AIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AIUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD808EAE2F694B2A00F4956A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		DD808EAF2F694B2A00F4956A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIApp.swift; sourceTree = "<group>"; };
 		DD808EB52F694B2C00F4956A /* Dozy_AITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AITests.swift; sourceTree = "<group>"; };
 		DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIUITests.swift; sourceTree = "<group>"; };
@@ -146,6 +149,13 @@
 		DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkShortcut.swift; sourceTree = "<group>"; };
 		DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarizeShortcut.swift; sourceTree = "<group>"; };
 		DD9F694D2F6AD2CF001952F6 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		F619D9342F73A63600084C61 /* Dozy AI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI.entitlements"; sourceTree = "<group>"; };
+		F619D9352F73A69D00084C61 /* Dozy-AI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Dozy-AI-Info.plist"; sourceTree = SOURCE_ROOT; };
+		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
+		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
+		F6BC59962F739B010090DF3A /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
+		F6BC59982F739B470090DF3A /* RecentLogRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentLogRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -196,6 +206,8 @@
 		DD808EB12F694B2A00F4956A /* Dozy AI */ = {
 			isa = PBXGroup;
 			children = (
+				F619D9352F73A69D00084C61 /* Dozy-AI-Info.plist */,
+				F619D9342F73A63600084C61 /* Dozy AI.entitlements */,
 				DD808EC22F694BDC00F4956A /* App */,
 				DD808EC12F694BD700F4956A /* Core */,
 				DD808EBF2F694BCD00F4956A /* Domain */,
@@ -203,7 +215,6 @@
 				DD808EBE2F694BC600F4956A /* Presentation */,
 				DD9F68DC2F6ACC8B001952F6 /* Intents */,
 				DD808EBD2F694BBB00F4956A /* Resources */,
-				DD808EAF2F694B2A00F4956A /* ContentView.swift */,
 			);
 			path = "Dozy AI";
 			sourceTree = "<group>";
@@ -317,6 +328,11 @@
 				DD9F693F2F6AD1D5001952F6 /* SummaryCard.swift */,
 				DD9F69412F6AD1DE001952F6 /* PatternChart.swift */,
 				DD9F69432F6AD1EB001952F6 /* VoiceWaveformView.swift */,
+				F6BC59902F7396450090DF3A /* File.swift */,
+				F6BC59922F73977B0090DF3A /* SectionHeader.swift */,
+				F6BC59942F7399E90090DF3A /* EventRow.swift */,
+				F6BC59962F739B010090DF3A /* TaskRow.swift */,
+				F6BC59982F739B470090DF3A /* RecentLogRow.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -604,6 +620,7 @@
 				DD9F69042F6ACE69001952F6 /* ReminderServiceProtocol.swift in Sources */,
 				DD9F68F42F6ACD80001952F6 /* DailySummary.swift in Sources */,
 				DD9F692B2F6AD082001952F6 /* DailySummaryViewModel.swift in Sources */,
+				F6BC59972F739B010090DF3A /* TaskRow.swift in Sources */,
 				DD9F69252F6ACFFD001952F6 /* WorkLogDTO.swift in Sources */,
 				DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */,
 				DD9F69352F6AD144001952F6 /* VoiceInputView.swift in Sources */,
@@ -612,6 +629,7 @@
 				DD9F69402F6AD1D5001952F6 /* SummaryCard.swift in Sources */,
 				DD9F69232F6ACFF2001952F6 /* CalendarEventDTO.swift in Sources */,
 				DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */,
+				F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */,
 				DD9F69082F6ACE7E001952F6 /* SpeechServiceProtocol.swift in Sources */,
 				DD9F69322F6AD0BF001952F6 /* WorkLogViewModel.swift in Sources */,
 				DD9F692E2F6AD0A1001952F6 /* WorkLogListView.swift in Sources */,
@@ -622,11 +640,11 @@
 				DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */,
 				DD9F69182F6ACF52001952F6 /* PatternAnalysisService.swift in Sources */,
 				DD9F69372F6AD14D001952F6 /* VoiceInputViewModel.swift in Sources */,
-				DD808EB22F694B2A00F4956A /* ContentView.swift in Sources */,
 				DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */,
 				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
 				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,
 				DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */,
+				F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */,
 				DD9F68E22F6ACCF4001952F6 /* DependencyContainer.swift in Sources */,
 				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
@@ -644,6 +662,7 @@
 				DD9F69162F6ACF3B001952F6 /* SpeechService.swift in Sources */,
 				DD9F68EE2F6ACD5B001952F6 /* WorkLog.swift in Sources */,
 				DD9F691B2F6ACF74001952F6 /* SwiftDataContainer.swift in Sources */,
+				F6BC59912F7396450090DF3A /* File.swift in Sources */,
 				DD9F693A2F6AD1AE001952F6 /* InsightsView.swift in Sources */,
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
 				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,
@@ -652,6 +671,7 @@
 				DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */,
 				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
 				DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */,
+				F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */,
 				DD9F68DE2F6ACCB2001952F6 /* AppDelegate.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 			);
@@ -816,16 +836,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Dozy-AI-Info.plist";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "업무 일정을 분석하여 자동 일지를 생성하기 위해 캘린더 접근이 필요합니다.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 입력을 위해 마이크 접근이 필요합니다.";
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "완료한 할 일을 수집하여 업무 보고서에 포함하기 위해 필요합니다.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성으로 업무를 기록하기 위해 음성 인식이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -848,16 +875,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Dozy-AI-Info.plist";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "업무 일정을 분석하여 자동 일지를 생성하기 위해 캘린더 접근이 필요합니다.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 입력을 위해 마이크 접근이 필요합니다.";
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "완료한 할 일을 수집하여 업무 보고서에 포함하기 위해 필요합니다.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성으로 업무를 기록하기 위해 음성 인식이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

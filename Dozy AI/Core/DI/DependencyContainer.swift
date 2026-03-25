@@ -11,5 +11,7 @@ import Combine
 final class DependencyContainer: ObservableObject {
     
     // MARK: - Services
-//    lazy var calendarService: CalendarServiceProtocol = CalendarService()
+    lazy var calendarService: CalendarServiceProtocol = CalendarService()
+    lazy var reminderService: ReminderServiceProtocol = ReminderService()
+    lazy var workLogRepository: WorkLogRepositoryProtocol = WorkLogRepository()
 }
