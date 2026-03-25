@@ -17,6 +17,9 @@ final class HomeViewModel: ObservableObject {
     @Published var todayLog: WorkLog?
     @Published var recentLogs: [WorkLog] = []
     
+    // AI 요약
+    @Published var dailySummary: DailySummary?
+    
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
