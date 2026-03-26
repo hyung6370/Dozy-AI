@@ -12,9 +12,9 @@ struct HomeView: View {
     @EnvironmentObject private var container: DependencyContainer
     @StateObject private var viewModel: HomeViewModel
     @State private var memoText = ""
+    @State private var showSummarySheet = false
     
     // MARK: - Init
-    // 왜 이렇게 했나:
     // @StateObject는 init 시점에 wrappedValue를 넘겨야 하므로
     // 기본 서비스로 초기화합니다. 실제 앱에서는 DependencyContainer가
     // environmentObject로 주입되어 있으므로 onAppear에서 재설정할 수도 있고,
@@ -24,7 +24,8 @@ struct HomeView: View {
         _viewModel = StateObject(wrappedValue: HomeViewModel(
             calendarService: CalendarService(),
             reminderService: ReminderService(),
-            repository: WorkLogRepository()
+            repository: WorkLogRepository(),
+            aiService: AIService()
         ))
     }
     
@@ -49,6 +50,14 @@ struct HomeView: View {
                     } else {
                         // 통계 요약 카드
                         summaryCard
+                        
+                        // AI 요약 버튼
+                        aiGenerateButton
+                        
+                        // AI 요약 인라인 프리뷰
+                        if let summary = viewModel.dailySummary {
+                            aiSummaryPreview(summary)
+                        }
                         
                         // 오늘 일정
                         if !viewModel.todayEvents.isEmpty {
@@ -98,6 +107,15 @@ struct HomeView: View {
                 Button("취소", role: .cancel) { }
             } message: {
                 Text(viewModel.errorMessage ?? "캘린더와 미리알림 접근 권한이 필요합니다.")
+            }
+            .sheet(isPresented: $showSummarySheet) {
+                DailySummaryView(
+                    container: container,
+                    events: viewModel.todayEvents,
+                    completedTasks: viewModel.completedTasks,
+                    pendingTasks: viewModel.pendingTasks,
+                    memos: viewModel.todayLog?.memos ?? []
+                )
             }
         }
     }
@@ -181,6 +199,144 @@ private extension HomeView {
         .padding(.vertical, 16)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+// MARK: - AI Generate Button
+private extension HomeView {
+    
+    var aiGenerateButton: some View {
+        Button {
+            if viewModel.hasSummary {
+                showSummarySheet = true
+            } else {
+                viewModel.generateAISummary()
+            }
+        } label: {
+            HStack(spacing: 12) {
+                if viewModel.isSummarizing {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Image(systemName: viewModel.hasSummary ? "brain.head.profile" : "sparkles")
+                        .font(.title3)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(viewModel.hasSummary ? "AI 업무 요약 보기" : "AI 업무 요약 생성")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Text(viewModel.isSummarizing
+                         ? "AI가 분석 중입니다..."
+                         : viewModel.hasSummary
+                         ? "생산성 점수: \(viewModel.scorePercentage)점"
+                         : "오늘 하루를 AI가 분석합니다")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.8))
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.6))
+            }
+            .foregroundStyle(.white)
+            .padding(16)
+            .background(
+                LinearGradient(
+                    colors: viewModel.hasSummary
+                    ? [.indigo, .purple]
+                    : [.blue, .purple],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .disabled(!viewModel.hasData || viewModel.isSummarizing)
+        .opacity(viewModel.hasData ? 1.0 : 0.5)
+    }
+}
+
+// MARK: - AI Summary Inline Preview
+private extension HomeView {
+    
+    func aiSummaryPreview(_ summary: DailySummary) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("AI 요약", systemImage: "brain.head.profile")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.indigo)
+                
+                Spacer()
+                
+                Text("\(viewModel.scorePercentage)점")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(scoreColor(summary.productivityScore).opacity(0.15))
+                    .foregroundStyle(scoreColor(summary.productivityScore))
+                    .clipShape(Capsule())
+            }
+            
+            Text(summary.summaryText)
+                .font(.caption)
+                .foregroundStyle(.primary)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+            
+            if !summary.highlights.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(summary.highlights.prefix(2).enumerated()), id: \.offset) { _, highlight in
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.orange)
+                                .padding(.top, 4)
+                            Text(highlight)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+            }
+            
+            HStack {
+                Spacer()
+                Text("상세 보기")
+                    .font(.caption2)
+                    .foregroundStyle(.indigo)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.indigo)
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.indigo.opacity(0.04))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(Color.indigo.opacity(0.12), lineWidth: 1)
+                )
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            showSummarySheet = true
+        }
+    }
+    
+    func scoreColor(_ score: Double) -> Color {
+        switch score {
+        case 0.8...1.0: return .green
+        case 0.6..<0.8: return .blue
+        case 0.4..<0.6: return .orange
+        default: return .red
+        }
     }
 }
 

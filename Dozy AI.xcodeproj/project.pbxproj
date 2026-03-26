@@ -64,6 +64,9 @@
 		DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */; };
 		DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */; };
 		DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DD9F694D2F6AD2CF001952F6 /* Localizable.strings */; };
+		F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */; };
+		F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9412F73B38B00084C61 /* AIResponseParser.swift */; };
+		F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9432F74AF0100084C61 /* MetaChip.swift */; };
 		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -151,6 +154,9 @@
 		DD9F694D2F6AD2CF001952F6 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		F619D9342F73A63600084C61 /* Dozy AI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI.entitlements"; sourceTree = "<group>"; };
 		F619D9352F73A69D00084C61 /* Dozy-AI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Dozy-AI-Info.plist"; sourceTree = SOURCE_ROOT; };
+		F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPromptBuilder.swift; sourceTree = "<group>"; };
+		F619D9412F73B38B00084C61 /* AIResponseParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIResponseParser.swift; sourceTree = "<group>"; };
+		F619D9432F74AF0100084C61 /* MetaChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaChip.swift; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -333,6 +339,7 @@
 				F6BC59942F7399E90090DF3A /* EventRow.swift */,
 				F6BC59962F739B010090DF3A /* TaskRow.swift */,
 				F6BC59982F739B470090DF3A /* RecentLogRow.swift */,
+				F619D9432F74AF0100084C61 /* MetaChip.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -414,6 +421,8 @@
 				DD9F69132F6ACF33001952F6 /* AIService.swift */,
 				DD9F69152F6ACF3B001952F6 /* SpeechService.swift */,
 				DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */,
+				F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */,
+				F619D9412F73B38B00084C61 /* AIResponseParser.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -644,10 +653,12 @@
 				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
 				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,
 				DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */,
+				F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */,
 				F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */,
 				DD9F68E22F6ACCF4001952F6 /* DependencyContainer.swift in Sources */,
 				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
+				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
 				DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */,
 				DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */,
 				DD9F68EA2F6ACD2E001952F6 /* Logger.swift in Sources */,
@@ -666,6 +677,7 @@
 				DD9F693A2F6AD1AE001952F6 /* InsightsView.swift in Sources */,
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
 				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,
+				F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */,
 				DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */,
 				DD9F68E82F6ACD20001952F6 /* Publisher+Extensions.swift in Sources */,
 				DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */,
