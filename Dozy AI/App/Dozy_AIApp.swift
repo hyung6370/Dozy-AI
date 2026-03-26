@@ -10,34 +10,15 @@ import SwiftData
 
 @main
 struct Dozy_AIApp: App {
-    
-    // SwiftData에 등록할 모델 목록
-    private let modelContainer: ModelContainer
-    
-    // DI Container - 앱 전체 서비스 관리
+
     @StateObject private var container = DependencyContainer()
-    
-    init() {
-        do {
-            let schema = Schema([
-                WorkLog.self,
-                UserPattern.self
-            ])
-            let config = ModelConfiguration(
-                schema: schema,
-                isStoredInMemoryOnly: false
-            )
-            modelContainer = try ModelContainer(for: schema, configurations: [config])
-        } catch {
-            fatalError("SwiftData ModelContainer 초기화 실패: \(error)")
-        }
-    }
-    
+
     var body: some Scene {
         WindowGroup {
-            HomeView()
-                .environmentObject(container)
+            HomeView(container: container)
         }
-        .modelContainer(modelContainer)
+        // DependencyContainer가 소유한 ModelContainer를 환경에 등록합니다.
+        // @Query 등 SwiftUI 내장 SwiftData 기능을 위해 필요합니다.
+        .modelContainer(container.modelContainer)
     }
 }
