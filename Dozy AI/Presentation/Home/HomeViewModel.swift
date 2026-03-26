@@ -19,7 +19,9 @@ final class HomeViewModel: ObservableObject {
     
     // AI 요약
     @Published var dailySummary: DailySummary?
+    @Published var isSummarizing = false
     
+    // 상태
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
@@ -28,30 +30,38 @@ final class HomeViewModel: ObservableObject {
     var todayDateString: String {
         Date().formattedKorean
     }
-    
     var eventCount: Int { todayEvents.count }
     var completedCount: Int { completedTasks.count }
     var pendingCount: Int { pendingTasks.count }
-    
     var hasData: Bool {
         !todayEvents.isEmpty || !completedTasks.isEmpty
+    }
+    var hasSummary: Bool {
+        dailySummary != nil || !(todayLog?.aiSummary.isEmpty ?? true)
+    }
+    var scorePercentage: Int {
+        guard let score = dailySummary?.productivityScore else { return 0 }
+        return Int(score * 100)
     }
     
     // MARK: - Dependencies
     private let calendarService: CalendarServiceProtocol
     private let reminderService: ReminderServiceProtocol
     private let repository: WorkLogRepositoryProtocol
+    private let aiService: AIServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Init
     init(
         calendarService: CalendarServiceProtocol,
         reminderService: ReminderServiceProtocol,
-        repository: WorkLogRepositoryProtocol
+        repository: WorkLogRepositoryProtocol,
+        aiService: AIServiceProtocol
     ) {
         self.calendarService = calendarService
         self.reminderService = reminderService
         self.repository = repository
+        self.aiService = aiService
     }
     
     /// DependencyContainer에서 편리하게 생성
@@ -59,7 +69,8 @@ final class HomeViewModel: ObservableObject {
         self.init(
             calendarService: container.calendarService,
             reminderService: container.reminderService,
-            repository: container.workLogRepository
+            repository: container.workLogRepository,
+            aiService: container.aiService
         )
     }
     
@@ -127,6 +138,39 @@ final class HomeViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    // MARK: - AI 요약 생성 (Phase 2)
+    func generateAISummary() {
+        guard hasData else {
+            errorMessage = "요약할 데이터가 부족합니다."
+            return
+        }
+        
+        isSummarizing = true
+        errorMessage = nil
+        
+        aiService.generateDailySummary(
+            events: todayEvents,
+            completedTasks: completedTasks,
+            pendingTasks: pendingTasks,
+            memos: todayLog?.memos ?? []
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { [weak self] completion in
+                self?.isSummarizing = false
+                if case .failure(let error) = completion {
+                    self?.errorMessage = error.errorDescription
+                }
+            },
+            receiveValue: { [weak self] summary in
+                guard let self else { return }
+                self.dailySummary = summary
+                self.saveSummaryToLog(summary)
+            }
+        )
+        .store(in: &cancellables)
+    }
+    
     // MARK: - Private
     
     /// 오늘의 WorkLog를 생성하거나 업데이트
@@ -143,12 +187,44 @@ final class HomeViewModel: ObservableObject {
                     log.populate(with: tasks)
                     self.todayLog = log
                     
+                    // 기존에 저장된 AI 요약이 있으면 복원
+                    if !log.aiSummary.isEmpty {
+                        self.restoreSummaryFromLog(log)
+                    }
+                    
                     self.repository.save(log)
                         .sink(receiveCompletion: { _ in }, receiveValue: { })
                         .store(in: &self.cancellables)
                 }
             )
             .store(in: &cancellables)
+    }
+    
+    private func saveSummaryToLog(_ summary: DailySummary) {
+        guard let log = todayLog else { return }
+        summary.apply(to: log)
+        
+        repository.save(log)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+    
+    private func restoreSummaryFromLog(_ log: WorkLog) {
+        let totalMinutes = todayEvents
+            .filter { !$0.isAllDay }
+            .reduce(0) { $0 + $1.durationMinutes }
+        
+        dailySummary = DailySummary(
+            date: log.date,
+            summaryText: log.aiSummary,
+            highlights: log.highlights,
+            nextActions: log.nextActions,
+            detectedCategory: log.category,
+            productivityScore: log.productivityScore ?? 0.0,
+            totalEventMinutes: totalMinutes,
+            completedTaskCount: log.completedTaskTitles.count
+        )
     }
     
     /// 에러 처리 통합
