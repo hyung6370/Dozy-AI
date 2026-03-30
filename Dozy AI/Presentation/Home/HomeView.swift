@@ -334,9 +334,42 @@ private extension HomeView {
     var eventListSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "오늘 일정", icon: "calendar")
-            ForEach(viewModel.todayEvents) { event in
+            
+            // 소스가 2개 이상일 때만 탭 표시
+            if viewModel.showSourceTabs {
+                sourceFilterTabs
+            }
+            
+            ForEach(viewModel.filteredEvents) { event in
                 EventRow(event: event)
             }
+        }
+    }
+    
+    var sourceFilterTabs: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                // 전체 탭
+                FilterTab(
+                    label: "전체",
+                    icon: "calendar",
+                    isSelected: viewModel.selectedSource == nil
+                ) {
+                    viewModel.selectedSource = nil
+                }
+                
+                // 소스별 탭
+                ForEach(viewModel.availableSources, id: \.self) { source in
+                    FilterTab(
+                        label: source.displayName,
+                        icon: source.iconName,
+                        isSelected: viewModel.selectedSource == source
+                    ) {
+                        viewModel.selectedSource = source
+                    }
+                }
+            }
+            .padding(.horizontal, 2)
         }
     }
 }

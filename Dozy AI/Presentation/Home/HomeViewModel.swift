@@ -27,6 +27,8 @@ final class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
+    
+    @Published var selectedSource: CalendarSource? = nil
 
     // MARK: - Computed Properties
 
@@ -46,6 +48,22 @@ final class HomeViewModel: ObservableObject {
     var scorePercentage: Int {
         guard let score = dailySummary?.productivityScore else { return 0 }
         return Int(score * 100)
+    }
+    
+    // 활성 소스가 2개 이상일 때만 탭 표시
+    var showSourceTabs: Bool {
+        calendarSourceManager.enabledSources.count > 1
+    }
+    
+    // 활성화된 소스 목록 (탭 생성용)
+    var availableSources: [CalendarSource] {
+        CalendarSource.allCases.filter { calendarSourceManager.isEnabled($0) }
+    }
+    
+    // 선택된 탭에 따라 필터링
+    var filteredEvents: [CalendarEvent] {
+        guard let source = selectedSource else { return todayEvents }
+        return todayEvents.filter { $0.source == source }
     }
     
     private let calendarSourceManager: CalendarSourceManager
@@ -83,6 +101,18 @@ final class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.loadTodayData()
+            }
+            .store(in: &cancellables)
+        
+        calendarSourceManager.$enabledSources
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] sources in
+                guard let self else { return }
+                if let selected = self.selectedSource, !sources.contains(selected) {
+                    self.selectedSource = nil
+                }
+                self.loadTodayData()
             }
             .store(in: &cancellables)
     }
