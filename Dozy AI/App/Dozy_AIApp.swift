@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import GoogleSignIn
 
 @main
 struct Dozy_AIApp: App {
@@ -16,6 +17,9 @@ struct Dozy_AIApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView(container: container)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
         // DependencyContainer가 소유한 ModelContainer를 환경에 등록합니다.
         // @Query 등 SwiftUI 내장 SwiftData 기능을 위해 필요합니다.

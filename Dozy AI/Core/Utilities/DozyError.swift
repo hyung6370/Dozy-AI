@@ -17,6 +17,8 @@ enum DozyError: LocalizedError {
     case aiSummarizationFailed
     case speechRecognitionFailed
     case unknown(underlying: Error)
+    case googleSignInFailed(underlying: Error?)
+    case googleCalendarFetchFailed
     
     var errorDescription: String? {
         switch self {
@@ -38,6 +40,10 @@ enum DozyError: LocalizedError {
             return "음성 인식에 실패했습니다."
         case .unknown(let error):
             return "알 수 없는 오류: \(error.localizedDescription)"
+        case .googleSignInFailed:
+            return "Google 로그인에 실패했습니다. 다시 시도해주세요."
+        case .googleCalendarFetchFailed:
+            return "Google 캘린더를 불러오는 데 실패했습니다."
         }
     }
 }

@@ -17,6 +17,7 @@ struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
     @State private var memoText = ""
     @State private var showSummarySheet = false
+    @State private var showCalendarSettings = false
 
     // MARK: - Init
 
@@ -71,7 +72,16 @@ struct HomeView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Dozy AI")
+            .navigationTitle("Dozy")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showCalendarSettings = true
+                    } label: {
+                        Image(systemName: "calendar.badge.plus")
+                    }
+                }
+            }
             .refreshable {
                 viewModel.loadTodayData()
             }
@@ -96,6 +106,12 @@ struct HomeView: View {
                     completedTasks: viewModel.completedTasks,
                     pendingTasks: viewModel.pendingTasks,
                     memos: viewModel.todayLog?.memos ?? []
+                )
+            }
+            .sheet(isPresented: $showCalendarSettings) {
+                CalendarSettingsView(
+                    sourceManager: container.calendarSourceManager,
+                    signInService: container.googleSignInService
                 )
             }
         }

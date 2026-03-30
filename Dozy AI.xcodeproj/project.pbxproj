@@ -71,6 +71,16 @@
 		F619D94D2F75113C00084C61 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F619D94C2F75113C00084C61 /* GoogleSignInSwift */; };
 		F619D94F2F75122300084C61 /* CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D94E2F75122300084C61 /* CalendarSource.swift */; };
 		F619D9512F75192800084C61 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = F619D9502F75192800084C61 /* .gitignore */; };
+		F619D9542F751CB100084C61 /* GoogleCalendarDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9532F751CB100084C61 /* GoogleCalendarDTO.swift */; };
+		F619D9562F751F7D00084C61 /* GoogleSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9552F751F7D00084C61 /* GoogleSignInService.swift */; };
+		F619D9582F75219200084C61 /* GoogleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9572F75219200084C61 /* GoogleCalendarService.swift */; };
+		F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */; };
+		F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
+		F619D95F2F7528C600084C61 /* CalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */; };
+		F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */; };
+		F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */; };
+		F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */ = {isa = PBXBuildFile; fileRef = F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */; };
+		F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */; };
 		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -163,6 +173,16 @@
 		F619D9432F74AF0100084C61 /* MetaChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaChip.swift; sourceTree = "<group>"; };
 		F619D94E2F75122300084C61 /* CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSource.swift; sourceTree = "<group>"; };
 		F619D9502F75192800084C61 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		F619D9532F751CB100084C61 /* GoogleCalendarDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleCalendarDTO.swift; sourceTree = "<group>"; };
+		F619D9552F751F7D00084C61 /* GoogleSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInService.swift; sourceTree = "<group>"; };
+		F619D9572F75219200084C61 /* GoogleCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleCalendarService.swift; sourceTree = "<group>"; };
+		F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSourceManager.swift; sourceTree = "<group>"; };
+		F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeCalendarSerivce.swift; sourceTree = "<group>"; };
+		F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsViewModel.swift; sourceTree = "<group>"; };
+		F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsView.swift; sourceTree = "<group>"; };
+		F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+TopVC.swift"; sourceTree = "<group>"; };
+		F619D9642F7A0CF400084C61 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text; path = Secrets.xcconfig.template; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -265,12 +285,13 @@
 		DD808EBE2F694BC600F4956A /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				DD808ED22F694C6000F4956A /* Home */,
+				DD808ECF2F694C4800F4956A /* Components */,
 				DD9F69272F6AD062001952F6 /* DailySummary */,
+				DD808ED22F694C6000F4956A /* Home */,
 				DD9F692C2F6AD08B001952F6 /* WorkLog */,
 				DD9F69332F6AD0CC001952F6 /* VoiceInput */,
 				DD9F69382F6AD160001952F6 /* Insights */,
-				DD808ECF2F694C4800F4956A /* Components */,
+				F619D95D2F7528A300084C61 /* Settings */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -321,6 +342,7 @@
 				DD9F68E32F6ACD08001952F6 /* Date+Extensions.swift */,
 				DD9F68E52F6ACD14001952F6 /* String+Extensions.swift */,
 				DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */,
+				F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -428,12 +450,16 @@
 			isa = PBXGroup;
 			children = (
 				DD9F690F2F6ACF04001952F6 /* CalendarService.swift */,
+				F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */,
+				F619D9572F75219200084C61 /* GoogleCalendarService.swift */,
+				F619D9552F751F7D00084C61 /* GoogleSignInService.swift */,
 				DD9F69112F6ACF2B001952F6 /* ReminderService.swift */,
 				DD9F69132F6ACF33001952F6 /* AIService.swift */,
 				DD9F69152F6ACF3B001952F6 /* SpeechService.swift */,
 				DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */,
 				F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */,
 				F619D9412F73B38B00084C61 /* AIResponseParser.swift */,
+				F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -452,6 +478,7 @@
 			children = (
 				DD9F69212F6ACFF2001952F6 /* CalendarEventDTO.swift */,
 				DD9F69242F6ACFFD001952F6 /* WorkLogDTO.swift */,
+				F619D9532F751CB100084C61 /* GoogleCalendarDTO.swift */,
 			);
 			path = DTO;
 			sourceTree = "<group>";
@@ -503,8 +530,19 @@
 		F619D9522F75194A00084C61 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				F619D9642F7A0CF400084C61 /* Secrets.xcconfig */,
+				F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */,
 			);
 			path = Config;
+			sourceTree = "<group>";
+		};
+		F619D95D2F7528A300084C61 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */,
+				F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -626,6 +664,8 @@
 				DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */,
 				F619D9512F75192800084C61 /* .gitignore in Resources */,
 				DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */,
+				F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */,
+				F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -669,8 +709,10 @@
 				F619D94F2F75122300084C61 /* CalendarSource.swift in Sources */,
 				DD9F69122F6ACF2B001952F6 /* ReminderService.swift in Sources */,
 				DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */,
+				F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */,
 				DD9F693C2F6AD1B8001952F6 /* InsightsViewModel.swift in Sources */,
 				DD9F68E42F6ACD08001952F6 /* Date+Extensions.swift in Sources */,
+				F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */,
 				DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */,
 				DD9F69182F6ACF52001952F6 /* PatternAnalysisService.swift in Sources */,
 				DD9F69372F6AD14D001952F6 /* VoiceInputViewModel.swift in Sources */,
@@ -691,25 +733,31 @@
 				DD808ED42F694C6F00F4956A /* HomeView.swift in Sources */,
 				DD9F69142F6ACF33001952F6 /* AIService.swift in Sources */,
 				DD9F69462F6AD21C001952F6 /* DozyAppIntents.swift in Sources */,
+				F619D9562F751F7D00084C61 /* GoogleSignInService.swift in Sources */,
 				DD9F690D2F6ACEEB001952F6 /* UserPatternRepository.swift in Sources */,
 				DD9F69102F6ACF04001952F6 /* CalendarService.swift in Sources */,
 				DD9F68EC2F6ACD36001952F6 /* Constants.swift in Sources */,
 				DD9F68F92F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift in Sources */,
 				DD9F69162F6ACF3B001952F6 /* SpeechService.swift in Sources */,
+				F619D95F2F7528C600084C61 /* CalendarSettingsViewModel.swift in Sources */,
 				DD9F68EE2F6ACD5B001952F6 /* WorkLog.swift in Sources */,
 				DD9F691B2F6ACF74001952F6 /* SwiftDataContainer.swift in Sources */,
 				F6BC59912F7396450090DF3A /* File.swift in Sources */,
 				DD9F693A2F6AD1AE001952F6 /* InsightsView.swift in Sources */,
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
+				F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */,
 				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,
 				F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */,
 				DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */,
 				DD9F68E82F6ACD20001952F6 /* Publisher+Extensions.swift in Sources */,
 				DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */,
+				F619D9542F751CB100084C61 /* GoogleCalendarDTO.swift in Sources */,
+				F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */,
 				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
 				DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */,
 				F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */,
 				DD9F68DE2F6ACCB2001952F6 /* AppDelegate.swift in Sources */,
+				F619D9582F75219200084C61 /* GoogleCalendarService.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -749,6 +797,7 @@
 /* Begin XCBuildConfiguration section */
 		DD808EA32F694B2200F4956A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -813,6 +862,7 @@
 		};
 		DD808EA42F694B2200F4956A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -870,6 +920,7 @@
 		};
 		DD808EA62F694B2200F4956A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -909,6 +960,7 @@
 		};
 		DD808EA72F694B2200F4956A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

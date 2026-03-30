@@ -22,9 +22,18 @@ final class DependencyContainer: ObservableObject {
 
     // MARK: - Services (Data Layer)
 
-    lazy var calendarService: CalendarServiceProtocol = CalendarService()
+    lazy var calendarService: CalendarServiceProtocol = CompositeCalendarSerivce(
+        appleService: appleCalendarService,
+        googleService: googleCalendarService,
+        sourceManager: calendarSourceManager
+    )
     lazy var reminderService: ReminderServiceProtocol = ReminderService()
     lazy var aiService: AIServiceProtocol = AIService()
+    lazy var googleSignInService = GoogleSignInService()
+    lazy var calendarSourceManager = CalendarSourceManager()
+    
+    private lazy var appleCalendarService: CalendarServiceProtocol = CalendarService()
+    private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
 
     // MARK: - Repository (Data Layer)
 

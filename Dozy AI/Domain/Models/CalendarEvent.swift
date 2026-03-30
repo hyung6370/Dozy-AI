@@ -20,6 +20,7 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     let isAllDay: Bool
     let calendarName: String
     let calendarColorHex: String
+    let source: CalendarSource
 
     // Swift가 자동으로 memberwise init을 생성합니다.
     // init(id:title:startDate:endDate:location:notes:isAllDay:calendarName:calendarColorHex:)
@@ -42,5 +43,21 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
             text += " (장소: \(location))"
         }
         return text
+    }
+}
+
+extension CalendarEvent {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        startDate = try c.decode(Date.self, forKey: .startDate)
+        endDate = try c.decode(Date.self, forKey: .endDate)
+        location = try c.decodeIfPresent(String.self, forKey: .location)
+        notes = try c.decodeIfPresent(String.self, forKey: .notes)
+        isAllDay = try c.decode(Bool.self, forKey: .isAllDay)
+        calendarName = try c.decode(String.self, forKey: .calendarName)
+        calendarColorHex = try c.decode(String.self, forKey: .calendarColorHex)
+        source = try c.decodeIfPresent(CalendarSource.self, forKey: .source) ?? .apple
     }
 }

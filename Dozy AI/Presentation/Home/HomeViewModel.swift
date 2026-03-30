@@ -47,6 +47,9 @@ final class HomeViewModel: ObservableObject {
         guard let score = dailySummary?.productivityScore else { return 0 }
         return Int(score * 100)
     }
+    
+    private let calendarSourceManager: CalendarSourceManager
+    private let googleSignInService: GoogleSignInService
 
     // MARK: - Dependencies (UseCases만)
 
@@ -62,12 +65,26 @@ final class HomeViewModel: ObservableObject {
         fetchTodayDataUseCase: FetchTodayDataUseCase,
         saveWorkLogUseCase: SaveWorkLogUseCase,
         generateDailySummaryUseCase: GenerateDailySummaryUseCase,
-        fetchRecentLogsUseCase: FetchRecentLogsUseCase
+        fetchRecentLogsUseCase: FetchRecentLogsUseCase,
+        calendarSourceManager: CalendarSourceManager,
+        googleSignInService: GoogleSignInService
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
         self.generateDailySummaryUseCase = generateDailySummaryUseCase
         self.fetchRecentLogsUseCase = fetchRecentLogsUseCase
+        self.calendarSourceManager = calendarSourceManager
+        self.googleSignInService = googleSignInService
+        
+        googleSignInService.$isSignedIn
+            .removeDuplicates()
+            .dropFirst()
+            .filter { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadTodayData()
+            }
+            .store(in: &cancellables)
     }
 
     convenience init(container: DependencyContainer) {
@@ -75,7 +92,9 @@ final class HomeViewModel: ObservableObject {
             fetchTodayDataUseCase: container.fetchTodayDataUseCase,
             saveWorkLogUseCase: container.saveWorkLogUseCase,
             generateDailySummaryUseCase: container.generateDailySummaryUseCase,
-            fetchRecentLogsUseCase: container.fetchRecentLogsUseCase
+            fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
+            calendarSourceManager: container.calendarSourceManager,
+            googleSignInService: container.googleSignInService
         )
     }
 

@@ -116,7 +116,8 @@ private extension EKEvent {
             notes: notes,
             isAllDay: isAllDay,
             calendarName: calendar?.title ?? "",
-            calendarColorHex: colorHex
+            calendarColorHex: colorHex,
+            source: .apple
         )
     }
 }
