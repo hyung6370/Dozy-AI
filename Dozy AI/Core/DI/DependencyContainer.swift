@@ -25,6 +25,7 @@ final class DependencyContainer: ObservableObject {
     lazy var calendarService: CalendarServiceProtocol = CompositeCalendarSerivce(
         appleService: appleCalendarService,
         googleService: googleCalendarService,
+        dozyService: dozyCalendarService,
         sourceManager: calendarSourceManager
     )
     lazy var reminderService: ReminderServiceProtocol = ReminderService()
@@ -34,12 +35,12 @@ final class DependencyContainer: ObservableObject {
     
     private lazy var appleCalendarService: CalendarServiceProtocol = CalendarService()
     private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
+    private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
 
     // MARK: - Repository (Data Layer)
 
-    lazy var workLogRepository: WorkLogRepositoryProtocol = WorkLogRepository(
-        modelContainer: modelContainer
-    )
+    lazy var workLogRepository: WorkLogRepositoryProtocol = WorkLogRepository(modelContainer: modelContainer)
+    lazy var dozyEventRepository: DozyEventRepositoryProtocol = DozyEventRepository(modelContainer: modelContainer)
 
     // MARK: - UseCases (Domain Layer)
 
@@ -60,12 +61,18 @@ final class DependencyContainer: ObservableObject {
     lazy var fetchRecentLogsUseCase = FetchRecentLogsUseCase(
         repository: workLogRepository
     )
+    
+    lazy var fetchCalendarEventsUseCase = FetchCalendarEventUseCase(calendarService: calendarService)
+    lazy var fetchDozyEventsUseCase = FetchDozyEventsUseCase(repository: dozyEventRepository)
+    lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
+    lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)
+    lazy var deleteDozyEventUseCase = DeleteDozyEventUseCase(repository: dozyEventRepository)
 
     // MARK: - Init
 
     init() {
         do {
-            let schema = Schema([WorkLog.self, UserPattern.self])
+            let schema = Schema([WorkLog.self, UserPattern.self, DozyEvent.self])
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             self.modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {

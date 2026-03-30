@@ -1,0 +1,194 @@
+//
+//  CalendarViewModel.swift
+//  Dozy AI
+//
+//  Created by Hyungjun KIM on 3/30/26.
+//
+
+import Foundation
+import Combine
+
+final class CalendarViewModel: ObservableObject {
+    
+    // MARK: - Published
+    @Published var currentMonth: Date = Date()
+    @Published var selectedDate: Date = Date()
+    @Published var eventsForSelectedDate: [CalendarEvent] = []
+    @Published var dozyEventsForSelectedDate: [DozyEvent] = []
+    @Published var eventDatesInMonth: Set<Date> = []
+    @Published var isLoading = false
+    @Published var showEventEdit = false
+    @Published var eventToEdit: DozyEvent? = nil
+    
+    // MARK: - Dependencies
+    private let fetchEventsUseCase: FetchCalendarEventUseCase
+    private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
+    private let createEventUseCase: CreateDozyEventUseCase
+    private let updateEventUseCase: UpdateDozyEventUseCase
+    private let deleteEventUseCase: DeleteDozyEventUseCase
+    private var cancellables = Set<AnyCancellable>()
+    
+    init(
+        fetchEventsUseCase: FetchCalendarEventUseCase,
+        fetchDozyEventsUseCase: FetchDozyEventsUseCase,
+        createEventUseCase: CreateDozyEventUseCase,
+        updateEventUseCase: UpdateDozyEventUseCase,
+        deleteEventUseCase: DeleteDozyEventUseCase
+    ) {
+        self.fetchEventsUseCase = fetchEventsUseCase
+        self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
+        self.createEventUseCase = createEventUseCase
+        self.updateEventUseCase = updateEventUseCase
+        self.deleteEventUseCase = deleteEventUseCase
+    }
+    
+    convenience init(container: DependencyContainer) {
+        self.init(
+            fetchEventsUseCase: container.fetchCalendarEventsUseCase,
+            fetchDozyEventsUseCase: container.fetchDozyEventsUseCase,
+            createEventUseCase: container.createDozyEventUseCase,
+            updateEventUseCase: container.updateDozyEventUseCase,
+            deleteEventUseCase: container.deleteDozyEventUseCase
+        )
+    }
+    
+    // MARK: - Computed
+    
+    var currentMonthString: String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy년 M월"
+        fmt.locale = Locale(identifier: "ko_KR")
+        return fmt.string(from: currentMonth)
+    }
+    
+    // 월간 그리드용 날짜 배열 (앞 padding은 nil)
+    var daysInMonth: [Date?] {
+        let calendar = Calendar.current
+        let first = calendar.date(from: calendar.dateComponents([.year, .month], from: currentMonth))!
+        let weekday = calendar.component(.weekday, from: first) - 1
+        let range = calendar.range(of: .day, in: .month, for: currentMonth)!
+        
+        var days: [Date?] = Array(repeating: nil, count: weekday)
+        for day in range {
+            var comps = calendar.dateComponents([.year, .month], from: currentMonth)
+            comps.day = day
+            days.append(calendar.date(from: comps))
+        }
+        return days
+    }
+    
+    func hasEvents(on date: Date) -> Bool {
+        eventDatesInMonth.contains(Calendar.current.startOfDay(for: date))
+    }
+    
+    func isSelected(_ date: Date) -> Bool {
+        Calendar.current.isDate(date, inSameDayAs: selectedDate)
+    }
+    
+    func isToday(_ date: Date) -> Bool {
+        Calendar.current.isDateInToday(date)
+    }
+    
+    // MARK: - Navigation
+    
+    func previousMonth() {
+        currentMonth = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth)!
+        fetchEventsForMonth()
+    }
+    
+    func nextMonth() {
+        currentMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth)!
+        fetchEventsForMonth()
+    }
+    
+    func selectDate(_ date: Date) {
+        selectedDate = date
+        fetchEventsForDate(date)
+    }
+    
+    // MARK: - Fetch
+    
+    func loadInitialData() {
+        fetchEventsForDate(selectedDate)
+        fetchEventsForMonth()
+    }
+    
+    private func fetchEventsForDate(_ date: Date) {
+        isLoading = true
+        Publishers.Zip(
+            fetchEventsUseCase.execute(for: date),
+            fetchDozyEventsUseCase.execute(for: date)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { [weak self] _ in self?.isLoading = false },
+            receiveValue: { [weak self] events, dozyEvents in
+                self?.eventsForSelectedDate = events
+                self?.dozyEventsForSelectedDate = dozyEvents
+                self?.isLoading = false
+            }
+        )
+        .store(in: &cancellables)
+    }
+    
+    private func fetchEventsForMonth() {
+        guard let interval = Calendar.current.dateInterval(of: .month, for: currentMonth) else { return }
+        
+        var date = interval.start
+        var publishers: [AnyPublisher<(Date, [CalendarEvent]), DozyError>] = []
+        
+        while date < interval.end {
+            let d = date
+            publishers.append(
+                fetchEventsUseCase.execute(for: d).map { (d, $0) }.eraseToAnyPublisher()
+            )
+            date = Calendar.current.date(byAdding: .day, value: 1, to: date)!
+        }
+        
+        Publishers.MergeMany(publishers)
+            .collect()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] results in
+                    let datesWithEvents = results
+                        .filter { !$0.1.isEmpty }
+                        .map { Calendar.current.startOfDay(for: $0.0) }
+                    self?.eventDatesInMonth = Set(datesWithEvents)
+                }
+            ).store(in: &cancellables)
+    }
+    
+    // MARK: - CRUD
+    
+    func startCreatingEvent() {
+        eventToEdit = nil
+        showEventEdit = true
+    }
+    
+    func startEditingEvent(_ event: DozyEvent) {
+        eventToEdit = event
+        showEventEdit = true
+    }
+    
+    func saveEvent(_ event: DozyEvent) {
+        let useCase = eventToEdit != nil ? updateEventUseCase.execute(event) : createEventUseCase.execute(event)
+        useCase
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                guard let self else { return }
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }).store(in: &cancellables)
+    }
+    
+    func deleteEvent(_ event: DozyEvent) {
+        deleteEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                guard let self else { return }
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }).store(in: &cancellables)
+    }
+}

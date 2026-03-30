@@ -16,7 +16,7 @@ struct Dozy_AIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView(container: container)
+            MainTabView(container: container)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }

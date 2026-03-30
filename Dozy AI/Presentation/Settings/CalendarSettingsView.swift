@@ -23,6 +23,7 @@ struct CalendarSettingsView: View {
         NavigationStack {
             List {
                 Section {
+                    dozyRow
                     appleRow
                     googleRow
                 } header: {
@@ -115,6 +116,30 @@ struct CalendarSettingsView: View {
                     .foregroundStyle(.blue)
                     .buttonStyle(.plain)
             }
+        }
+        .padding(.vertical, 4)
+    }
+    
+    // MARK: - Dozy Row
+    private var dozyRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "d.circle.fill")
+                .font(.title2)
+                .foregroundStyle(.purple)
+                .frame(width: 34)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Dozy 캘린더")
+                    .font(.subheadline).fontWeight(.medium)
+                Text("앱 내 직접 생성한 일정")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+            
+            Text("항상 켜짐")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
     }
