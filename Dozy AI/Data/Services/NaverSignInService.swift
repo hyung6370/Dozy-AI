@@ -94,12 +94,35 @@ final class NaverSignInService: NSObject, ObservableObject {
 extension NaverSignInService: NaverThirdPartyLoginConnectionDelegate {
     
     func oauth20ConnectionDidFinishRequestACTokenWithAuthCode() {
+        if let token = instance?.accessToken {
+            fetchUserProfile(accessToken: token)
+        }
         DispatchQueue.main.async {
             self.isSignedIn = true
         }
         signInSubject?.send(())
         signInSubject?.send(completion: .finished)
         signInSubject = nil
+    }
+    
+    private func fetchUserProfile(accessToken: String) {
+        guard let url = URL(string: "https://openapi.naver.com/v1/nid/me") else { return }
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
+            guard let data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let response = json["response"] as? [String: Any] else { return }
+            
+            let email = response["email"] as? String
+            let name = response["name"] as? String
+            
+            DispatchQueue.main.async {
+                self?.userEmail = email
+                self?.userName = name
+            }
+        }.resume()
     }
     
     func oauth20ConnectionDidFinishRequestACTokenWithRefreshToken() {

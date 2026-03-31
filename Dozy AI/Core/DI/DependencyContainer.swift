@@ -25,7 +25,6 @@ final class DependencyContainer: ObservableObject {
     lazy var calendarService: CalendarServiceProtocol = CompositeCalendarSerivce(
         appleService: appleCalendarService,
         googleService: googleCalendarService,
-        naverService: naverCalendarService,
         dozyService: dozyCalendarService,
         sourceManager: calendarSourceManager
     )
@@ -37,7 +36,6 @@ final class DependencyContainer: ObservableObject {
     
     private lazy var appleCalendarService: CalendarServiceProtocol = CalendarService()
     private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
-    private lazy var naverCalendarService = NaverCalendarService(signInService: naverSignInService)
     private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
 
     // MARK: - Repository (Data Layer)
@@ -65,7 +63,7 @@ final class DependencyContainer: ObservableObject {
         repository: workLogRepository
     )
     
-    lazy var fetchCalendarEventsUseCase = FetchCalendarEventUseCase(calendarService: calendarService)
+    lazy var fetchCalendarEventUseCase = FetchCalendarEventUseCase(calendarService: calendarService)
     lazy var fetchDozyEventsUseCase = FetchDozyEventsUseCase(repository: dozyEventRepository)
     lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
     lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)

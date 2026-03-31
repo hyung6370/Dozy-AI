@@ -23,7 +23,14 @@ struct NaverCalendarItem: Decodable {
 }
 
 // MARK: - Events
+
 struct NaverCalendarResponse: Decodable {
+    let calendars: [NaverCalendarWithSchedules]?
+}
+
+struct NaverCalendarWithSchedules: Decodable {
+    let calendarId: String?
+    let calendarName: String?
     let schedules: [NaverEventItem]?
 }
 

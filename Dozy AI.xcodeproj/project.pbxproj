@@ -69,6 +69,7 @@
 		F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */; };
 		F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */; };
 		F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD62F7B625700FA0476 /* BannerView.swift */; };
+		F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */; };
 		F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */; };
 		F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9412F73B38B00084C61 /* AIResponseParser.swift */; };
 		F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9432F74AF0100084C61 /* MetaChip.swift */; };
@@ -192,6 +193,7 @@
 		F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarListResponse.swift; sourceTree = "<group>"; };
 		F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarService.swift; sourceTree = "<group>"; };
 		F616DCD62F7B625700FA0476 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
+		F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabBar.swift; sourceTree = "<group>"; };
 		F619D9342F73A63600084C61 /* Dozy AI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI.entitlements"; sourceTree = "<group>"; };
 		F619D9352F73A69D00084C61 /* Dozy-AI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Dozy-AI-Info.plist"; sourceTree = SOURCE_ROOT; };
 		F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPromptBuilder.swift; sourceTree = "<group>"; };
@@ -423,6 +425,7 @@
 				F619D9432F74AF0100084C61 /* MetaChip.swift */,
 				F619D9682F7A170E00084C61 /* FilterTab.swift */,
 				F616DCD62F7B625700FA0476 /* BannerView.swift */,
+				F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -825,6 +828,7 @@
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
 				F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */,
 				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
+				F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */,
 				F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */,
 				DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */,
 				DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */,

@@ -44,7 +44,7 @@ final class CalendarViewModel: ObservableObject {
     
     convenience init(container: DependencyContainer) {
         self.init(
-            fetchEventsUseCase: container.fetchCalendarEventsUseCase,
+            fetchEventsUseCase: container.fetchCalendarEventUseCase,
             fetchDozyEventsUseCase: container.fetchDozyEventsUseCase,
             createEventUseCase: container.createDozyEventUseCase,
             updateEventUseCase: container.updateDozyEventUseCase,

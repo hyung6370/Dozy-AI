@@ -40,12 +40,12 @@ struct CalendarSettingsView: View {
             }
             .navigationTitle("캘린더 설정")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("완료") { dismiss() }
-                        .fontWeight(.semibold)
-                }
-            }
+//            .toolbar {
+//                ToolbarItem(placement: .topBarTrailing) {
+//                    Button("완료") { dismiss() }
+//                        .fontWeight(.semibold)
+//                }
+//            }
             .alert("로그인 실패", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }
@@ -141,7 +141,7 @@ struct CalendarSettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("네이버 캘린더")
                     .font(.subheadline).fontWeight(.medium)
-                Text(viewModel.naverUserEmail ?? "연결되지 않음")
+                Text(viewModel.isNaverSignedIn ? (viewModel.naverUserEmail ?? "연결됨") : "연결되지 않음")
                     .font(.caption).foregroundStyle(.secondary)
             }
             

@@ -65,9 +65,18 @@ final class NaverCalendarService: CalendarServiceProtocol {
         return URLSession.shared.dataTaskPublisher(for: request)
             .map(\.data)
             .tryMap { data -> [CalendarEvent] in
+#if DEBUG
+                print("[NaverCalendar] raw response: \(String(data: data, encoding: .utf8) ?? "nil")")
+#endif
+                
                 let decoded = try JSONDecoder().decode(NaverCalendarResponse.self, from: data)
-                return (decoded.schedules ?? []).compactMap {
-                    $0.toCalendarEvent(calendarName: "네이버 캘린더", colorHex: "#03C75A")
+                return (decoded.calendars ?? []).flatMap { calendar in
+                    (calendar.schedules ?? []).compactMap {
+                        $0.toCalendarEvent(
+                            calendarName: calendar.calendarName ?? "네이버 캘린더",
+                            colorHex: "#03C75A"
+                        )
+                    }
                 }
             }
             .replaceError(with: [])
