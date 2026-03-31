@@ -94,7 +94,7 @@ struct CalendarView: View {
                         date: date,
                         isSelected: viewModel.isSelected(date),
                         isToday: viewModel.isToday(date),
-                        hasEvents: viewModel.hasEvents(on: date)
+                        eventBars: viewModel.eventBars(for: date)
                     ) {
                         viewModel.selectDate(date)
                     }

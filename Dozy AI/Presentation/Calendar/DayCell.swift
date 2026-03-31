@@ -12,12 +12,12 @@ struct DayCell: View {
     let date: Date
     let isSelected: Bool
     let isToday: Bool
-    let hasEvents: Bool
+    let eventBars: [EventBarInfo]
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 Text("\(Calendar.current.component(.day, from: date))")
                     .font(.subheadline)
                     .fontWeight(isToday ? .bold : .regular)
@@ -25,9 +25,15 @@ struct DayCell: View {
                     .frame(width: 36, height: 36)
                     .background(Circle().fill(isSelected ? Color.blue : Color.clear))
                 
-                Circle()
-                    .fill(hasEvents ? (isSelected ? Color.white : Color.blue) : Color.clear)
-                    .frame(width: 5, height: 5)
+                // 이벤트 바 (최대 3개)
+                HStack(spacing: 2) {
+                    ForEach(eventBars) { bar in
+                        RoundedRectangle(cornerRadius: 1.5)
+                            .fill(Color(hex: bar.colorHex) ?? .blue)
+                            .frame(width: 6, height: 3)
+                    }
+                }
+                .frame(height: 4)
             }
         }
         .buttonStyle(.plain)

@@ -8,14 +8,20 @@
 import Foundation
 import Combine
 
+// MARK: - EventBarInfo (ViewModel 전용 - SwiftUI 없음)
+struct EventBarInfo: Identifiable {
+    let id: String
+    let colorHex: String
+}
+
 final class CalendarViewModel: ObservableObject {
-    
+
     // MARK: - Published
     @Published var currentMonth: Date = Date()
     @Published var selectedDate: Date = Date()
     @Published var eventsForSelectedDate: [CalendarEvent] = []
     @Published var dozyEventsForSelectedDate: [DozyEvent] = []
-    @Published var eventDatesInMonth: Set<Date> = []
+    @Published var eventBarsPerDate: [Date: [EventBarInfo]] = [:]
     @Published var isLoading = false
     @Published var showEventEdit = false
     @Published var eventToEdit: DozyEvent? = nil
@@ -78,7 +84,13 @@ final class CalendarViewModel: ObservableObject {
     }
     
     func hasEvents(on date: Date) -> Bool {
-        eventDatesInMonth.contains(Calendar.current.startOfDay(for: date))
+        let key = Calendar.current.startOfDay(for: date)
+        return !(eventBarsPerDate[key]?.isEmpty ?? true)
+    }
+    
+    func eventBars(for date: Date) -> [EventBarInfo] {
+        let key = Calendar.current.startOfDay(for: date)
+        return eventBarsPerDate[key] ?? []
     }
     
     func isSelected(_ date: Date) -> Bool {
@@ -151,10 +163,15 @@ final class CalendarViewModel: ObservableObject {
             .sink(
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] results in
-                    let datesWithEvents = results
-                        .filter { !$0.1.isEmpty }
-                        .map { Calendar.current.startOfDay(for: $0.0) }
-                    self?.eventDatesInMonth = Set(datesWithEvents)
+                    var barsDict: [Date: [EventBarInfo]] = [:]
+                    for (date, events) in results where !events.isEmpty {
+                        let key = Calendar.current.startOfDay(for: date)
+                        
+                        barsDict[key] = events.prefix(3).map {
+                            EventBarInfo(id: $0.id, colorHex: $0.calendarColorHex)
+                        }
+                    }
+                    self?.eventBarsPerDate = barsDict
                 }
             ).store(in: &cancellables)
     }
