@@ -34,6 +34,7 @@ struct HomeView: View {
                 VStack(spacing: 20) {
 
                     headerSection
+                    bannerSection
 
                     if viewModel.isLoading {
                         loadingSection
@@ -72,8 +73,16 @@ struct HomeView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Dozy")
+//            .navigationTitle("Dozy")
+            .scrollDismissesKeyboard(.interactively)
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("완료") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .fontWeight(.semibold)
+                }
             }
             .refreshable {
                 viewModel.loadTodayData()
@@ -119,6 +128,15 @@ private extension HomeView {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Banner
+
+private extension HomeView {
+    
+    var bannerSection: some View {
+        BannerView(items: BannerItem.placeholders, interval: 4)
     }
 }
 
