@@ -12,17 +12,20 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol {
     
     private let appleService: CalendarServiceProtocol
     private let googleService: GoogleCalendarService
+    private let naverService: NaverCalendarService
     private let dozyService: DozyCalendarService
     let sourceManager: CalendarSourceManager
     
     init(
         appleService: CalendarServiceProtocol,
         googleService: GoogleCalendarService,
+        naverService: NaverCalendarService,
         dozyService: DozyCalendarService,
         sourceManager: CalendarSourceManager
     ) {
         self.appleService = appleService
         self.googleService = googleService
+        self.naverService = naverService
         self.dozyService = dozyService
         self.sourceManager = sourceManager
     }
@@ -40,6 +43,12 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol {
         if sourceManager.isEnabled(.google) {
             publishers.append(
                 googleService.fetchEvents(for: date)
+                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            )
+        }
+        if sourceManager.isEnabled(.naver) {
+            publishers.append(
+                naverService.fetchEvents(for: date)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }

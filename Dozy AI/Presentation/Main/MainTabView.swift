@@ -25,7 +25,8 @@ struct MainTabView: View {
             
             CalendarSettingsView(
                 sourceManager: container.calendarSourceManager,
-                signInService: container.googleSignInService
+                googleSignInService: container.googleSignInService,
+                naverSignInService: container.naverSignInService
             )
             .tabItem { Label("설정", systemImage: "gear") }
         }

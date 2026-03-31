@@ -64,6 +64,10 @@
 		DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */; };
 		DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */; };
 		DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DD9F694D2F6AD2CF001952F6 /* Localizable.strings */; };
+		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
+		F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD02F7B448300FA0476 /* NaverSignInService.swift */; };
+		F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */; };
+		F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */; };
 		F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */; };
 		F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9412F73B38B00084C61 /* AIResponseParser.swift */; };
 		F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9432F74AF0100084C61 /* MetaChip.swift */; };
@@ -183,6 +187,9 @@
 		DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkShortcut.swift; sourceTree = "<group>"; };
 		DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarizeShortcut.swift; sourceTree = "<group>"; };
 		DD9F694D2F6AD2CF001952F6 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		F616DCD02F7B448300FA0476 /* NaverSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverSignInService.swift; sourceTree = "<group>"; };
+		F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarListResponse.swift; sourceTree = "<group>"; };
+		F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarService.swift; sourceTree = "<group>"; };
 		F619D9342F73A63600084C61 /* Dozy AI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI.entitlements"; sourceTree = "<group>"; };
 		F619D9352F73A69D00084C61 /* Dozy-AI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Dozy-AI-Info.plist"; sourceTree = SOURCE_ROOT; };
 		F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPromptBuilder.swift; sourceTree = "<group>"; };
@@ -230,6 +237,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F619D94B2F75113C00084C61 /* GoogleSignIn in Frameworks */,
+				F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */,
 				F619D94D2F75113C00084C61 /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -507,6 +515,8 @@
 				F619D9412F73B38B00084C61 /* AIResponseParser.swift */,
 				F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */,
 				F619D97A2F7A3A6000084C61 /* DozyCalendarService.swift */,
+				F616DCD02F7B448300FA0476 /* NaverSignInService.swift */,
+				F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -526,6 +536,7 @@
 				DD9F69212F6ACFF2001952F6 /* CalendarEventDTO.swift */,
 				DD9F69242F6ACFFD001952F6 /* WorkLogDTO.swift */,
 				F619D9532F751CB100084C61 /* GoogleCalendarDTO.swift */,
+				F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */,
 			);
 			path = DTO;
 			sourceTree = "<group>";
@@ -631,6 +642,7 @@
 			packageProductDependencies = (
 				F619D94A2F75113C00084C61 /* GoogleSignIn */,
 				F619D94C2F75113C00084C61 /* GoogleSignInSwift */,
+				F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */,
 			);
 			productName = "Dozy AI";
 			productReference = DD808E842F694B2100F4956A /* Dozy AI.app */;
@@ -710,6 +722,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F619D9492F75113C00084C61 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD808E852F694B2100F4956A /* Products */;
@@ -786,12 +799,14 @@
 				DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */,
 				F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */,
 				DD9F693C2F6AD1B8001952F6 /* InsightsViewModel.swift in Sources */,
+				F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */,
 				DD9F68E42F6ACD08001952F6 /* Date+Extensions.swift in Sources */,
 				F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */,
 				DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */,
 				F619D9872F7A4A1400084C61 /* EventEditViewModel.swift in Sources */,
 				F619D97B2F7A3A6000084C61 /* DozyCalendarService.swift in Sources */,
 				DD9F69182F6ACF52001952F6 /* PatternAnalysisService.swift in Sources */,
+				F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */,
 				DD9F69372F6AD14D001952F6 /* VoiceInputViewModel.swift in Sources */,
 				DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */,
 				F619D9852F7A43DF00084C61 /* CalendarView.swift in Sources */,
@@ -831,6 +846,7 @@
 				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,
 				F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */,
 				DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */,
+				F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */,
 				DD9F68E82F6ACD20001952F6 /* Publisher+Extensions.swift in Sources */,
 				DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */,
 				F619D9542F751CB100084C61 /* GoogleCalendarDTO.swift in Sources */,
@@ -1208,6 +1224,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/naver/naveridlogin-sdk-ios.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		F619D9492F75113C00084C61 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
@@ -1219,6 +1243,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */;
+			productName = NaverThirdPartyLogin;
+		};
 		F619D94A2F75113C00084C61 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F619D9492F75113C00084C61 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;

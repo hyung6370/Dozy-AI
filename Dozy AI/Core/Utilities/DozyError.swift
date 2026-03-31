@@ -19,6 +19,8 @@ enum DozyError: LocalizedError {
     case unknown(underlying: Error)
     case googleSignInFailed(underlying: Error?)
     case googleCalendarFetchFailed
+    case naverSignInFailed
+    case naverCalendarFetchFailed
     
     var errorDescription: String? {
         switch self {
@@ -44,6 +46,10 @@ enum DozyError: LocalizedError {
             return "Google 로그인에 실패했습니다. 다시 시도해주세요."
         case .googleCalendarFetchFailed:
             return "Google 캘린더를 불러오는 데 실패했습니다."
+        case .naverSignInFailed:
+            return "네이버 로그인에 실패했습니다."
+        case .naverCalendarFetchFailed: 
+            return "네이버 캘린더를 불러오는 데 실패했습니다."
         }
     }
 }

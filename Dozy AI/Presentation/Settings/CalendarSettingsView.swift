@@ -12,10 +12,15 @@ struct CalendarSettingsView: View {
     @StateObject private var viewModel: CalendarSettingsViewModel
     @Environment(\.dismiss) private var dismiss
     
-    init(sourceManager: CalendarSourceManager, signInService: GoogleSignInService) {
+    init(
+        sourceManager: CalendarSourceManager,
+        googleSignInService: GoogleSignInService,
+        naverSignInService: NaverSignInService
+    ) {
         _viewModel = StateObject(wrappedValue: CalendarSettingsViewModel(
             sourceManager: sourceManager,
-            signInService: signInService
+            googleSignInService: googleSignInService,
+            naverSignInService: naverSignInService
         ))
     }
     
@@ -26,6 +31,7 @@ struct CalendarSettingsView: View {
                     dozyRow
                     appleRow
                     googleRow
+                    naverRow
                 } header: {
                     Text("연결된 캘린더")
                 } footer: {
@@ -40,13 +46,13 @@ struct CalendarSettingsView: View {
                         .fontWeight(.semibold)
                 }
             }
-            .alert("Google 로그인 실패", isPresented: Binding(
-                get: { viewModel.googleSignInError != nil },
-                set: { if !$0 { viewModel.googleSignInError = nil } }
+            .alert("로그인 실패", isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
             )) {
-                Button("확인", role: .cancel) { viewModel.googleSignInError = nil }
+                Button("확인", role: .cancel) { viewModel.errorMessage = nil }
             } message: {
-                Text(viewModel.googleSignInError ?? "")
+                Text(viewModel.errorMessage ?? "")
             }
         }
     }
@@ -114,6 +120,48 @@ struct CalendarSettingsView: View {
                 Button("연결") { viewModel.connectGoogle() }
                     .font(.subheadline).fontWeight(.medium)
                     .foregroundStyle(.blue)
+                    .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+    
+    // MARK: - Naver Row
+    private var naverRow: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(hex: "#03C75A") ?? .green)
+                    .frame(width: 34, height: 34)
+                Text("N")
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("네이버 캘린더")
+                    .font(.subheadline).fontWeight(.medium)
+                Text(viewModel.naverUserEmail ?? "연결되지 않음")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+            
+            if viewModel.isNaverSignedIn {
+                VStack(spacing: 6) {
+                    Toggle("", isOn: Binding(
+                        get: { viewModel.sourceManager.isEnabled(.naver) },
+                        set: { _ in viewModel.sourceManager.toggle(.naver) }
+                    ))
+                    .labelsHidden()
+                    
+                    Button("연결 해제") { viewModel.disconnectNaver() }
+                        .font(.caption2).foregroundStyle(.red).buttonStyle(.plain)
+                }
+            } else {
+                Button("연결") { viewModel.connectNaver() }
+                    .font(.subheadline).fontWeight(.medium)
+                    .foregroundStyle(Color(hex: "#03C75A") ?? .green)
                     .buttonStyle(.plain)
             }
         }

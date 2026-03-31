@@ -9,52 +9,87 @@ import Combine
 import UIKit
 
 final class CalendarSettingsViewModel: ObservableObject {
-    
-    @Published var googleSignInError: String?
-    
+
+    @Published var errorMessage: String?
+
     let sourceManager: CalendarSourceManager
-    let signInService: GoogleSignInService
-    
+    let googleSignInService: GoogleSignInService
+    let naverSignInService: NaverSignInService
+
     private var cancellables = Set<AnyCancellable>()
-    
-    init(sourceManager: CalendarSourceManager, signInService: GoogleSignInService) {
-        self.sourceManager = sourceManager
-        self.signInService = signInService
-        
-        signInService.objectWillChange
-            .sink { [weak self] in
-                self?.objectWillChange.send()
-            }
+
+    init(
+        sourceManager: CalendarSourceManager,
+        googleSignInService: GoogleSignInService,
+        naverSignInService: NaverSignInService
+    ) {
+        self.sourceManager       = sourceManager
+        self.googleSignInService = googleSignInService
+        self.naverSignInService  = naverSignInService
+
+        // 각 서비스 변경 시 View 갱신
+        googleSignInService.objectWillChange
+            .sink { [weak self] in self?.objectWillChange.send() }
+            .store(in: &cancellables)
+
+        naverSignInService.objectWillChange
+            .sink { [weak self] in self?.objectWillChange.send() }
             .store(in: &cancellables)
     }
-    
+
     // MARK: - Computed
-    var isGoogleSignedIn: Bool { signInService.isSignedIn }
-    var googleUserEmail: String? { signInService.userEmail }
-    
-    // MARK: - Actions
+    var isGoogleSignedIn: Bool { googleSignInService.isSignedIn }
+    var googleUserEmail: String? { googleSignInService.userEmail }
+
+    var isNaverSignedIn: Bool { naverSignInService.isSignedIn }
+    var naverUserEmail: String? { naverSignInService.userEmail }
+
+    // MARK: - Google
     func connectGoogle() {
         guard let vc = UIApplication.shared.topViewController else { return }
-        
-        signInService.signIn(presenting: vc)
+        googleSignInService.signIn(presenting: vc)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
                     if case .failure(let error) = completion {
-                        self?.googleSignInError = error.errorDescription
+                        self?.errorMessage = error.errorDescription
                     }
                 },
                 receiveValue: { [weak self] in
                     self?.sourceManager.enable(.google)
                 }
-            ).store(in: &cancellables)
+            )
+            .store(in: &cancellables)
     }
-    
+
     func disconnectGoogle() {
-        signInService.signOut()
+        googleSignInService.signOut()
         sourceManager.disable(.google)
     }
-    
+
+    // MARK: - Naver
+    func connectNaver() {
+        naverSignInService.signIn()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] in
+                    self?.sourceManager.enable(.naver)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func disconnectNaver() {
+        naverSignInService.signOut()
+        sourceManager.disable(.naver)
+    }
+
+    // MARK: - Apple
     func toggleApple() {
         sourceManager.toggle(.apple)
     }

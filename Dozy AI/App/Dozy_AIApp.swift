@@ -19,6 +19,7 @@ struct Dozy_AIApp: App {
             MainTabView(container: container)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
+                    _ = container.naverSignInService.handle(url: url)
                 }
         }
         // DependencyContainer가 소유한 ModelContainer를 환경에 등록합니다.
