@@ -156,12 +156,20 @@ struct CalendarView: View {
                     .padding(.top, 24)
             } else {
                 ForEach(viewModel.eventsForSelectedDate) { event in
-                    EventRow(event: event)
-                        .padding(.horizontal)
-                        .onTapGesture {
-                            viewModel.showDetail(for: event)
-                        }
-                        .contextMenu { eventContextMenu(for: event) }
+                    EventRow(
+                        event: event,
+                        isCompleted: viewModel.dozyEvent(for: event)?.isCompleted ?? false,
+                        onToggle: event.source == .dozy ? {
+                            if let dozyEvent = viewModel.dozyEvent(for: event) {
+                                viewModel.toggleCompletion(for: dozyEvent)
+                            }
+                        } : nil
+                    )
+                    .padding(.horizontal)
+                    .onTapGesture {
+                        viewModel.showDetail(for: event)
+                    }
+                    .contextMenu { eventContextMenu(for: event) }
                 }
             }
         }

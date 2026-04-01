@@ -109,6 +109,7 @@
 		F619D9872F7A4A1400084C61 /* EventEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */; };
 		F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9882F7A4ADD00084C61 /* EventEditView.swift */; };
 		F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D98A2F7A4C8400084C61 /* Color+Hex.swift */; };
+		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -238,6 +239,7 @@
 		F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditViewModel.swift; sourceTree = "<group>"; };
 		F619D9882F7A4ADD00084C61 /* EventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditView.swift; sourceTree = "<group>"; };
 		F619D98A2F7A4C8400084C61 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -491,6 +493,7 @@
 				F619D9762F7A374D00084C61 /* DeleteDozyEventUseCase.swift */,
 				F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */,
 				F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */,
+				F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */,
 			);
 			path = UseCases;
 			sourceTree = "<group>";
@@ -856,6 +859,7 @@
 				DD9F69462F6AD21C001952F6 /* DozyAppIntents.swift in Sources */,
 				F619D9562F751F7D00084C61 /* GoogleSignInService.swift in Sources */,
 				DD9F690D2F6ACEEB001952F6 /* UserPatternRepository.swift in Sources */,
+				F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */,
 				DD9F69102F6ACF04001952F6 /* CalendarService.swift in Sources */,
 				DD9F68EC2F6ACD36001952F6 /* Constants.swift in Sources */,
 				DD9F68F92F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift in Sources */,

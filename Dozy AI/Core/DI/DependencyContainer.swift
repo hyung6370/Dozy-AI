@@ -71,6 +71,7 @@ final class DependencyContainer: ObservableObject {
     lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
     lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)
     lazy var deleteDozyEventUseCase = DeleteDozyEventUseCase(repository: dozyEventRepository)
+    lazy var toggleDozyEventCompletionUseCase = ToggleDozyEventCompletionUseCase(repository: dozyEventRepository)
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()

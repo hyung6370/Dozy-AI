@@ -21,6 +21,7 @@ final class DozyEvent {
     var createdAt: Date
     var updatedAt: Date
     var recurrenceRule: String = "none" // "none" | "daily" | "weekly" | "monthly" | "yearly"
+    var isCompleted: Bool = false
     var recurrenceEndDate: Date? = nil
     var notificationMinutesBefore: Int = -1 // -1: 없음
     

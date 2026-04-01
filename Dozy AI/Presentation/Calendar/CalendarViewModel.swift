@@ -39,6 +39,7 @@ final class CalendarViewModel: ObservableObject {
     private let deleteEventUseCase: DeleteDozyEventUseCase
     private let scheduleNotificationUseCase: ScheduleNotificationUseCase
     private let cancelNotificationUseCase: CancelNotificationUseCase
+    private let toggleCompletionUseCase: ToggleDozyEventCompletionUseCase
     private var cancellables = Set<AnyCancellable>()
     
     init(
@@ -48,7 +49,8 @@ final class CalendarViewModel: ObservableObject {
         updateEventUseCase: UpdateDozyEventUseCase,
         deleteEventUseCase: DeleteDozyEventUseCase,
         scheduleNotificationUseCase: ScheduleNotificationUseCase,
-        cancelNotificationUseCase: CancelNotificationUseCase
+        cancelNotificationUseCase: CancelNotificationUseCase,
+        toggleCompletionUseCase: ToggleDozyEventCompletionUseCase
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -57,6 +59,7 @@ final class CalendarViewModel: ObservableObject {
         self.deleteEventUseCase = deleteEventUseCase
         self.scheduleNotificationUseCase = scheduleNotificationUseCase
         self.cancelNotificationUseCase = cancelNotificationUseCase
+        self.toggleCompletionUseCase = toggleCompletionUseCase
     }
     
     convenience init(container: DependencyContainer) {
@@ -67,7 +70,8 @@ final class CalendarViewModel: ObservableObject {
             updateEventUseCase: container.updateDozyEventUseCase,
             deleteEventUseCase: container.deleteDozyEventUseCase,
             scheduleNotificationUseCase: container.scheduleNotificationUseCase,
-            cancelNotificationUseCase: container.cancelNotificationUseCase
+            cancelNotificationUseCase: container.cancelNotificationUseCase,
+            toggleCompletionUseCase: container.toggleDozyEventCompletionUseCase
         )
     }
     
@@ -88,6 +92,17 @@ final class CalendarViewModel: ObservableObject {
     func showDetail(for event: CalendarEvent) {
         detailEvent = event
         showEventDetail = true
+    }
+    
+    func toggleCompletion(for event: DozyEvent) {
+        toggleCompletionUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                guard let self else { return }
+                self.dozyEventsByID[event.id] = event
+                self.fetchEventsForDate(self.selectedDate)
+            })
+            .store(in: &cancellables)
     }
     
     // 월간 그리드용 날짜 배열 (앞 padding은 nil)
