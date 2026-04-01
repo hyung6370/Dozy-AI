@@ -70,6 +70,10 @@
 		F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */; };
 		F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD62F7B625700FA0476 /* BannerView.swift */; };
 		F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */; };
+		F616DCEA2F7CAFA400FA0476 /* NotificationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */; };
+		F616DCEC2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */; };
+		F616DCEE2F7CB0C800FA0476 /* CancelNotificationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */; };
+		F616DCF02F7CB13B00FA0476 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */; };
 		F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */; };
 		F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9412F73B38B00084C61 /* AIResponseParser.swift */; };
 		F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9432F74AF0100084C61 /* MetaChip.swift */; };
@@ -194,6 +198,10 @@
 		F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarService.swift; sourceTree = "<group>"; };
 		F616DCD62F7B625700FA0476 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
 		F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabBar.swift; sourceTree = "<group>"; };
+		F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceProtocol.swift; sourceTree = "<group>"; };
+		F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleNotificationUseCase.swift; sourceTree = "<group>"; };
+		F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelNotificationUseCase.swift; sourceTree = "<group>"; };
+		F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		F619D9342F73A63600084C61 /* Dozy AI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI.entitlements"; sourceTree = "<group>"; };
 		F619D9352F73A69D00084C61 /* Dozy-AI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Dozy-AI-Info.plist"; sourceTree = SOURCE_ROOT; };
 		F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPromptBuilder.swift; sourceTree = "<group>"; };
@@ -479,6 +487,8 @@
 				F619D9722F7A36C600084C61 /* CreateDozyEventUseCase.swift */,
 				F619D9742F7A371900084C61 /* UpdateDozyEventUseCase.swift */,
 				F619D9762F7A374D00084C61 /* DeleteDozyEventUseCase.swift */,
+				F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */,
+				F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */,
 			);
 			path = UseCases;
 			sourceTree = "<group>";
@@ -492,6 +502,7 @@
 				DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */,
 				DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */,
 				F619D96C2F7A355C00084C61 /* DozyEventRepositoryProtocol.swift */,
+				F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -523,6 +534,7 @@
 				F619D97A2F7A3A6000084C61 /* DozyCalendarService.swift */,
 				F616DCD02F7B448300FA0476 /* NaverSignInService.swift */,
 				F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */,
+				F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -829,6 +841,7 @@
 				F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */,
 				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
 				F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */,
+				F616DCEC2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift in Sources */,
 				F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */,
 				DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */,
 				DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */,
@@ -858,6 +871,7 @@
 				DD9F68E82F6ACD20001952F6 /* Publisher+Extensions.swift in Sources */,
 				DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */,
 				F619D9542F751CB100084C61 /* GoogleCalendarDTO.swift in Sources */,
+				F616DCF02F7CB13B00FA0476 /* NotificationService.swift in Sources */,
 				F619D9752F7A371900084C61 /* UpdateDozyEventUseCase.swift in Sources */,
 				F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */,
 				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
@@ -865,7 +879,9 @@
 				DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */,
 				F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */,
 				DD9F68DE2F6ACCB2001952F6 /* AppDelegate.swift in Sources */,
+				F616DCEE2F7CB0C800FA0476 /* CancelNotificationUseCase.swift in Sources */,
 				F619D9582F75219200084C61 /* GoogleCalendarService.swift in Sources */,
+				F616DCEA2F7CAFA400FA0476 /* NotificationServiceProtocol.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

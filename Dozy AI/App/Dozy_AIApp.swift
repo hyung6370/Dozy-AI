@@ -8,11 +8,13 @@
 import SwiftUI
 import SwiftData
 import GoogleSignIn
+import Combine
 
 @main
 struct Dozy_AIApp: App {
 
     @StateObject private var container = DependencyContainer()
+    private var cancellables = Set<AnyCancellable>()
 
     var body: some Scene {
         WindowGroup {
@@ -20,6 +22,11 @@ struct Dozy_AIApp: App {
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                     _ = container.naverSignInService.handle(url: url)
+                }
+                .onAppear {
+                    container.notificationService.requestAuthorization()
+                        .sink { _ in }
+                        .store(in: &container.notificationCancellables)
                 }
         }
         // DependencyContainer가 소유한 ModelContainer를 환경에 등록합니다.

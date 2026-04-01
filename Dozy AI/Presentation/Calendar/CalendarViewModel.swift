@@ -35,6 +35,8 @@ final class CalendarViewModel: ObservableObject {
     private let createEventUseCase: CreateDozyEventUseCase
     private let updateEventUseCase: UpdateDozyEventUseCase
     private let deleteEventUseCase: DeleteDozyEventUseCase
+    private let scheduleNotificationUseCase: ScheduleNotificationUseCase
+    private let cancelNotificationUseCase: CancelNotificationUseCase
     private var cancellables = Set<AnyCancellable>()
     
     init(
@@ -42,13 +44,17 @@ final class CalendarViewModel: ObservableObject {
         fetchDozyEventsUseCase: FetchDozyEventsUseCase,
         createEventUseCase: CreateDozyEventUseCase,
         updateEventUseCase: UpdateDozyEventUseCase,
-        deleteEventUseCase: DeleteDozyEventUseCase
+        deleteEventUseCase: DeleteDozyEventUseCase,
+        scheduleNotificationUseCase: ScheduleNotificationUseCase,
+        cancelNotificationUseCase: CancelNotificationUseCase
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
         self.createEventUseCase = createEventUseCase
         self.updateEventUseCase = updateEventUseCase
         self.deleteEventUseCase = deleteEventUseCase
+        self.scheduleNotificationUseCase = scheduleNotificationUseCase
+        self.cancelNotificationUseCase = cancelNotificationUseCase
     }
     
     convenience init(container: DependencyContainer) {
@@ -57,7 +63,9 @@ final class CalendarViewModel: ObservableObject {
             fetchDozyEventsUseCase: container.fetchDozyEventsUseCase,
             createEventUseCase: container.createDozyEventUseCase,
             updateEventUseCase: container.updateDozyEventUseCase,
-            deleteEventUseCase: container.deleteDozyEventUseCase
+            deleteEventUseCase: container.deleteDozyEventUseCase,
+            scheduleNotificationUseCase: container.scheduleNotificationUseCase,
+            cancelNotificationUseCase: container.cancelNotificationUseCase
         )
     }
     
@@ -200,6 +208,10 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.fetchEventsForDate(self.selectedDate)
                 self.fetchEventsForMonth()
+                self.cancelNotificationUseCase.execute(identifier: event.id)
+                if event.notificationMinutesBefore >= 0 {
+                    self.scheduleNotificationUseCase.execute(for: event)
+                }
             }).store(in: &cancellables)
     }
     
@@ -209,6 +221,7 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func deleteEvent(_ event: DozyEvent) {
+        cancelNotificationUseCase.execute(identifier: event.id)
         deleteEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in

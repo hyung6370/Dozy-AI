@@ -2,26 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-	</array>
-
-	<!-- Google Sign-In: xcconfig에서 자동 주입 -->
-	<key>GIDClientID</key>
-	<string>$(GOOGLE_CLIENT_ID)</string>
-
-	<!-- OAuth 리다이렉트 URL Schemes -->
 	<key>CFBundleURLTypes</key>
 	<array>
-		<!-- Google -->
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>$(GOOGLE_REVERSED_CLIENT_ID)</string>
 			</array>
 		</dict>
-		<!-- 네이버 -->
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
@@ -29,18 +17,22 @@
 			</array>
 		</dict>
 	</array>
-
-	<!-- 네이버 Client ID/Secret: xcconfig에서 자동 주입 -->
-	<key>NAVER_CLIENT_ID</key>
-	<string>$(NAVER_CLIENT_ID)</string>
-	<key>NAVER_CLIENT_SECRET</key>
-	<string>$(NAVER_CLIENT_SECRET)</string>
-
-	<!-- 네이버 앱 연동 허용 -->
+	<key>GIDClientID</key>
+	<string>$(GOOGLE_CLIENT_ID)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>naversearchapp</string>
 		<string>naversearchthirdlogin</string>
 	</array>
+	<key>NAVER_CLIENT_ID</key>
+	<string>$(NAVER_CLIENT_ID)</string>
+	<key>NAVER_CLIENT_SECRET</key>
+	<string>$(NAVER_CLIENT_SECRET)</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>일정 알림을 보내기 위해 알림 권한이 필요합니다.</string>
 </dict>
 </plist>

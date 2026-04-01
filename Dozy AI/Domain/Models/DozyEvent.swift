@@ -22,6 +22,7 @@ final class DozyEvent {
     var updatedAt: Date
     var recurrenceRule: String = "none" // "none" | "daily" | "weekly" | "monthly" | "yearly"
     var recurrenceEndDate: Date? = nil
+    var notificationMinutesBefore: Int = -1 // -1: 없음
     
     init(
         id: String = UUID().uuidString,
@@ -33,7 +34,8 @@ final class DozyEvent {
         notes: String? = nil,
         colorHex: String = "#007AFF",
         recurrenceRule: String = "none",
-        recurrenceEndDate: Date? = nil
+        recurrenceEndDate: Date? = nil,
+        notificationMinutesBefore: Int = -1
     ) {
         self.id = id
         self.title = title
@@ -47,6 +49,7 @@ final class DozyEvent {
         self.updatedAt = Date()
         self.recurrenceRule = recurrenceRule
         self.recurrenceEndDate = recurrenceEndDate
+        self.notificationMinutesBefore = notificationMinutesBefore
     }
     
     // MARK: - 반복 헬퍼

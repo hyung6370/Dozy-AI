@@ -59,6 +59,18 @@ struct EventEditView: View {
                     }
                 }
                 
+                Section("알림") {
+                    Picker("알림", selection: $viewModel.notificationMinutesBefore) {
+                        Text("없음").tag(-1)
+                        Text("정시").tag(0)
+                        Text("5분 전").tag(5)
+                        Text("10분 전").tag(10)
+                        Text("15분 전").tag(15)
+                        Text("30분 전").tag(30)
+                        Text("1시간 전").tag(60)
+                    }
+                }
+                
                 Section("색상") {
                     ColorPicker("이벤트 색상", selection: $viewModel.selectedColor)
                 }

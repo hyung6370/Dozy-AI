@@ -17,6 +17,7 @@ final class EventEditViewModel: ObservableObject {
     @Published var endDate: Date
     @Published var location: String
     @Published var notes: String
+    @Published var notificationMinutesBefore: Int
     @Published var recurrenceRule: String
     @Published var recurrenceEndDate: Date
     @Published var selectedColor: Color
@@ -37,6 +38,7 @@ final class EventEditViewModel: ObservableObject {
             endDate = e.endDate
             location = e.location ?? ""
             notes = e.notes ?? ""
+            notificationMinutesBefore = e.notificationMinutesBefore
             recurrenceRule = e.recurrenceRule
             recurrenceEndDate = e.recurrenceEndDate ?? Calendar.current.date(byAdding: .year, value: 1, to: e.startDate)!
             selectedColor = Color(hex: e.colorHex) ?? .blue
@@ -48,6 +50,7 @@ final class EventEditViewModel: ObservableObject {
             endDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
             location = ""
             notes = ""
+            notificationMinutesBefore = -1
             recurrenceRule = "none"
             recurrenceEndDate = Calendar.current.date(byAdding: .year, value: 1, to: selectedDate) ?? selectedDate
             selectedColor = .blue
@@ -67,6 +70,7 @@ final class EventEditViewModel: ObservableObject {
             event.endDate = finalEnd
             event.location = location.isEmpty ? nil : location
             event.notes = notes.isEmpty ? nil : notes
+            event.notificationMinutesBefore = notificationMinutesBefore
             event.recurrenceRule = recurrenceRule
             event.recurrenceEndDate = recurrenceRule == "none" ? nil : recurrenceEndDate
             event.colorHex = colorHex
@@ -81,7 +85,8 @@ final class EventEditViewModel: ObservableObject {
                 notes: notes.isEmpty ? nil : notes,
                 colorHex: colorHex,
                 recurrenceRule: recurrenceRule,
-                recurrenceEndDate: recurrenceRule == "none" ? nil : recurrenceEndDate
+                recurrenceEndDate: recurrenceRule == "none" ? nil : recurrenceEndDate,
+                notificationMinutesBefore: notificationMinutesBefore,
             ))
         }
     }

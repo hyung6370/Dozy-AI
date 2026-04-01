@@ -29,6 +29,9 @@ final class DependencyContainer: ObservableObject {
         sourceManager: calendarSourceManager
     )
     lazy var reminderService: ReminderServiceProtocol = ReminderService()
+    lazy var notificationService: NotificationServiceProtocol = NotificationService()
+    lazy var scheduleNotificationUseCase = ScheduleNotificationUseCase(service: notificationService)
+    lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
     lazy var aiService: AIServiceProtocol = AIService()
     lazy var googleSignInService = GoogleSignInService()
     lazy var naverSignInService = NaverSignInService()
@@ -68,6 +71,9 @@ final class DependencyContainer: ObservableObject {
     lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
     lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)
     lazy var deleteDozyEventUseCase = DeleteDozyEventUseCase(repository: dozyEventRepository)
+
+    // MARK: - Cancellables
+    var notificationCancellables = Set<AnyCancellable>()
 
     // MARK: - Init
 
