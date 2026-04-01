@@ -45,7 +45,7 @@ struct DayCell: View {
 
 // MARK: - EventBarView
 
-private struct EventBarView: View {
+struct EventBarView: View {
 
     let bar: EventBarInfo
 

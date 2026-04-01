@@ -33,14 +33,16 @@ struct WeekGridView: View {
                             .background(Circle().fill(isSelected(date) ? Color.blue : Color.clear))
                         
                         // 이벤트 바
-                        HStack(spacing: 2) {
-                            ForEach(eventBars(date)) { bar in
-                                RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color(hex: bar.colorHex) ?? .blue)
-                                    .frame(width: 6, height: 3)
+                        VStack(spacing: 2) {
+                            let bars = eventBars(date)
+                            ForEach(bars.prefix(3)) { bar in
+                                EventBarView(bar: bar)
+                            }
+                            ForEach(0..<max(0, 3 - min(bars.count, 3)), id: \.self) { _ in
+                                Color.clear.frame(height: 5)
                             }
                         }
-                        .frame(height: 4)
+                        .frame(maxWidth: .infinity)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
