@@ -24,8 +24,17 @@ final class DozyCalendarService: CalendarServiceProtocol {
     }
     
     func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
-        repository.fetchEvents(from: date.startOfDay, to: date.startOfNextDay)
-            .map { $0.map { $0.toCalendarEvent() } }
-            .eraseToAnyPublisher()
+        Publishers.Zip(
+            repository.fetchEvents(from: date.startOfDay, to: date.startOfNextDay),
+            repository.fetchAllRecurring()
+        )
+        .map { regular, recurring in
+            let regularEvents = regular.map { $0.toCalendarEvent() }
+            let recurringEvents = recurring
+                .filter { $0.occursOn(date) }
+                .map { $0.toCalendarEvent(for: date) }
+            return (regularEvents + recurringEvents).sorted { $0.startDate < $1.startDate }
+        }
+        .eraseToAnyPublisher()
     }
 }

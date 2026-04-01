@@ -19,6 +19,14 @@ final class FetchDozyEventsUseCase {
     }
     
     func execute(for date: Date) -> AnyPublisher<[DozyEvent], DozyError> {
-        repository.fetchEvents(from: date.startOfDay, to: date.startOfNextDay)
+        Publishers.Zip(
+            repository.fetchEvents(from: date.startOfDay, to: date.startOfNextDay),
+            repository.fetchAllRecurring()
+        )
+        .map { regular, recurring in
+            let recurringToday = recurring.filter { $0.occursOn(date) }
+            return (regular + recurringToday).sorted { $0.startDate < $1.startDate }
+        }
+        .eraseToAnyPublisher()
     }
 }

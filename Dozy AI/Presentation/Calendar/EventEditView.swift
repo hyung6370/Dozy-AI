@@ -41,6 +41,24 @@ struct EventEditView: View {
                         .lineLimit(3...6)
                 }
                 
+                Section("반복") {
+                    Picker("반복", selection: $viewModel.recurrenceRule) {
+                        Text("없음").tag("none")
+                        Text("매일").tag("daily")
+                        Text("매주").tag("weekly")
+                        Text("매월").tag("monthly")
+                        Text("매년").tag("yearly")
+                    }
+                    
+                    if viewModel.recurrenceRule != "none" {
+                        DatePicker(
+                            "반복 종료일",
+                            selection: $viewModel.recurrenceEndDate,
+                            displayedComponents: .date
+                        )
+                    }
+                }
+                
                 Section("색상") {
                     ColorPicker("이벤트 색상", selection: $viewModel.selectedColor)
                 }

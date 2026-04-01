@@ -17,6 +17,8 @@ final class EventEditViewModel: ObservableObject {
     @Published var endDate: Date
     @Published var location: String
     @Published var notes: String
+    @Published var recurrenceRule: String
+    @Published var recurrenceEndDate: Date
     @Published var selectedColor: Color
     
     let isEditing: Bool
@@ -35,15 +37,19 @@ final class EventEditViewModel: ObservableObject {
             endDate = e.endDate
             location = e.location ?? ""
             notes = e.notes ?? ""
+            recurrenceRule = e.recurrenceRule
+            recurrenceEndDate = e.recurrenceEndDate ?? Calendar.current.date(byAdding: .year, value: 1, to: e.startDate)!
             selectedColor = Color(hex: e.colorHex) ?? .blue
         } else {
             let calendar = Calendar.current
             title = ""
             isAllDay = false
             startDate = calendar.date(bySettingHour: 9,  minute: 0, second: 0, of: selectedDate) ?? selectedDate
-            endDate   = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+            endDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
             location = ""
             notes = ""
+            recurrenceRule = "none"
+            recurrenceEndDate = Calendar.current.date(byAdding: .year, value: 1, to: selectedDate) ?? selectedDate
             selectedColor = .blue
         }
     }
@@ -55,13 +61,15 @@ final class EventEditViewModel: ObservableObject {
         let finalEnd = isAllDay ? startDate : endDate
         
         if let event = eventToEdit {
-            event.title    = title
+            event.title = title
             event.isAllDay = isAllDay
             event.startDate = startDate
-            event.endDate   = finalEnd
-            event.location  = location.isEmpty ? nil : location
-            event.notes     = notes.isEmpty ? nil : notes
-            event.colorHex  = colorHex
+            event.endDate = finalEnd
+            event.location = location.isEmpty ? nil : location
+            event.notes = notes.isEmpty ? nil : notes
+            event.recurrenceRule = recurrenceRule
+            event.recurrenceEndDate = recurrenceRule == "none" ? nil : recurrenceEndDate
+            event.colorHex = colorHex
             onSave(event)
         } else {
             onSave(DozyEvent(
@@ -71,7 +79,9 @@ final class EventEditViewModel: ObservableObject {
                 isAllDay: isAllDay,
                 location: location.isEmpty ? nil : location,
                 notes: notes.isEmpty ? nil : notes,
-                colorHex: colorHex
+                colorHex: colorHex,
+                recurrenceRule: recurrenceRule,
+                recurrenceEndDate: recurrenceRule == "none" ? nil : recurrenceEndDate
             ))
         }
     }

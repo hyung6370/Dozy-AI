@@ -84,4 +84,20 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
         }
         .eraseToAnyPublisher()
     }
+    
+    func fetchAllRecurring() -> AnyPublisher<[DozyEvent], DozyError> {
+        Future { [modelContainer] promise in
+            Task { @MainActor in
+                let context = modelContainer.mainContext
+                let predicate = #Predicate<DozyEvent> { $0.recurrenceRule != "none" }
+                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+                do {
+                    promise(.success(try context.fetch(descriptor)))
+                } catch {
+                    promise(.failure(.saveFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
 }
