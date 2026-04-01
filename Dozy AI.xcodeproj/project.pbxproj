@@ -110,6 +110,8 @@
 		F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9882F7A4ADD00084C61 /* EventEditView.swift */; };
 		F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D98A2F7A4C8400084C61 /* Color+Hex.swift */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
+		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
+		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
 		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -240,6 +242,8 @@
 		F619D9882F7A4ADD00084C61 /* EventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditView.swift; sourceTree = "<group>"; };
 		F619D98A2F7A4C8400084C61 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
+		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
+		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -643,6 +647,8 @@
 				F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */,
 				F619D9882F7A4ADD00084C61 /* EventEditView.swift */,
 				F616DCF12F7CBA0100FA0476 /* EventDetailView.swift */,
+				F650681C2F7CF09200F9C124 /* WeekGridView.swift */,
+				F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */,
 			);
 			path = Calendar;
 			sourceTree = "<group>";
@@ -803,11 +809,13 @@
 				DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */,
 				DD9F69352F6AD144001952F6 /* VoiceInputView.swift in Sources */,
 				F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */,
+				F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */,
 				DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */,
 				F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */,
 				F619D9712F7A360D00084C61 /* FetchDozyEventsUseCase.swift in Sources */,
 				DD9F68E62F6ACD14001952F6 /* String+Extensions.swift in Sources */,
 				DD9F69402F6AD1D5001952F6 /* SummaryCard.swift in Sources */,
+				F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */,
 				DD9F69232F6ACFF2001952F6 /* CalendarEventDTO.swift in Sources */,
 				DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */,
 				F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */,

@@ -8,6 +8,17 @@
 import Foundation
 import Combine
 
+enum CalendarViewMode: CaseIterable {
+    case month, week, day
+    var title: String {
+        switch self {
+        case .month: return "월"
+        case .week: return "주"
+        case .day: return "일"
+        }
+    }
+}
+
 // MARK: - EventBarInfo (ViewModel 전용 - SwiftUI 없음)
 struct EventBarInfo: Identifiable {
     let id: String
@@ -25,6 +36,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var showDeleteAlert = false
     @Published var pendingDeleteEvent: DozyEvent? = nil
     @Published var eventBarsPerDate: [Date: [EventBarInfo]] = [:]
+    @Published var viewMode: CalendarViewMode = .month
     @Published var isLoading = false
     @Published var showEventDetail = false
     @Published var detailEvent: CalendarEvent? = nil
@@ -84,6 +96,32 @@ final class CalendarViewModel: ObservableObject {
         return fmt.string(from: currentMonth)
     }
     
+    var currentWeekDates: [Date] {
+        let cal = Calendar.current
+        let weekday = cal.component(.weekday, from: selectedDate) - 1
+        let startOfWeek = cal.date(byAdding: .day, value: -weekday, to: selectedDate)!
+        return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: startOfWeek) }
+    }
+    
+    var currentPeriodString: String {
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "ko_KR")
+        switch viewMode {
+        case .month:
+            fmt.dateFormat = "yyyy년 M월"
+            return fmt.string(from: currentMonth)
+        case .week:
+            fmt.dateFormat = "M월 d일"
+            let dates = currentWeekDates
+            let start = fmt.string(from: dates.first ?? selectedDate)
+            let end = fmt.string(from: dates.last ?? selectedDate)
+            return "\(start) - \(end)"
+        case .day:
+            fmt.dateFormat = "yyyy년 M월 d일 (E)"
+            return fmt.string(from: selectedDate)
+        }
+    }
+    
     func dozyEvent(for calendarEvent: CalendarEvent) -> DozyEvent? {
         guard calendarEvent.source == .dozy else { return nil }
         return dozyEventsByID[calendarEvent.id]
@@ -141,14 +179,34 @@ final class CalendarViewModel: ObservableObject {
     
     // MARK: - Navigation
     
-    func previousMonth() {
-        currentMonth = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth)!
-        fetchEventsForMonth()
+    func previousPeriod() {
+        let cal = Calendar.current
+        switch viewMode {
+        case .month:
+            currentMonth = cal.date(byAdding: .month, value: -1, to: currentMonth)!
+            fetchEventsForMonth()
+        case .week:
+            selectedDate = cal.date(byAdding: .day, value: -7, to: selectedDate)!
+            fetchEventsForDate(selectedDate)
+        case .day:
+            selectedDate = cal.date(byAdding: .day, value: -1, to: selectedDate)!
+            fetchEventsForDate(selectedDate)
+        }
     }
     
-    func nextMonth() {
-        currentMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth)!
-        fetchEventsForMonth()
+    func nextPeriod() {
+        let cal = Calendar.current
+        switch viewMode {
+        case .month:
+            currentMonth = cal.date(byAdding: .month, value: 1, to: currentMonth)!
+            fetchEventsForMonth()
+        case .week:
+            selectedDate = cal.date(byAdding: .day, value: 7, to: selectedDate)!
+            fetchEventsForDate(selectedDate)
+        case .day:
+            selectedDate = cal.date(byAdding: .day, value: 1, to: selectedDate)!
+            fetchEventsForDate(selectedDate)
+        }
     }
     
     func selectDate(_ date: Date) {

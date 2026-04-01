@@ -22,11 +22,20 @@ struct CalendarView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
+                    viewModePicker
                     monthHeader
                     weekdayHeader
                     calendarGrid
                     Divider().padding(.horizontal)
-                    eventListSection
+                    if viewModel.viewMode == .day {
+                        DayTimelineView(
+                            events: viewModel.eventsForSelectedDate,
+                            date: viewModel.selectedDate
+                        )
+                        .padding(.horizontal)
+                    } else {
+                        eventListSection
+                    }
                 }
             }
             .navigationTitle("캘린더")
@@ -80,15 +89,15 @@ struct CalendarView: View {
     
     private var monthHeader: some View {
         HStack {
-            Button { viewModel.previousMonth() } label: {
+            Button { viewModel.previousPeriod() } label: {
                 Image(systemName: "chevron.left").fontWeight(.semibold)
             }
             
-            Text(viewModel.currentMonthString)
+            Text(viewModel.currentPeriodString)
                 .font(.title2).fontWeight(.bold)
                 .frame(maxWidth: .infinity)
             
-            Button { viewModel.nextMonth() } label: {
+            Button { viewModel.nextPeriod() } label: {
                 Image(systemName: "chevron.right").fontWeight(.semibold)
             }
         }
@@ -113,7 +122,7 @@ struct CalendarView: View {
     
     // MARK: - Calendar Grid
     
-    private var calendarGrid: some View {
+    private var monthGrid: some View {
         LazyVGrid(columns: columns, spacing: 4) {
             ForEach(Array(viewModel.daysInMonth.enumerated()), id: \.offset) { _, date in
                 if let date {
@@ -132,6 +141,24 @@ struct CalendarView: View {
         }
         .padding(.horizontal, 8)
         .padding(.bottom, 16)
+    }
+
+    private var calendarGrid: some View {
+        Group {
+            switch viewModel.viewMode {
+            case .month:
+                monthGrid
+            case .week:
+                WeekGridView(
+                    weekDates: viewModel.currentWeekDates,
+                    selectedDate: viewModel.selectedDate,
+                    eventBars: { viewModel.eventBars(for: $0) },
+                    onSelectDate: { viewModel.selectDate($0) }
+                )
+            case .day:
+                EmptyView()
+            }
+        }
     }
     
     // MARK: - Event List
@@ -196,5 +223,16 @@ struct CalendarView: View {
         fmt.dateFormat = "M월 d일 (E)"
         fmt.locale = Locale(identifier: "ko_KR")
         return fmt.string(from: viewModel.selectedDate)
+    }
+    
+    private var viewModePicker: some View {
+        Picker("뷰 모드", selection: $viewModel.viewMode) {
+            ForEach(CalendarViewMode.allCases, id: \.self) { mode in
+                Text(mode.title).tag(mode)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+        .padding(.bottom, 4)
     }
 }
