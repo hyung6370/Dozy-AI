@@ -21,6 +21,9 @@ final class CalendarViewModel: ObservableObject {
     @Published var selectedDate: Date = Date()
     @Published var eventsForSelectedDate: [CalendarEvent] = []
     @Published var dozyEventsForSelectedDate: [DozyEvent] = []
+    @Published var dozyEventsByID: [String: DozyEvent] = [:]
+    @Published var showDeleteAlert = false
+    @Published var pendingDeleteEvent: DozyEvent? = nil
     @Published var eventBarsPerDate: [Date: [EventBarInfo]] = [:]
     @Published var isLoading = false
     @Published var showEventEdit = false
@@ -137,6 +140,7 @@ final class CalendarViewModel: ObservableObject {
             receiveValue: { [weak self] events, dozyEvents in
                 self?.eventsForSelectedDate = events
                 self?.dozyEventsForSelectedDate = dozyEvents
+                self?.dozyEventsByID = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
                 self?.isLoading = false
             }
         )
@@ -199,6 +203,11 @@ final class CalendarViewModel: ObservableObject {
             }).store(in: &cancellables)
     }
     
+    func requestDelete(_ event: DozyEvent) {
+        pendingDeleteEvent = event
+        showDeleteAlert = true
+    }
+
     func deleteEvent(_ event: DozyEvent) {
         deleteEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)

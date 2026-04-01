@@ -46,6 +46,19 @@ struct CalendarView: View {
                 }
             }
             .onAppear { viewModel.loadInitialData() }
+            .alert(
+                viewModel.pendingDeleteEvent?.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
+                isPresented: $viewModel.showDeleteAlert
+            ) {
+                Button("삭제", role: .destructive) {
+                    if let e = viewModel.pendingDeleteEvent { viewModel.deleteEvent(e) }
+                }
+                Button("취소", role: .cancel) {}
+            } message: {
+                Text(viewModel.pendingDeleteEvent?.recurrenceRule != "none"
+                     ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
+                     : "정말로 삭제하시겠습니까?")
+            }
         }
     }
     
@@ -133,14 +146,14 @@ struct CalendarView: View {
                         .padding(.horizontal)
                         .contextMenu {
                             if event.source == .dozy,
-                               let dozyEvent = viewModel.dozyEventsForSelectedDate.first(where: { $0.id == event.id }) {
+                               let dozyEvent = viewModel.dozyEventsByID[event.id] {
                                 Button { viewModel.startEditingEvent(dozyEvent) } label: {
                                     Label("수정", systemImage: "pencil")
                                 }
                                 Button(role: .destructive) {
-                                    viewModel.deleteEvent(dozyEvent)
+                                    viewModel.requestDelete(dozyEvent)
                                 } label: {
-                                    Label("삭제", systemImage: "trash")
+                                    Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
                                 }
                             }
                         }
