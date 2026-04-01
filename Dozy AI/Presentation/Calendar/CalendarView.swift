@@ -22,6 +22,9 @@ struct CalendarView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
+                    BannerView(items: BannerItem.placeholders)
+                        .padding(.horizontal)
+                        .padding(.vertical, 15)
                     viewModePicker
                     monthHeader
                     weekdayHeader
@@ -39,6 +42,7 @@ struct CalendarView: View {
                 }
             }
             .navigationTitle("캘린더")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { viewModel.startCreatingEvent() } label: {
