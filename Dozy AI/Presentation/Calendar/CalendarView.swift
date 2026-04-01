@@ -45,6 +45,20 @@ struct CalendarView: View {
                     viewModel.saveEvent(event)
                 }
             }
+            .sheet(isPresented: $viewModel.showEventDetail) {
+                if let event = viewModel.detailEvent {
+                    EventDetailView(
+                        event: event,
+                        dozyEvent: viewModel.dozyEventsByID[event.id],
+                        onEdit: { (dozyEvent: DozyEvent) in
+                            viewModel.startEditingEvent(dozyEvent)
+                        },
+                        onDelete: { (dozyEvent: DozyEvent) in
+                            viewModel.requestDelete(dozyEvent)
+                        }
+                    )
+                }
+            }
             .onAppear { viewModel.loadInitialData() }
             .alert(
                 viewModel.pendingDeleteEvent?.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
@@ -144,19 +158,10 @@ struct CalendarView: View {
                 ForEach(viewModel.eventsForSelectedDate) { event in
                     EventRow(event: event)
                         .padding(.horizontal)
-                        .contextMenu {
-                            if event.source == .dozy,
-                               let dozyEvent = viewModel.dozyEventsByID[event.id] {
-                                Button { viewModel.startEditingEvent(dozyEvent) } label: {
-                                    Label("수정", systemImage: "pencil")
-                                }
-                                Button(role: .destructive) {
-                                    viewModel.requestDelete(dozyEvent)
-                                } label: {
-                                    Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
-                                }
-                            }
+                        .onTapGesture {
+                            viewModel.showDetail(for: event)
                         }
+                        .contextMenu { eventContextMenu(for: event) }
                 }
             }
         }
@@ -164,6 +169,20 @@ struct CalendarView: View {
         .padding(.bottom, 40)
     }
     
+    @ViewBuilder
+    private func eventContextMenu(for event: CalendarEvent) -> some View {
+        if let dozyEvent = viewModel.dozyEvent(for: event) {
+            Button { viewModel.startEditingEvent(dozyEvent) } label: {
+                Label("수정", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                viewModel.requestDelete(dozyEvent)
+            } label: {
+                Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
+            }
+        }
+    }
+
     private var selectedDateLabel: String {
         let fmt = DateFormatter()
         fmt.dateFormat = "M월 d일 (E)"

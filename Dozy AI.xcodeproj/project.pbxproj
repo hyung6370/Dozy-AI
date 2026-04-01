@@ -74,6 +74,7 @@
 		F616DCEC2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */; };
 		F616DCEE2F7CB0C800FA0476 /* CancelNotificationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */; };
 		F616DCF02F7CB13B00FA0476 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */; };
+		F616DCF22F7CBA0100FA0476 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCF12F7CBA0100FA0476 /* EventDetailView.swift */; };
 		F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */; };
 		F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9412F73B38B00084C61 /* AIResponseParser.swift */; };
 		F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9432F74AF0100084C61 /* MetaChip.swift */; };
@@ -202,6 +203,7 @@
 		F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleNotificationUseCase.swift; sourceTree = "<group>"; };
 		F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelNotificationUseCase.swift; sourceTree = "<group>"; };
 		F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		F616DCF12F7CBA0100FA0476 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
 		F619D9342F73A63600084C61 /* Dozy AI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI.entitlements"; sourceTree = "<group>"; };
 		F619D9352F73A69D00084C61 /* Dozy-AI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Dozy-AI-Info.plist"; sourceTree = SOURCE_ROOT; };
 		F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPromptBuilder.swift; sourceTree = "<group>"; };
@@ -637,6 +639,7 @@
 				F619D9822F7A422900084C61 /* DayCell.swift */,
 				F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */,
 				F619D9882F7A4ADD00084C61 /* EventEditView.swift */,
+				F616DCF12F7CBA0100FA0476 /* EventDetailView.swift */,
 			);
 			path = Calendar;
 			sourceTree = "<group>";
@@ -820,6 +823,7 @@
 				F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */,
 				DD9F68E42F6ACD08001952F6 /* Date+Extensions.swift in Sources */,
 				F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */,
+				F616DCF22F7CBA0100FA0476 /* EventDetailView.swift in Sources */,
 				DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */,
 				F619D9872F7A4A1400084C61 /* EventEditViewModel.swift in Sources */,
 				F619D97B2F7A3A6000084C61 /* DozyCalendarService.swift in Sources */,

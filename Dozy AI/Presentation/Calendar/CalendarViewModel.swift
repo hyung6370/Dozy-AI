@@ -26,6 +26,8 @@ final class CalendarViewModel: ObservableObject {
     @Published var pendingDeleteEvent: DozyEvent? = nil
     @Published var eventBarsPerDate: [Date: [EventBarInfo]] = [:]
     @Published var isLoading = false
+    @Published var showEventDetail = false
+    @Published var detailEvent: CalendarEvent? = nil
     @Published var showEventEdit = false
     @Published var eventToEdit: DozyEvent? = nil
     
@@ -76,6 +78,16 @@ final class CalendarViewModel: ObservableObject {
         fmt.dateFormat = "yyyy년 M월"
         fmt.locale = Locale(identifier: "ko_KR")
         return fmt.string(from: currentMonth)
+    }
+    
+    func dozyEvent(for calendarEvent: CalendarEvent) -> DozyEvent? {
+        guard calendarEvent.source == .dozy else { return nil }
+        return dozyEventsByID[calendarEvent.id]
+    }
+
+    func showDetail(for event: CalendarEvent) {
+        detailEvent = event
+        showEventDetail = true
     }
     
     // 월간 그리드용 날짜 배열 (앞 padding은 nil)
