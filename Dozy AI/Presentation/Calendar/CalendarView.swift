@@ -16,7 +16,7 @@ struct CalendarView: View {
     }
     
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
-    private let columns = Array(repeating: GridItem(.flexible()), count: 7)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
         NavigationStack {
@@ -127,7 +127,7 @@ struct CalendarView: View {
     // MARK: - Calendar Grid
     
     private var monthGrid: some View {
-        LazyVGrid(columns: columns, spacing: 4) {
+        LazyVGrid(columns: columns, spacing: 0) {
             ForEach(Array(viewModel.daysInMonth.enumerated()), id: \.offset) { _, date in
                 if let date {
                     DayCell(

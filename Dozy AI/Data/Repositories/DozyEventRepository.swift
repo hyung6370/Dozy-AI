@@ -23,7 +23,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 let context = modelContainer.mainContext
                 let start = startDate
                 let end = endDate
-                let predicate = #Predicate<DozyEvent> { $0.startDate >= start && $0.startDate < end }
+                let predicate = #Predicate<DozyEvent> { $0.startDate < end && $0.endDate > start }
                 let descriptor = FetchDescriptor<DozyEvent>(
                     predicate: predicate,
                     sortBy: [SortDescriptor(\.startDate)]

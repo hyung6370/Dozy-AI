@@ -19,10 +19,14 @@ enum CalendarViewMode: CaseIterable {
     }
 }
 
-// MARK: - EventBarInfo (ViewModel 전용 - SwiftUI 없음)
+enum BarPosition {
+    case single, start, middle, end
+}
+
 struct EventBarInfo: Identifiable {
     let id: String
     let colorHex: String
+    let position: BarPosition
 }
 
 final class CalendarViewModel: ObservableObject {
@@ -260,12 +264,31 @@ final class CalendarViewModel: ObservableObject {
             .sink(
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] results in
+                    // 이벤트별 등장 날짜 수집
+                    var eventDatesMap: [String: Set<Date>] = [:]
+                    for (date, events) in results {
+                        let key = Calendar.current.startOfDay(for: date)
+                        for event in events {
+                            eventDatesMap[event.id, default: []].insert(key)
+                        }
+                    }
+                    
                     var barsDict: [Date: [EventBarInfo]] = [:]
                     for (date, events) in results where !events.isEmpty {
                         let key = Calendar.current.startOfDay(for: date)
-                        
-                        barsDict[key] = events.prefix(3).map {
-                            EventBarInfo(id: $0.id, colorHex: $0.calendarColorHex)
+                        barsDict[key] = Array(events.prefix(3)).map { event in
+                            let dates = (eventDatesMap[event.id] ?? []).sorted()
+                            let position: BarPosition
+                            if dates.count <= 1 {
+                                position = .single
+                            } else if key == dates.first {
+                                position = .start
+                            } else if key == dates.last {
+                                position = .end
+                            } else {
+                                position = .middle
+                            }
+                            return EventBarInfo(id: event.id, colorHex: event.calendarColorHex, position: position)
                         }
                     }
                     self?.eventBarsPerDate = barsDict
