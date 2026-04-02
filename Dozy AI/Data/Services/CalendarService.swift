@@ -156,29 +156,25 @@ extension CalendarService: CalendarWriteServiceProtocol {
         requestAccessIfNeeded()
             .flatMap { [eventStore] _ -> AnyPublisher<Void, DozyError> in
                 Future { promise in
-                    // event(withIdentifier:) 가 stale 캐시로 nil 반환할 수 있으므로 reset 후 재시도
-                    eventStore.reset()
-
-                    let ekEvent: EKEvent?
-                    if let found = eventStore.event(withIdentifier: event.id) {
-                        ekEvent = found
-                    } else {
-                        // fallback: 날짜 범위로 검색
-                        let predicate = eventStore.predicateForEvents(
-                            withStart: event.startDate.addingTimeInterval(-1),
-                            end: event.endDate.addingTimeInterval(1),
-                            calendars: nil
-                        )
-                        ekEvent = eventStore.events(matching: predicate)
-                            .first { $0.eventIdentifier == event.id }
-                    }
+                    // event(withIdentifier:)는 반복 이벤트의 첫 번째 occurrence를 반환하므로
+                    // 날짜 기반 검색으로 정확한 occurrence를 찾아 삭제
+                    let dayStart = Calendar.current.startOfDay(for: event.startDate)
+                    let dayEnd = Calendar.current.date(byAdding: .day, value: 1, to: dayStart)!
+                    let predicate = eventStore.predicateForEvents(
+                        withStart: dayStart,
+                        end: dayEnd,
+                        calendars: nil
+                    )
+                    let ekEvent = eventStore.events(matching: predicate)
+                        .first { $0.eventIdentifier == event.id }
 
                     guard let ekEvent else {
                         promise(.failure(.calendarEventNotFound))
                         return
                     }
                     do {
-                        try eventStore.remove(ekEvent, span: .thisEvent)
+                        try eventStore.remove(ekEvent, span: .thisEvent, commit: true)
+                        eventStore.reset()
                         promise(.success(()))
                     } catch {
                         promise(.failure(.calendarWriteFailed(underlying: error)))

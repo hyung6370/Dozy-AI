@@ -255,8 +255,21 @@ final class CalendarViewModel: ObservableObject {
                     guard let self else { return }
                     self.showEventDetail = false
                     self.showDeleteSuccess = true
-                    self.fetchEventsForDate(self.selectedDate)
-                    self.fetchEventsForMonth()
+                    // 낙관적 업데이트: EventKit 캐시 반영 전에 즉시 목록/그리드에서 제거
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        self.eventsForSelectedDate.removeAll { $0.id == event.id }
+                        for key in self.weekLayouts.keys {
+                            self.weekLayouts[key]?.removeAll { $0.id == event.id }
+                        }
+                        for key in self.eventBarsPerDate.keys {
+                            self.eventBarsPerDate[key]?.removeAll { $0.id == event.id }
+                        }
+                    }
+                    // EventKit 동기화 후 재조회
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+                        self?.fetchEventsForDate(self?.selectedDate ?? Date())
+                        self?.fetchEventsForMonth()
+                    }
                 }
             )
             .store(in: &cancellables)
