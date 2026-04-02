@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 enum CalendarViewMode: CaseIterable {
     case month, week, day
@@ -17,6 +18,17 @@ enum CalendarViewMode: CaseIterable {
         case .day: return "일"
         }
     }
+}
+
+struct CalendarEventLayout: Identifiable {
+    let id: String
+    let title: String
+    let colorHex: String
+    let startCol: Int
+    let endCol: Int
+    let row: Int
+    let isActualStart: Bool
+    let isActualEnd: Bool
 }
 
 enum BarPosition {
@@ -50,6 +62,9 @@ final class CalendarViewModel: ObservableObject {
     @Published var completionsByID: [String: Bool] = [:]
     @Published var showCalendarEventEdit = false
     @Published var calendarEventToEdit: CalendarEvent? = nil
+    @Published var weekLayouts: [Date: [CalendarEventLayout]] = [:]
+    @Published var deleteErrorMessage: String? = nil
+    @Published var showDeleteSuccess = false
     
     // MARK: - Dependencies
     private let fetchEventsUseCase: FetchCalendarEventUseCase
@@ -146,6 +161,20 @@ final class CalendarViewModel: ObservableObject {
         }
     }
     
+    var weeksInMonth: [[Date?]] {
+        var days = daysInMonth
+        while days.count % 7 != 0 { days.append(nil) }
+        return stride(from: 0, to: days.count, by: 7).map { Array(days[$0..<$0+7]) }
+    }
+    
+    func weekStart(for weekIndex: Int) -> Date {
+        let cal = Calendar.current
+        let first = cal.date(from: cal.dateComponents([.year, .month], from: currentMonth))!
+        let weekday = cal.component(.weekday, from: first) - 1
+        let displayStart = cal.date(byAdding: .day, value: -weekday, to: first)!
+        return cal.date(byAdding: .day, value: weekIndex * 7, to: displayStart)!
+    }
+    
     func dozyEvent(for calendarEvent: CalendarEvent) -> DozyEvent? {
         guard calendarEvent.source == .dozy else { return nil }
         return dozyEventsByID[calendarEvent.id]
@@ -216,10 +245,20 @@ final class CalendarViewModel: ObservableObject {
     func deleteCalendarEvent(_ event: CalendarEvent) {
         deleteCalendarEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.fetchEventsForDate(self?.selectedDate ?? Date())
-                self?.fetchEventsForMonth()
-            })
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.deleteErrorMessage = error.errorDescription ?? "삭제에 실패했습니다."
+                    }
+                },
+                receiveValue: { [weak self] in
+                    guard let self else { return }
+                    self.showEventDetail = false
+                    self.showDeleteSuccess = true
+                    self.fetchEventsForDate(self.selectedDate)
+                    self.fetchEventsForMonth()
+                }
+            )
             .store(in: &cancellables)
     }
     
@@ -312,9 +351,11 @@ final class CalendarViewModel: ObservableObject {
             receiveCompletion: { [weak self] _ in self?.isLoading = false },
             receiveValue: { [weak self] events, dozyEvents in
                 guard let self else { return }
-                self.eventsForSelectedDate = events
-                self.dozyEventsForSelectedDate = dozyEvents
-                self.dozyEventsByID = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    self.eventsForSelectedDate = events
+                    self.dozyEventsForSelectedDate = dozyEvents
+                    self.dozyEventsByID = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                }
                 // Apple/Google completion 조회
                 let nonDozyIDs = events.filter { $0.source != .dozy }.map { $0.id }
                 if !nonDozyIDs.isEmpty {
@@ -332,55 +373,138 @@ final class CalendarViewModel: ObservableObject {
     }
     
     private func fetchEventsForMonth() {
-        guard let interval = Calendar.current.dateInterval(of: .month, for: currentMonth) else { return }
+        let cal = Calendar.current
+        guard let interval = cal.dateInterval(of: .month, for: currentMonth) else { return }
         
-        var date = interval.start
+        // 표시 범위 확장 (첫째 주/마지막 주 이전달, 다음달 날짜 포함)
+        let firstWeekday = cal.component(.weekday, from: interval.start) - 1
+        let displayStart = cal.date(byAdding: .day, value: -firstWeekday, to: interval.start)!
+        
+        let lastDay = cal.date(byAdding: .day, value: -1, to: interval.end)!
+        let lastWeekday = cal.component(.weekday, from: lastDay) - 1
+        let displayEnd = cal.date(byAdding: .day, value: 7 - lastWeekday, to: lastDay)!
+        
+        var date = displayStart
         var publishers: [AnyPublisher<(Date, [CalendarEvent]), DozyError>] = []
-        
-        while date < interval.end {
+        while date < displayEnd {
             let d = date
-            publishers.append(
-                fetchEventsUseCase.execute(for: d).map { (d, $0) }.eraseToAnyPublisher()
-            )
-            date = Calendar.current.date(byAdding: .day, value: 1, to: date)!
+            publishers.append(fetchEventsUseCase.execute(for: d).map { (d, $0) }.eraseToAnyPublisher())
+            date = cal.date(byAdding: .day, value: 1, to: date)!
         }
         
         Publishers.MergeMany(publishers)
             .collect()
             .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { _ in },
-                receiveValue: { [weak self] results in
-                    // 이벤트별 등장 날짜 수집
-                    var eventDatesMap: [String: Set<Date>] = [:]
-                    for (date, events) in results {
-                        let key = Calendar.current.startOfDay(for: date)
-                        for event in events {
-                            eventDatesMap[event.id, default: []].insert(key)
-                        }
-                    }
-                    
-                    var barsDict: [Date: [EventBarInfo]] = [:]
-                    for (date, events) in results where !events.isEmpty {
-                        let key = Calendar.current.startOfDay(for: date)
-                        barsDict[key] = Array(events.prefix(3)).map { event in
-                            let dates = (eventDatesMap[event.id] ?? []).sorted()
-                            let position: BarPosition
-                            if dates.count <= 1 {
-                                position = .single
-                            } else if key == dates.first {
-                                position = .start
-                            } else if key == dates.last {
-                                position = .end
-                            } else {
-                                position = .middle
-                            }
-                            return EventBarInfo(id: event.id, colorHex: event.calendarColorHex, position: position)
-                        }
-                    }
-                    self?.eventBarsPerDate = barsDict
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] results in
+                guard let self else { return }
+                self.buildLayouts(from: results)
+            })
+            .store(in: &cancellables)
+    }
+    
+    private func buildLayouts(from results: [(Date, [CalendarEvent])]) {
+        let cal = Calendar.current
+        
+        // 이벤트별 날짜 집합 구성
+        var eventDatesMap: [String: (CalendarEvent, Set<Date>)] = [:]
+        for (date, events) in results {
+            let key = cal.startOfDay(for: date)
+            for event in events {
+                if eventDatesMap[event.id] == nil {
+                    eventDatesMap[event.id] = (event, [key])
+                } else {
+                    eventDatesMap[event.id]!.1.insert(key)
                 }
-            ).store(in: &cancellables)
+            }
+        }
+        
+        var barsDict: [Date: [EventBarInfo]] = [:]
+        for (id, (event, dates)) in eventDatesMap {
+            let sorted = dates.sorted()
+            for date in sorted {
+                let pos: BarPosition
+                if sorted.count <= 1 { pos = .single }
+                else if date == sorted.first { pos = .start }
+                else if date == sorted.last { pos = .end }
+                else { pos = .middle }
+                barsDict[date, default: []].append(
+                    EventBarInfo(id: id, colorHex: event.calendarColorHex, position: pos)
+                )
+            }
+        }
+        for key in barsDict.keys {
+            barsDict[key] = Array((barsDict[key] ?? []).prefix(3))
+        }
+        withAnimation(.easeInOut(duration: 0.3)) {
+            eventBarsPerDate = barsDict
+        }
+
+        // 주간 레이아웃 계산
+        var newWeekLayouts: [Date: [CalendarEventLayout]] = [:]
+        
+        for (weekIndex, week) in weeksInMonth.enumerated() {
+            let weekSunday = weekStart(for: weekIndex)
+            let weekSaturday = cal.date(byAdding: .day, value: 6, to: weekSunday)!
+            let wsKey = cal.startOfDay(for: weekSunday)
+
+            var weekDateSet = Set<Date>()
+            var colMap: [Date: Int] = [:]
+            for (col, optDate) in week.enumerated() {
+                if let d = optDate {
+                    let key = cal.startOfDay(for: d)
+                    weekDateSet.insert(key)
+                    colMap[key] = col
+                }
+            }
+            guard !weekDateSet.isEmpty else { continue }
+
+            // 이 주에 걸치는 이벤트 수집 (isActualStart/End를 날짜 비교로 판단)
+            var weekEvents: [(CalendarEvent, Int, Int, Bool, Bool)] = []
+            for (_, (event, dates)) in eventDatesMap {
+                let inWeek = dates.filter { weekDateSet.contains($0) }.sorted()
+                guard !inWeek.isEmpty else { continue }
+
+                let allDates = (eventDatesMap[event.id]?.1 ?? []).sorted()
+                let isStart = allDates.first.map { cal.startOfDay(for: $0) >= wsKey } ?? true
+                let isEnd = allDates.last.map { cal.startOfDay(for: $0) <= cal.startOfDay(for: weekSaturday) } ?? true
+
+                let sc = colMap[inWeek.first!] ?? 0
+                let ec = colMap[inWeek.last!] ?? 6
+                weekEvents.append((event, sc, ec, isStart, isEnd))
+            }
+
+            // 긴 이벤트 우선 정렬
+            weekEvents.sort { a, b in
+                let spanA = a.2 - a.1, spanB = b.2 - b.1
+                if spanA != spanB { return spanA > spanB }
+                if a.1 != b.1 { return a.1 < b.1 }
+                return a.0.title < b.0.title
+            }
+
+            // 탐욕 행 배정
+            let maxRows = 6
+            var occupied = Array(repeating: Array(repeating: false, count: 7), count: maxRows)
+            var layouts: [CalendarEventLayout] = []
+
+            for (event, sc, ec, isStart, isEnd) in weekEvents {
+                var assignedRow = maxRows - 1
+                for r in 0..<maxRows {
+                    if (sc...ec).allSatisfy({ !occupied[r][$0] }) { assignedRow = r; break }
+                }
+                for col in sc...ec { occupied[assignedRow][col] = true }
+
+                layouts.append(CalendarEventLayout(
+                    id: event.id, title: event.title, colorHex: event.calendarColorHex,
+                    startCol: sc, endCol: ec, row: assignedRow,
+                    isActualStart: isStart, isActualEnd: isEnd
+                ))
+            }
+
+            newWeekLayouts[wsKey] = layouts
+        }
+        withAnimation(.easeInOut(duration: 0.3)) {
+            weekLayouts = newWeekLayouts
+        }
     }
     
     // MARK: - CRUD
@@ -426,6 +550,8 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
+                self.showEventDetail = false
+                self.showDeleteSuccess = true
                 self.fetchEventsForDate(self.selectedDate)
                 self.fetchEventsForMonth()
             }).store(in: &cancellables)

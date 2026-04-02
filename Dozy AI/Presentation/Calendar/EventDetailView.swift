@@ -17,7 +17,9 @@ struct EventDetailView: View {
     let onDeleteCalendar: ((CalendarEvent) -> Void)?
     
     @Environment(\.dismiss) private var dismiss
-    
+    @State private var showCalendarDeleteConfirm = false
+    @State private var showDozyDeleteConfirm = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -105,14 +107,26 @@ struct EventDetailView: View {
             .padding(.horizontal)
 
             Button(role: .destructive) {
-                dismiss()
-                onDelete?(dozyEvent)
+                showDozyDeleteConfirm = true
             } label: {
                 Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
             .padding(.bottom, 24)
+            .confirmationDialog(
+                dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
+                isPresented: $showDozyDeleteConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("삭제", role: .destructive) {
+                    onDelete?(dozyEvent)
+                }
+            } message: {
+                Text(dozyEvent.recurrenceRule != "none"
+                     ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
+                     : "정말로 삭제하시겠습니까?")
+            }
         }
     }
 
@@ -131,14 +145,21 @@ struct EventDetailView: View {
             .padding(.horizontal)
 
             Button(role: .destructive) {
-                dismiss()
-                onDeleteCalendar?(event)
+                showCalendarDeleteConfirm = true
             } label: {
                 Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
             .padding(.bottom, 24)
+            .confirmationDialog("일정 삭제", isPresented: $showCalendarDeleteConfirm, titleVisibility: .visible) {
+                Button("삭제", role: .destructive) {
+                    onDeleteCalendar?(event)
+                    dismiss()
+                }
+            } message: {
+                Text("정말로 삭제하시겠습니까?")
+            }
         }
     }
     

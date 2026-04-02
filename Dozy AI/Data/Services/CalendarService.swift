@@ -156,11 +156,27 @@ extension CalendarService: CalendarWriteServiceProtocol {
         requestAccessIfNeeded()
             .flatMap { [eventStore] _ -> AnyPublisher<Void, DozyError> in
                 Future { promise in
-                    guard let ekEvent = eventStore.event(withIdentifier: event.id) else {
-                        promise(.failure(.dataNotFound))
+                    // event(withIdentifier:) 가 stale 캐시로 nil 반환할 수 있으므로 reset 후 재시도
+                    eventStore.reset()
+
+                    let ekEvent: EKEvent?
+                    if let found = eventStore.event(withIdentifier: event.id) {
+                        ekEvent = found
+                    } else {
+                        // fallback: 날짜 범위로 검색
+                        let predicate = eventStore.predicateForEvents(
+                            withStart: event.startDate.addingTimeInterval(-1),
+                            end: event.endDate.addingTimeInterval(1),
+                            calendars: nil
+                        )
+                        ekEvent = eventStore.events(matching: predicate)
+                            .first { $0.eventIdentifier == event.id }
+                    }
+
+                    guard let ekEvent else {
+                        promise(.failure(.calendarEventNotFound))
                         return
                     }
-                    
                     do {
                         try eventStore.remove(ekEvent, span: .thisEvent)
                         promise(.success(()))

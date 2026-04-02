@@ -202,15 +202,18 @@ extension GoogleCalendarService: CalendarWriteServiceProtocol {
         guard let url = URL(string: "\(baseURL)/calendars/\(encCal)/events/\(encEvt)") else {
             return Fail(error: .googleCalendarFetchFailed).eraseToAnyPublisher()
         }
-        
+
         var req = URLRequest(url: url)
         req.httpMethod = "DELETE"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+
         return URLSession.shared.dataTaskPublisher(for: req)
             .tryMap { _, response in
-                guard let http = response as? HTTPURLResponse, http.statusCode == 204 else {
+                guard let http = response as? HTTPURLResponse else {
                     throw DozyError.googleCalendarFetchFailed
+                }
+                guard http.statusCode == 204 else {
+                    throw DozyError.googleCalendarWriteFailed(statusCode: http.statusCode)
                 }
             }
             .mapError { ($0 as? DozyError) ?? .googleCalendarFetchFailed }

@@ -22,9 +22,6 @@ struct CalendarView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
-                    BannerView(items: BannerItem.placeholders)
-                        .padding(.horizontal)
-                        .padding(.vertical, 15)
                     viewModePicker
                     monthHeader
                     weekdayHeader
@@ -70,7 +67,7 @@ struct CalendarView: View {
                             viewModel.requestDelete(event)
                         },
                         onEditCalendar: { viewModel.startEditingCalendarEvent($0) },
-                        onDeleteCalendar: { viewModel.requestDelete($0) }
+                        onDeleteCalendar: { viewModel.deleteCalendarEvent($0) }
                     )
                 }
             }
@@ -100,6 +97,19 @@ struct CalendarView: View {
                 Text(viewModel.pendingDeleteEvent?.recurrenceRule != "none" && viewModel.pendingDeleteEvent != nil
                      ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
                      : "정말로 삭제하시겠습니까?")
+            }
+            .alert("일정 삭제 완료", isPresented: $viewModel.showDeleteSuccess) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text("일정이 성공적으로 삭제되었습니다.")
+            }
+            .alert("삭제 실패", isPresented: Binding(
+                get: { viewModel.deleteErrorMessage != nil },
+                set: { if !$0 { viewModel.deleteErrorMessage = nil } }
+            )) {
+                Button("확인", role: .cancel) { viewModel.deleteErrorMessage = nil }
+            } message: {
+                Text(viewModel.deleteErrorMessage ?? "")
             }
         }
     }
@@ -142,24 +152,22 @@ struct CalendarView: View {
     // MARK: - Calendar Grid
     
     private var monthGrid: some View {
-        LazyVGrid(columns: columns, spacing: 0) {
-            ForEach(Array(viewModel.daysInMonth.enumerated()), id: \.offset) { _, date in
-                if let date {
-                    DayCell(
-                        date: date,
-                        isSelected: viewModel.isSelected(date),
-                        isToday: viewModel.isToday(date),
-                        eventBars: viewModel.eventBars(for: date)
-                    ) {
-                        viewModel.selectDate(date)
-                    }
-                } else {
-                    Color.clear.frame(height: 50)
-                }
+        VStack(spacing: 0) {
+            ForEach(Array(viewModel.weeksInMonth.enumerated()), id: \.offset) { weekIndex, week in
+                MonthWeekRowView(
+                    weekDates: week,
+                    layouts: viewModel.weekLayouts[
+                        Calendar.current.startOfDay(for: viewModel.weekStart(for: weekIndex))
+                    ] ?? [],
+                    selectedDate: viewModel.selectedDate,
+                    isToday: { viewModel.isToday($0) },
+                    isSelected: { viewModel.isSelected($0) },
+                    onSelect: { viewModel.selectDate($0) }
+                )
             }
         }
         .padding(.horizontal, 8)
-        .padding(.bottom, 16)
+        .padding(.bottom, 8)
     }
 
     private var calendarGrid: some View {
