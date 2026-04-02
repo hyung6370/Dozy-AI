@@ -162,7 +162,6 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.dozyEventsByID[event.id] = event
-                self.fetchEventsForDate(self.selectedDate)
             })
             .store(in: &cancellables)
     }
