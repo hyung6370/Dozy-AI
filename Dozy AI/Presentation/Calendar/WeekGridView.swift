@@ -28,9 +28,9 @@ struct WeekGridView: View {
                         Text("\(Calendar.current.component(.day, from: date))")
                             .font(.subheadline)
                             .fontWeight(isToday(date) ? .bold : .regular)
-                            .foregroundStyle(isSelected(date) ? .white : isToday(date) ? .blue : .primary)
+                            .foregroundStyle((isSelected(date) || isToday(date)) ? .white : .primary)
                             .frame(width: 32, height: 32)
-                            .background(Circle().fill(isSelected(date) ? Color.blue : Color.clear))
+                            .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : Color.clear))
                         
                         // 이벤트 바
                         VStack(spacing: 2) {

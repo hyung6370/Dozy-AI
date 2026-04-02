@@ -21,9 +21,9 @@ struct DayCell: View {
                 Text("\(Calendar.current.component(.day, from: date))")
                     .font(.subheadline)
                     .fontWeight(isToday ? .bold : .regular)
-                    .foregroundStyle(isSelected ? .white : isToday ? .blue : .primary)
+                    .foregroundStyle((isSelected || isToday) ? .white : .primary)
                     .frame(width: 36, height: 36)
-                    .background(Circle().fill(isSelected ? Color.blue : Color.clear))
+                    .background(Circle().fill(isSelected ? Color.blue : isToday ? Color.orange : Color.clear))
 
                 VStack(spacing: 2) {
                     ForEach(eventBars.prefix(3)) { bar in

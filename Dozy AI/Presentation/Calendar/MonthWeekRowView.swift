@@ -88,9 +88,9 @@ struct MonthWeekRowView: View {
         Text("\(day)")
             .font(.subheadline)
             .fontWeight(isToday(date) ? .bold : .regular)
-            .foregroundStyle(isSelected(date) ? .white : isToday(date) ? .blue : .primary)
+            .foregroundStyle((isSelected(date) || isToday(date)) ? .white : .primary)
             .frame(width: 34, height: 34)
-            .background(Circle().fill(isSelected(date) ? Color.blue : .clear))
+            .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : .clear))
     }
 }
 
