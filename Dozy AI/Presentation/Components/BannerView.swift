@@ -44,7 +44,7 @@ extension BannerItem {
         ),
         BannerItem(
             title: "캘린더를 연동해보세요",
-            subtitle: "Google · 네이버 · Apple 캘린더를 한 곳에서",
+            subtitle: "Google · Apple 캘린더를 한 곳에서",
             gradientColors: [.purple, .pink],
             iconName: "calendar.badge.plus"
         ),

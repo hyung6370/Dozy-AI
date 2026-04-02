@@ -24,8 +24,20 @@ struct CalendarView: View {
                 VStack(spacing: 0) {
                     viewModePicker
                     monthHeader
-                    weekdayHeader
+                    if viewModel.viewMode != .week {
+                        weekdayHeader
+                    }
                     calendarGrid
+                        .gesture(
+                            DragGesture(minimumDistance: 30, coordinateSpace: .local)
+                                .onEnded { value in
+                                    if value.translation.width > 0 {
+                                        viewModel.previousPeriod()
+                                    } else {
+                                        viewModel.nextPeriod()
+                                    }
+                                }
+                        )
                     Divider().padding(.horizontal)
                     if viewModel.viewMode == .day {
                         DayTimelineView(
@@ -37,6 +49,9 @@ struct CalendarView: View {
                         eventListSection
                     }
                 }
+            }
+            .refreshable {
+                viewModel.loadInitialData()
             }
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
