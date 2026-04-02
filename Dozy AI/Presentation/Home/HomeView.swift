@@ -17,6 +17,7 @@ struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
     @State private var memoText = ""
     @State private var showSummarySheet = false
+    @State private var selectedTab: HomeTab = .today
 
     // MARK: - Init
 
@@ -33,45 +34,34 @@ struct HomeView: View {
                 VStack(spacing: 20) {
 
                     headerSection
+                    bannerSection
+                    HomeTabBar(selectedTab: $selectedTab)
 
                     if viewModel.isLoading {
                         loadingSection
                     } else if let error = viewModel.errorMessage {
                         errorSection(error)
                     } else {
-                        summaryCard
-                        aiGenerateButton
-
-                        if let summary = viewModel.dailySummary {
-                            aiSummaryPreview(summary)
-                        }
-
-                        if !viewModel.todayEvents.isEmpty {
-                            eventListSection
-                        }
-
-                        if !viewModel.completedTasks.isEmpty {
-                            completedTaskSection
-                        }
-
-                        if !viewModel.pendingTasks.isEmpty {
-                            pendingTaskSection
-                        }
-
-                        memoSection
-
-                        if let log = viewModel.todayLog, !log.aiSummary.isEmpty {
-                            aiSummarySection(log)
-                        }
-
-                        if !viewModel.recentLogs.isEmpty {
-                            recentLogsSection
+                        switch selectedTab {
+                        case .today: todayContent
+                        case .weekly: weeklyContent
+                        case .monthly: monthlyContent
                         }
                     }
                 }
                 .padding()
             }
-            .navigationTitle("Dozy AI")
+//            .navigationTitle("Dozy")
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("완료") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
             .refreshable {
                 viewModel.loadTodayData()
             }
@@ -116,6 +106,15 @@ private extension HomeView {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Banner
+
+private extension HomeView {
+    
+    var bannerSection: some View {
+        BannerView(items: BannerItem.placeholders, interval: 4)
     }
 }
 
@@ -318,9 +317,42 @@ private extension HomeView {
     var eventListSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "오늘 일정", icon: "calendar")
-            ForEach(viewModel.todayEvents) { event in
+            
+            // 소스가 2개 이상일 때만 탭 표시
+            if viewModel.showSourceTabs {
+                sourceFilterTabs
+            }
+            
+            ForEach(viewModel.filteredEvents) { event in
                 EventRow(event: event)
             }
+        }
+    }
+    
+    var sourceFilterTabs: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                // 전체 탭
+                FilterTab(
+                    label: "전체",
+                    icon: "calendar",
+                    isSelected: viewModel.selectedSource == nil
+                ) {
+                    viewModel.selectedSource = nil
+                }
+                
+                // 소스별 탭
+                ForEach(viewModel.availableSources, id: \.self) { source in
+                    FilterTab(
+                        label: source.displayName,
+                        icon: source.iconName,
+                        isSelected: viewModel.selectedSource == source
+                    ) {
+                        viewModel.selectedSource = source
+                    }
+                }
+            }
+            .padding(.horizontal, 2)
         }
     }
 }
@@ -462,6 +494,96 @@ private extension HomeView {
             ForEach(viewModel.recentLogs) { log in
                 RecentLogRow(log: log)
             }
+        }
+    }
+}
+
+// MARK: - Tab Contents
+private extension HomeView {
+    
+    var todayContent: some View {
+        VStack(spacing: 20) {
+            summaryCard
+            aiGenerateButton
+
+            if let summary = viewModel.dailySummary {
+                aiSummaryPreview(summary)
+            }
+
+            if !viewModel.todayEvents.isEmpty {
+                eventListSection
+            }
+
+            if !viewModel.completedTasks.isEmpty {
+                completedTaskSection
+            }
+
+            if !viewModel.pendingTasks.isEmpty {
+                pendingTaskSection
+            }
+
+            memoSection
+
+            if let log = viewModel.todayLog, !log.aiSummary.isEmpty {
+                aiSummarySection(log)
+            }
+
+            if !viewModel.recentLogs.isEmpty {
+                recentLogsSection
+            }
+        }
+    }
+    
+    var weeklyContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // 주간 범위 헤더
+            Text(viewModel.currentWeekRange)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            if viewModel.weeklyDates.isEmpty {
+                Text("주간 데이터 없음")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 40)
+            } else {
+                ForEach(Array(viewModel.weeklyDates.enumerated()), id: \.offset) { index, date in
+                    let events = index < viewModel.weeklyEvents.count
+                    ? viewModel.weeklyEvents[index] : []
+                    WeeklyDayRow(date: date, events: events)
+                }
+            }
+        }
+    }
+    
+    var monthlyContent: some View {
+        VStack(spacing: 16) {
+            // 월 헤더
+            Text(viewModel.currentMonthString)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            if let summary = viewModel.monthlySummary {
+                monthlyStatGrid(summary)
+            } else {
+                Text("이번 달 기록이 없습니다")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 40)
+            }
+        }
+    }
+    
+    func monthlyStatGrid(_ summary: MonthlySummary) -> some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            MonthlyStatCard(icon: "calendar", label: "총 일정", value: "\(summary.totalEvents)개", color: .blue)
+            MonthlyStatCard(icon: "checkmark.circle.fill", label: "완료 할 일", value: "\(summary.totalCompletedTasks)개", color: .green)
+            MonthlyStatCard(icon: "brain.head.profile", label: "평균 생산성", value: "\(summary.scorePercentage)점", color: .indigo)
+            MonthlyStatCard(icon: "flame.fill", label: "활동한 날", value: "\(summary.activeDays)일", color: .orange)
         }
     }
 }

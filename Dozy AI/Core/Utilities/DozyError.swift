@@ -17,7 +17,14 @@ enum DozyError: LocalizedError {
     case aiSummarizationFailed
     case speechRecognitionFailed
     case unknown(underlying: Error)
-    
+    case googleSignInFailed(underlying: Error?)
+    case googleCalendarFetchFailed
+    case naverSignInFailed
+    case naverCalendarFetchFailed
+    case calendarWriteFailed(underlying: Error)
+    case calendarEventNotFound
+    case googleCalendarWriteFailed(statusCode: Int)
+
     var errorDescription: String? {
         switch self {
         case .calendarAccessDenied:
@@ -38,6 +45,25 @@ enum DozyError: LocalizedError {
             return "음성 인식에 실패했습니다."
         case .unknown(let error):
             return "알 수 없는 오류: \(error.localizedDescription)"
+        case .googleSignInFailed:
+            return "Google 로그인에 실패했습니다. 다시 시도해주세요."
+        case .googleCalendarFetchFailed:
+            return "Google 캘린더를 불러오는 데 실패했습니다."
+        case .naverSignInFailed:
+            return "네이버 로그인에 실패했습니다."
+        case .naverCalendarFetchFailed: 
+            return "네이버 캘린더를 불러오는 데 실패했습니다."
+        case .calendarWriteFailed(let error):
+            return "캘린더 일정 수정/삭제에 실패했습니다. (\(error.localizedDescription))"
+        case .calendarEventNotFound:
+            return "삭제할 일정을 찾을 수 없습니다. 이미 삭제되었거나 캘린더 접근 권한을 확인해주세요."
+        case .googleCalendarWriteFailed(let statusCode):
+            switch statusCode {
+            case 401: return "Google 인증이 만료되었습니다. 다시 로그인해주세요. (401)"
+            case 403: return "Google 캘린더 삭제 권한이 없습니다. (403)"
+            case 404: return "삭제할 Google 일정을 찾을 수 없습니다. (404)"
+            default:  return "Google 캘린더 삭제에 실패했습니다. (HTTP \(statusCode))"
+            }
         }
     }
 }

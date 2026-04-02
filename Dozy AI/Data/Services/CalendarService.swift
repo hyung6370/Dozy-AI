@@ -109,6 +109,7 @@ private extension EKEvent {
 
         return CalendarEvent(
             id: eventIdentifier ?? UUID().uuidString,
+            calendarId: calendar?.calendarIdentifier,
             title: title ?? "제목 없음",
             startDate: startDate,
             endDate: endDate,
@@ -116,7 +117,71 @@ private extension EKEvent {
             notes: notes,
             isAllDay: isAllDay,
             calendarName: calendar?.title ?? "",
-            calendarColorHex: colorHex
+            calendarColorHex: colorHex,
+            source: .apple
         )
+    }
+}
+
+extension CalendarService: CalendarWriteServiceProtocol {
+    
+    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
+        requestAccessIfNeeded()
+            .flatMap { [eventStore] _ -> AnyPublisher<Void, DozyError> in
+                Future { promise in
+                    guard let ekEvent = eventStore.event(withIdentifier: event.id) else {
+                        promise(.failure(.dataNotFound))
+                        return
+                    }
+                    ekEvent.title = edit.title
+                    ekEvent.startDate = edit.startDate
+                    ekEvent.endDate = edit.endDate
+                    ekEvent.isAllDay = edit.isAllDay
+                    ekEvent.location = edit.location
+                    ekEvent.notes = edit.notes
+                    
+                    do {
+                        try eventStore.save(ekEvent, span: .thisEvent)
+                        promise(.success(()))
+                    } catch {
+                        promise(.failure(.calendarWriteFailed(underlying: error)))
+                    }
+                }
+                .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
+        requestAccessIfNeeded()
+            .flatMap { [eventStore] _ -> AnyPublisher<Void, DozyError> in
+                Future { promise in
+                    // event(withIdentifier:)는 반복 이벤트의 첫 번째 occurrence를 반환하므로
+                    // 날짜 기반 검색으로 정확한 occurrence를 찾아 삭제
+                    let dayStart = Calendar.current.startOfDay(for: event.startDate)
+                    let dayEnd = Calendar.current.date(byAdding: .day, value: 1, to: dayStart)!
+                    let predicate = eventStore.predicateForEvents(
+                        withStart: dayStart,
+                        end: dayEnd,
+                        calendars: nil
+                    )
+                    let ekEvent = eventStore.events(matching: predicate)
+                        .first { $0.eventIdentifier == event.id }
+
+                    guard let ekEvent else {
+                        promise(.failure(.calendarEventNotFound))
+                        return
+                    }
+                    do {
+                        try eventStore.remove(ekEvent, span: .thisEvent, commit: true)
+                        eventStore.reset()
+                        promise(.success(()))
+                    } catch {
+                        promise(.failure(.calendarWriteFailed(underlying: error)))
+                    }
+                }
+                .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
     }
 }

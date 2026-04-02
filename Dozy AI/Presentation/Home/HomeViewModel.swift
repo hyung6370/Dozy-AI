@@ -27,6 +27,13 @@ final class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
+    
+    @Published var selectedSource: CalendarSource? = nil
+    
+    @Published var selectedTab: HomeTab = .today
+    @Published var weeklyEvents: [[CalendarEvent]] = []
+    @Published var weeklyDates: [Date] = []
+    @Published var monthlySummary: MonthlySummary? = nil
 
     // MARK: - Computed Properties
 
@@ -47,6 +54,44 @@ final class HomeViewModel: ObservableObject {
         guard let score = dailySummary?.productivityScore else { return 0 }
         return Int(score * 100)
     }
+    
+    // 활성 소스가 2개 이상일 때만 탭 표시
+    var showSourceTabs: Bool {
+        calendarSourceManager.enabledSources.count > 1
+    }
+    
+    // 활성화된 소스 목록 (탭 생성용)
+    var availableSources: [CalendarSource] {
+        CalendarSource.allCases.filter { calendarSourceManager.isEnabled($0) }
+    }
+    
+    // 선택된 탭에 따라 필터링
+    var filteredEvents: [CalendarEvent] {
+        guard let source = selectedSource else { return todayEvents }
+        return todayEvents.filter { $0.source == source }
+    }
+    
+    var currentWeekRange: String {
+        let calendar = Calendar.current
+        let today = Date()
+        guard let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)),
+              let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart)
+        else { return "" }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M.d"
+        return "\(formatter.string(from: weekStart)) - \(formatter.string(from: weekEnd))"
+    }
+    
+    var currentMonthString: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy년 M월"
+        return formatter.string(from: Date())
+    }
+    
+    private let calendarSourceManager: CalendarSourceManager
+    private let googleSignInService: GoogleSignInService
 
     // MARK: - Dependencies (UseCases만)
 
@@ -54,6 +99,7 @@ final class HomeViewModel: ObservableObject {
     private let saveWorkLogUseCase: SaveWorkLogUseCase
     private let generateDailySummaryUseCase: GenerateDailySummaryUseCase
     private let fetchRecentLogsUseCase: FetchRecentLogsUseCase
+    private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
@@ -62,12 +108,40 @@ final class HomeViewModel: ObservableObject {
         fetchTodayDataUseCase: FetchTodayDataUseCase,
         saveWorkLogUseCase: SaveWorkLogUseCase,
         generateDailySummaryUseCase: GenerateDailySummaryUseCase,
-        fetchRecentLogsUseCase: FetchRecentLogsUseCase
+        fetchRecentLogsUseCase: FetchRecentLogsUseCase,
+        calendarSourceManager: CalendarSourceManager,
+        googleSignInService: GoogleSignInService,
+        fetchCalendarEventUseCase: FetchCalendarEventUseCase
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
         self.generateDailySummaryUseCase = generateDailySummaryUseCase
         self.fetchRecentLogsUseCase = fetchRecentLogsUseCase
+        self.calendarSourceManager = calendarSourceManager
+        self.googleSignInService = googleSignInService
+        self.fetchCalendarEventUseCase = fetchCalendarEventUseCase
+        
+        googleSignInService.$isSignedIn
+            .removeDuplicates()
+            .dropFirst()
+            .filter { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadTodayData()
+            }
+            .store(in: &cancellables)
+        
+        calendarSourceManager.$enabledSources
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] sources in
+                guard let self else { return }
+                if let selected = self.selectedSource, !sources.contains(selected) {
+                    self.selectedSource = nil
+                }
+                self.loadTodayData()
+            }
+            .store(in: &cancellables)
     }
 
     convenience init(container: DependencyContainer) {
@@ -75,7 +149,10 @@ final class HomeViewModel: ObservableObject {
             fetchTodayDataUseCase: container.fetchTodayDataUseCase,
             saveWorkLogUseCase: container.saveWorkLogUseCase,
             generateDailySummaryUseCase: container.generateDailySummaryUseCase,
-            fetchRecentLogsUseCase: container.fetchRecentLogsUseCase
+            fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
+            calendarSourceManager: container.calendarSourceManager,
+            googleSignInService: container.googleSignInService,
+            fetchCalendarEventUseCase: container.fetchCalendarEventUseCase
         )
     }
 
@@ -105,6 +182,8 @@ final class HomeViewModel: ObservableObject {
             .store(in: &cancellables)
 
         loadRecentLogs()
+        loadWeeklyData()
+        loadMonthlyData()
     }
 
     func loadRecentLogs() {
@@ -160,6 +239,57 @@ final class HomeViewModel: ObservableObject {
             }
         )
         .store(in: &cancellables)
+    }
+    
+    func loadWeeklyData() {
+        let calendar = Calendar.current
+        let today = Date()
+        guard let weekStart = calendar.date(
+            from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        ) else { return }
+        
+        var dates: [Date] = []
+        for offset in 0..<7 {
+            if let day = calendar.date(byAdding: .day, value: offset, to: weekStart) {
+                dates.append(day)
+            }
+        }
+        weeklyDates = dates
+        
+        let publishers = dates.map { date in
+            fetchCalendarEventUseCase.execute(for: date)
+                .replaceError(with: [])
+        }
+        
+        Publishers.MergeMany(publishers.enumerated().map { index, pub in
+            pub.map { (index, $0) }
+        })
+        .collect()
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] results in
+            guard let self else { return }
+            var buckets: [[CalendarEvent]] = Array(repeating: [], count: dates.count)
+            for (index, events) in results {
+                buckets[index] = events
+            }
+            self.weeklyEvents = buckets
+        }
+        .store(in: &cancellables)
+    }
+    
+    func loadMonthlyData() {
+        // Phase 5 패턴 분석과 연계 예정
+        // 현재는 recentLogs 기반으로 간단히 집계
+        let logs = recentLogs
+        let totalScore = logs.compactMap { $0.productivityScore }.reduce(0, +)
+        let avg = logs.isEmpty ? 0.0 : totalScore / Double(logs.count)
+        
+        monthlySummary = MonthlySummary(
+            totalEvents: logs.reduce(0) { $0 + $1.rawEventTitles.count },
+            totalCompletedTasks: logs.reduce(0) { $0 + $1.completedTaskTitles.count },
+            averageProductivityScore: avg,
+            activeDays: logs.count
+        )
     }
 
     // MARK: - Private
