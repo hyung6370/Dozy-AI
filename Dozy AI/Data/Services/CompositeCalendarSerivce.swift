@@ -8,15 +8,15 @@
 import Foundation
 import Combine
 
-final class CompositeCalendarSerivce: CalendarServiceProtocol {
+final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServiceProtocol {
 
-    private let appleService: CalendarServiceProtocol
+    private let appleService: CalendarService
     private let googleService: GoogleCalendarService
     private let dozyService: DozyCalendarService
     let sourceManager: CalendarSourceManager
 
     init(
-        appleService: CalendarServiceProtocol,
+        appleService: CalendarService,
         googleService: GoogleCalendarService,
         dozyService: DozyCalendarService,
         sourceManager: CalendarSourceManager
@@ -49,5 +49,22 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol {
             .collect()
             .map { $0.flatMap { $0 }.sorted { $0.startDate < $1.startDate } }
             .eraseToAnyPublisher()
+    }
+    
+    // MARK: - CalendarWriteServiceProtocol
+    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
+        switch event.source {
+        case .apple: return appleService.updateEvent(event, with: edit)
+        case .google: return googleService.updateEvent(event, with: edit)
+        default: return Fail(error: .dataNotFound).eraseToAnyPublisher()
+        }
+    }
+    
+    func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
+        switch event.source {
+        case .apple:  return appleService.deleteEvent(event)
+        case .google: return googleService.deleteEvent(event)
+        default:      return Fail(error: .dataNotFound).eraseToAnyPublisher()
+        }
     }
 }

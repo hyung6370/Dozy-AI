@@ -16,13 +16,13 @@ import SwiftData
 
 final class DependencyContainer: ObservableObject {
 
-    // MARK: - SwiftData (소유)
+    // MARK: - SwiftData
 
     let modelContainer: ModelContainer
 
     // MARK: - Services (Data Layer)
 
-    lazy var calendarService: CalendarServiceProtocol = CompositeCalendarSerivce(
+    lazy var calendarService: CompositeCalendarSerivce = CompositeCalendarSerivce(
         appleService: appleCalendarService,
         googleService: googleCalendarService,
         dozyService: dozyCalendarService,
@@ -37,7 +37,7 @@ final class DependencyContainer: ObservableObject {
     lazy var naverSignInService = NaverSignInService()
     lazy var calendarSourceManager = CalendarSourceManager()
     
-    private lazy var appleCalendarService: CalendarServiceProtocol = CalendarService()
+    private lazy var appleCalendarService = CalendarService()
     private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
     private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
 
@@ -45,33 +45,24 @@ final class DependencyContainer: ObservableObject {
 
     lazy var workLogRepository: WorkLogRepositoryProtocol = WorkLogRepository(modelContainer: modelContainer)
     lazy var dozyEventRepository: DozyEventRepositoryProtocol = DozyEventRepository(modelContainer: modelContainer)
+    lazy var eventCompletionRepository: EventCompletionRepositoryProtocol = EventCompletionRepository(modelContainer: modelContainer)
 
     // MARK: - UseCases (Domain Layer)
 
-    lazy var fetchTodayDataUseCase = FetchTodayDataUseCase(
-        calendarService: calendarService,
-        reminderService: reminderService
-    )
-
-    lazy var saveWorkLogUseCase = SaveWorkLogUseCase(
-        repository: workLogRepository
-    )
-
-    lazy var generateDailySummaryUseCase = GenerateDailySummaryUseCase(
-        aiService: aiService,
-        repository: workLogRepository
-    )
-
-    lazy var fetchRecentLogsUseCase = FetchRecentLogsUseCase(
-        repository: workLogRepository
-    )
-    
+    lazy var fetchTodayDataUseCase = FetchTodayDataUseCase(calendarService: calendarService, reminderService: reminderService)
+    lazy var saveWorkLogUseCase = SaveWorkLogUseCase(repository: workLogRepository)
+    lazy var generateDailySummaryUseCase = GenerateDailySummaryUseCase(aiService: aiService, repository: workLogRepository)
+    lazy var fetchRecentLogsUseCase = FetchRecentLogsUseCase(repository: workLogRepository)
     lazy var fetchCalendarEventUseCase = FetchCalendarEventUseCase(calendarService: calendarService)
     lazy var fetchDozyEventsUseCase = FetchDozyEventsUseCase(repository: dozyEventRepository)
     lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
     lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)
     lazy var deleteDozyEventUseCase = DeleteDozyEventUseCase(repository: dozyEventRepository)
     lazy var toggleDozyEventCompletionUseCase = ToggleDozyEventCompletionUseCase(repository: dozyEventRepository)
+    lazy var updateCalendarEventUseCase = UpdateCalendarEventUseCase(service: calendarService)
+    lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
+    lazy var toggleCalendarEventCompletionUseCase = ToggleCalendarEventCompletionUseCase(repository: eventCompletionRepository)
+    lazy var fetchEventCompletionsUseCase = FetchEventCompletionsUseCase(repository: eventCompletionRepository)
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()
@@ -80,7 +71,7 @@ final class DependencyContainer: ObservableObject {
 
     init() {
         do {
-            let schema = Schema([WorkLog.self, UserPattern.self, DozyEvent.self])
+            let schema = Schema([WorkLog.self, UserPattern.self, DozyEvent.self, EventCompletion.self])
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             self.modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {

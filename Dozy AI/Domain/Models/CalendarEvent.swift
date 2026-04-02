@@ -12,6 +12,7 @@ import Foundation
 
 struct CalendarEvent: Identifiable, Codable, Hashable {
     let id: String
+    let calendarId: String?
     let title: String
     let startDate: Date
     let endDate: Date
@@ -50,6 +51,7 @@ extension CalendarEvent {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
+        calendarId = try c.decodeIfPresent(String.self, forKey: .calendarId)
         title = try c.decode(String.self, forKey: .title)
         startDate = try c.decode(Date.self, forKey: .startDate)
         endDate = try c.decode(Date.self, forKey: .endDate)

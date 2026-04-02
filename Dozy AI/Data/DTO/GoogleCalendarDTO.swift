@@ -36,7 +36,7 @@ struct GoogleEventItem: Decodable {
     let description: String?
     let status: String?
 
-    func toCalendarEvent(calendarName: String, colorHex: String) -> CalendarEvent? {
+    func toCalendarEvent(calendarName: String, colorHex: String, calendarId: String) -> CalendarEvent? {
         guard let start, let end else { return nil }
         if status == "cancelled" { return nil }
 
@@ -56,6 +56,7 @@ struct GoogleEventItem: Decodable {
 
         return CalendarEvent(
             id: id ?? UUID().uuidString,
+            calendarId: calendarId,
             title: summary ?? "제목 없음",
             startDate: startDate,
             endDate: endDate,

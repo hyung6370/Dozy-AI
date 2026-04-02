@@ -49,6 +49,7 @@ struct NaverEventItem: Decodable {
         
         return CalendarEvent(
             id: scheduleId ?? UUID().uuidString,
+            calendarId: nil,
             title: summary ?? "제목 없음",
             startDate: start,
             endDate: end,

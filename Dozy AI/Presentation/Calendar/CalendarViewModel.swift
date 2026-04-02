@@ -39,6 +39,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var dozyEventsByID: [String: DozyEvent] = [:]
     @Published var showDeleteAlert = false
     @Published var pendingDeleteEvent: DozyEvent? = nil
+    @Published var pendingDeleteCalendarEvent: CalendarEvent? = nil
     @Published var eventBarsPerDate: [Date: [EventBarInfo]] = [:]
     @Published var viewMode: CalendarViewMode = .month
     @Published var isLoading = false
@@ -46,6 +47,9 @@ final class CalendarViewModel: ObservableObject {
     @Published var detailEvent: CalendarEvent? = nil
     @Published var showEventEdit = false
     @Published var eventToEdit: DozyEvent? = nil
+    @Published var completionsByID: [String: Bool] = [:]
+    @Published var showCalendarEventEdit = false
+    @Published var calendarEventToEdit: CalendarEvent? = nil
     
     // MARK: - Dependencies
     private let fetchEventsUseCase: FetchCalendarEventUseCase
@@ -56,6 +60,10 @@ final class CalendarViewModel: ObservableObject {
     private let scheduleNotificationUseCase: ScheduleNotificationUseCase
     private let cancelNotificationUseCase: CancelNotificationUseCase
     private let toggleCompletionUseCase: ToggleDozyEventCompletionUseCase
+    private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
+    private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
+    private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
+    private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private var cancellables = Set<AnyCancellable>()
     
     init(
@@ -66,7 +74,11 @@ final class CalendarViewModel: ObservableObject {
         deleteEventUseCase: DeleteDozyEventUseCase,
         scheduleNotificationUseCase: ScheduleNotificationUseCase,
         cancelNotificationUseCase: CancelNotificationUseCase,
-        toggleCompletionUseCase: ToggleDozyEventCompletionUseCase
+        toggleCompletionUseCase: ToggleDozyEventCompletionUseCase,
+        updateCalendarEventUseCase: UpdateCalendarEventUseCase,
+        deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
+        toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase,
+        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -76,8 +88,12 @@ final class CalendarViewModel: ObservableObject {
         self.scheduleNotificationUseCase = scheduleNotificationUseCase
         self.cancelNotificationUseCase = cancelNotificationUseCase
         self.toggleCompletionUseCase = toggleCompletionUseCase
+        self.updateCalendarEventUseCase = updateCalendarEventUseCase
+        self.deleteCalendarEventUseCase = deleteCalendarEventUseCase
+        self.toggleCalendarEventCompletionUseCase = toggleCalendarEventCompletionUseCase
+        self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
     }
-    
+
     convenience init(container: DependencyContainer) {
         self.init(
             fetchEventsUseCase: container.fetchCalendarEventUseCase,
@@ -87,7 +103,11 @@ final class CalendarViewModel: ObservableObject {
             deleteEventUseCase: container.deleteDozyEventUseCase,
             scheduleNotificationUseCase: container.scheduleNotificationUseCase,
             cancelNotificationUseCase: container.cancelNotificationUseCase,
-            toggleCompletionUseCase: container.toggleDozyEventCompletionUseCase
+            toggleCompletionUseCase: container.toggleDozyEventCompletionUseCase,
+            updateCalendarEventUseCase: container.updateCalendarEventUseCase,
+            deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
+            toggleCalendarEventCompletionUseCase: container.toggleCalendarEventCompletionUseCase,
+            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase
         )
     }
     
@@ -143,6 +163,63 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.dozyEventsByID[event.id] = event
                 self.fetchEventsForDate(self.selectedDate)
+            })
+            .store(in: &cancellables)
+    }
+    
+    // 완료 상태 통합 조회
+    func isCompleted(for event: CalendarEvent) -> Bool {
+        if event.source == .dozy {
+            return dozyEventsByID[event.id]?.isCompleted ?? false
+        }
+        return completionsByID[event.id] ?? false
+    }
+    
+    // 완료 토글 (source 분기)
+    func toggleCompletion(for event: CalendarEvent) {
+        if event.source == .dozy {
+            guard let dozyEvent = dozyEventsByID[event.id] else { return }
+            toggleCompletion(for: dozyEvent)
+        } else {
+            toggleCalendarEventCompletionUseCase.execute(eventID: event.id)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
+                    self?.completionsByID[event.id] = newValue
+                })
+                .store(in: &cancellables)
+        }
+    }
+    
+    // Apple/Google 수정 시작
+    func startEditingCalendarEvent(_ event: CalendarEvent) {
+        calendarEventToEdit = event
+        showCalendarEventEdit = true
+    }
+    
+    // Apple/Google 수정 저장
+    func saveCalendarEvent(_ event: CalendarEvent, edit: CalendarEventEditRequest) {
+        updateCalendarEventUseCase.execute(event, with: edit)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.fetchEventsForDate(self?.selectedDate ?? Date())
+                self?.fetchEventsForMonth()
+            })
+            .store(in: &cancellables)
+    }
+    
+    // Apple/Google 삭제 요청
+    func requestDeleteCalendarEvent(_ event: CalendarEvent) {
+        pendingDeleteCalendarEvent = event
+        showDeleteAlert = true
+    }
+    
+    // Apple/Google 삭제 실행
+    func deleteCalendarEvent(_ event: CalendarEvent) {
+        deleteCalendarEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.fetchEventsForDate(self?.selectedDate ?? Date())
+                self?.fetchEventsForMonth()
             })
             .store(in: &cancellables)
     }
@@ -235,10 +312,21 @@ final class CalendarViewModel: ObservableObject {
         .sink(
             receiveCompletion: { [weak self] _ in self?.isLoading = false },
             receiveValue: { [weak self] events, dozyEvents in
-                self?.eventsForSelectedDate = events
-                self?.dozyEventsForSelectedDate = dozyEvents
-                self?.dozyEventsByID = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
-                self?.isLoading = false
+                guard let self else { return }
+                self.eventsForSelectedDate = events
+                self.dozyEventsForSelectedDate = dozyEvents
+                self.dozyEventsByID = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                // Apple/Google completion 조회
+                let nonDozyIDs = events.filter { $0.source != .dozy }.map { $0.id }
+                if !nonDozyIDs.isEmpty {
+                    self.fetchEventCompletionsUseCase.execute(for: nonDozyIDs)
+                        .receive(on: DispatchQueue.main)
+                        .sink(receiveCompletion: { _ in }, receiveValue: { dict in
+                            self.completionsByID.merge(dict) { _, new in new }
+                        })
+                        .store(in: &self.cancellables)
+                }
+                self.isLoading = false
             }
         )
         .store(in: &cancellables)
@@ -323,8 +411,13 @@ final class CalendarViewModel: ObservableObject {
             }).store(in: &cancellables)
     }
     
-    func requestDelete(_ event: DozyEvent) {
-        pendingDeleteEvent = event
+    func requestDelete(_ event: CalendarEvent) {
+        if event.source == .dozy {
+            guard let dozy = dozyEventsByID[event.id] else { return }
+            pendingDeleteEvent = dozy
+        } else {
+            pendingDeleteCalendarEvent = event
+        }
         showDeleteAlert = true
     }
 

@@ -109,6 +109,7 @@ private extension EKEvent {
 
         return CalendarEvent(
             id: eventIdentifier ?? UUID().uuidString,
+            calendarId: calendar?.calendarIdentifier,
             title: title ?? "제목 없음",
             startDate: startDate,
             endDate: endDate,
@@ -119,5 +120,56 @@ private extension EKEvent {
             calendarColorHex: colorHex,
             source: .apple
         )
+    }
+}
+
+extension CalendarService: CalendarWriteServiceProtocol {
+    
+    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
+        requestAccessIfNeeded()
+            .flatMap { [eventStore] _ -> AnyPublisher<Void, DozyError> in
+                Future { promise in
+                    guard let ekEvent = eventStore.event(withIdentifier: event.id) else {
+                        promise(.failure(.dataNotFound))
+                        return
+                    }
+                    ekEvent.title = edit.title
+                    ekEvent.startDate = edit.startDate
+                    ekEvent.endDate = edit.endDate
+                    ekEvent.isAllDay = edit.isAllDay
+                    ekEvent.location = edit.location
+                    ekEvent.notes = edit.notes
+                    
+                    do {
+                        try eventStore.save(ekEvent, span: .thisEvent)
+                        promise(.success(()))
+                    } catch {
+                        promise(.failure(.calendarWriteFailed(underlying: error)))
+                    }
+                }
+                .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
+        requestAccessIfNeeded()
+            .flatMap { [eventStore] _ -> AnyPublisher<Void, DozyError> in
+                Future { promise in
+                    guard let ekEvent = eventStore.event(withIdentifier: event.id) else {
+                        promise(.failure(.dataNotFound))
+                        return
+                    }
+                    
+                    do {
+                        try eventStore.remove(ekEvent, span: .thisEvent)
+                        promise(.success(()))
+                    } catch {
+                        promise(.failure(.calendarWriteFailed(underlying: error)))
+                    }
+                }
+                .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
     }
 }

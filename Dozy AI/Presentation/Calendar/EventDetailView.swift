@@ -13,6 +13,8 @@ struct EventDetailView: View {
     let dozyEvent: DozyEvent?
     let onEdit: ((DozyEvent) -> Void)?
     let onDelete: ((DozyEvent) -> Void)?
+    let onEditCalendar: ((CalendarEvent) -> Void)?
+    let onDeleteCalendar: ((CalendarEvent) -> Void)?
     
     @Environment(\.dismiss) private var dismiss
     
@@ -24,7 +26,9 @@ struct EventDetailView: View {
                     Divider().padding(.horizontal)
                     infoSection
                     if let dozyEvent {
-                        actionSection(dozyEvent)
+                        dozyActionSection(dozyEvent)
+                    } else if event.source == .apple || event.source == .google {
+                        calendarActionSection
                     }
                 }
             }
@@ -86,28 +90,51 @@ struct EventDetailView: View {
         .padding(.vertical, 8)
     }
     
-    // MARK: - Action (Dozy only)
-    
-    private func actionSection(_ dozyEvent: DozyEvent) -> some View {
+    // MARK: - Action (Dozy)
+
+    private func dozyActionSection(_ dozyEvent: DozyEvent) -> some View {
         VStack(spacing: 12) {
             Divider().padding(.top, 16)
-            
             Button {
                 dismiss()
                 onEdit?(dozyEvent)
             } label: {
-                Label("수정", systemImage: "pencil")
-                    .frame(maxWidth: .infinity)
+                Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
-            
+
             Button(role: .destructive) {
                 dismiss()
                 onDelete?(dozyEvent)
             } label: {
-                Label("삭제", systemImage: "trash")
-                    .frame(maxWidth: .infinity)
+                Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .padding(.horizontal)
+            .padding(.bottom, 24)
+        }
+    }
+
+    // MARK: - Action (Apple / Google)
+
+    private var calendarActionSection: some View {
+        VStack(spacing: 12) {
+            Divider().padding(.top, 16)
+            Button {
+                dismiss()
+                onEditCalendar?(event)
+            } label: {
+                Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .padding(.horizontal)
+
+            Button(role: .destructive) {
+                dismiss()
+                onDeleteCalendar?(event)
+            } label: {
+                Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)

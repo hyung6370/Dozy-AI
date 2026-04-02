@@ -92,6 +92,7 @@ final class DozyEvent {
         }
         return CalendarEvent(
             id: id,
+            calendarId: nil,
             title: title,
             startDate: start,
             endDate: end,
@@ -103,10 +104,11 @@ final class DozyEvent {
             source: .dozy
         )
     }
-    
+
     func toCalendarEvent() -> CalendarEvent {
         CalendarEvent(
             id: id,
+            calendarId: nil,
             title: title,
             startDate: startDate,
             endDate: endDate,

@@ -21,6 +21,7 @@ enum DozyError: LocalizedError {
     case googleCalendarFetchFailed
     case naverSignInFailed
     case naverCalendarFetchFailed
+    case calendarWriteFailed(underlying: Error)
     
     var errorDescription: String? {
         switch self {
@@ -50,6 +51,8 @@ enum DozyError: LocalizedError {
             return "네이버 로그인에 실패했습니다."
         case .naverCalendarFetchFailed: 
             return "네이버 캘린더를 불러오는 데 실패했습니다."
+        case .calendarWriteFailed:
+            return "캘린더 일정 수정/삭제에 실패했습니다."
         }
     }
 }

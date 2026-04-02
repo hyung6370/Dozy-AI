@@ -67,22 +67,37 @@ struct CalendarView: View {
                             viewModel.startEditingEvent(dozyEvent)
                         },
                         onDelete: { (dozyEvent: DozyEvent) in
-                            viewModel.requestDelete(dozyEvent)
-                        }
+                            viewModel.requestDelete(event)
+                        },
+                        onEditCalendar: { viewModel.startEditingCalendarEvent($0) },
+                        onDeleteCalendar: { viewModel.requestDelete($0) }
                     )
                 }
             }
-            .onAppear { viewModel.loadInitialData() }
-            .alert(
-                viewModel.pendingDeleteEvent?.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
-                isPresented: $viewModel.showDeleteAlert
-            ) {
-                Button("삭제", role: .destructive) {
-                    if let e = viewModel.pendingDeleteEvent { viewModel.deleteEvent(e) }
+            .sheet(isPresented: $viewModel.showCalendarEventEdit) {
+                if let event = viewModel.calendarEventToEdit {
+                    CalendarEventEditView(event: event) { edit in
+                        viewModel.saveCalendarEvent(event, edit: edit)
+                    }
                 }
-                Button("취소", role: .cancel) {}
+            }
+            .onAppear { viewModel.loadInitialData() }
+            .alert(alertTitle, isPresented: $viewModel.showDeleteAlert) {
+                Button("삭제", role: .destructive) {
+                    if let e = viewModel.pendingDeleteEvent {
+                        viewModel.deleteEvent(e)
+                    } else if let e = viewModel.pendingDeleteCalendarEvent {
+                        viewModel.deleteCalendarEvent(e)
+                    }
+                    viewModel.pendingDeleteEvent = nil
+                    viewModel.pendingDeleteCalendarEvent = nil
+                }
+                Button("취소", role: .cancel) {
+                    viewModel.pendingDeleteEvent = nil
+                    viewModel.pendingDeleteCalendarEvent = nil
+                }
             } message: {
-                Text(viewModel.pendingDeleteEvent?.recurrenceRule != "none"
+                Text(viewModel.pendingDeleteEvent?.recurrenceRule != "none" && viewModel.pendingDeleteEvent != nil
                      ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
                      : "정말로 삭제하시겠습니까?")
             }
@@ -189,12 +204,8 @@ struct CalendarView: View {
                 ForEach(viewModel.eventsForSelectedDate) { event in
                     EventRow(
                         event: event,
-                        isCompleted: viewModel.dozyEvent(for: event)?.isCompleted ?? false,
-                        onToggle: event.source == .dozy ? {
-                            if let dozyEvent = viewModel.dozyEvent(for: event) {
-                                viewModel.toggleCompletion(for: dozyEvent)
-                            }
-                        } : nil
+                        isCompleted: viewModel.isCompleted(for: event),
+                        onToggle: { viewModel.toggleCompletion(for: event) }
                     )
                     .padding(.horizontal)
                     .onTapGesture {
@@ -215,11 +226,27 @@ struct CalendarView: View {
                 Label("수정", systemImage: "pencil")
             }
             Button(role: .destructive) {
-                viewModel.requestDelete(dozyEvent)
+                viewModel.requestDelete(event)
             } label: {
                 Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
             }
+        } else if event.source == .apple || event.source == .google {
+            Button { viewModel.startEditingCalendarEvent(event) } label: {
+                Label("수정", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                viewModel.requestDelete(event)
+            } label: {
+                Label("삭제", systemImage: "trash")
+            }
         }
+    }
+
+    private var alertTitle: String {
+        if let e = viewModel.pendingDeleteEvent {
+            return e.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제"
+        }
+        return "일정 삭제"
     }
 
     private var selectedDateLabel: String {
