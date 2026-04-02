@@ -36,6 +36,7 @@ final class DependencyContainer: ObservableObject {
     lazy var googleSignInService = GoogleSignInService()
     lazy var naverSignInService = NaverSignInService()
     lazy var calendarSourceManager = CalendarSourceManager()
+    lazy var patternAnalysisService = PatternAnalysisService()
     
     private lazy var appleCalendarService = CalendarService()
     private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
