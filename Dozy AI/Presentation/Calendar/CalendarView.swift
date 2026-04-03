@@ -177,7 +177,8 @@ struct CalendarView: View {
                     selectedDate: viewModel.selectedDate,
                     isToday: { viewModel.isToday($0) },
                     isSelected: { viewModel.isSelected($0) },
-                    onSelect: { viewModel.selectDate($0) }
+                    onSelect: { viewModel.selectDate($0) },
+                    onTapEvent: { viewModel.showDetailForEventID($0) }
                 )
             }
         }

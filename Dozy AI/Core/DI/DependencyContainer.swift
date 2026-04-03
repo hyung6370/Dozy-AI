@@ -36,6 +36,7 @@ final class DependencyContainer: ObservableObject {
     lazy var googleSignInService = GoogleSignInService()
     lazy var naverSignInService = NaverSignInService()
     lazy var calendarSourceManager = CalendarSourceManager()
+    lazy var patternAnalysisService = PatternAnalysisService()
     
     private lazy var appleCalendarService = CalendarService()
     private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
@@ -63,6 +64,8 @@ final class DependencyContainer: ObservableObject {
     lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
     lazy var toggleCalendarEventCompletionUseCase = ToggleCalendarEventCompletionUseCase(repository: eventCompletionRepository)
     lazy var fetchEventCompletionsUseCase = FetchEventCompletionsUseCase(repository: eventCompletionRepository)
+    lazy var fetchDozyEventsForPeriodUseCase = FetchDozyEventsForPeriodUseCase(repository: dozyEventRepository)
+    lazy var fetchEventCompletionsForPeriodUseCase = FetchEventCompletionsForPeriodUseCase(repository: eventCompletionRepository)
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()

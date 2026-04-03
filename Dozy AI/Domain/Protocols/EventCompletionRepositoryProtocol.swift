@@ -10,5 +10,6 @@ import Combine
 
 protocol EventCompletionRepositoryProtocol {
     func fetchCompletions(for eventIDs: [String]) -> AnyPublisher<[String: Bool], DozyError>
-    func toggle(eventID: String) -> AnyPublisher<Bool, DozyError>
+    func fetchCompletions(from start: Date, to end: Date) -> AnyPublisher<[EventCompletion], DozyError>
+    func toggle(eventID: String, eventDate: Date) -> AnyPublisher<Bool, DozyError>
 }

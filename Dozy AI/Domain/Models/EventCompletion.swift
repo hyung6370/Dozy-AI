@@ -12,11 +12,13 @@ import SwiftData
 final class EventCompletion {
     var eventID: String
     var isCompleted: Bool
+    var eventDate: Date = Date.distantPast
     var updatedAt: Date
-    
-    init(eventID: String) {
+
+    init(eventID: String, eventDate: Date) {
         self.eventID = eventID
         self.isCompleted = false
+        self.eventDate = eventDate
         self.updatedAt = Date()
     }
 }

@@ -15,6 +15,7 @@ struct MonthWeekRowView: View {
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
     let onSelect: (Date) -> Void
+    let onTapEvent: (String) -> Void
     
     private let headerH: CGFloat = 42
     private let rowH: CGFloat = 20
@@ -29,7 +30,23 @@ struct MonthWeekRowView: View {
         GeometryReader { geo in
             let cellW = geo.size.width / 7
             ZStack(alignment: .topLeading) {
-                
+
+                // 빈 영역 탭 → 날짜 선택 (pill/헤더 아래 레이어)
+                HStack(spacing: 0) {
+                    ForEach(0..<7, id: \.self) { col in
+                        Group {
+                            if let date = weekDates[col] {
+                                Color.clear
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { onSelect(date) }
+                            } else {
+                                Color.clear
+                            }
+                        }
+                        .frame(width: cellW, height: totalH)
+                    }
+                }
+
                 // 날짜 헤더
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
@@ -37,6 +54,8 @@ struct MonthWeekRowView: View {
                             if let date = weekDates[col] {
                                 Button { onSelect(date) } label: {
                                     dayLabel(date: date)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                             } else {
@@ -56,6 +75,7 @@ struct MonthWeekRowView: View {
                     EventPill(layout: layout)
                         .frame(width: max(0, pillW), height: rowH)
                         .offset(x: xOff, y: yOff)
+                        .onTapGesture { onTapEvent(layout.id) }
                 }
                 
                 // 넘침 표시
@@ -91,6 +111,7 @@ struct MonthWeekRowView: View {
             .foregroundStyle((isSelected(date) || isToday(date)) ? .white : .primary)
             .frame(width: 34, height: 34)
             .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : .clear))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -130,6 +151,7 @@ struct EventPill: View {
         selectedDate: Date(),
         isToday: { _ in false },
         isSelected: { _ in false },
-        onSelect: { _ in }
+        onSelect: { _ in },
+        onTapEvent: { _ in }
     )
 }

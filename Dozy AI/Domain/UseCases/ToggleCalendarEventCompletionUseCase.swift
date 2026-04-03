@@ -15,7 +15,7 @@ final class ToggleCalendarEventCompletionUseCase {
         self.repository = repository
     }
     
-    func execute(eventID: String) -> AnyPublisher<Bool, DozyError> {
-        repository.toggle(eventID: eventID)
+    func execute(eventID: String, eventDate: Date) -> AnyPublisher<Bool, DozyError> {
+        repository.toggle(eventID: eventID, eventDate: eventDate)
     }
 }
