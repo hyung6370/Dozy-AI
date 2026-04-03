@@ -15,6 +15,7 @@ struct InsightDashboardView: View {
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
             fetchEventsUseCase: container.fetchDozyEventsForPeriodUseCase,
+            fetchCompletionsUseCase: container.fetchEventCompletionsForPeriodUseCase,
             fetchLogsUseCase: container.fetchRecentLogsUseCase,
             patternService: container.patternAnalysisService
         ))
@@ -32,25 +33,26 @@ struct InsightDashboardView: View {
                         emptyState
                     } else {
                         summaryRow
-                        if !viewModel.dailyCompletionRates.isEmpty {
-                            completionTrendCard
-                        }
-                        if !viewModel.hourlyDistribution.isEmpty {
-                            hourlyCard
-                        }
-                        weekdayCard
-                        recurrenceCard
-                        if !viewModel.productivityScores.isEmpty {
-                            productivityCard
-                        }
-                        if !viewModel.categoryDistribution.isEmpty {
-                            categoryCard
-                        }
+                        chartSectionPager
                     }
                 }
                 .padding()
             }
             .navigationTitle("인사이트")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Picker("기간", selection: $viewModel.selectedPeriod) {
+                        ForEach(InsightPeriod.allCases, id: \.self) { period in
+                            Text(period.title).tag(period)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 180)
+                }
+            }
+            .onChange(of: viewModel.selectedPeriod) { _, _ in
+                viewModel.loadData()
+            }
             .onAppear { viewModel.loadData() }
             .refreshable { viewModel.loadData() }
         }
@@ -115,16 +117,78 @@ struct InsightDashboardView: View {
             
             if let change {
                 HStack(spacing: 2) {
-                    Image(systemName: change >= 0 ? "arrow.up" : "arrow.down")
-                    Text("\(Int(abs(change) * 100))")
+                    Image(systemName: trendIcon(for: change))
+                    Text(trendLabel(for: change))
                 }
                 .font(.caption2)
-                .foregroundStyle(change >= 0 ? .green : .red)
+                .foregroundStyle(trendColor(for: change))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+    
+    private func trendIcon(for change: Double) -> String {
+        if change > 0.02 { return "arrow.up.right" }
+        if change < -0.02 { return "arrow.down.right" }
+        return "arrow.right"
+    }
+    
+    private func trendLabel(for change: Double) -> String {
+        if abs(change) < 0.02 { return "이전과 동일" }
+        return "\(Int(abs(change) * 100))% \(change >= 0 ? "개선" : "감소")"
+    }
+    
+    private func trendColor(for change: Double) -> Color {
+        if change > 0.02 { return .green }
+        if change < -0.02 { return .red }
+        return .secondary
+    }
+
+    // MARK: - 섹션별 스와이프 Pager
+    private var chartSectionPager: some View {
+        TabView {
+            // 섹션 1 — 완료 분석
+            VStack(spacing: 16) {
+                completionTrendCard
+                weekdayCard
+            }
+            .padding(.horizontal, 4)
+            .tag(0)
+
+            // 섹션 2 — 시간 패턴
+            VStack(spacing: 16) {
+                hourlyCard
+                recurrenceCard
+            }
+            .padding(.horizontal, 4)
+            .tag(1)
+
+            // 섹션 3 — 업무 / 생산성
+            VStack(spacing: 16) {
+                productivityCard
+                categoryCard
+            }
+            .padding(.horizontal, 4)
+            .tag(2)
+        }
+        .tabViewStyle(.page(indexDisplayMode: .always))
+        .frame(height: 520)
+    }
+
+    // MARK: - 카드 Empty State 공통
+    private func cardEmptyState(icon: String = "tray", message: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 28))
+                .foregroundStyle(.tertiary)
+            Text(message)
+                .font(.subheadline).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, minHeight: 100)
+        .padding(.vertical, 8)
     }
 
     // MARK: - 일별 완료율 트렌드
@@ -132,27 +196,31 @@ struct InsightDashboardView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("일별 완료율", systemImage: "chart.line.uptrend.xyaxis")
                 .font(.headline)
-            Chart(viewModel.dailyCompletionRates, id: \.date) { item in
-                LineMark(
-                    x: .value("날짜", item.date, unit: .day),
-                    y: .value("완료율", item.rate * 100)
-                )
-                .foregroundStyle(Color.accentColor)
-                .interpolationMethod(.catmullRom)
-                AreaMark(
-                    x: .value("날짜", item.date, unit: .day),
-                    y: .value("완료율", item.rate * 100)
-                )
-                .foregroundStyle(Color.accentColor.opacity(0.15))
-                .interpolationMethod(.catmullRom)
-            }
-            .chartYScale(domain: 0...100)
-            .chartXAxis {
-                AxisMarks(values: .stride(by: .day, count: 5)) {
-                    AxisValueLabel(format: .dateTime.month().day())
+            if viewModel.dailyCompletionRates.isEmpty {
+                cardEmptyState(icon: "checkmark.circle", message: "일정을 완료하면\n완료율 추이를 볼 수 있어요")
+            } else {
+                Chart(viewModel.dailyCompletionRates, id: \.date) { item in
+                    LineMark(
+                        x: .value("날짜", item.date, unit: .day),
+                        y: .value("완료율", item.rate * 100)
+                    )
+                    .foregroundStyle(Color.accentColor)
+                    .interpolationMethod(.catmullRom)
+                    AreaMark(
+                        x: .value("날짜", item.date, unit: .day),
+                        y: .value("완료율", item.rate * 100)
+                    )
+                    .foregroundStyle(Color.accentColor.opacity(0.15))
+                    .interpolationMethod(.catmullRom)
                 }
+                .chartYScale(domain: 0...100)
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .day, count: 5)) {
+                        AxisValueLabel(format: .dateTime.month().day())
+                    }
+                }
+                .frame(height: 150)
             }
-            .frame(height: 150)
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
@@ -163,23 +231,27 @@ struct InsightDashboardView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("시간대별 집중도", systemImage: "clock")
                 .font(.headline)
-            if !viewModel.peakHours.isEmpty {
-                Text("피크 시간대: \(viewModel.peakHours.map { "\($0)시" }.joined(separator: ", "))")
-                    .font(.caption).foregroundStyle(.secondary)
+            if viewModel.hourlyDistribution.isEmpty {
+                cardEmptyState(icon: "clock", message: "일정이 쌓이면\n시간대별 패턴을 분석할 수 있어요")
+            } else {
+                if !viewModel.peakHours.isEmpty {
+                    Text("피크 시간대: \(viewModel.peakHours.map { "\($0)시" }.joined(separator: ", "))")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Chart(viewModel.hourlyDistribution, id: \.hour) { item in
+                    BarMark(
+                        x: .value("시간", "\(item.hour)시"),
+                        y: .value("이벤트 수", item.count)
+                    )
+                    .foregroundStyle(
+                        viewModel.peakHours.contains(item.hour)
+                        ? Color.orange.gradient
+                        : Color.accentColor.opacity(0.5).gradient
+                    )
+                    .cornerRadius(3)
+                }
+                .frame(height: 130)
             }
-            Chart(viewModel.hourlyDistribution, id: \.hour) { item in
-                BarMark(
-                    x: .value("시간", "\(item.hour)시"),
-                    y: .value("이벤트 수", item.count)
-                )
-                .foregroundStyle(
-                    viewModel.peakHours.contains(item.hour)
-                    ? Color.orange.gradient
-                    : Color.accentColor.opacity(0.5).gradient
-                )
-                .cornerRadius(3)
-            }
-            .frame(height: 130)
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
@@ -190,15 +262,19 @@ struct InsightDashboardView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("요일별 평균 일정 수", systemImage: "calendar")
                 .font(.headline)
-            Chart(viewModel.weekdayAvgCounts, id: \.weekday) { item in
-                BarMark(
-                    x: .value("요일", weekdayLabels[item.weekday]),
-                    y: .value("평균", item.avg)
-                )
-                .foregroundStyle(Color.purple.opacity(0.7).gradient)
-                .cornerRadius(4)
+            if viewModel.weekdayAvgCounts.allSatisfy({ $0.avg == 0 }) {
+                cardEmptyState(icon: "calendar.badge.plus", message: "일정을 더 추가하면\n요일 패턴을 확인할 수 있어요")
+            } else {
+                Chart(viewModel.weekdayAvgCounts, id: \.weekday) { item in
+                    BarMark(
+                        x: .value("요일", weekdayLabels[item.weekday]),
+                        y: .value("평균", item.avg)
+                    )
+                    .foregroundStyle(Color.purple.opacity(0.7).gradient)
+                    .cornerRadius(4)
+                }
+                .frame(height: 130)
             }
-            .frame(height: 130)
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
@@ -253,36 +329,44 @@ struct InsightDashboardView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("생산성 점수 추이", systemImage: "star.fill")
                 .font(.headline)
-            Chart(viewModel.productivityScores, id: \.date) { item in
-                LineMark(
-                    x: .value("날짜", item.date, unit: .day),
-                    y: .value("점수", item.score * 100)
-                )
-                .foregroundStyle(Color.yellow)
-                .symbol(.circle)
+            if viewModel.productivityScores.isEmpty {
+                cardEmptyState(icon: "star", message: "AI 일일 요약을 생성하면\n생산성 점수를 추적할 수 있어요")
+            } else {
+                Chart(viewModel.productivityScores, id: \.date) { item in
+                    LineMark(
+                        x: .value("날짜", item.date, unit: .day),
+                        y: .value("점수", item.score * 100)
+                    )
+                    .foregroundStyle(Color.yellow)
+                    .symbol(.circle)
+                }
+                .chartYScale(domain: 0...100)
+                .frame(height: 130)
             }
-            .chartYScale(domain: 0...100)
-            .frame(height: 130)
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
-    
+
     // MARK: - 카테고리 분포
     private var categoryCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("업무 카테고리", systemImage: "chart.pie")
                 .font(.headline)
-            Chart(viewModel.categoryDistribution, id: \.category) { item in
-                SectorMark(
-                    angle: .value("횟수", item.count),
-                    innerRadius: .ratio(0.5),
-                    angularInset: 2
-                )
-                .foregroundStyle(by: .value("카테고리", item.category))
-                .cornerRadius(4)
+            if viewModel.categoryDistribution.isEmpty {
+                cardEmptyState(icon: "chart.pie", message: "AI 요약이 쌓이면\n카테고리 분포를 볼 수 있어요")
+            } else {
+                Chart(viewModel.categoryDistribution, id: \.category) { item in
+                    SectorMark(
+                        angle: .value("횟수", item.count),
+                        innerRadius: .ratio(0.5),
+                        angularInset: 2
+                    )
+                    .foregroundStyle(by: .value("카테고리", item.category))
+                    .cornerRadius(4)
+                }
+                .frame(height: 160)
             }
-            .frame(height: 160)
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))

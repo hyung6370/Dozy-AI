@@ -33,7 +33,23 @@ final class EventCompletionRepository: EventCompletionRepositoryProtocol {
         .eraseToAnyPublisher()
     }
     
-    func toggle(eventID: String) -> AnyPublisher<Bool, DozyError> {
+    func fetchCompletions(from start: Date, to end: Date) -> AnyPublisher<[EventCompletion], DozyError> {
+        Future { [modelContainer] promise in
+            Task { @MainActor in
+                let context = modelContainer.mainContext
+                do {
+                    let all = try context.fetch(FetchDescriptor<EventCompletion>())
+                    let filtered = all.filter { $0.eventDate >= start && $0.eventDate < end && $0.isCompleted }
+                    promise(.success(filtered))
+                } catch {
+                    promise(.failure(.saveFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func toggle(eventID: String, eventDate: Date) -> AnyPublisher<Bool, DozyError> {
         Future { [modelContainer] promise in
             Task { @MainActor in
                 let context = modelContainer.mainContext
@@ -47,7 +63,7 @@ final class EventCompletionRepository: EventCompletionRepositoryProtocol {
                         try context.save()
                         promise(.success(existing.isCompleted))
                     } else {
-                        let new = EventCompletion(eventID: eventID)
+                        let new = EventCompletion(eventID: eventID, eventDate: eventDate)
                         new.isCompleted = true
                         context.insert(new)
                         try context.save()

@@ -51,58 +51,78 @@ final class InsightDashboardViewModel: ObservableObject {
     @Published var hasWorkLogData = false
     
     private let fetchEventsUseCase: FetchDozyEventsForPeriodUseCase
+    private let fetchCompletionsUseCase: FetchEventCompletionsForPeriodUseCase
     private let fetchLogsUseCase: FetchRecentLogsUseCase
     private let patternService: PatternAnalysisService
     private var cancellables = Set<AnyCancellable>()
-    
+
     init(
         fetchEventsUseCase: FetchDozyEventsForPeriodUseCase,
+        fetchCompletionsUseCase: FetchEventCompletionsForPeriodUseCase,
         fetchLogsUseCase: FetchRecentLogsUseCase,
         patternService: PatternAnalysisService
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
+        self.fetchCompletionsUseCase = fetchCompletionsUseCase
         self.fetchLogsUseCase = fetchLogsUseCase
         self.patternService = patternService
     }
-    
+
     func loadData() {
         isLoading = true
         let days = selectedPeriod.rawValue
         let cal = Calendar.current
         let now = Date()
-        let start = cal.date(byAdding: .day, value: -days, to: now)!
+        let start     = cal.date(byAdding: .day, value: -days, to: now)!
         let prevStart = cal.date(byAdding: .day, value: -days * 2, to: now)!
-        
-        Publishers.Zip3(
-            fetchEventsUseCase.execute(from: start, to: now),
-            fetchEventsUseCase.execute(from: prevStart, to: start),
-            fetchLogsUseCase.execute(days: days)
+
+        Publishers.Zip(
+            Publishers.Zip3(
+                fetchEventsUseCase.execute(from: start, to: now),
+                fetchEventsUseCase.execute(from: prevStart, to: start),
+                fetchLogsUseCase.execute(days: days)
+            ),
+            Publishers.Zip(
+                fetchCompletionsUseCase.execute(from: start, to: now),
+                fetchCompletionsUseCase.execute(from: prevStart, to: start)
+            )
         )
         .receive(on: DispatchQueue.main)
         .sink(
             receiveCompletion: { [weak self] _ in self?.isLoading = false },
-            receiveValue: { [weak self] current, previous, logs in
+            receiveValue: { [weak self] eventsAndLogs, completions in
                 guard let self else { return }
+                let (current, previous, logs) = eventsAndLogs
+                let (currentCal, previousCal) = completions
                 self.isLoading = false
-                self.applyEvents(current: current, previous: previous, days: days)
+                self.applyEvents(current: current, previous: previous,
+                                 currentCal: currentCal, previousCal: previousCal,
+                                 days: days)
                 self.applyLogs(logs)
             }
         )
         .store(in: &cancellables)
     }
-    
-    private func applyEvents(current: [DozyEvent], previous: [DozyEvent], days: Int) {
-        hasDozyData = !current.isEmpty
-        averageCompletionRate = patternService.averageCompletionRate(from: current)
-        completionRateChange = patternService.completionRateChange(current: current, previous: previous)
-        dailyCompletionRates = patternService.dailyCompletionRates(from: current, days: min(days, 30))
-        currentStreak = patternService.currentStreak(from: current)
+
+    private func applyEvents(current: [DozyEvent], previous: [DozyEvent],
+                             currentCal: [EventCompletion], previousCal: [EventCompletion],
+                             days: Int) {
+        hasDozyData = !current.isEmpty || !currentCal.isEmpty
+        averageCompletionRate = patternService.averageCompletionRate(
+            from: current, calendarCompletions: currentCal)
+        completionRateChange = patternService.completionRateChange(
+            current: current, previous: previous,
+            currentCal: currentCal, previousCal: previousCal)
+        dailyCompletionRates = patternService.dailyCompletionRates(
+            from: current, calendarCompletions: currentCal, days: min(days, 30))
+        currentStreak = patternService.currentStreak(
+            from: current, calendarCompletions: currentCal)
         hourlyDistribution = patternService.hourlyDistribution(from: current)
-        peakHours = patternService.peakHours(from: current)
-        weekdayAvgCounts = patternService.weekdayAverageCount(from: current, periodDays: days)
-        let ratio = patternService.recurrenceRatio(from: current)
-        recurringCount = ratio.recurring
-        oneTimeCount = ratio.oneTime
+        peakHours          = patternService.peakHours(from: current)
+        weekdayAvgCounts   = patternService.weekdayAverageCount(from: current, periodDays: days)
+        let ratio          = patternService.recurrenceRatio(from: current)
+        recurringCount     = ratio.recurring
+        oneTimeCount       = ratio.oneTime
     }
     
     private func applyLogs(_ logs: [WorkLog]) {

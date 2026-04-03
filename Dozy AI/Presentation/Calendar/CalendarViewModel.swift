@@ -209,7 +209,7 @@ final class CalendarViewModel: ObservableObject {
             guard let dozyEvent = dozyEventsByID[event.id] else { return }
             toggleCompletion(for: dozyEvent)
         } else {
-            toggleCalendarEventCompletionUseCase.execute(eventID: event.id)
+            toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
                     self?.completionsByID[event.id] = newValue

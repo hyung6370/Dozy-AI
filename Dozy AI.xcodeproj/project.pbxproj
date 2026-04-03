@@ -124,6 +124,7 @@
 		F65068372F7E533200F9C124 /* InsightDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068362F7E533200F9C124 /* InsightDashboardView.swift */; };
 		F65068392F7E536700F9C124 /* InsightDashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068382F7E536700F9C124 /* InsightDashboardViewModel.swift */; };
 		F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */; };
+		F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */; };
 		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -268,6 +269,7 @@
 		F65068362F7E533200F9C124 /* InsightDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDashboardView.swift; sourceTree = "<group>"; };
 		F65068382F7E536700F9C124 /* InsightDashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDashboardViewModel.swift; sourceTree = "<group>"; };
 		F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchDozyEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
+		F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchEventCompletionsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -529,6 +531,7 @@
 				F650682C2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift */,
 				F650682E2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift */,
 				F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */,
+				F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */,
 			);
 			path = UseCases;
 			sourceTree = "<group>";
@@ -935,6 +938,7 @@
 				F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */,
 				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
 				F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */,
+				F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */,
 				F619D96D2F7A355C00084C61 /* DozyEventRepositoryProtocol.swift in Sources */,
 				DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */,
 				F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */,

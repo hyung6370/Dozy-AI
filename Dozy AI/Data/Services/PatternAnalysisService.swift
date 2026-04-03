@@ -10,65 +10,92 @@ import Foundation
 final class PatternAnalysisService {
     
     // MARK: - 완료율
-    
-    func averageCompletionRate(from events: [DozyEvent]) -> Double {
-        guard !events.isEmpty else { return 0 }
-        return Double(events.filter(\.isCompleted).count) / Double(events.count)
+
+    func averageCompletionRate(from events: [DozyEvent],
+                               calendarCompletions: [EventCompletion] = []) -> Double {
+        let dozyTotal = events.count
+        let calTotal  = calendarCompletions.count
+        let total = dozyTotal + calTotal
+        guard total > 0 else { return 0 }
+
+        let dozyCompleted = events.filter(\.isCompleted).count
+        let calCompleted  = calendarCompletions.filter(\.isCompleted).count
+        return Double(dozyCompleted + calCompleted) / Double(total)
     }
-    
-    /// 일별 완료율 트렌드
-    func dailyCompletionRates(from events: [DozyEvent], days: Int) -> [(date: Date, rate: Double)] {
+
+    /// 일별 완료율 트렌드 (DozyEvent + CalendarEvent completions 합산)
+    func dailyCompletionRates(from events: [DozyEvent],
+                              calendarCompletions: [EventCompletion] = [],
+                              days: Int) -> [(date: Date, rate: Double)] {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
-        
+
         return (0..<days).reversed().compactMap { offset -> (Date, Double)? in
             guard let day = cal.date(byAdding: .day, value: -offset, to: today),
                   let nextDay = cal.date(byAdding: .day, value: 1, to: day) else { return nil }
-            
-            let dayEvents = events.filter {
+
+            let dayDozy = events.filter {
                 let s = cal.startOfDay(for: $0.startDate)
                 return s >= day && s < nextDay
             }
-            guard !dayEvents.isEmpty else { return nil }
-            
-            let rate = Double(dayEvents.filter(\.isCompleted).count) / Double(dayEvents.count)
-            return (day, rate)
+            let dayCal = calendarCompletions.filter {
+                let s = cal.startOfDay(for: $0.eventDate)
+                return s >= day && s < nextDay
+            }
+
+            let total = dayDozy.count + dayCal.count
+            guard total > 0 else { return nil }
+
+            let completed = dayDozy.filter(\.isCompleted).count
+                          + dayCal.filter(\.isCompleted).count
+            return (day, Double(completed) / Double(total))
         }
     }
-    
+
     // MARK: - 이전 기간 대비 변화
-    
+
     /// 양수: 개선, 음수: 감소 (0.15 = +15%)
-    func completionRateChange(current: [DozyEvent], previous: [DozyEvent]) -> Double {
-        let cur = averageCompletionRate(from: current)
-        let prev = averageCompletionRate(from: previous)
+    func completionRateChange(current: [DozyEvent], previous: [DozyEvent],
+                              currentCal: [EventCompletion] = [],
+                              previousCal: [EventCompletion] = []) -> Double {
+        let cur  = averageCompletionRate(from: current,  calendarCompletions: currentCal)
+        let prev = averageCompletionRate(from: previous, calendarCompletions: previousCal)
         guard prev > 0 else { return cur > 0 ? 1.0 : 0 }
         return (cur - prev) / prev
     }
     
     // MARK: - 연속 달성 스트릭
     
-    func currentStreak(from events: [DozyEvent], threshold: Double = 0.5) -> Int {
+    func currentStreak(from events: [DozyEvent],
+                       calendarCompletions: [EventCompletion] = [],
+                       threshold: Double = 0.5) -> Int {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
         var streak = 0
         var offset = 0
-        
+
         while true {
             guard let day = cal.date(byAdding: .day, value: -offset, to: today),
                   let nextDay = cal.date(byAdding: .day, value: 1, to: day) else { break }
-            
-            let dayEvents = events.filter {
+
+            let dayDozy = events.filter {
                 let s = cal.startOfDay(for: $0.startDate)
                 return s >= day && s < nextDay
             }
-            
-            if dayEvents.isEmpty {
+            let dayCal = calendarCompletions.filter {
+                let s = cal.startOfDay(for: $0.eventDate)
+                return s >= day && s < nextDay
+            }
+
+            let total = dayDozy.count + dayCal.count
+            if total == 0 {
                 if offset == 0 { offset += 1; continue }
                 else { break }
             }
-            
-            let rate = Double(dayEvents.filter(\.isCompleted).count) / Double(dayEvents.count)
+
+            let completed = dayDozy.filter(\.isCompleted).count
+                          + dayCal.filter(\.isCompleted).count
+            let rate = Double(completed) / Double(total)
             if rate >= threshold {
                 streak += 1
                 offset += 1
