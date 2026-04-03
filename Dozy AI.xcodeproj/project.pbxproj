@@ -68,6 +68,11 @@
 		F60ADF042F7FAA01007B8D9F /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF032F7FAA01007B8D9F /* Realtime */; };
 		F60ADF062F7FAA01007B8D9F /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF052F7FAA01007B8D9F /* Storage */; };
 		F60ADF082F7FAA01007B8D9F /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF072F7FAA01007B8D9F /* Supabase */; };
+		F60ADF0A2F7FB007007B8D9F /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */; };
+		F60ADF0C2F7FB0B0007B8D9F /* AuthUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */; };
+		F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */; };
+		F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */; };
+		F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */; };
 		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
 		F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD02F7B448300FA0476 /* NaverSignInService.swift */; };
 		F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */; };
@@ -215,6 +220,11 @@
 		DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkShortcut.swift; sourceTree = "<group>"; };
 		DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarizeShortcut.swift; sourceTree = "<group>"; };
 		DD9F694D2F6AD2CF001952F6 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
+		F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUser.swift; sourceTree = "<group>"; };
+		F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthError.swift; sourceTree = "<group>"; };
+		F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		F616DCD02F7B448300FA0476 /* NaverSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverSignInService.swift; sourceTree = "<group>"; };
 		F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarListResponse.swift; sourceTree = "<group>"; };
 		F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarService.swift; sourceTree = "<group>"; };
@@ -464,6 +474,7 @@
 				F619D96A2F7A344900084C61 /* DozyEvent.swift */,
 				F65068202F7D072E00F9C124 /* CalendarEventEditRequest.swift */,
 				F65068222F7D076200F9C124 /* EventCompletion.swift */,
+				F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -519,9 +530,11 @@
 		DD9F68E02F6ACCD9001952F6 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */,
 				DD9F68E92F6ACD2E001952F6 /* Logger.swift */,
 				DD9F68EB2F6ACD36001952F6 /* Constants.swift */,
 				DD44DDD22F72C44100EEE463 /* DozyError.swift */,
+				F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -596,6 +609,7 @@
 				F616DCD02F7B448300FA0476 /* NaverSignInService.swift */,
 				F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */,
 				F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */,
+				F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -678,6 +692,7 @@
 			children = (
 				F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */,
 				F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */,
+				F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -872,6 +887,7 @@
 				F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */,
 				F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */,
 				DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */,
+				F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */,
 				F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */,
 				F619D9712F7A360D00084C61 /* FetchDozyEventsUseCase.swift in Sources */,
 				DD9F68E62F6ACD14001952F6 /* String+Extensions.swift in Sources */,
@@ -920,11 +936,13 @@
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
 				F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */,
 				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
+				F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */,
 				F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */,
 				F65068352F7DFB6600F9C124 /* MonthWeekRowView.swift in Sources */,
 				F616DCEC2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift in Sources */,
 				F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */,
 				DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */,
+				F60ADF0A2F7FB007007B8D9F /* SupabaseClient.swift in Sources */,
 				DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */,
 				DD9F68EA2F6ACD2E001952F6 /* Logger.swift in Sources */,
 				DD9F68F22F6ACD74001952F6 /* CalendarEvent.swift in Sources */,
@@ -943,10 +961,12 @@
 				DD9F69162F6ACF3B001952F6 /* SpeechService.swift in Sources */,
 				F65068372F7E533200F9C124 /* InsightDashboardView.swift in Sources */,
 				F619D95F2F7528C600084C61 /* CalendarSettingsViewModel.swift in Sources */,
+				F60ADF0C2F7FB0B0007B8D9F /* AuthUser.swift in Sources */,
 				DD9F68EE2F6ACD5B001952F6 /* WorkLog.swift in Sources */,
 				DD9F691B2F6ACF74001952F6 /* SwiftDataContainer.swift in Sources */,
 				F6BC59912F7396450090DF3A /* File.swift in Sources */,
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
+				F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */,
 				F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */,
 				F619D9832F7A422900084C61 /* DayCell.swift in Sources */,
 				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,

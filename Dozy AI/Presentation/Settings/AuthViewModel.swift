@@ -1,0 +1,81 @@
+//
+//  AuthViewModel.swift
+//  Dozy AI
+//
+//  Created by Hyungjun KIM on 4/3/26.
+//
+
+import Foundation
+import Combine
+
+@MainActor
+final class AuthViewModel: ObservableObject {
+
+    @Published var currentUser: AuthUser? = nil
+    @Published var isLoading = false
+    @Published var errorMessage: String? = nil
+
+    private let authService = AuthService()
+    private var cancellables = Set<AnyCancellable>()
+
+    var isLoggedIn: Bool { currentUser != nil }
+
+    func restoreSession() {
+        authService.restoreSession()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] user in
+                self?.currentUser = user
+            }
+            .store(in: &cancellables)
+    }
+
+    func signInWithApple() {
+        isLoading = true
+        errorMessage = nil
+        authService.signInWithApple()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    self?.currentUser = user
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func signInWithGoogle() {
+        isLoading = true
+        errorMessage = nil
+        authService.signInWithGoogle()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    self?.currentUser = user
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func signOut() {
+        authService.signOut()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] in
+                    self?.currentUser = nil
+                }
+            )
+            .store(in: &cancellables)
+    }
+}
