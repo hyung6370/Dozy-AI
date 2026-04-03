@@ -65,6 +65,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var weekLayouts: [Date: [CalendarEventLayout]] = [:]
     @Published var deleteErrorMessage: String? = nil
     @Published var showDeleteSuccess = false
+    private var allEventsInMonth: [String: CalendarEvent] = [:]
     
     // MARK: - Dependencies
     private let fetchEventsUseCase: FetchCalendarEventUseCase
@@ -183,6 +184,14 @@ final class CalendarViewModel: ObservableObject {
     func showDetail(for event: CalendarEvent) {
         detailEvent = event
         showEventDetail = true
+    }
+
+    func showDetailForEventID(_ id: String) {
+        if let event = eventsForSelectedDate.first(where: { $0.id == id }) {
+            showDetail(for: event)
+        } else if let event = allEventsInMonth[id] {
+            showDetail(for: event)
+        }
     }
     
     func toggleCompletion(for event: DozyEvent) {
@@ -417,7 +426,7 @@ final class CalendarViewModel: ObservableObject {
     
     private func buildLayouts(from results: [(Date, [CalendarEvent])]) {
         let cal = Calendar.current
-        
+
         // 이벤트별 날짜 집합 구성
         var eventDatesMap: [String: (CalendarEvent, Set<Date>)] = [:]
         for (date, events) in results {
@@ -430,6 +439,9 @@ final class CalendarViewModel: ObservableObject {
                 }
             }
         }
+
+        // 월 전체 이벤트 캐시 갱신 (pill 탭 → 상세 조회용)
+        allEventsInMonth = eventDatesMap.mapValues { $0.0 }
         
         var barsDict: [Date: [EventBarInfo]] = [:]
         for (id, (event, dates)) in eventDatesMap {
