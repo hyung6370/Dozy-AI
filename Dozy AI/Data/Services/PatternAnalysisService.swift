@@ -9,44 +9,137 @@ import Foundation
 
 final class PatternAnalysisService {
     
-    // 최근 N일 WorkLog로 주간 생산성 추이 계산
-    func weeklyProductivity(from logs: [WorkLog]) -> [(date: Date, score: Double)] {
-        logs.suffix(7).compactMap { log in
+    // MARK: - 완료율
+    
+    func averageCompletionRate(from events: [DozyEvent]) -> Double {
+        guard !events.isEmpty else { return 0 }
+        return Double(events.filter(\.isCompleted).count) / Double(events.count)
+    }
+    
+    /// 일별 완료율 트렌드
+    func dailyCompletionRates(from events: [DozyEvent], days: Int) -> [(date: Date, rate: Double)] {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        
+        return (0..<days).reversed().compactMap { offset -> (Date, Double)? in
+            guard let day = cal.date(byAdding: .day, value: -offset, to: today),
+                  let nextDay = cal.date(byAdding: .day, value: 1, to: day) else { return nil }
+            
+            let dayEvents = events.filter {
+                let s = cal.startOfDay(for: $0.startDate)
+                return s >= day && s < nextDay
+            }
+            guard !dayEvents.isEmpty else { return nil }
+            
+            let rate = Double(dayEvents.filter(\.isCompleted).count) / Double(dayEvents.count)
+            return (day, rate)
+        }
+    }
+    
+    // MARK: - 이전 기간 대비 변화
+    
+    /// 양수: 개선, 음수: 감소 (0.15 = +15%)
+    func completionRateChange(current: [DozyEvent], previous: [DozyEvent]) -> Double {
+        let cur = averageCompletionRate(from: current)
+        let prev = averageCompletionRate(from: previous)
+        guard prev > 0 else { return cur > 0 ? 1.0 : 0 }
+        return (cur - prev) / prev
+    }
+    
+    // MARK: - 연속 달성 스트릭
+    
+    func currentStreak(from events: [DozyEvent], threshold: Double = 0.5) -> Int {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        var streak = 0
+        var offset = 0
+        
+        while true {
+            guard let day = cal.date(byAdding: .day, value: -offset, to: today),
+                  let nextDay = cal.date(byAdding: .day, value: 1, to: day) else { break }
+            
+            let dayEvents = events.filter {
+                let s = cal.startOfDay(for: $0.startDate)
+                return s >= day && s < nextDay
+            }
+            
+            if dayEvents.isEmpty {
+                if offset == 0 { offset += 1; continue }
+                else { break }
+            }
+            
+            let rate = Double(dayEvents.filter(\.isCompleted).count) / Double(dayEvents.count)
+            if rate >= threshold {
+                streak += 1
+                offset += 1
+            } else {
+                break
+            }
+        }
+        return streak
+    }
+    
+    // MARK: - 시간대별 집중도
+    
+    func hourlyDistribution(from events: [DozyEvent]) -> [(hour: Int, count: Int)] {
+        var counts: [Int: Int] = [:]
+        for event in events where !event.isAllDay {
+            let hour = Calendar.current.component(.hour, from: event.startDate)
+            counts[hour, default: 0] += 1
+        }
+        return counts.map { ($0.key, $0.value) }.sorted { $0.hour < $1.hour }
+    }
+    
+    func peakHours(from events: [DozyEvent]) -> [Int] {
+        hourlyDistribution(from: events)
+            .sorted { $0.count > $1.count }
+            .prefix(3)
+            .map(\.hour)
+    }
+    
+    // MARK: - 반복 vs 단발성
+    
+    func recurrenceRatio(from events: [DozyEvent]) -> (recurring: Int, oneTime: Int) {
+        let recurring = events.filter { $0.recurrenceRule != "none" }.count
+        return (recurring, events.count - recurring)
+    }
+    
+    // MARK: - 요일별 평균 일정 수
+    
+    func weekdayAverageCount(from events: [DozyEvent], periodDays: Int) -> [(weekday: Int, avg: Double)] {
+        let cal = Calendar.current
+        var totals: [Int: Int] = [:]
+        for event in events {
+            let wd = cal.component(.weekday, from: event.startDate) - 1
+            totals[wd, default: 0] += 1
+        }
+        let numWeeks = max(1, periodDays / 7)
+        return (0..<7).map { wd in
+            (weekday: wd, avg: Double(totals[wd, default: 0]) / Double(numWeeks))
+        }
+    }
+    
+    // MARK: - WorkLog 기반
+    
+    func categoryDistribution(from logs: [WorkLog]) -> [(category: String, count: Int)] {
+        var freq: [String: Int] = [:]
+        for log in logs where !log.category.isEmpty && log.category != "일반" {
+            freq[log.category, default: 0] += 1
+        }
+        return freq.map { ($0.key, $0.value) }.sorted { $0.count > $1.count }
+    }
+    
+    func productivityScores(from logs: [WorkLog]) -> [(date: Date, score: Double)] {
+        logs.compactMap { log in
             guard let score = log.productivityScore else { return nil }
             return (date: log.date, score: score)
         }
+        .sorted { $0.date < $1.date }
     }
     
-    // 카테고리 분포 (빈도 기준)
-    func categoryDistribution(from logs: [WorkLog]) -> [(category: String, count: Int)] {
-        var freq: [String: Int] = [:]
-        for log in logs where !log.category.isEmpty {
-            freq[log.category, default: 0] += 1
-        }
-        return freq.map { ($0.key, $0.value) }
-            .sorted { $0.count > $1.count }
-    }
-    
-    // 요일별 평균 생산성 (0=일 ~ 6=토)
-    func weekdayAverageScore(from logs: [WorkLog]) -> [(weekday: Int, score: Double)] {
-        var totals: [Int: (sum: Double, count: Int)] = [:]
-        let cal = Calendar.current
-        for log in logs {
-            guard let score = log.productivityScore else { continue }
-            let wd = cal.component(.weekday, from: log.date) - 1 // 0-based
-            totals[wd, default: (0, 0)].sum += score
-            totals[wd, default: (0, 0)].count += 1
-        }
-        return (0..<7).compactMap { wd in
-            guard let t = totals[wd], t.count > 0 else { return nil }
-            return (weekday: wd, score: t.sum / Double(t.count))
-        }
-    }
-    
-    // 평균 생산성 점수
-    func averageScore(from logs: [WorkLog]) -> Double {
+    func averageProductivityScore(from logs: [WorkLog]) -> Double? {
         let valid = logs.compactMap(\.productivityScore)
-        guard !valid.isEmpty else { return 0 }
+        guard !valid.isEmpty else { return nil }
         return valid.reduce(0, +) / Double(valid.count)
     }
 }

@@ -64,6 +64,7 @@ final class DependencyContainer: ObservableObject {
     lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
     lazy var toggleCalendarEventCompletionUseCase = ToggleCalendarEventCompletionUseCase(repository: eventCompletionRepository)
     lazy var fetchEventCompletionsUseCase = FetchEventCompletionsUseCase(repository: eventCompletionRepository)
+    lazy var fetchDozyEventsForPeriodUseCase = FetchDozyEventsForPeriodUseCase(repository: dozyEventRepository)
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()

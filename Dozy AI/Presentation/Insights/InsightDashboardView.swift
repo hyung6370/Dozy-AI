@@ -14,7 +14,8 @@ struct InsightDashboardView: View {
     
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
-            fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
+            fetchEventsUseCase: container.fetchDozyEventsForPeriodUseCase,
+            fetchLogsUseCase: container.fetchRecentLogsUseCase,
             patternService: container.patternAnalysisService
         ))
     }
@@ -24,15 +25,27 @@ struct InsightDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     if viewModel.isLoading {
-                        ProgressView().padding(.top, 60)
+                        ProgressView().frame(maxWidth: .infinity).padding(.top, 80)
+                    } else if !viewModel.hasDozyData && !viewModel.hasWorkLogData {
+                        emptyState
                     } else {
-                        averageScoreCard
-                        weeklyChart
-                        weekdayChart
-                        categoryChart
-                        highlightsSection
+                        summaryRow
+                        if !viewModel.dailyCompletionRates.isEmpty {
+                            completionTrendCard
+                        }
+                        if !viewModel.hourlyDistribution.isEmpty {
+                            hourlyCard
+                        }
+                        weekdayCard
+                        recurrenceCard
+                        if !viewModel.productivityScores.isEmpty {
+                            productivityCard
+                        }
+                        if !viewModel.categoryDistribution.isEmpty {
+                            categoryCard
+                        }
                     }
                 }
                 .padding()
@@ -43,78 +56,224 @@ struct InsightDashboardView: View {
         }
     }
     
-    // MARK: - 평균 생산성 카드
-    private var averageScoreCard: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("30일 평균 생산성")
-                    .font(.subheadline).foregroundStyle(.secondary)
-                Text("\(Int(viewModel.averageScore * 100))점")
-                    .font(.system(size: 40, weight: .bold))
-            }
-            Spacer()
-            Circle()
-                .trim(from: 0, to: viewModel.averageScore)
-                .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .frame(width: 60, height: 60)
-                .animation(.easeOut(duration: 0.6), value: viewModel.averageScore)
+    // MARK: - Empty State
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "chart.bar.xaxis")
+                .font(.system(size: 60))
+                .foregroundStyle(.secondary)
+            Text("아직 분석할 데이터가 없어요")
+                .font(.headline)
+            Text("Dozy에 일정을 추가하면\n패턴 분석을 시작할 수 있어요")
+                .font(.subheadline).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .padding(.top, 100)
     }
     
-    // MARK: - 주간 생산성 추이
-    private var weeklyChart: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("최근 7일 생산성", systemImage: "chart.line.uptrend.xyaxis")
-                .font(.headline)
-            Chart(viewModel.weeklyData, id: \.date) { item in
-                BarMark(
-                    x: .value("날짜", item.date, unit: .day),
-                    y: .value("점수", item.score * 100)
+    // MARK: - 요약 3종 카드
+    private var summaryRow: some View {
+        HStack(spacing: 12) {
+            summaryCard(
+                value: "\(Int(viewModel.averageCompletionRate * 100))%",
+                label: "평균 완료율",
+                change: viewModel.completionRateChange,
+                icon: "checkmark.circle.fill",
+                color: .green
+            )
+            
+            summaryCard(
+                value: "\(viewModel.currentStreak)일",
+                label: "연속 달성",
+                change: nil,
+                icon: "flame.fill",
+                color: .orange
+            )
+            
+            if let score = viewModel.averageProductivityScore {
+                summaryCard(
+                    value: "\(Int(score * 100))점",
+                    label: "생산성 점수",
+                    change: nil,
+                    icon: "star.fill",
+                    color: .yellow
                 )
-                .foregroundStyle(Color.accentColor.gradient)
-                .cornerRadius(4)
+            }
+        }
+    }
+    
+    private func summaryCard(value: String, label: String, change: Double?, icon: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+            Text(value)
+                .font(.title2)
+                .fontWeight(.bold)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            
+            if let change {
+                HStack(spacing: 2) {
+                    Image(systemName: change >= 0 ? "arrow.up" : "arrow.down")
+                    Text("\(Int(abs(change) * 100))")
+                }
+                .font(.caption2)
+                .foregroundStyle(change >= 0 ? .green : .red)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    // MARK: - 일별 완료율 트렌드
+    private var completionTrendCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("일별 완료율", systemImage: "chart.line.uptrend.xyaxis")
+                .font(.headline)
+            Chart(viewModel.dailyCompletionRates, id: \.date) { item in
+                LineMark(
+                    x: .value("날짜", item.date, unit: .day),
+                    y: .value("완료율", item.rate * 100)
+                )
+                .foregroundStyle(Color.accentColor)
+                .interpolationMethod(.catmullRom)
+                AreaMark(
+                    x: .value("날짜", item.date, unit: .day),
+                    y: .value("완료율", item.rate * 100)
+                )
+                .foregroundStyle(Color.accentColor.opacity(0.15))
+                .interpolationMethod(.catmullRom)
             }
             .chartYScale(domain: 0...100)
             .chartXAxis {
-                AxisMarks(values: .stride(by: .day)) { value in
-                    AxisValueLabel(format: .dateTime.day())
+                AxisMarks(values: .stride(by: .day, count: 5)) {
+                    AxisValueLabel(format: .dateTime.month().day())
                 }
             }
-            .frame(height: 160)
+            .frame(height: 150)
         }
         .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+    
+    // MARK: - 시간대별 집중도
+    private var hourlyCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("시간대별 집중도", systemImage: "clock")
+                .font(.headline)
+            if !viewModel.peakHours.isEmpty {
+                Text("피크 시간대: \(viewModel.peakHours.map { "\($0)시" }.joined(separator: ", "))")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Chart(viewModel.hourlyDistribution, id: \.hour) { item in
+                BarMark(
+                    x: .value("시간", "\(item.hour)시"),
+                    y: .value("이벤트 수", item.count)
+                )
+                .foregroundStyle(
+                    viewModel.peakHours.contains(item.hour)
+                    ? Color.orange.gradient
+                    : Color.accentColor.opacity(0.5).gradient
+                )
+                .cornerRadius(3)
+            }
+            .frame(height: 130)
+        }
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
     
     // MARK: - 요일별 평균
-    private var weekdayChart: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("요일별 평균 생산성", systemImage: "calendar")
+    private var weekdayCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("요일별 평균 일정 수", systemImage: "calendar")
                 .font(.headline)
-            Chart(viewModel.weekdayData, id: \.weekday) { item in
+            Chart(viewModel.weekdayAvgCounts, id: \.weekday) { item in
                 BarMark(
                     x: .value("요일", weekdayLabels[item.weekday]),
-                    y: .value("점수", item.score * 100)
+                    y: .value("평균", item.avg)
                 )
-                .foregroundStyle(Color.orange.gradient)
+                .foregroundStyle(Color.purple.opacity(0.7).gradient)
                 .cornerRadius(4)
             }
-            .chartYScale(domain: 0...100)
-            .frame(height: 140)
+            .frame(height: 130)
         }
         .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+    
+    // MARK: - 반복 vs 단발성
+    private var recurrenceCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("일정 유형 분포", systemImage: "arrow.trianglehead.clockwise")
+                .font(.headline)
+            HStack(spacing: 2) {
+                let total = viewModel.recurringCount + viewModel.oneTimeCount
+                if total > 0 {
+                    GeometryReader { geo in
+                        HStack(spacing: 2) {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.blue)
+                                .frame(width: geo.size.width * CGFloat(viewModel.recurringCount) / CGFloat(total))
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.teal)
+                        }
+                    }
+                    .frame(height: 12)
+                }
+            }
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(viewModel.recurringCount)개")
+                        .font(.title2).fontWeight(.bold).foregroundStyle(.blue)
+                    Text("반복 일정")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Divider().frame(height: 36)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(viewModel.oneTimeCount)개")
+                        .font(.title2).fontWeight(.bold).foregroundStyle(.teal)
+                    Text("단발성 일정")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+    
+    // MARK: - 생산성 점수 추이
+    private var productivityCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("생산성 점수 추이", systemImage: "star.fill")
+                .font(.headline)
+            Chart(viewModel.productivityScores, id: \.date) { item in
+                LineMark(
+                    x: .value("날짜", item.date, unit: .day),
+                    y: .value("점수", item.score * 100)
+                )
+                .foregroundStyle(Color.yellow)
+                .symbol(.circle)
+            }
+            .chartYScale(domain: 0...100)
+            .frame(height: 130)
+        }
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
     
     // MARK: - 카테고리 분포
-    private var categoryChart: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("업무 카테고리 분포", systemImage: "chart.pie")
+    private var categoryCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("업무 카테고리", systemImage: "chart.pie")
                 .font(.headline)
-            Chart(viewModel.categoryData, id: \.category) { item in
+            Chart(viewModel.categoryDistribution, id: \.category) { item in
                 SectorMark(
                     angle: .value("횟수", item.count),
                     innerRadius: .ratio(0.5),
@@ -123,27 +282,9 @@ struct InsightDashboardView: View {
                 .foregroundStyle(by: .value("카테고리", item.category))
                 .cornerRadius(4)
             }
-            .frame(height: 180)
+            .frame(height: 160)
         }
         .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-    }
-    
-    // MARK: - 최근 하이라이트
-    private var highlightsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("최근 하이라이트", systemImage: "star")
-                .font(.headline)
-            ForEach(viewModel.recentHighlights, id: \.self) { item in
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                    Text(item)
-                        .font(.subheadline)
-                }
-            }
-        }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }
