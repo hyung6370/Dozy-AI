@@ -32,6 +32,9 @@ struct InsightDashboardView: View {
                     } else if !viewModel.hasDozyData && !viewModel.hasWorkLogData {
                         emptyState
                     } else {
+                        if !viewModel.insights.isEmpty {
+                            insightCard
+                        }
                         summaryRow
                         chartSectionPager
                     }
@@ -58,6 +61,26 @@ struct InsightDashboardView: View {
         }
     }
     
+    // MARK: - Insight Card
+    private var insightCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("AI 인사이트", systemImage: "sparkles")
+                .font(.headline)
+            ForEach(viewModel.insights) { insight in
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: insight.icon)
+                        .foregroundStyle(insight.color)
+                        .frame(width: 20)
+                    Text(insight.text)
+                        .font(.subheadline)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+
     // MARK: - Empty State
     private var emptyState: some View {
         VStack(spacing: 16) {

@@ -24,6 +24,8 @@ enum InsightPeriod: Int, CaseIterable {
 
 final class InsightDashboardViewModel: ObservableObject {
     
+    @Published var insights: [InsightMessage] = []
+    
     // MARK: - Period (B단계에서 UI 연결)
     @Published var selectedPeriod: InsightPeriod = .month
     
@@ -98,37 +100,32 @@ final class InsightDashboardViewModel: ObservableObject {
                 self.applyEvents(current: current, previous: previous,
                                  currentCal: currentCal, previousCal: previousCal,
                                  days: days)
-                self.applyLogs(logs)
+                self.applyLogs(logs, events: current, calendarCompletions: currentCal)
             }
         )
         .store(in: &cancellables)
     }
 
-    private func applyEvents(current: [DozyEvent], previous: [DozyEvent],
-                             currentCal: [EventCompletion], previousCal: [EventCompletion],
-                             days: Int) {
+    private func applyEvents(current: [DozyEvent], previous: [DozyEvent], currentCal: [EventCompletion], previousCal: [EventCompletion], days: Int) {
         hasDozyData = !current.isEmpty || !currentCal.isEmpty
-        averageCompletionRate = patternService.averageCompletionRate(
-            from: current, calendarCompletions: currentCal)
-        completionRateChange = patternService.completionRateChange(
-            current: current, previous: previous,
-            currentCal: currentCal, previousCal: previousCal)
-        dailyCompletionRates = patternService.dailyCompletionRates(
-            from: current, calendarCompletions: currentCal, days: min(days, 30))
-        currentStreak = patternService.currentStreak(
-            from: current, calendarCompletions: currentCal)
+        averageCompletionRate = patternService.averageCompletionRate(from: current, calendarCompletions: currentCal)
+        completionRateChange = patternService.completionRateChange(current: current, previous: previous, currentCal: currentCal, previousCal: previousCal)
+        dailyCompletionRates = patternService.dailyCompletionRates(from: current, calendarCompletions: currentCal, days: min(days, 30))
+        currentStreak = patternService.currentStreak(from: current, calendarCompletions: currentCal)
         hourlyDistribution = patternService.hourlyDistribution(from: current)
-        peakHours          = patternService.peakHours(from: current)
-        weekdayAvgCounts   = patternService.weekdayAverageCount(from: current, periodDays: days)
-        let ratio          = patternService.recurrenceRatio(from: current)
-        recurringCount     = ratio.recurring
-        oneTimeCount       = ratio.oneTime
+        peakHours = patternService.peakHours(from: current)
+        weekdayAvgCounts = patternService.weekdayAverageCount(from: current, periodDays: days)
+        
+        let ratio = patternService.recurrenceRatio(from: current)
+        recurringCount = ratio.recurring
+        oneTimeCount = ratio.oneTime
     }
     
-    private func applyLogs(_ logs: [WorkLog]) {
+    private func applyLogs(_ logs: [WorkLog], events: [DozyEvent], calendarCompletions: [EventCompletion]) {
         hasWorkLogData = !logs.isEmpty
         categoryDistribution = patternService.categoryDistribution(from: logs)
         productivityScores = patternService.productivityScores(from: logs)
         averageProductivityScore = patternService.averageProductivityScore(from: logs)
+        insights = patternService.generateInsights(events: events, calendarCompletions: calendarCompletions, logs: logs)
     }
 }

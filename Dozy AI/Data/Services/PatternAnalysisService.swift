@@ -6,6 +6,14 @@
 //
 
 import Foundation
+import SwiftUI
+
+struct InsightMessage: Identifiable {
+    let id = UUID()
+    let icon: String
+    let color: Color
+    let text: String
+}
 
 final class PatternAnalysisService {
     
@@ -168,5 +176,70 @@ final class PatternAnalysisService {
         let valid = logs.compactMap(\.productivityScore)
         guard !valid.isEmpty else { return nil }
         return valid.reduce(0, +) / Double(valid.count)
+    }
+    
+    // MARK: - AI 인사이트 문구 생성
+    func generateInsights(events: [DozyEvent], calendarCompletions: [EventCompletion] = [], logs: [WorkLog]) -> [InsightMessage] {
+        
+        var insights: [InsightMessage] = []
+        
+        // 1. 완료율 평가
+        let rate = averageCompletionRate(from: events, calendarCompletions: calendarCompletions)
+        if rate >= 0.8 {
+            insights.append(.init(icon: "star.fill", color: .yellow, text: "일정 완료율이 \(Int(rate * 100))% 에요. 훌륭한 집중력이에요!"))
+        } else if rate >= 0.5 {
+            insights.append(.init(icon: "checkmark.circle", color: .green, text: "일정의 절반 이상을 완료하고 있어요. 조금만 더 힘내봐요!"))
+        } else if rate > 0 {
+            insights.append(.init(icon: "exclamationmark.circle", color: .orange, text: "완료율이 \(Int(rate * 100))%예요. 일정을 줄이거나 우선순위를 조정해보세요."))
+        }
+        
+        // 2. 피크 시간대
+        let peaks = peakHours(from: events)
+        if let top = peaks.first {
+            let period = top < 12 ? "오전" : top < 18 ? "오후" : "저녁"
+            insights.append(.init(icon: "clock.fill", color: .blue, text: "\(period) \(top % 12 == 0 ? 12 : top % 12)시가 가장 바쁜 시간대예요."))
+        }
+        
+        // 3. 가장 바쁜 요일
+        let weekdayLabels = ["일", "월", "화", "수", "목", "금", "토"]
+        let weekdayData = weekdayAverageCount(from: events, periodDays: 30)
+        if let busiest = weekdayData.max(by: { $0.avg < $1.avg }), busiest.avg > 0 {
+            insights.append(.init(icon: "calendar", color: .purple,
+                                  text: "\(weekdayLabels[busiest.weekday])요일에 평균 \(String(format: "%.1f", busiest.avg))개로 가장 일정이 많아요."))
+        }
+        
+        // 4. 연속 달성 스트릭
+        let streak = currentStreak(from: events, calendarCompletions: calendarCompletions)
+        if streak >= 7 {
+            insights.append(.init(icon: "flame.fill", color: .orange, text: "\(streak)일 연속 목표를 달성하고 있어요. 대단해요!"))
+        } else if streak >= 3 {
+            insights.append(.init(icon: "flame", color: .orange, text: "\(streak)일 연속 달성 중이에요. 기세를 이어가요!"))
+        }
+        
+        // 5. 반복 일정 비율
+        let ratio = recurrenceRatio(from: events)
+        let total = ratio.recurring + ratio.oneTime
+        if total > 0 {
+            let recurringPct = Int(Double(ratio.recurring) / Double(total) * 100)
+            if recurringPct >= 70 {
+                insights.append(.init(icon: "arrow.trianglehead.clockwise", color: .teal, text: "일정의 \(recurringPct)% 가 반복 일정이에요. 루틴이 잘 잡혀 있어요."))
+            }
+        }
+        
+        // 6. 생산성 점수 트렌드 (WorkLog 기반)
+        let scores = productivityScores(from: logs)
+        if scores.count >= 2 {
+            let recent = scores.suffix(3).map(\.score).reduce(0, +) / Double(min(scores.count, 3))
+            let older  = scores.prefix(max(1, scores.count - 3)).map(\.score).reduce(0, +) / Double(max(1, scores.count - 3))
+            if recent > older + 0.1 {
+                insights.append(.init(icon: "arrow.up.right.circle.fill", color: .green,
+                                      text: "최근 생산성 점수가 꾸준히 오르고 있어요!"))
+            } else if recent < older - 0.1 {
+                insights.append(.init(icon: "arrow.down.right.circle", color: .red,
+                                      text: "최근 생산성이 다소 떨어졌어요. 휴식이 필요할 수도 있어요."))
+            }
+        }
+        
+        return insights
     }
 }
