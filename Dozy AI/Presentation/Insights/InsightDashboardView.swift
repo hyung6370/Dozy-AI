@@ -11,6 +11,9 @@ import Charts
 struct InsightDashboardView: View {
     
     @StateObject private var viewModel: InsightDashboardViewModel
+    @State private var showSwipeHint = true
+    @State private var currentPage = 0
+    @State private var hintScale: CGFloat = 1.0
     
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
@@ -36,7 +39,9 @@ struct InsightDashboardView: View {
                             insightCard
                         }
                         summaryRow
+                        InsightBannerView()
                         chartSectionPager
+                            .padding(.top, -16)
                     }
                 }
                 .padding()
@@ -171,14 +176,44 @@ struct InsightDashboardView: View {
 
     // MARK: - 섹션별 스와이프 Pager
     private var chartSectionPager: some View {
-        TabView {
+        TabView(selection: $currentPage) {
             // 섹션 1 — 완료 분석
             VStack(spacing: 16) {
+                if showSwipeHint {
+                    HStack(spacing: 4) {
+                        Image(systemName: "hand.draw")
+                            .font(.caption)
+                        Text("옆으로 넘겨 더 많은 분석을 확인해보세요")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .scaleEffect(hintScale)
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                            hintScale = 1.1
+                        }
+                    }
+                } else {
+                    HStack(spacing: 4) {
+                        Image(systemName: "rectangle.on.rectangle.angled")
+                            .font(.title3)
+                        Text("카드를 넘겨 인사이트를 확인해보세요")
+                            .font(.title3)
+                    }
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                }
                 completionTrendCard
                 weekdayCard
             }
             .padding(.horizontal, 4)
             .tag(0)
+            .onChange(of: currentPage) { _, newPage in
+                if newPage != 0 {
+                    showSwipeHint = false
+                }
+            }
 
             // 섹션 2 — 시간 패턴
             VStack(spacing: 16) {

@@ -125,6 +125,7 @@
 		F65068392F7E536700F9C124 /* InsightDashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068382F7E536700F9C124 /* InsightDashboardViewModel.swift */; };
 		F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */; };
 		F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */; };
+		F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7F88A300F9C124 /* InsightBannerView.swift */; };
 		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -270,6 +271,7 @@
 		F65068382F7E536700F9C124 /* InsightDashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDashboardViewModel.swift; sourceTree = "<group>"; };
 		F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchDozyEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchEventCompletionsForPeriodUseCase.swift; sourceTree = "<group>"; };
+		F650683C2F7F88A300F9C124 /* InsightBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightBannerView.swift; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -469,6 +471,7 @@
 				F619D9432F74AF0100084C61 /* MetaChip.swift */,
 				F619D9682F7A170E00084C61 /* FilterTab.swift */,
 				F616DCD62F7B625700FA0476 /* BannerView.swift */,
+				F650683C2F7F88A300F9C124 /* InsightBannerView.swift */,
 				F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */,
 			);
 			path = Components;
@@ -891,6 +894,7 @@
 				F619D96F2F7A35BA00084C61 /* FetchCalendarEventUseCase.swift in Sources */,
 				F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */,
 				DD9F68E22F6ACCF4001952F6 /* DependencyContainer.swift in Sources */,
+				F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */,
 				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
 				F65068212F7D072E00F9C124 /* CalendarEventEditRequest.swift in Sources */,
 				F65068292F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift in Sources */,
