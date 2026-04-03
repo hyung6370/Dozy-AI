@@ -62,6 +62,12 @@
 		DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */; };
 		DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */; };
 		DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DD9F694D2F6AD2CF001952F6 /* Localizable.strings */; };
+		F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFD2F7FAA01007B8D9F /* Auth */; };
+		F60ADF002F7FAA01007B8D9F /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFF2F7FAA01007B8D9F /* Functions */; };
+		F60ADF022F7FAA01007B8D9F /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF012F7FAA01007B8D9F /* PostgREST */; };
+		F60ADF042F7FAA01007B8D9F /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF032F7FAA01007B8D9F /* Realtime */; };
+		F60ADF062F7FAA01007B8D9F /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF052F7FAA01007B8D9F /* Storage */; };
+		F60ADF082F7FAA01007B8D9F /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF072F7FAA01007B8D9F /* Supabase */; };
 		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
 		F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD02F7B448300FA0476 /* NaverSignInService.swift */; };
 		F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */; };
@@ -284,8 +290,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F60ADF042F7FAA01007B8D9F /* Realtime in Frameworks */,
+				F60ADF022F7FAA01007B8D9F /* PostgREST in Frameworks */,
+				F60ADF002F7FAA01007B8D9F /* Functions in Frameworks */,
 				F619D94B2F75113C00084C61 /* GoogleSignIn in Frameworks */,
+				F60ADF062F7FAA01007B8D9F /* Storage in Frameworks */,
+				F60ADF082F7FAA01007B8D9F /* Supabase in Frameworks */,
 				F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */,
+				F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */,
 				F619D94D2F75113C00084C61 /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -715,6 +727,12 @@
 				F619D94A2F75113C00084C61 /* GoogleSignIn */,
 				F619D94C2F75113C00084C61 /* GoogleSignInSwift */,
 				F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */,
+				F60ADEFD2F7FAA01007B8D9F /* Auth */,
+				F60ADEFF2F7FAA01007B8D9F /* Functions */,
+				F60ADF012F7FAA01007B8D9F /* PostgREST */,
+				F60ADF032F7FAA01007B8D9F /* Realtime */,
+				F60ADF052F7FAA01007B8D9F /* Storage */,
+				F60ADF072F7FAA01007B8D9F /* Supabase */,
 			);
 			productName = "Dozy AI";
 			productReference = DD808E842F694B2100F4956A /* Dozy AI.app */;
@@ -795,6 +813,7 @@
 			packageReferences = (
 				F619D9492F75113C00084C61 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */,
+				F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD808E852F694B2100F4956A /* Products */;
@@ -1320,6 +1339,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
 		F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/naver/naveridlogin-sdk-ios.git";
@@ -1339,6 +1366,36 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F60ADEFD2F7FAA01007B8D9F /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		F60ADEFF2F7FAA01007B8D9F /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		F60ADF012F7FAA01007B8D9F /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		F60ADF032F7FAA01007B8D9F /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		F60ADF052F7FAA01007B8D9F /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		F60ADF072F7FAA01007B8D9F /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
 		F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */;
