@@ -68,12 +68,16 @@ final class AuthService: NSObject {
     // MARK: - Google 로그인
 
     func signInWithGoogle() -> AnyPublisher<AuthUser, DozyError> {
-        Future { promise in
+        Future { [weak self] promise in
+            guard let self else { return }
             guard let topVC = UIApplication.shared.topViewController else {
                 promise(.failure(.unknown(underlying: NSError(domain: "AuthService", code: -1))))
                 return
             }
-            GIDSignIn.sharedInstance.signIn(withPresenting: topVC) { result, error in
+            let nonce = self.randomNonceString()
+            let hashedNonce = self.sha256(nonce)
+
+            GIDSignIn.sharedInstance.signIn(withPresenting: topVC, hint: nil, additionalScopes: nil, nonce: hashedNonce) { result, error in
                 if let error {
                     promise(.failure(.googleSignInFailed(underlying: error)))
                     return
@@ -88,7 +92,7 @@ final class AuthService: NSObject {
                 Task {
                     do {
                         let session = try await supabase.auth.signInWithIdToken(
-                            credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken)
+                            credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken, nonce: nonce)
                         )
                         let user = AuthUser(
                             id: session.user.id.uuidString,
@@ -131,11 +135,13 @@ final class AuthService: NSObject {
                     promise(.success(nil))
                     return
                 }
+                let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
+                let provider: AuthProvider = providerString == "google" ? .google : .apple
                 let user = AuthUser(
                     id: session.user.id.uuidString,
                     email: session.user.email,
                     displayName: nil,
-                    provider: .apple
+                    provider: provider
                 )
                 promise(.success(user))
             }

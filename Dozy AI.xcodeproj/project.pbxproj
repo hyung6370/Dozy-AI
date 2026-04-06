@@ -73,6 +73,7 @@
 		F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */; };
 		F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */; };
 		F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */; };
+		F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF132F832AD6007B8D9F /* SettingsView.swift */; };
 		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
 		F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD02F7B448300FA0476 /* NaverSignInService.swift */; };
 		F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */; };
@@ -225,6 +226,7 @@
 		F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthError.swift; sourceTree = "<group>"; };
 		F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		F60ADF132F832AD6007B8D9F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F616DCD02F7B448300FA0476 /* NaverSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverSignInService.swift; sourceTree = "<group>"; };
 		F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarListResponse.swift; sourceTree = "<group>"; };
 		F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarService.swift; sourceTree = "<group>"; };
@@ -690,9 +692,10 @@
 		F619D95D2F7528A300084C61 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */,
 				F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */,
 				F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */,
-				F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */,
+				F60ADF132F832AD6007B8D9F /* SettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -932,6 +935,7 @@
 				F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */,
 				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
 				F65068212F7D072E00F9C124 /* CalendarEventEditRequest.swift in Sources */,
+				F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */,
 				F65068292F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift in Sources */,
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
 				F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */,
@@ -1167,6 +1171,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Dozy-AI-Info.plist";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "업무 일정을 분석하여 자동 일지를 생성하기 위해 캘린더 접근이 필요합니다.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "편리한 인증을 위해 필요합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 입력을 위해 마이크 접근이 필요합니다.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "완료한 할 일을 수집하여 업무 보고서에 포함하기 위해 필요합니다.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성으로 업무를 기록하기 위해 음성 인식이 필요합니다.";
@@ -1207,6 +1212,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Dozy-AI-Info.plist";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "업무 일정을 분석하여 자동 일지를 생성하기 위해 캘린더 접근이 필요합니다.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "편리한 인증을 위해 필요합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 입력을 위해 마이크 접근이 필요합니다.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "완료한 할 일을 수집하여 업무 보고서에 포함하기 위해 필요합니다.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성으로 업무를 기록하기 위해 음성 인식이 필요합니다.";

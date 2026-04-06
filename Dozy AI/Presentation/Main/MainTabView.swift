@@ -26,12 +26,8 @@ struct MainTabView: View {
             InsightDashboardView(container: container)
                 .tabItem { Label("인사이트", systemImage: "chart.bar.fill") }
             
-            CalendarSettingsView(
-                sourceManager: container.calendarSourceManager,
-                googleSignInService: container.googleSignInService,
-                naverSignInService: container.naverSignInService
-            )
-            .tabItem { Label("설정", systemImage: "gear") }
+            SettingsView(container: container)
+                .tabItem { Label("설정", systemImage: "gear") }
         }
     }
 }
