@@ -138,6 +138,7 @@
 		F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */; };
 		F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */; };
 		F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7F88A300F9C124 /* InsightBannerView.swift */; };
+		F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -290,6 +291,7 @@
 		F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchDozyEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchEventCompletionsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		F650683C2F7F88A300F9C124 /* InsightBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightBannerView.swift; sourceTree = "<group>"; };
+		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -612,6 +614,7 @@
 				F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */,
 				F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */,
 				F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */,
+				F68B39B22F83721600FEAFB0 /* SyncService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -953,6 +956,7 @@
 				F65068232F7D076200F9C124 /* EventCompletion.swift in Sources */,
 				DD808ED42F694C6F00F4956A /* HomeView.swift in Sources */,
 				DD9F69142F6ACF33001952F6 /* AIService.swift in Sources */,
+				F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */,
 				DD9F69462F6AD21C001952F6 /* DozyAppIntents.swift in Sources */,
 				F619D9562F751F7D00084C61 /* GoogleSignInService.swift in Sources */,
 				DD9F690D2F6ACEEB001952F6 /* UserPatternRepository.swift in Sources */,

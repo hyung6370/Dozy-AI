@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import SwiftData
 
 @MainActor
 final class AuthViewModel: ObservableObject {
@@ -16,7 +17,12 @@ final class AuthViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
 
     private let authService = AuthService()
+    private let syncService: SyncService
     private var cancellables = Set<AnyCancellable>()
+    
+    init(modelContext: ModelContext) {
+        self.syncService = SyncService(modelContext: modelContext)
+    }
 
     var isLoggedIn: Bool { currentUser != nil }
 
@@ -43,6 +49,7 @@ final class AuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.currentUser = user
+                    self?.syncAfterLogin(userID: user.id)
                 }
             )
             .store(in: &cancellables)
@@ -62,7 +69,18 @@ final class AuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.currentUser = user
+                    self?.syncAfterLogin(userID: user.id)
                 }
+            )
+            .store(in: &cancellables)
+    }
+    
+    private func syncAfterLogin(userID: String) {
+        syncService.syncAll(userID: userID)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { }
             )
             .store(in: &cancellables)
     }
