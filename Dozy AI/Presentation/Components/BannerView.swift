@@ -89,7 +89,7 @@ struct BannerView: View {
             HStack(spacing: 5) {
                 ForEach(0..<items.count, id: \.self) { index in
                     Capsule()
-                        .fill(currentIndex == index ? Color.white : Color.white.opacity(0.45))
+                        .fill(currentIndex == index ? Color.primary : Color.primary.opacity(0.3))
                         .frame(width: currentIndex == index ? 14 : 6, height: 6)
                         .animation(.spring(response: 0.3), value: currentIndex)
                 }
@@ -138,35 +138,29 @@ private struct BannerCard: View {
                     .font(.title2)
                     .foregroundStyle(.white)
                     .frame(width: 40, height: 40)
-                    .background(Color.white.opacity(0.2))
+                    .background(item.gradientColors.first ?? .blue)
                     .clipShape(Circle())
-                
+
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.title)
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                     Text(item.subtitle)
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.85))
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(.tertiary)
             }
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(
-                LinearGradient(
-                    colors: item.gradientColors,
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
+            .background(.regularMaterial)
         }
         .buttonStyle(.plain)
     }
