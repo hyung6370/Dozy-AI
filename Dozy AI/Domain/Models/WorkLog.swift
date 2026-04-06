@@ -68,6 +68,21 @@ final class WorkLog {
         self.memos.append(memo)
         self.updatedAt = Date()
     }
+
+    /// 메모 수정
+    func updateMemo(at index: Int, text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard index >= 0, index < memos.count, !trimmed.isEmpty else { return }
+        memos[index] = trimmed
+        updatedAt = Date()
+    }
+
+    /// 메모 삭제
+    func deleteMemo(at index: Int) {
+        guard index >= 0, index < memos.count else { return }
+        memos.remove(at: index)
+        updatedAt = Date()
+    }
     
     /// 오늘 날짜의 로그인지 확인
     var isToday: Bool {

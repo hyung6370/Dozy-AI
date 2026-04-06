@@ -42,4 +42,16 @@ final class SaveWorkLogUseCase {
         log.addMemo(text)
         return repository.save(log)
     }
+
+    /// 메모를 수정하고 저장합니다
+    func updateMemo(at index: Int, text: String, in log: WorkLog) -> AnyPublisher<Void, DozyError> {
+        log.updateMemo(at: index, text: text)
+        return repository.save(log)
+    }
+
+    /// 메모를 삭제하고 저장합니다
+    func deleteMemo(at index: Int, in log: WorkLog) -> AnyPublisher<Void, DozyError> {
+        log.deleteMemo(at: index)
+        return repository.save(log)
+    }
 }

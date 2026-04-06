@@ -198,12 +198,27 @@ final class HomeViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    // MARK: - 메모 추가
+    // MARK: - 메모
 
     func addMemo(_ text: String) {
         guard let log = todayLog else { return }
-
         saveWorkLogUseCase.addMemo(text, to: log)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    func updateMemo(at index: Int, text: String) {
+        guard let log = todayLog else { return }
+        saveWorkLogUseCase.updateMemo(at: index, text: text, in: log)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    func deleteMemo(at index: Int) {
+        guard let log = todayLog else { return }
+        saveWorkLogUseCase.deleteMemo(at: index, in: log)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { })
             .store(in: &cancellables)

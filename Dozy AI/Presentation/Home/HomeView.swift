@@ -13,6 +13,11 @@ struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
     @State private var memoText = ""
     @State private var showSummarySheet = false
+    @State private var editingMemoIndex: Int? = nil
+    @State private var editingMemoText = ""
+    @State private var showEditMemoAlert = false
+    @State private var deletingMemoIndex: Int? = nil
+    @State private var showDeleteMemoAlert = false
 
     init(container: DependencyContainer) {
         self.container = container
@@ -69,7 +74,26 @@ struct HomeView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "캘린더와 미리알림 접근 권한이 필요합니다.")
             }
-            .sheet(isPresented: $showSummarySheet) {
+            .alert("메모 삭제", isPresented: $showDeleteMemoAlert) {
+            Button("삭제", role: .destructive) {
+                if let index = deletingMemoIndex {
+                    viewModel.deleteMemo(at: index)
+                }
+            }
+            Button("취소", role: .cancel) { }
+        } message: {
+            Text("정말로 삭제하시겠습니까?")
+        }
+        .alert("메모 수정", isPresented: $showEditMemoAlert) {
+            TextField("메모", text: $editingMemoText)
+            Button("저장") {
+                if let index = editingMemoIndex {
+                    viewModel.updateMemo(at: index, text: editingMemoText)
+                }
+            }
+            Button("취소", role: .cancel) { }
+        }
+        .sheet(isPresented: $showSummarySheet) {
                 DailySummaryView(
                     generateSummaryUseCase: container.generateDailySummaryUseCase,
                     fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
@@ -327,7 +351,7 @@ struct HomeView: View {
                 .padding(.leading, 2)
 
             if let log = viewModel.todayLog {
-                ForEach(Array(log.memos.enumerated()), id: \.offset) { _, memo in
+                ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
                     HStack(alignment: .top, spacing: 8) {
                         Text("📝").font(.subheadline)
                         Text(memo)
@@ -336,6 +360,21 @@ struct HomeView: View {
                     }
                     .padding(10)
                     .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+                    .contextMenu {
+                        Button {
+                            editingMemoIndex = index
+                            editingMemoText = memo
+                            showEditMemoAlert = true
+                        } label: {
+                            Label("수정", systemImage: "pencil")
+                        }
+                        Button(role: .destructive) {
+                            deletingMemoIndex = index
+                            showDeleteMemoAlert = true
+                        } label: {
+                            Label("삭제", systemImage: "trash")
+                        }
+                    }
                 }
             }
 
