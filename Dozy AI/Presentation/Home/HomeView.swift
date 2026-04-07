@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
 
     private let container: DependencyContainer
+    @Binding var selectedTab: Int
     @StateObject private var viewModel: HomeViewModel
     @State private var memoText = ""
     @State private var showSummarySheet = false
@@ -19,8 +20,9 @@ struct HomeView: View {
     @State private var deletingMemoIndex: Int? = nil
     @State private var showDeleteMemoAlert = false
 
-    init(container: DependencyContainer) {
+    init(container: DependencyContainer, selectedTab: Binding<Int>) {
         self.container = container
+        self._selectedTab = selectedTab
         _viewModel = StateObject(wrappedValue: HomeViewModel(container: container))
     }
 
@@ -52,7 +54,15 @@ struct HomeView: View {
                 }
                 .padding()
             }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                HomeTopBarView(
+                    hasNotification: false,
+                    onNotificationTap: { },
+                    onProfileTap: { selectedTab = 3 }
+                )
+            }
             .scrollDismissesKeyboard(.interactively)
+            .toolbar(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
@@ -94,15 +104,15 @@ struct HomeView: View {
             Button("취소", role: .cancel) { }
         }
         .sheet(isPresented: $showSummarySheet) {
-                DailySummaryView(
-                    generateSummaryUseCase: container.generateDailySummaryUseCase,
-                    fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
-                    events: viewModel.todayEvents,
-                    completedTasks: viewModel.completedTasks,
-                    pendingTasks: viewModel.pendingTasks,
-                    memos: viewModel.todayLog?.memos ?? []
-                )
-            }
+            DailySummaryView(
+                generateSummaryUseCase: container.generateDailySummaryUseCase,
+                fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
+                events: viewModel.todayEvents,
+                completedTasks: viewModel.completedTasks,
+                pendingTasks: viewModel.pendingTasks,
+                memos: viewModel.todayLog?.memos ?? []
+            )
+        }
         }
     }
 
@@ -110,14 +120,9 @@ struct HomeView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(greeting)
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                Text(viewModel.todayDateString)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+            Text(greeting)
+                .font(.title3)
+                .fontWeight(.semibold)
             Spacer()
         }
     }
@@ -513,8 +518,4 @@ private struct HomeStatCard: View {
         .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
-}
-
-#Preview {
-    HomeView(container: DependencyContainer())
 }

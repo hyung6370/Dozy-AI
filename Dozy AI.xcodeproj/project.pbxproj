@@ -119,6 +119,7 @@
 		F619D9872F7A4A1400084C61 /* EventEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */; };
 		F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9882F7A4ADD00084C61 /* EventEditView.swift */; };
 		F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D98A2F7A4C8400084C61 /* Color+Hex.swift */; };
+		F63C685E2F84BB70003464E8 /* HomeTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -272,6 +273,7 @@
 		F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditViewModel.swift; sourceTree = "<group>"; };
 		F619D9882F7A4ADD00084C61 /* EventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditView.swift; sourceTree = "<group>"; };
 		F619D98A2F7A4C8400084C61 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTopBarView.swift; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -500,6 +502,7 @@
 				F616DCD62F7B625700FA0476 /* BannerView.swift */,
 				F650683C2F7F88A300F9C124 /* InsightBannerView.swift */,
 				F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */,
+				F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -991,6 +994,7 @@
 				F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */,
 				F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */,
 				F619D96D2F7A355C00084C61 /* DozyEventRepositoryProtocol.swift in Sources */,
+				F63C685E2F84BB70003464E8 /* HomeTopBarView.swift in Sources */,
 				DD9F69422F6AD1DE001952F6 /* PatternChart.swift in Sources */,
 				F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */,
 				DD9F68DE2F6ACCB2001952F6 /* AppDelegate.swift in Sources */,
