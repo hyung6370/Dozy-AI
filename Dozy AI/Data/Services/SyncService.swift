@@ -94,6 +94,7 @@ final class SyncService {
                     }
                     guard !rows.isEmpty else { promise(.success(())); return }
                     try await supabase.from("event_completions").upsert(rows, onConflict: "user_id, event_id, event_date").execute()
+                    promise(.success(()))
                 } catch {
                     promise(.failure(.unknown(underlying: error)))
                 }

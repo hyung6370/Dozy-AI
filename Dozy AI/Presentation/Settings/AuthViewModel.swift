@@ -31,6 +31,9 @@ final class AuthViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] user in
                 self?.currentUser = user
+                if let user {
+                    self?.syncAfterLogin(userID: user.id)
+                }
             }
             .store(in: &cancellables)
     }
