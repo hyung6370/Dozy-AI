@@ -15,7 +15,7 @@ struct BannerItem: Identifiable {
     let gradientColors: [Color]
     let iconName: String
     let action: (() -> Void)?
-    
+
     init(
         id: UUID = UUID(),
         title: String,

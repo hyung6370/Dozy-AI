@@ -89,9 +89,10 @@ struct CalendarSettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(.systemGray6))
                     .frame(width: 34, height: 34)
-                Text("G")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(.blue)
+                Image("icons8-Google-Logo-48")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
             }
             
             VStack(alignment: .leading, spacing: 2) {
@@ -171,9 +172,10 @@ struct CalendarSettingsView: View {
     // MARK: - Dozy Row
     private var dozyRow: some View {
         HStack(spacing: 14) {
-            Image(systemName: "d.circle.fill")
-                .font(.title2)
-                .foregroundStyle(.purple)
+            Image("Dozy-AI-20x20")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 24, height: 24)
                 .frame(width: 34)
             
             VStack(alignment: .leading, spacing: 2) {

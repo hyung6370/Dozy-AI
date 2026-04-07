@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon~ios-marketing 1.png",
+      "filename" : "Icon-iOS-Default-1024x1024@1x 1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "AppIcon~ios-marketing 2.png",
+      "filename" : "Icon-iOS-Default-1024x1024@1x 2.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,133 +25,133 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "AppIcon~ios-marketing 3.png",
+      "filename" : "Icon-iOS-Default-1024x1024@1x 3.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
     },
     {
-      "filename" : "AppIcon-20@2x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-20x20@2x.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-20@3x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-20x20@3x.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-29.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-29x29@1x 1.png",
       "idiom" : "iphone",
       "scale" : "1x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-29@2x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-29x29@2x 1.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-29@3x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-29x29@3x.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-40@2x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-40x40@2x 1.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon-40@3x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-40x40@3x.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon@2x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-60x60@2x 1.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppIcon@3x.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-60x60@3x 1.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppIcon-20~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-20x20@1x 1.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-20@2x~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-20x20@2x 1.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppIcon-29~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-29x29@1x.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-29@2x~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-29x29@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppIcon-40~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-40x40@1x.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon-40@2x~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-40x40@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppIcon~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-76x76@1x.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "76x76"
     },
     {
-      "filename" : "AppIcon@2x~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-76x76@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "76x76"
     },
     {
-      "filename" : "AppIcon-83.5@2x~ipad.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-83.5x83.5@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "83.5x83.5"
     },
     {
-      "filename" : "AppIcon-60@2x~car.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-60x60@2x.png",
       "idiom" : "car",
       "scale" : "2x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppIcon-60@3x~car.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-60x60@3x.png",
       "idiom" : "car",
       "scale" : "3x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppIcon~ios-marketing.png",
+      "filename" : "Dozy AI Logo-Icon Composer-iOS-Default-1024x1024@1x.png",
       "idiom" : "ios-marketing",
       "scale" : "1x",
       "size" : "1024x1024"

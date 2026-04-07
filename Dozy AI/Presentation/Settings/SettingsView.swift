@@ -105,9 +105,10 @@ struct SettingsView: View {
                 // Google 로그인
                 Button { authViewModel.signInWithGoogle() } label: {
                     HStack(spacing: 10) {
-                        Text("G")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(.blue)
+                        Image("icons8-Google-Logo-48")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
                         Text("Google로 로그인")
                             .font(.subheadline).fontWeight(.medium)
                             .foregroundStyle(.primary)
@@ -135,9 +136,10 @@ struct SettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(.systemGray6))
                     .frame(width: 34, height: 34)
-                Text("G")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(.blue)
+                Image("icons8-Google-Logo-48")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
             }
         case nil:
             Color.clear.frame(width: 34)
