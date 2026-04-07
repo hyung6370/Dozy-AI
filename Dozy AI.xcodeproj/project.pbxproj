@@ -120,6 +120,10 @@
 		F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9882F7A4ADD00084C61 /* EventEditView.swift */; };
 		F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D98A2F7A4C8400084C61 /* Color+Hex.swift */; };
 		F63C685E2F84BB70003464E8 /* HomeTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */; };
+		F63C68692F84F481003464E8 /* NotificationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68682F84F481003464E8 /* NotificationRecord.swift */; };
+		F63C686B2F84F4E2003464E8 /* NotificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */; };
+		F63C686E2F84F79B003464E8 /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */; };
+		F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686F2F84F7A6003464E8 /* NotificationListView.swift */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -274,6 +278,10 @@
 		F619D9882F7A4ADD00084C61 /* EventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditView.swift; sourceTree = "<group>"; };
 		F619D98A2F7A4C8400084C61 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTopBarView.swift; sourceTree = "<group>"; };
+		F63C68682F84F481003464E8 /* NotificationRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRecord.swift; sourceTree = "<group>"; };
+		F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRepository.swift; sourceTree = "<group>"; };
+		F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewModel.swift; sourceTree = "<group>"; };
+		F63C686F2F84F7A6003464E8 /* NotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationListView.swift; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -403,6 +411,7 @@
 		DD808EBE2F694BC600F4956A /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				F63C686C2F84F786003464E8 /* Notifications */,
 				F619D97F2F7A3CC200084C61 /* Calendar */,
 				F619D97C2F7A3BEC00084C61 /* Main */,
 				DD808ECF2F694C4800F4956A /* Components */,
@@ -481,6 +490,7 @@
 				F65068202F7D072E00F9C124 /* CalendarEventEditRequest.swift */,
 				F65068222F7D076200F9C124 /* EventCompletion.swift */,
 				F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */,
+				F63C68682F84F481003464E8 /* NotificationRecord.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -594,6 +604,7 @@
 				DD9F690C2F6ACEEB001952F6 /* UserPatternRepository.swift */,
 				F619D9782F7A378F00084C61 /* DozyEventRepository.swift */,
 				F65068302F7D115300F9C124 /* EventCompletionRepository.swift */,
+				F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */,
 			);
 			path = Repositories;
 			sourceTree = "<group>";
@@ -729,6 +740,15 @@
 				F65068342F7DFB6600F9C124 /* MonthWeekRowView.swift */,
 			);
 			path = Calendar;
+			sourceTree = "<group>";
+		};
+		F63C686C2F84F786003464E8 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */,
+				F63C686F2F84F7A6003464E8 /* NotificationListView.swift */,
+			);
+			path = Notifications;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -898,6 +918,7 @@
 				DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */,
 				F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */,
 				F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */,
+				F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */,
 				F619D9712F7A360D00084C61 /* FetchDozyEventsUseCase.swift in Sources */,
 				DD9F68E62F6ACD14001952F6 /* String+Extensions.swift in Sources */,
 				DD9F69402F6AD1D5001952F6 /* SummaryCard.swift in Sources */,
@@ -907,6 +928,7 @@
 				F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */,
 				DD9F69082F6ACE7E001952F6 /* SpeechServiceProtocol.swift in Sources */,
 				F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */,
+				F63C686B2F84F4E2003464E8 /* NotificationRepository.swift in Sources */,
 				F650682B2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift in Sources */,
 				DD9F69322F6AD0BF001952F6 /* WorkLogViewModel.swift in Sources */,
 				F619D97E2F7A3BF600084C61 /* MainTabView.swift in Sources */,
@@ -918,6 +940,7 @@
 				DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */,
 				F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */,
 				F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */,
+				F63C68692F84F481003464E8 /* NotificationRecord.swift in Sources */,
 				DD9F68E42F6ACD08001952F6 /* Date+Extensions.swift in Sources */,
 				F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */,
 				F616DCF22F7CBA0100FA0476 /* EventDetailView.swift in Sources */,
@@ -928,6 +951,7 @@
 				F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */,
 				DD9F69372F6AD14D001952F6 /* VoiceInputViewModel.swift in Sources */,
 				DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */,
+				F63C686E2F84F79B003464E8 /* NotificationViewModel.swift in Sources */,
 				F619D9852F7A43DF00084C61 /* CalendarView.swift in Sources */,
 				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
 				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,

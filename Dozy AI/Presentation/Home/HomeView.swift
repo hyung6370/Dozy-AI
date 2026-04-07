@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct HomeView: View {
 
@@ -19,6 +20,8 @@ struct HomeView: View {
     @State private var showEditMemoAlert = false
     @State private var deletingMemoIndex: Int? = nil
     @State private var showDeleteMemoAlert = false
+    @State private var hasNotification = false
+    @State private var showNotificationSheet = false
 
     init(container: DependencyContainer, selectedTab: Binding<Int>) {
         self.container = container
@@ -56,8 +59,8 @@ struct HomeView: View {
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 HomeTopBarView(
-                    hasNotification: false,
-                    onNotificationTap: { },
+                    hasNotification: hasNotification,
+                    onNotificationTap: { showNotificationSheet = true },
                     onProfileTap: { selectedTab = 3 }
                 )
             }
@@ -73,7 +76,13 @@ struct HomeView: View {
                 }
             }
             .refreshable { viewModel.loadTodayData() }
-            .onAppear { viewModel.loadTodayData() }
+            .onAppear {
+                viewModel.loadTodayData()
+                container.notificationRepository.hasUnread()
+                    .receive(on: DispatchQueue.main)
+                    .sink { hasNotification = $0 }
+                    .store(in: &viewModel.cancellables)
+            }
             .alert("권한 필요", isPresented: $viewModel.showPermissionAlert) {
                 Button("설정 열기") {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -103,6 +112,16 @@ struct HomeView: View {
             }
             Button("취소", role: .cancel) { }
         }
+        .navigationDestination(isPresented: $showNotificationSheet) {
+            NotificationListView(repository: container.notificationRepository)
+        }
+        .onChange(of: showNotificationSheet) { _, isShowing in
+            guard !isShowing else { return }
+            container.notificationRepository.hasUnread()
+                .receive(on: DispatchQueue.main)
+                .sink { hasNotification = $0 }
+                .store(in: &viewModel.cancellables)
+        }
         .sheet(isPresented: $showSummarySheet) {
             DailySummaryView(
                 generateSummaryUseCase: container.generateDailySummaryUseCase,
@@ -131,9 +150,9 @@ struct HomeView: View {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
         case 5..<12: return "좋은 아침이에요 ☀️"
-        case 12..<17: return "좋은 오후예요 🌤️"
-        case 17..<21: return "좋은 저녁이에요 🌙"
-        default:      return "안녕하세요 🌟"
+        case 12..<18: return "좋은 오후예요 🌤️"
+        case 18..<21: return "좋은 저녁이에요 🌙"
+        default: return "안녕하세요 🌟"
         }
     }
 

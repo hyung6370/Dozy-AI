@@ -100,7 +100,7 @@ final class HomeViewModel: ObservableObject {
     private let generateDailySummaryUseCase: GenerateDailySummaryUseCase
     private let fetchRecentLogsUseCase: FetchRecentLogsUseCase
     private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
-    private var cancellables = Set<AnyCancellable>()
+    var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
 

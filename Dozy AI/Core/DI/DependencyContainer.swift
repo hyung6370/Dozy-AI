@@ -30,7 +30,7 @@ final class DependencyContainer: ObservableObject {
     )
     lazy var reminderService: ReminderServiceProtocol = ReminderService()
     lazy var notificationService: NotificationServiceProtocol = NotificationService()
-    lazy var scheduleNotificationUseCase = ScheduleNotificationUseCase(service: notificationService)
+    lazy var scheduleNotificationUseCase = ScheduleNotificationUseCase(service: notificationService, notificationRepository: notificationRepository)
     lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
     lazy var aiService: AIServiceProtocol = AIService()
     lazy var googleSignInService = GoogleSignInService()
@@ -47,6 +47,7 @@ final class DependencyContainer: ObservableObject {
     lazy var workLogRepository: WorkLogRepositoryProtocol = WorkLogRepository(modelContainer: modelContainer)
     lazy var dozyEventRepository: DozyEventRepositoryProtocol = DozyEventRepository(modelContainer: modelContainer)
     lazy var eventCompletionRepository: EventCompletionRepositoryProtocol = EventCompletionRepository(modelContainer: modelContainer)
+    lazy var notificationRepository = NotificationRepository(modelContainer: modelContainer)
 
     // MARK: - UseCases (Domain Layer)
 
@@ -74,7 +75,7 @@ final class DependencyContainer: ObservableObject {
 
     init() {
         do {
-            let schema = Schema([WorkLog.self, UserPattern.self, DozyEvent.self, EventCompletion.self])
+            let schema = Schema([WorkLog.self, UserPattern.self, DozyEvent.self, EventCompletion.self, NotificationRecord.self])
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             self.modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {
