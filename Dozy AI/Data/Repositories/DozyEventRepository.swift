@@ -46,7 +46,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 context.insert(event)
                 do {
                     try context.save()
-                    await Self.upsertToSupabase(event)
+                    Task { await Self.upsertToSupabase(event) }
                     promise(.success(()))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -62,7 +62,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 event.updatedAt = Date()
                 do {
                     try modelContainer.mainContext.save()
-                    await Self.upsertToSupabase(event)
+                    Task { await Self.upsertToSupabase(event) }
                     promise(.success(()))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -80,7 +80,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 context.delete(event)
                 do {
                     try context.save()
-                    await Self.deleteFromSupabase(eventID: eventID)
+                    Task { await Self.deleteFromSupabase(eventID: eventID) }
                     promise(.success(()))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
