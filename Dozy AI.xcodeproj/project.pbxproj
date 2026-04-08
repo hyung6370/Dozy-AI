@@ -124,6 +124,7 @@
 		F63C686B2F84F4E2003464E8 /* NotificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */; };
 		F63C686E2F84F79B003464E8 /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */; };
 		F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686F2F84F7A6003464E8 /* NotificationListView.swift */; };
+		F63C68732F85E35F003464E8 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F63C68722F85E35F003464E8 /* Lottie */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -319,6 +320,7 @@
 				F60ADF002F7FAA01007B8D9F /* Functions in Frameworks */,
 				F619D94B2F75113C00084C61 /* GoogleSignIn in Frameworks */,
 				F60ADF062F7FAA01007B8D9F /* Storage in Frameworks */,
+				F63C68732F85E35F003464E8 /* Lottie in Frameworks */,
 				F60ADF082F7FAA01007B8D9F /* Supabase in Frameworks */,
 				F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */,
 				F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */,
@@ -777,6 +779,7 @@
 				F60ADF032F7FAA01007B8D9F /* Realtime */,
 				F60ADF052F7FAA01007B8D9F /* Storage */,
 				F60ADF072F7FAA01007B8D9F /* Supabase */,
+				F63C68722F85E35F003464E8 /* Lottie */,
 			);
 			productName = "Dozy AI";
 			productReference = DD808E842F694B2100F4956A /* Dozy AI.app */;
@@ -858,6 +861,7 @@
 				F619D9492F75113C00084C61 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */,
 				F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD808E852F694B2100F4956A /* Products */;
@@ -1421,6 +1425,14 @@
 				minimumVersion = 9.1.0;
 			};
 		};
+		F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1468,6 +1480,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F619D9492F75113C00084C61 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		F63C68722F85E35F003464E8 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
