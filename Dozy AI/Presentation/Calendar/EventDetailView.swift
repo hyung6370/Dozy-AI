@@ -16,7 +16,8 @@ struct EventDetailView: View {
     let onEditCalendar: ((CalendarEvent) -> Void)?
     let onDeleteCalendar: ((CalendarEvent) -> Void)?
     let onSaveMemos: ((DozyEvent) -> Void)?
-    
+    let onUpdateDisplaySettings: ((CalendarEvent, Int, Bool) -> Void)?
+
     @Environment(\.dismiss) private var dismiss
     @State private var showCalendarDeleteConfirm = false
     @State private var showDozyDeleteConfirm = false
@@ -27,6 +28,8 @@ struct EventDetailView: View {
     @State private var deletingMemoIndex: Int? = nil
     @State private var showDeleteMemoAlert = false
     @State private var memos: [String] = []
+    @State private var displayPriority: Int = 0
+    @State private var displayIsPinned: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -45,6 +48,8 @@ struct EventDetailView: View {
             }
             .onAppear {
                 memos = dozyEvent?.memos ?? []
+                displayPriority = event.priority
+                displayIsPinned = event.isPinned
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -194,6 +199,41 @@ struct EventDetailView: View {
     private func dozyActionSection(_ dozyEvent: DozyEvent) -> some View {
         VStack(spacing: 12) {
             Divider().padding(.top, 16)
+
+            // 표시 설정
+            VStack(spacing: 0) {
+                Toggle(isOn: $displayIsPinned) {
+                    Label("상단 고정", systemImage: displayIsPinned ? "pin.fill" : "pin")
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .onChange(of: displayIsPinned) { _, newValue in
+                    onUpdateDisplaySettings?(event, displayPriority, newValue)
+                }
+
+                Divider().padding(.leading)
+
+                HStack {
+                    Label("우선순위", systemImage: "chart.bar")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Picker("", selection: $displayPriority) {
+                        Text("없음").tag(0)
+                        Text("높음 🔴").tag(1)
+                        Text("중간 🟡").tag(2)
+                        Text("낮음 🔵").tag(3)
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: displayPriority) { _, newValue in
+                        onUpdateDisplaySettings?(event, newValue, displayIsPinned)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            }
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
+
             Button {
                 dismiss()
                 onEdit?(dozyEvent)
@@ -232,6 +272,41 @@ struct EventDetailView: View {
     private var calendarActionSection: some View {
         VStack(spacing: 12) {
             Divider().padding(.top, 16)
+
+            // 표시 설정
+            VStack(spacing: 0) {
+                Toggle(isOn: $displayIsPinned) {
+                    Label("상단 고정", systemImage: displayIsPinned ? "pin.fill" : "pin")
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .onChange(of: displayIsPinned) { _, newValue in
+                    onUpdateDisplaySettings?(event, displayPriority, newValue)
+                }
+
+                Divider().padding(.leading)
+
+                HStack {
+                    Label("우선순위", systemImage: "chart.bar")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Picker("", selection: $displayPriority) {
+                        Text("없음").tag(0)
+                        Text("높음 🔴").tag(1)
+                        Text("중간 🟡").tag(2)
+                        Text("낮음 🔵").tag(3)
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: displayPriority) { _, newValue in
+                        onUpdateDisplaySettings?(event, newValue, displayIsPinned)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            }
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
+
             Button {
                 dismiss()
                 onEditCalendar?(event)

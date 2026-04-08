@@ -118,7 +118,9 @@ private extension EKEvent {
             isAllDay: isAllDay,
             calendarName: calendar?.title ?? "",
             calendarColorHex: colorHex,
-            source: .apple
+            source: .apple,
+            priority: 0,
+            isPinned: false
         )
     }
 }

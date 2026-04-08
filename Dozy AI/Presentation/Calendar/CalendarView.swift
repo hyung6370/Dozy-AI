@@ -142,6 +142,9 @@ struct CalendarView: View {
                 onDeleteCalendar: { viewModel.deleteCalendarEvent($0) },
                 onSaveMemos: { dozyEvent in
                     viewModel.saveMemos(for: dozyEvent)
+                },
+                onUpdateDisplaySettings: { event, priority, isPinned in
+                    viewModel.updateDisplaySettings(for: event, priority: priority, isPinned: isPinned)
                 }
             )
         }
@@ -281,6 +284,24 @@ struct CalendarView: View {
             } label: {
                 Label("삭제", systemImage: "trash")
             }
+        }
+
+        Divider()
+
+        // 핀 토글
+        Button {
+            viewModel.updateDisplaySettings(for: event, priority: event.priority, isPinned: !event.isPinned)
+        } label: {
+            Label(event.isPinned ? "고정 해제" : "상단 고정",
+                  systemImage: event.isPinned ? "pin.slash" : "pin")
+        }
+
+        // 우선순위 서브메뉴
+        Menu("우선순위") {
+            Button("없음")    { viewModel.updateDisplaySettings(for: event, priority: 0, isPinned: event.isPinned) }
+            Button("높음 🔴") { viewModel.updateDisplaySettings(for: event, priority: 1, isPinned: event.isPinned) }
+            Button("중간 🟡") { viewModel.updateDisplaySettings(for: event, priority: 2, isPinned: event.isPinned) }
+            Button("낮음 🔵") { viewModel.updateDisplaySettings(for: event, priority: 3, isPinned: event.isPinned) }
         }
     }
 

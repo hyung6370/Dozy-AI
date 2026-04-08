@@ -134,6 +134,8 @@
 		F63C688D2F85F0D9003464E8 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C688C2F85F0D9003464E8 /* RootView.swift */; };
 		F63C68E02F861F5E003464E8 /* BlobBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */; };
 		F63C68E22F862E87003464E8 /* LoginPromptBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */; };
+		F63C68E42F8642C7003464E8 /* EventDisplaySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E32F8642C7003464E8 /* EventDisplaySettings.swift */; };
+		F63C68E62F86430D003464E8 /* EventDisplaySettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E52F86430D003464E8 /* EventDisplaySettingsRepository.swift */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -301,6 +303,8 @@
 		F63C688C2F85F0D9003464E8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobBackgroundView.swift; sourceTree = "<group>"; };
 		F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginPromptBannerView.swift; sourceTree = "<group>"; };
+		F63C68E32F8642C7003464E8 /* EventDisplaySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDisplaySettings.swift; sourceTree = "<group>"; };
+		F63C68E52F86430D003464E8 /* EventDisplaySettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDisplaySettingsRepository.swift; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -512,6 +516,7 @@
 				F65068222F7D076200F9C124 /* EventCompletion.swift */,
 				F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */,
 				F63C68682F84F481003464E8 /* NotificationRecord.swift */,
+				F63C68E32F8642C7003464E8 /* EventDisplaySettings.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -630,6 +635,7 @@
 				F619D9782F7A378F00084C61 /* DozyEventRepository.swift */,
 				F65068302F7D115300F9C124 /* EventCompletionRepository.swift */,
 				F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */,
+				F63C68E52F86430D003464E8 /* EventDisplaySettingsRepository.swift */,
 			);
 			path = Repositories;
 			sourceTree = "<group>";
@@ -951,6 +957,7 @@
 				DD9F68F42F6ACD80001952F6 /* DailySummary.swift in Sources */,
 				F619D9792F7A378F00084C61 /* DozyEventRepository.swift in Sources */,
 				DD9F692B2F6AD082001952F6 /* DailySummaryViewModel.swift in Sources */,
+				F63C68E62F86430D003464E8 /* EventDisplaySettingsRepository.swift in Sources */,
 				F6BC59972F739B010090DF3A /* TaskRow.swift in Sources */,
 				DD9F69252F6ACFFD001952F6 /* WorkLogDTO.swift in Sources */,
 				DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */,
@@ -1077,6 +1084,7 @@
 				F650682D2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift in Sources */,
 				F63C68E22F862E87003464E8 /* LoginPromptBannerView.swift in Sources */,
 				F65068312F7D115300F9C124 /* EventCompletionRepository.swift in Sources */,
+				F63C68E42F8642C7003464E8 /* EventDisplaySettings.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

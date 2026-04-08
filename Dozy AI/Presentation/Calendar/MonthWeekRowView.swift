@@ -132,17 +132,38 @@ struct EventPill: View {
         )
     }
 
+    private var priorityColor: Color? {
+        switch layout.priority {
+        case 1: return .red
+        case 2: return .yellow
+        case 3: return .blue
+        default: return nil
+        }
+    }
+
     var body: some View {
         shape
             .fill(isDozy ? color.opacity(0.2) : color.opacity(0.75))
             .overlay(alignment: .leading) {
                 if layout.isActualStart {
-                    Text(layout.title)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(isDozy ? color : .white)
-                        .lineLimit(1)
-                        .padding(.leading, 5)
-                        .padding(.trailing, 2)
+                    HStack(spacing: 2) {
+                        if layout.isPinned {
+                            Image(systemName: "pin.fill")
+                                .font(.system(size: 7, weight: .bold))
+                                .foregroundStyle(isDozy ? color : .white)
+                        }
+                        if let pc = priorityColor {
+                            Circle()
+                                .fill(pc)
+                                .frame(width: 5, height: 5)
+                        }
+                        Text(layout.title)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(isDozy ? color : .white)
+                            .lineLimit(1)
+                    }
+                    .padding(.leading, 5)
+                    .padding(.trailing, 2)
                 }
             }
             .clipped()

@@ -30,6 +30,8 @@ struct CalendarEventLayout: Identifiable {
     let row: Int
     let isActualStart: Bool
     let isActualEnd: Bool
+    let isPinned: Bool
+    let priority: Int
 }
 
 enum BarPosition {
@@ -67,6 +69,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var deleteErrorMessage: String? = nil
     @Published var showDeleteSuccess = false
     @Published var showSuccessAnimation = false
+    @Published var displaySettingsByID: [String: EventDisplaySettings] = [:]
     private var allEventsInMonth: [String: CalendarEvent] = [:]
     
     // MARK: - Dependencies
@@ -85,6 +88,7 @@ final class CalendarViewModel: ObservableObject {
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
     private weak var calendarService: CompositeCalendarSerivce?
     private var cancellables = Set<AnyCancellable>()
+    private let displaySettingsRepo: EventDisplaySettingsRepository
     
     init(
         fetchEventsUseCase: FetchCalendarEventUseCase,
@@ -99,7 +103,8 @@ final class CalendarViewModel: ObservableObject {
         deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
         toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase,
         fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
-        fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
+        fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase,
+        displaySettingsRepo: EventDisplaySettingsRepository
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -114,6 +119,7 @@ final class CalendarViewModel: ObservableObject {
         self.toggleCalendarEventCompletionUseCase = toggleCalendarEventCompletionUseCase
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
         self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
+        self.displaySettingsRepo = displaySettingsRepo
     }
 
     convenience init(container: DependencyContainer) {
@@ -130,7 +136,8 @@ final class CalendarViewModel: ObservableObject {
             deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
             toggleCalendarEventCompletionUseCase: container.toggleCalendarEventCompletionUseCase,
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
-            fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase
+            fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase,
+            displaySettingsRepo: container.eventDisplaySettingsRepository
         )
         self.calendarService = container.calendarService
     }
@@ -366,8 +373,16 @@ final class CalendarViewModel: ObservableObject {
     // MARK: - Fetch
     
     func loadInitialData() {
-        fetchEventsForDate(selectedDate)
-        fetchEventsForMonth()
+        // displaySettings를 먼저 로드한 뒤 fetch — buildLayouts에서 설정이 반영되도록
+        displaySettingsRepo.fetchAll()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] settings in
+                guard let self else { return }
+                self.displaySettingsByID = settings
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }
+            .store(in: &cancellables)
     }
 
     func refreshData() {
@@ -386,12 +401,12 @@ final class CalendarViewModel: ObservableObject {
             receiveCompletion: { [weak self] _ in self?.isLoading = false },
             receiveValue: { [weak self] events, dozyEvents in
                 guard let self else { return }
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    self.eventsForSelectedDate = events
-                    self.dozyEventsForSelectedDate = dozyEvents
-                    let newEntries = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
-                    self.dozyEventsByID.merge(newEntries) { _, new in new }
-                }
+
+                // DozyEvent 업데이트
+                let newEntries = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                self.dozyEventsForSelectedDate = dozyEvents
+                self.dozyEventsByID.merge(newEntries) { _, new in new }
+
                 // Apple/Google completion 조회
                 let nonDozyIDs = events.filter { $0.source != .dozy }.map { $0.id }
                 if !nonDozyIDs.isEmpty {
@@ -402,10 +417,52 @@ final class CalendarViewModel: ObservableObject {
                         })
                         .store(in: &self.cancellables)
                 }
-                self.isLoading = false
+
+                // Apple/Google 이벤트에 display settings 오버라이드 적용 후 정렬
+                self.displaySettingsRepo.fetchAll(for: nonDozyIDs)
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] settings in
+                        guard let self else { return }
+                        self.displaySettingsByID.merge(settings) { _, new in new }
+                        let applied = events.map { $0.applying(self.displaySettingsByID[$0.id]) }
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            self.eventsForSelectedDate = applied.sorted { a, b in
+                                if a.isPinned != b.isPinned { return a.isPinned }
+                                if a.priority != b.priority {
+                                    let pa = a.priority == 0 ? Int.max : a.priority
+                                    let pb = b.priority == 0 ? Int.max : b.priority
+                                    return pa < pb
+                                }
+                                return a.startDate < b.startDate
+                            }
+                        }
+                        self.isLoading = false
+                    }
+                    .store(in: &self.cancellables)
             }
         )
         .store(in: &cancellables)
+    }
+
+    // MARK: - Display Settings
+
+    func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool) {
+        if event.source == .dozy {
+            guard let dozy = dozyEventsByID[event.id] else { return }
+            dozy.priority = priority
+            dozy.isPinned = isPinned
+            updateEventUseCase.execute(dozy)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                    self?.fetchEventsForDate(self?.selectedDate ?? Date())
+                    self?.fetchEventsForMonth()
+                })
+                .store(in: &cancellables)
+        } else {
+            displaySettingsRepo.save(eventID: event.id, priority: priority, isPinned: isPinned)
+            fetchEventsForDate(selectedDate)
+            fetchEventsForMonth()
+        }
     }
     
     private func fetchEventsForMonth() {
@@ -519,11 +576,17 @@ final class CalendarViewModel: ObservableObject {
 
                 let sc = colMap[inWeek.first!] ?? 0
                 let ec = colMap[inWeek.last!] ?? 6
-                weekEvents.append((event, sc, ec, isStart, isEnd))
+                // displaySettings 오버라이드 적용 (Apple/Google priority·isPinned 반영)
+                let applied = event.applying(displaySettingsByID[event.id])
+                weekEvents.append((applied, sc, ec, isStart, isEnd))
             }
 
-            // 긴 이벤트 우선 정렬
+            // 핀 → 우선순위 → 스팬 순 정렬 (높을수록 위 row에 배치)
             weekEvents.sort { a, b in
+                if a.0.isPinned != b.0.isPinned { return a.0.isPinned }
+                let pa = a.0.priority == 0 ? Int.max : a.0.priority
+                let pb = b.0.priority == 0 ? Int.max : b.0.priority
+                if pa != pb { return pa < pb }
                 let spanA = a.2 - a.1, spanB = b.2 - b.1
                 if spanA != spanB { return spanA > spanB }
                 if a.1 != b.1 { return a.1 < b.1 }
@@ -546,7 +609,9 @@ final class CalendarViewModel: ObservableObject {
                     id: event.id, title: event.title, colorHex: event.calendarColorHex,
                     source: event.source,
                     startCol: sc, endCol: ec, row: assignedRow,
-                    isActualStart: isStart, isActualEnd: isEnd
+                    isActualStart: isStart, isActualEnd: isEnd,
+                    isPinned: event.isPinned,
+                    priority: event.priority
                 ))
             }
 

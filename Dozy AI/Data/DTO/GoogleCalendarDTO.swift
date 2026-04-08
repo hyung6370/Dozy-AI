@@ -65,7 +65,9 @@ struct GoogleEventItem: Decodable {
             isAllDay: isAllDay,
             calendarName: calendarName,
             calendarColorHex: colorHex,
-            source: .google
+            source: .google,
+            priority: 0,
+            isPinned: false
         )
     }
 }

@@ -22,6 +22,8 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     let calendarName: String
     let calendarColorHex: String
     let source: CalendarSource
+    let priority: Int
+    let isPinned: Bool
 
     // Swift가 자동으로 memberwise init을 생성합니다.
     // init(id:title:startDate:endDate:location:notes:isAllDay:calendarName:calendarColorHex:)
@@ -61,5 +63,22 @@ extension CalendarEvent {
         calendarName = try c.decode(String.self, forKey: .calendarName)
         calendarColorHex = try c.decode(String.self, forKey: .calendarColorHex)
         source = try c.decodeIfPresent(CalendarSource.self, forKey: .source) ?? .apple
+        priority = try c.decodeIfPresent(Int.self, forKey: .priority) ?? 0
+        isPinned = try c.decodeIfPresent(Bool.self, forKey: .isPinned) ?? false
+    }
+}
+
+extension CalendarEvent {
+    func applying(_ settings: EventDisplaySettings?) -> CalendarEvent {
+        guard let settings else { return self }
+        return CalendarEvent(
+            id: id, calendarId: calendarId, title: title,
+            startDate: startDate, endDate: endDate,
+            location: location, notes: notes, isAllDay: isAllDay,
+            calendarName: calendarName, calendarColorHex: calendarColorHex,
+            source: source,
+            priority: settings.priority,
+            isPinned: settings.isPinned
+        )
     }
 }

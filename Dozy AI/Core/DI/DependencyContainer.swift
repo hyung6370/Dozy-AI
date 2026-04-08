@@ -48,6 +48,7 @@ final class DependencyContainer: ObservableObject {
     lazy var dozyEventRepository: DozyEventRepositoryProtocol = DozyEventRepository(modelContainer: modelContainer)
     lazy var eventCompletionRepository: EventCompletionRepositoryProtocol = EventCompletionRepository(modelContainer: modelContainer)
     lazy var notificationRepository = NotificationRepository(modelContainer: modelContainer)
+    lazy var eventDisplaySettingsRepository = EventDisplaySettingsRepository(modelContainer: modelContainer)
 
     // MARK: - UseCases (Domain Layer)
 
@@ -75,7 +76,14 @@ final class DependencyContainer: ObservableObject {
 
     init() {
         do {
-            let schema = Schema([WorkLog.self, UserPattern.self, DozyEvent.self, EventCompletion.self, NotificationRecord.self])
+            let schema = Schema([
+                WorkLog.self,
+                UserPattern.self,
+                DozyEvent.self,
+                EventCompletion.self,
+                NotificationRecord.self,
+                EventDisplaySettings.self
+            ])
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             self.modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {
