@@ -125,7 +125,7 @@ struct CalendarView: View {
             }
         }
     }
-    
+
     // MARK: - Sheets
 
     @ViewBuilder

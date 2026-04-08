@@ -7,36 +7,43 @@
 
 import SwiftUI
 
-// MARK: - Star Data
+// MARK: - Blob Data
 
-private struct StarData: Identifiable {
+private struct BlobData: Identifiable {
     let id = UUID()
     let x: CGFloat
     let y: CGFloat
     let size: CGFloat
+    let color: Color
     let animDuration: Double
     let animDelay: Double
 }
 
-// MARK: - Star Particle
+// MARK: - Blob
 
-private struct StarParticle: View {
-    let star: StarData
-    @State private var opacity: Double = 0
+private struct BlobView: View {
+    let blob: BlobData
+    @State private var scale: CGFloat = 1.0
+    @State private var offsetX: CGFloat = 0
+    @State private var offsetY: CGFloat = 0
 
     var body: some View {
         Circle()
-            .fill(Color.white)
-            .frame(width: star.size, height: star.size)
-            .opacity(opacity)
-            .position(x: star.x, y: star.y)
+            .fill(blob.color)
+            .frame(width: blob.size, height: blob.size)
+            .blur(radius: blob.size * 0.45)
+            .scaleEffect(scale)
+            .offset(x: offsetX, y: offsetY)
+            .position(x: blob.x, y: blob.y)
             .onAppear {
                 withAnimation(
-                    .easeInOut(duration: star.animDuration)
+                    .easeInOut(duration: blob.animDuration)
                     .repeatForever(autoreverses: true)
-                    .delay(star.animDelay)
+                    .delay(blob.animDelay)
                 ) {
-                    opacity = Double.random(in: 0.5...1.0)
+                    scale = CGFloat.random(in: 1.1...1.35)
+                    offsetX = CGFloat.random(in: -30...30)
+                    offsetY = CGFloat.random(in: -30...30)
                 }
             }
     }
@@ -56,25 +63,18 @@ struct IntroView: View {
     @State private var titleOffset: CGFloat = 30
     @State private var subtitleVisible = false
     @State private var screenOpacity: Double = 1
-    @State private var stars: [StarData] = []
+    @State private var blobs: [BlobData] = []
 
     var body: some View {
         GeometryReader { geo in
             ZStack {
                 // MARK: Background
-                LinearGradient(
-                    colors: [
-                        Color(hex: "#080C1A"),
-                        Color(hex: "#131838")
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                Color(hex: "#EEF0FF")
+                    .ignoresSafeArea()
 
-                // MARK: Stars
-                ForEach(stars) { star in
-                    StarParticle(star: star)
+                // MARK: Blobs
+                ForEach(blobs) { blob in
+                    BlobView(blob: blob)
                 }
 
                 // MARK: Center Content
@@ -92,7 +92,6 @@ struct IntroView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 104, height: 104)
-                            .shadow(color: Color(hex: "#5B6EFF").opacity(0.55), radius: 20)
                     }
                     .scaleEffect(logoScale)
                     .opacity(logoVisible ? 1 : 0)
@@ -101,19 +100,19 @@ struct IntroView: View {
                     VStack(spacing: 10) {
                         Text("Dozy")
                             .font(.system(size: 52, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .offset(y: titleOffset)
                             .opacity(titleVisible ? 1 : 0)
 
                         Text("스마트한 일정 관리의 시작")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.5))
+                            .foregroundStyle(.secondary)
                             .opacity(subtitleVisible ? 1 : 0)
                     }
                 }
             }
             .onAppear {
-                generateStars(in: geo.size)
+                generateBlobs(in: geo.size)
                 startSequence()
             }
         }
@@ -121,15 +120,23 @@ struct IntroView: View {
         .ignoresSafeArea()
     }
 
-    // MARK: - Star Generation
+    // MARK: - Blob Generation
 
-    private func generateStars(in size: CGSize) {
-        stars = (0..<30).map { _ in
-            StarData(
+    private let blobColors: [Color] = [
+        Color(hex: "#6E82FF").opacity(0.55),
+        Color(hex: "#A78BFA").opacity(0.5),
+        Color(hex: "#60A5FA").opacity(0.5),
+        Color(hex: "#F472B6").opacity(0.4)
+    ]
+
+    private func generateBlobs(in size: CGSize) {
+        blobs = (0..<8).map { i in
+            BlobData(
                 x: CGFloat.random(in: 0...size.width),
-                y: CGFloat.random(in: 0...size.height * 0.8),
-                size: CGFloat.random(in: 1.5...4.5),
-                animDuration: Double.random(in: 1.0...2.2),
+                y: CGFloat.random(in: 0...size.height),
+                size: CGFloat.random(in: 260...380),
+                color: blobColors[i % blobColors.count],
+                animDuration: Double.random(in: 3.0...5.0),
                 animDelay: Double.random(in: 0...2.0)
             )
         }

@@ -132,6 +132,7 @@
 		F63C68882F85EBFE003464E8 /* congratulation.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68872F85EBFE003464E8 /* congratulation.json */; };
 		F63C688B2F85F0CA003464E8 /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68892F85F0CA003464E8 /* IntroView.swift */; };
 		F63C688D2F85F0D9003464E8 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C688C2F85F0D9003464E8 /* RootView.swift */; };
+		F63C68E02F861F5E003464E8 /* BlobBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -297,6 +298,7 @@
 		F63C68872F85EBFE003464E8 /* congratulation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = congratulation.json; sourceTree = "<group>"; };
 		F63C68892F85F0CA003464E8 /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
 		F63C688C2F85F0D9003464E8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobBackgroundView.swift; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -515,6 +517,7 @@
 		DD808ECF2F694C4800F4956A /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */,
 				DD9F693D2F6AD1CD001952F6 /* TaskCard.swift */,
 				DD9F693F2F6AD1D5001952F6 /* SummaryCard.swift */,
 				DD9F69412F6AD1DE001952F6 /* PatternChart.swift */,
@@ -952,6 +955,7 @@
 				F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */,
 				F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */,
 				DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */,
+				F63C68E02F861F5E003464E8 /* BlobBackgroundView.swift in Sources */,
 				F63C687C2F85E569003464E8 /* LottieView.swift in Sources */,
 				F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */,
 				F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */,
