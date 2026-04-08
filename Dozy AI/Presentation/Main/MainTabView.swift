@@ -8,14 +8,15 @@
 import SwiftUI
 
 struct MainTabView: View {
-    
+
     private let container: DependencyContainer
-    
+    @StateObject private var calendarViewModel: CalendarViewModel
+    @State private var selectedTab = 0
+
     init(container: DependencyContainer) {
         self.container = container
+        _calendarViewModel = StateObject(wrappedValue: CalendarViewModel(container: container))
     }
-    
-    @State private var selectedTab = 0
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -23,7 +24,7 @@ struct MainTabView: View {
                 .tabItem { Label("홈", systemImage: "house.fill") }
                 .tag(0)
 
-            CalendarView(container: container)
+            CalendarView(viewModel: calendarViewModel)
                 .tabItem { Label("캘린더", systemImage: "calendar") }
                 .tag(1)
 
@@ -34,6 +35,10 @@ struct MainTabView: View {
             SettingsView(container: container)
                 .tabItem { Label("설정", systemImage: "gear") }
                 .tag(3)
+        }
+        .onAppear {
+            // 인트로가 뜨는 동안 캘린더 데이터 미리 로드
+            calendarViewModel.loadInitialData()
         }
     }
 }

@@ -30,6 +30,10 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     func requestAccess() -> AnyPublisher<Bool, DozyError> {
         appleService.requestAccess()
     }
+
+    func invalidateGoogleCache() {
+        googleService.invalidateCache()
+    }
     
     func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []

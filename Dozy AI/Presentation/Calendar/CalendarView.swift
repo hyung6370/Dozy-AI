@@ -9,12 +9,8 @@ import SwiftUI
 import Lottie
 
 struct CalendarView: View {
-    
-    @StateObject private var viewModel: CalendarViewModel
-    
-    init(container: DependencyContainer) {
-        _viewModel = StateObject(wrappedValue: CalendarViewModel(container: container))
-    }
+
+    @ObservedObject var viewModel: CalendarViewModel
     
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -52,7 +48,7 @@ struct CalendarView: View {
                 }
             }
             .refreshable {
-                viewModel.loadInitialData()
+                viewModel.refreshData()
             }
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)

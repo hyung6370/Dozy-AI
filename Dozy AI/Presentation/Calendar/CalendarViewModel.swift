@@ -83,6 +83,7 @@ final class CalendarViewModel: ObservableObject {
     private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
+    private weak var calendarService: CompositeCalendarSerivce?
     private var cancellables = Set<AnyCancellable>()
     
     init(
@@ -131,6 +132,7 @@ final class CalendarViewModel: ObservableObject {
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
             fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase
         )
+        self.calendarService = container.calendarService
     }
     
     // MARK: - Computed
@@ -366,6 +368,11 @@ final class CalendarViewModel: ObservableObject {
     func loadInitialData() {
         fetchEventsForDate(selectedDate)
         fetchEventsForMonth()
+    }
+
+    func refreshData() {
+        calendarService?.invalidateGoogleCache()
+        loadInitialData()
     }
     
     private func fetchEventsForDate(_ date: Date) {

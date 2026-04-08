@@ -9,12 +9,27 @@ import Foundation
 import Combine
 
 final class GoogleCalendarService: CalendarServiceProtocol {
-    
+
     private let signInService: GoogleSignInService
     private let baseURL = "https://www.googleapis.com/calendar/v3"
-    
+
+    private struct CacheEntry {
+        let events: [CalendarEvent]
+        let fetchedAt: Date
+    }
+    private var cache: [Date: CacheEntry] = [:]
+    private let cacheTTL: TimeInterval = 5 * 60 // 5 minutes
+
     init(signInService: GoogleSignInService) {
         self.signInService = signInService
+    }
+
+    func invalidateCache(for date: Date? = nil) {
+        if let date {
+            cache.removeValue(forKey: Calendar.current.startOfDay(for: date))
+        } else {
+            cache.removeAll()
+        }
     }
     
     // MARK: - CalendarServiceProtocol
@@ -29,7 +44,12 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         guard signInService.isSignedIn else {
             return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
         }
-        
+
+        let key = Calendar.current.startOfDay(for: date)
+        if let entry = cache[key], Date().timeIntervalSince(entry.fetchedAt) < cacheTTL {
+            return Just(entry.events).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        }
+
         return signInService.getValidAccessToken()
             .flatMap { [weak self] token -> AnyPublisher<[CalendarEvent], DozyError> in
                 guard let self else {
@@ -37,6 +57,9 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 }
                 return self.fetchAllEvents(for: date, token: token)
             }
+            .handleEvents(receiveOutput: { [weak self] events in
+                self?.cache[key] = CacheEntry(events: events, fetchedAt: Date())
+            })
             .eraseToAnyPublisher()
     }
     
@@ -140,9 +163,12 @@ extension GoogleCalendarService: CalendarWriteServiceProtocol {
                 guard let self else { return Fail(error: .dataNotFound).eraseToAnyPublisher() }
                 return self.patchEvent(event: event, edit: edit, calendarId: calendarId, token: token)
             }
+            .handleEvents(receiveOutput: { [weak self] _ in
+                self?.invalidateCache(for: event.startDate)
+            })
             .eraseToAnyPublisher()
     }
-    
+
     func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
         guard signInService.isSignedIn, let calendarId = event.calendarId else {
             return Fail(error: .dataNotFound).eraseToAnyPublisher()
@@ -152,6 +178,9 @@ extension GoogleCalendarService: CalendarWriteServiceProtocol {
                 guard let self else { return Fail(error: .dataNotFound).eraseToAnyPublisher() }
                 return self.deleteEventRequest(eventId: event.id, calendarId: calendarId, token: token)
             }
+            .handleEvents(receiveOutput: { [weak self] _ in
+                self?.invalidateCache(for: event.startDate)
+            })
             .eraseToAnyPublisher()
     }
     
