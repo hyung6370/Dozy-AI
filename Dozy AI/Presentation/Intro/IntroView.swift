@@ -53,7 +53,13 @@ private struct BlobView: View {
 
 struct IntroView: View {
 
+    let isPrivacy: Bool
     let onFinished: () -> Void
+    
+    init(isPrivacy: Bool = false, onFinished: @escaping () -> Void) {
+        self.isPrivacy = isPrivacy
+        self.onFinished = onFinished
+    }
 
     // Animation states
     @State private var logoVisible = false
@@ -171,6 +177,8 @@ struct IntroView: View {
                 subtitleVisible = true
             }
         }
+        
+        guard !isPrivacy else { return }
 
         // 4. Fade out
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
