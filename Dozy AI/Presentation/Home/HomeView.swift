@@ -22,6 +22,8 @@ struct HomeView: View {
     @State private var showDeleteMemoAlert = false
     @State private var hasNotification = false
     @State private var showNotificationSheet = false
+    
+    @EnvironmentObject private var authViewModel: AuthViewModel
 
     init(container: DependencyContainer, selectedTab: Binding<Int>) {
         self.container = container
@@ -35,6 +37,9 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     headerSection
                     bannerSection
+                    if !authViewModel.isLoggedIn {
+                        loginPromptBanner
+                    }
                     focusCard
                     statsRow
 
@@ -160,6 +165,12 @@ struct HomeView: View {
 
     private var bannerSection: some View {
         BannerView(items: BannerItem.placeholders, interval: 4)
+    }
+    
+    private var loginPromptBanner: some View {
+        LoginPromptTooltipView {
+            selectedTab = 3
+        }
     }
 
     // MARK: - Focus Card

@@ -133,6 +133,7 @@
 		F63C688B2F85F0CA003464E8 /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68892F85F0CA003464E8 /* IntroView.swift */; };
 		F63C688D2F85F0D9003464E8 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C688C2F85F0D9003464E8 /* RootView.swift */; };
 		F63C68E02F861F5E003464E8 /* BlobBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */; };
+		F63C68E22F862E87003464E8 /* LoginPromptBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -299,6 +300,7 @@
 		F63C68892F85F0CA003464E8 /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
 		F63C688C2F85F0D9003464E8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobBackgroundView.swift; sourceTree = "<group>"; };
+		F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginPromptBannerView.swift; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -534,6 +536,7 @@
 				F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */,
 				F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */,
 				F63C687D2F85E654003464E8 /* LottieOverlayView.swift */,
+				F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1072,6 +1075,7 @@
 				F65068252F7D07AC00F9C124 /* EventCompletionRepositoryProtocol.swift in Sources */,
 				F65068392F7E536700F9C124 /* InsightDashboardViewModel.swift in Sources */,
 				F650682D2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift in Sources */,
+				F63C68E22F862E87003464E8 /* LoginPromptBannerView.swift in Sources */,
 				F65068312F7D115300F9C124 /* EventCompletionRepository.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 			);
