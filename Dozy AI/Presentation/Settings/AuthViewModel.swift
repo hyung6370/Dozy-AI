@@ -15,6 +15,7 @@ final class AuthViewModel: ObservableObject {
     @Published var currentUser: AuthUser? = nil
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
+    @Published var showCongratulationAnimation = false
 
     private let authService = AuthService()
     private let syncService: SyncService
@@ -52,6 +53,7 @@ final class AuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.currentUser = user
+                    self?.showCongratulationAnimation = true
                     self?.syncAfterLogin(userID: user.id)
                 }
             )
@@ -72,12 +74,13 @@ final class AuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.currentUser = user
+                    self?.showCongratulationAnimation = true
                     self?.syncAfterLogin(userID: user.id)
                 }
             )
             .store(in: &cancellables)
     }
-    
+
     private func syncAfterLogin(userID: String) {
         syncService.syncAll(userID: userID)
             .receive(on: DispatchQueue.main)

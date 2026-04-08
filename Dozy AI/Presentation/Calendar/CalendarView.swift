@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Lottie
 
 struct CalendarView: View {
     
@@ -81,6 +82,15 @@ struct CalendarView: View {
                 }
             }
             .onAppear { viewModel.loadInitialData() }
+            .overlay {
+                if viewModel.showSuccessAnimation {
+                    LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                        viewModel.showSuccessAnimation = false
+                    }
+                    .scaleEffect(0.22)
+                    .allowsHitTesting(false)
+                }
+            }
             .alert(alertTitle, isPresented: $viewModel.showDeleteAlert) {
                 Button("삭제", role: .destructive) {
                     if let e = viewModel.pendingDeleteEvent {

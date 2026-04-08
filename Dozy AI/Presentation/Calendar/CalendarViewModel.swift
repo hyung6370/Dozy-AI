@@ -65,6 +65,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var weekLayouts: [Date: [CalendarEventLayout]] = [:]
     @Published var deleteErrorMessage: String? = nil
     @Published var showDeleteSuccess = false
+    @Published var showSuccessAnimation = false
     private var allEventsInMonth: [String: CalendarEvent] = [:]
     
     // MARK: - Dependencies
@@ -570,6 +571,9 @@ final class CalendarViewModel: ObservableObject {
                 self.cancelNotificationUseCase.execute(identifier: event.id)
                 if event.notificationMinutesBefore >= 0 {
                     self.scheduleNotificationUseCase.execute(for: event)
+                }
+                if self.eventToEdit == nil {
+                    self.showSuccessAnimation = true
                 }
             }).store(in: &cancellables)
     }

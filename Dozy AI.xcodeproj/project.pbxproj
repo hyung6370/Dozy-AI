@@ -125,6 +125,11 @@
 		F63C686E2F84F79B003464E8 /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */; };
 		F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686F2F84F7A6003464E8 /* NotificationListView.swift */; };
 		F63C68732F85E35F003464E8 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F63C68722F85E35F003464E8 /* Lottie */; };
+		F63C687A2F85E54A003464E8 /* loading.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68792F85E54A003464E8 /* loading.json */; };
+		F63C687C2F85E569003464E8 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C687B2F85E569003464E8 /* LottieView.swift */; };
+		F63C687E2F85E654003464E8 /* LottieOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C687D2F85E654003464E8 /* LottieOverlayView.swift */; };
+		F63C68822F85EA71003464E8 /* success.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68812F85EA71003464E8 /* success.json */; };
+		F63C68882F85EBFE003464E8 /* congratulation.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68872F85EBFE003464E8 /* congratulation.json */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -283,6 +288,11 @@
 		F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRepository.swift; sourceTree = "<group>"; };
 		F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewModel.swift; sourceTree = "<group>"; };
 		F63C686F2F84F7A6003464E8 /* NotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationListView.swift; sourceTree = "<group>"; };
+		F63C68792F85E54A003464E8 /* loading.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = loading.json; sourceTree = "<group>"; };
+		F63C687B2F85E569003464E8 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
+		F63C687D2F85E654003464E8 /* LottieOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieOverlayView.swift; sourceTree = "<group>"; };
+		F63C68812F85EA71003464E8 /* success.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = success.json; sourceTree = "<group>"; };
+		F63C68872F85EBFE003464E8 /* congratulation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = congratulation.json; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -403,8 +413,8 @@
 		DD808EBD2F694BBB00F4956A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F63C68742F85E43F003464E8 /* LottieFiles */,
 				DD808EAE2F694B2A00F4956A /* Assets.xcassets */,
-				DD9F694C2F6AD252001952F6 /* CoreML */,
 				DD9F694D2F6AD2CF001952F6 /* Localizable.strings */,
 			);
 			path = Resources;
@@ -515,6 +525,7 @@
 				F650683C2F7F88A300F9C124 /* InsightBannerView.swift */,
 				F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */,
 				F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */,
+				F63C687D2F85E654003464E8 /* LottieOverlayView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -554,6 +565,7 @@
 				DD9F68EB2F6ACD36001952F6 /* Constants.swift */,
 				DD44DDD22F72C44100EEE463 /* DozyError.swift */,
 				F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */,
+				F63C687B2F85E569003464E8 /* LottieView.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -692,13 +704,6 @@
 			path = Insights;
 			sourceTree = "<group>";
 		};
-		DD9F694C2F6AD252001952F6 /* CoreML */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CoreML;
-			sourceTree = "<group>";
-		};
 		F619D9522F75194A00084C61 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -751,6 +756,16 @@
 				F63C686F2F84F7A6003464E8 /* NotificationListView.swift */,
 			);
 			path = Notifications;
+			sourceTree = "<group>";
+		};
+		F63C68742F85E43F003464E8 /* LottieFiles */ = {
+			isa = PBXGroup;
+			children = (
+				F63C68872F85EBFE003464E8 /* congratulation.json */,
+				F63C68812F85EA71003464E8 /* success.json */,
+				F63C68792F85E54A003464E8 /* loading.json */,
+			);
+			path = LottieFiles;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -882,7 +897,10 @@
 			files = (
 				DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */,
 				F619D9512F75192800084C61 /* .gitignore in Resources */,
+				F63C687A2F85E54A003464E8 /* loading.json in Resources */,
 				DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */,
+				F63C68822F85EA71003464E8 /* success.json in Resources */,
+				F63C68882F85EBFE003464E8 /* congratulation.json in Resources */,
 				F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */,
 				F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */,
 			);
@@ -920,6 +938,7 @@
 				F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */,
 				F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */,
 				DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */,
+				F63C687C2F85E569003464E8 /* LottieView.swift in Sources */,
 				F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */,
 				F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */,
 				F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */,
@@ -1004,6 +1023,7 @@
 				DD9F68EE2F6ACD5B001952F6 /* WorkLog.swift in Sources */,
 				DD9F691B2F6ACF74001952F6 /* SwiftDataContainer.swift in Sources */,
 				F6BC59912F7396450090DF3A /* File.swift in Sources */,
+				F63C687E2F85E654003464E8 /* LottieOverlayView.swift in Sources */,
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
 				F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */,
 				F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */,

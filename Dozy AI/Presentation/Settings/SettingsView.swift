@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Lottie
 
 struct SettingsView: View {
     
@@ -26,6 +27,15 @@ struct SettingsView: View {
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { authViewModel.restoreSession() }
+            .overlay {
+                if authViewModel.showCongratulationAnimation {
+                    LottieView(name: "congratulation", loopMode: .playOnce) {
+                        authViewModel.showCongratulationAnimation = false
+                    }
+                    .scaleEffect(0.3)
+                    .allowsHitTesting(false)
+                }
+            }
             .alert("로그아웃", isPresented: $showSignOutAlert) {
                 Button("로그아웃", role: .destructive) { authViewModel.signOut() }
                 Button("취소", role: .cancel) { }
