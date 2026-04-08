@@ -26,7 +26,6 @@ struct SettingsView: View {
             }
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear { authViewModel.restoreSession() }
             .overlay {
                 if authViewModel.showCongratulationAnimation {
                     LottieView(name: "congratulation", loopMode: .playOnce) {
