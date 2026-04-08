@@ -24,6 +24,7 @@ struct CalendarEventLayout: Identifiable {
     let id: String
     let title: String
     let colorHex: String
+    let source: CalendarSource
     let startCol: Int
     let endCol: Int
     let row: Int
@@ -536,6 +537,7 @@ final class CalendarViewModel: ObservableObject {
 
                 layouts.append(CalendarEventLayout(
                     id: event.id, title: event.title, colorHex: event.calendarColorHex,
+                    source: event.source,
                     startCol: sc, endCol: ec, row: assignedRow,
                     isActualStart: isStart, isActualEnd: isEnd
                 ))

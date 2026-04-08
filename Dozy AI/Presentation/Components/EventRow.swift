@@ -16,7 +16,9 @@ struct EventRow: View {
         HStack(spacing: 12) {
             // 캘린더 색상 인디케이터
             RoundedRectangle(cornerRadius: 3)
-                .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                .fill(event.source == .dozy
+                      ? (Color(hex: event.calendarColorHex) ?? .blue).opacity(0.35)
+                      : Color(hex: event.calendarColorHex) ?? .blue)
                 .frame(width: 4, height: 40)
             
             VStack(alignment: .leading, spacing: 4) {

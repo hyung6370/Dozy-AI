@@ -119,28 +119,33 @@ struct MonthWeekRowView: View {
 
 struct EventPill: View {
     let layout: CalendarEventLayout
-    
+
     private var color: Color { Color(hex: layout.colorHex) ?? .blue }
-    
-    var body: some View {
+    private var isDozy: Bool { layout.source == .dozy }
+
+    private var shape: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
             topLeadingRadius: layout.isActualStart ? 8 : 0,
             bottomLeadingRadius: layout.isActualStart ? 8 : 0,
             bottomTrailingRadius: layout.isActualEnd ? 8 : 0,
             topTrailingRadius: layout.isActualEnd ? 8 : 0
         )
-        .fill(color.opacity(0.75))
-        .overlay(alignment: .leading) {
-            if layout.isActualStart {
-                Text(layout.title)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .padding(.leading, 5)
-                    .padding(.trailing, 2)
+    }
+
+    var body: some View {
+        shape
+            .fill(isDozy ? color.opacity(0.2) : color.opacity(0.75))
+            .overlay(alignment: .leading) {
+                if layout.isActualStart {
+                    Text(layout.title)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(isDozy ? color : .white)
+                        .lineLimit(1)
+                        .padding(.leading, 5)
+                        .padding(.trailing, 2)
+                }
             }
-        }
-        .clipped()
+            .clipped()
     }
 }
 
