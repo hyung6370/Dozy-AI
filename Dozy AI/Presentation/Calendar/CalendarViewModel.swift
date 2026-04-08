@@ -575,14 +575,23 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
+                
+                // 신규 등록 시: 일정 시작일로 포커스 이동
+                if self.eventToEdit == nil {
+                    let cal = Calendar.current
+                    self.selectedDate = event.startDate
+                    // 등록된 일정이 현재 표시 월과 다르면 월도 이동
+                    if !cal.isDate(event.startDate, equalTo: self.currentMonth, toGranularity: .month) {
+                        self.currentMonth = event.startDate
+                    }
+                    self.showSuccessAnimation = true
+                }
+                
                 self.fetchEventsForDate(self.selectedDate)
                 self.fetchEventsForMonth()
                 self.cancelNotificationUseCase.execute(identifier: event.id)
                 if event.notificationMinutesBefore >= 0 {
                     self.scheduleNotificationUseCase.execute(for: event)
-                }
-                if self.eventToEdit == nil {
-                    self.showSuccessAnimation = true
                 }
             }).store(in: &cancellables)
     }
