@@ -51,19 +51,17 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
                 let all = arrays.flatMap { $0 }
                 var seen = Set<String>()
                 var deduped: [CalendarEvent] = []
-                // apple → google → dozy 순으로 처리해 Apple 이벤트를 우선 유지
-                let ordered = all.sorted { lhs, rhs in
-                    let priority: (CalendarSource) -> Int = {
-                        switch $0 { case .apple: return 0; case .dozy: return 1; default: return 2 }
-                    }
-                    return priority(lhs.source) < priority(rhs.source)
-                }
-                for event in ordered {
-                    let cal = Calendar.current
-                    let day = cal.startOfDay(for: event.startDate)
-                    let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
-                    if seen.insert(key).inserted {
+                // Dozy 이벤트는 항상 유지, Apple/Google 이벤트끼리만 중복 제거
+                for event in all {
+                    if event.source == .dozy {
                         deduped.append(event)
+                    } else {
+                        let cal = Calendar.current
+                        let day = cal.startOfDay(for: event.startDate)
+                        let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
+                        if seen.insert(key).inserted {
+                            deduped.append(event)
+                        }
                     }
                 }
                 return deduped.sorted { $0.startDate < $1.startDate }

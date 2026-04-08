@@ -107,6 +107,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             recurrenceRule: event.recurrenceRule,
             recurrenceEndDate: event.recurrenceEndDate,
             notificationMinutesBefore: event.notificationMinutesBefore,
+            memos: event.memos,
             isCompleted: event.isCompleted,
             createdAt: event.createdAt,
             updatedAt: event.updatedAt
@@ -152,6 +153,7 @@ private struct DozyEventRow: Codable {
     let recurrenceRule: String
     let recurrenceEndDate: Date?
     let notificationMinutesBefore: Int
+    let memos: [String]
     let isCompleted: Bool
     let createdAt: Date
     let updatedAt: Date
@@ -168,6 +170,7 @@ private struct DozyEventRow: Codable {
         case recurrenceRule = "recurrence_rule"
         case recurrenceEndDate = "recurrence_end_date"
         case notificationMinutesBefore = "notification_minutes_before"
+        case memos
         case isCompleted = "is_completed"
         case createdAt = "created_at"
         case updatedAt = "updated_at"

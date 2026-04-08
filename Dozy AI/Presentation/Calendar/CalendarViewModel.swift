@@ -80,6 +80,7 @@ final class CalendarViewModel: ObservableObject {
     private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
     private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+    private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
     private var cancellables = Set<AnyCancellable>()
     
     init(
@@ -94,7 +95,8 @@ final class CalendarViewModel: ObservableObject {
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
         deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
         toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase,
-        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
+        fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -108,6 +110,7 @@ final class CalendarViewModel: ObservableObject {
         self.deleteCalendarEventUseCase = deleteCalendarEventUseCase
         self.toggleCalendarEventCompletionUseCase = toggleCalendarEventCompletionUseCase
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
+        self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
     }
 
     convenience init(container: DependencyContainer) {
@@ -123,7 +126,8 @@ final class CalendarViewModel: ObservableObject {
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
             deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
             toggleCalendarEventCompletionUseCase: container.toggleCalendarEventCompletionUseCase,
-            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase
+            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
+            fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase
         )
     }
     
@@ -376,7 +380,8 @@ final class CalendarViewModel: ObservableObject {
                 withAnimation(.easeInOut(duration: 0.25)) {
                     self.eventsForSelectedDate = events
                     self.dozyEventsForSelectedDate = dozyEvents
-                    self.dozyEventsByID = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                    let newEntries = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                    self.dozyEventsByID.merge(newEntries) { _, new in new }
                 }
                 // Apple/Google completion 조회
                 let nonDozyIDs = events.filter { $0.source != .dozy }.map { $0.id }
@@ -420,6 +425,16 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] results in
                 guard let self else { return }
                 self.buildLayouts(from: results)
+            })
+            .store(in: &cancellables)
+
+        // 월 전체 DozyEvent를 dozyEventsByID에 미리 로드 (모든 날짜 탭 시 조회 가능하게)
+        fetchDozyEventsForPeriodUseCase.execute(from: displayStart, to: displayEnd)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] dozyEvents in
+                guard let self else { return }
+                let newEntries = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                self.dozyEventsByID.merge(newEntries) { _, new in new }
             })
             .store(in: &cancellables)
     }
@@ -580,5 +595,13 @@ final class CalendarViewModel: ObservableObject {
                 self.fetchEventsForDate(self.selectedDate)
                 self.fetchEventsForMonth()
             }).store(in: &cancellables)
+    }
+    
+    // MARK: - Memo
+    func saveMemos(for event: DozyEvent) {
+        updateEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
     }
 }

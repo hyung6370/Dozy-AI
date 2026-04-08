@@ -24,6 +24,7 @@ final class DozyEvent {
     var isCompleted: Bool = false
     var recurrenceEndDate: Date? = nil
     var notificationMinutesBefore: Int = -1 // -1: 없음
+    var memos: [String] = []
     
     init(
         id: String = UUID().uuidString,

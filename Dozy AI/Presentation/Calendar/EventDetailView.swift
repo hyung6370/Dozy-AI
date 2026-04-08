@@ -15,10 +15,18 @@ struct EventDetailView: View {
     let onDelete: ((DozyEvent) -> Void)?
     let onEditCalendar: ((CalendarEvent) -> Void)?
     let onDeleteCalendar: ((CalendarEvent) -> Void)?
+    let onSaveMemos: ((DozyEvent) -> Void)?
     
     @Environment(\.dismiss) private var dismiss
     @State private var showCalendarDeleteConfirm = false
     @State private var showDozyDeleteConfirm = false
+    @State private var memoText = ""
+    @State private var editingMemoIndex: Int? = nil
+    @State private var editingMemoText = ""
+    @State private var showEditMemoAlert = false
+    @State private var deletingMemoIndex: Int? = nil
+    @State private var showDeleteMemoAlert = false
+    @State private var memos: [String] = []
 
     var body: some View {
         NavigationStack {
@@ -28,11 +36,15 @@ struct EventDetailView: View {
                     Divider().padding(.horizontal)
                     infoSection
                     if let dozyEvent {
+                        memoSection(dozyEvent)
                         dozyActionSection(dozyEvent)
                     } else if event.source == .apple || event.source == .google {
                         calendarActionSection
                     }
                 }
+            }
+            .onAppear {
+                memos = dozyEvent?.memos ?? []
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -73,7 +85,7 @@ struct EventDetailView: View {
             
             if let notes = event.notes, !notes.isEmpty {
                 Divider().padding(.leading, 52)
-                DetailRow(icon: "note.text", label: "메모", value: notes)
+                DetailRow(icon: "note.text", label: "설명", value: notes)
             }
             
             Divider().padding(.leading, 52)
@@ -90,6 +102,91 @@ struct EventDetailView: View {
             }
         }
         .padding(.vertical, 8)
+    }
+    
+    // MARK: - Memo
+    private func memoSection(_ dozy: DozyEvent) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Divider().padding(.top, 8)
+            
+            Text("메모")
+                .font(.footnote)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 16)
+            
+            ForEach(Array(memos.enumerated()), id: \.offset) { index, memo in
+                HStack(alignment: .top, spacing: 8) {
+                    Text("📝").font(.subheadline)
+                    Text(memo)
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(10)
+                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+                .padding(.horizontal, 16)
+                .contextMenu {
+                    Button {
+                        editingMemoIndex = index
+                        editingMemoText = memo
+                        showEditMemoAlert = true
+                    } label: {
+                        Label("수정", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        deletingMemoIndex = index
+                        showDeleteMemoAlert = true
+                    } label: {
+                        Label("삭제", systemImage: "trash")
+                    }
+                }
+            }
+            
+            HStack(spacing: 10) {
+                TextField("메모를 남겨보세요", text: $memoText)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { submitMemo(dozy) }
+                Button { submitMemo(dozy) } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.blue)
+                }
+                .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+            .padding(.horizontal, 16)
+        }
+        .alert("메모 삭제", isPresented: $showDeleteMemoAlert) {
+            Button("삭제", role: .destructive) {
+                if let index = deletingMemoIndex {
+                    memos.remove(at: index)
+                    dozy.memos = memos
+                    onSaveMemos?(dozy)
+                }
+            }
+            Button("취소", role: .cancel) { }
+        } message: {
+            Text("정말로 삭제하시겠습니까?")
+        }
+        .alert("메모 수정", isPresented: $showEditMemoAlert) {
+            TextField("메모", text: $editingMemoText)
+            Button("저장") {
+                if let index = editingMemoIndex {
+                    memos[index] = editingMemoText
+                    dozy.memos = memos
+                    onSaveMemos?(dozy)
+                }
+            }
+            Button("취소", role: .cancel) { }
+        }
+    }
+    
+    private func submitMemo(_ dozy: DozyEvent) {
+        let trimmed = memoText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        memos.append(trimmed)
+        dozy.memos = memos
+        onSaveMemos?(dozy)
+        memoText = ""
     }
     
     // MARK: - Action (Dozy)

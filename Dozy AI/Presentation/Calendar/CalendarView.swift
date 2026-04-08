@@ -71,20 +71,7 @@ struct CalendarView: View {
                 }
             }
             .sheet(isPresented: $viewModel.showEventDetail) {
-                if let event = viewModel.detailEvent {
-                    EventDetailView(
-                        event: event,
-                        dozyEvent: viewModel.dozyEventsByID[event.id],
-                        onEdit: { (dozyEvent: DozyEvent) in
-                            viewModel.startEditingEvent(dozyEvent)
-                        },
-                        onDelete: { (dozyEvent: DozyEvent) in
-                            viewModel.requestDelete(event)
-                        },
-                        onEditCalendar: { viewModel.startEditingCalendarEvent($0) },
-                        onDeleteCalendar: { viewModel.deleteCalendarEvent($0) }
-                    )
-                }
+                eventDetailSheet
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
@@ -129,6 +116,31 @@ struct CalendarView: View {
         }
     }
     
+    // MARK: - Sheets
+
+    @ViewBuilder
+    private var eventDetailSheet: some View {
+        if let event = viewModel.detailEvent {
+            let dozyEvent = viewModel.dozyEventsForSelectedDate.first(where: { $0.id == event.id })
+                ?? viewModel.dozyEventsByID[event.id]
+            EventDetailView(
+                event: event,
+                dozyEvent: dozyEvent,
+                onEdit: { dozyEvent in
+                    viewModel.startEditingEvent(dozyEvent)
+                },
+                onDelete: { dozyEvent in
+                    viewModel.requestDelete(event)
+                },
+                onEditCalendar: { viewModel.startEditingCalendarEvent($0) },
+                onDeleteCalendar: { viewModel.deleteCalendarEvent($0) },
+                onSaveMemos: { dozyEvent in
+                    viewModel.saveMemos(for: dozyEvent)
+                }
+            )
+        }
+    }
+
     // MARK: - Month Header
     
     private var monthHeader: some View {
