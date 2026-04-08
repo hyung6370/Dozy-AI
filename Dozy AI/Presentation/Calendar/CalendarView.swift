@@ -11,7 +11,8 @@ import Lottie
 struct CalendarView: View {
 
     @ObservedObject var viewModel: CalendarViewModel
-    
+    @State private var showLegend = false
+
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
@@ -54,10 +55,19 @@ struct CalendarView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { viewModel.startCreatingEvent() } label: {
-                        Image(systemName: "plus")
+                    HStack(spacing: 4) {
+                        Button { showLegend = true } label: {
+                            Image(systemName: "questionmark.circle")
+                        }
+                        Button { viewModel.startCreatingEvent() } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
+            }
+            .sheet(isPresented: $showLegend) {
+                CalendarLegendView()
+                    .presentationDetents([.medium])
             }
             .sheet(isPresented: $viewModel.showEventEdit) {
                 EventEditView(

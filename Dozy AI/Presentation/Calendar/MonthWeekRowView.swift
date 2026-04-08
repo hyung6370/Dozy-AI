@@ -169,15 +169,15 @@ struct EventPill: View {
             .clipped()
     }
 }
-
-#Preview {
-    MonthWeekRowView(
-        weekDates: (0..<7).map { Calendar.current.date(byAdding: .day, value: $0, to: Date()) },
-        layouts: [],
-        selectedDate: Date(),
-        isToday: { _ in false },
-        isSelected: { _ in false },
-        onSelect: { _ in },
-        onTapEvent: { _ in }
-    )
-}
+//
+//#Preview {
+//    MonthWeekRowView(
+//        weekDates: (0..<7).map { Calendar.current.date(byAdding: .day, value: $0, to: Date()) },
+//        layouts: [],
+//        selectedDate: Date(),
+//        isToday: { _ in false },
+//        isSelected: { _ in false },
+//        onSelect: { _ in },
+//        onTapEvent: { _ in }
+//    )
+//}
