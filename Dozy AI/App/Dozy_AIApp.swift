@@ -25,7 +25,7 @@ struct Dozy_AIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView(container: container)
+            RootView(container: container)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                     _ = container.naverSignInService.handle(url: url)

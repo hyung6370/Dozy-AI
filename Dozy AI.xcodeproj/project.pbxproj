@@ -130,6 +130,8 @@
 		F63C687E2F85E654003464E8 /* LottieOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C687D2F85E654003464E8 /* LottieOverlayView.swift */; };
 		F63C68822F85EA71003464E8 /* success.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68812F85EA71003464E8 /* success.json */; };
 		F63C68882F85EBFE003464E8 /* congratulation.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68872F85EBFE003464E8 /* congratulation.json */; };
+		F63C688B2F85F0CA003464E8 /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68892F85F0CA003464E8 /* IntroView.swift */; };
+		F63C688D2F85F0D9003464E8 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C688C2F85F0D9003464E8 /* RootView.swift */; };
 		F650681B2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681C2F7CF09200F9C124 /* WeekGridView.swift */; };
 		F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */; };
@@ -293,6 +295,8 @@
 		F63C687D2F85E654003464E8 /* LottieOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieOverlayView.swift; sourceTree = "<group>"; };
 		F63C68812F85EA71003464E8 /* success.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = success.json; sourceTree = "<group>"; };
 		F63C68872F85EBFE003464E8 /* congratulation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = congratulation.json; sourceTree = "<group>"; };
+		F63C68892F85F0CA003464E8 /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
+		F63C688C2F85F0D9003464E8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -423,6 +427,7 @@
 		DD808EBE2F694BC600F4956A /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				F63C688A2F85F0CA003464E8 /* Intro */,
 				F63C686C2F84F786003464E8 /* Notifications */,
 				F619D97F2F7A3CC200084C61 /* Calendar */,
 				F619D97C2F7A3BEC00084C61 /* Main */,
@@ -728,6 +733,7 @@
 			isa = PBXGroup;
 			children = (
 				F619D97D2F7A3BF600084C61 /* MainTabView.swift */,
+				F63C688C2F85F0D9003464E8 /* RootView.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -766,6 +772,14 @@
 				F63C68792F85E54A003464E8 /* loading.json */,
 			);
 			path = LottieFiles;
+			sourceTree = "<group>";
+		};
+		F63C688A2F85F0CA003464E8 /* Intro */ = {
+			isa = PBXGroup;
+			children = (
+				F63C68892F85F0CA003464E8 /* IntroView.swift */,
+			);
+			path = Intro;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -944,8 +958,10 @@
 				F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */,
 				F619D9712F7A360D00084C61 /* FetchDozyEventsUseCase.swift in Sources */,
 				DD9F68E62F6ACD14001952F6 /* String+Extensions.swift in Sources */,
+				F63C688B2F85F0CA003464E8 /* IntroView.swift in Sources */,
 				DD9F69402F6AD1D5001952F6 /* SummaryCard.swift in Sources */,
 				F650681D2F7CF09200F9C124 /* WeekGridView.swift in Sources */,
+				F63C688D2F85F0D9003464E8 /* RootView.swift in Sources */,
 				DD9F69232F6ACFF2001952F6 /* CalendarEventDTO.swift in Sources */,
 				DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */,
 				F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */,
