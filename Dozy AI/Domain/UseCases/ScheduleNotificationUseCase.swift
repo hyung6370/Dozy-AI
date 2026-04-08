@@ -43,7 +43,8 @@ final class ScheduleNotificationUseCase {
             eventID: event.id,
             eventTitle: event.title,
             body: body,
-            deliveryDate: triggerDate
+            deliveryDate: triggerDate,
+            eventStartDate: event.startDate
         )
         notificationRepository.save(record)
     }

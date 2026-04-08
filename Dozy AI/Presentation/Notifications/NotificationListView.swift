@@ -89,7 +89,7 @@ private struct NotificationRowView: View {
                             .background(Color.orange.opacity(0.12), in: Capsule())
                     }
                 }
-                Text(record.body)
+                Text(remainingTimeLabel(for: record.eventStartDate))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(record.deliveryDate.formatted(date: .abbreviated, time: .shortened))
@@ -106,5 +106,25 @@ private struct NotificationRowView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+    
+    private func remainingTimeLabel(for eventStart: Date) -> String {
+        let diff = eventStart.timeIntervalSince(Date())
+        
+        if diff <= 0 {
+            return "\(record.eventTitle) 일정이 시작됐어요"
+        }
+        
+        let minutes = Int(diff / 60)
+        let hours = Int(diff / 3600)
+        let days = Int(diff / 86400)
+        
+        if days >= 1 {
+            return "\(record.eventTitle)까지 \(days)일 남았습니다"
+        } else if hours >= 1 {
+            return "\(record.eventTitle)까지 \(hours)시간 전입니다"
+        } else {
+            return "\(record.eventTitle)까지 \(minutes)분 남았습니다"
+        }
     }
 }

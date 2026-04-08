@@ -15,14 +15,16 @@ final class NotificationRecord {
     var eventTitle: String
     var body: String
     var deliveryDate: Date
+    var eventStartDate: Date = Date()
     var isRead: Bool
     
-    init(eventID: String, eventTitle: String, body: String, deliveryDate: Date) {
+    init(eventID: String, eventTitle: String, body: String, deliveryDate: Date, eventStartDate: Date) {
         self.id = UUID()
         self.eventID = eventID
         self.eventTitle = eventTitle
         self.body = body
         self.deliveryDate = deliveryDate
+        self.eventStartDate = eventStartDate
         self.isRead = false
     }
 }
