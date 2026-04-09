@@ -31,6 +31,7 @@ final class DailySummaryViewModel: ObservableObject {
     @Published var completedTasks: [TaskItem] = []
     @Published var pendingTasks: [TaskItem] = []
     @Published var memos: [String] = []
+    var completedEventCount: Int = 0
 
     // MARK: - 하이라이트 탭 데이터
 
@@ -62,18 +63,29 @@ final class DailySummaryViewModel: ObservableObject {
     var scoreBreakdown: [(label: String, value: Double, maxValue: Double)] {
         guard summary != nil else { return [] }
 
+        // 1) 할 일 완료율 (50%)
         let totalTasks = completedTasks.count + pendingTasks.count
-        let completionRate = totalTasks > 0
+        let taskRate = totalTasks > 0
             ? Double(completedTasks.count) / Double(totalTasks)
             : 0.5
 
-        let eventRate = min(Double(events.count) / 5.0, 1.0)
-        let volumeRate = min(Double(completedTasks.count) / 8.0, 1.0)
+        // 2) 일정 완료 체크율 (30%)
+        let eventCheckRate = events.isEmpty
+            ? 0.5
+            : Double(completedEventCount) / Double(events.count)
+
+        // 3) 우선순위 달성률 (20%)
+        let highPriorityCompleted = completedTasks.filter { $0.priority > 0 }.count
+        let highPriorityPending   = pendingTasks.filter { $0.priority > 0 }.count
+        let totalHighPriority     = highPriorityCompleted + highPriorityPending
+        let priorityRate = totalHighPriority > 0
+            ? Double(highPriorityCompleted) / Double(totalHighPriority)
+            : 0.5
 
         return [
-            ("할 일 완료율", completionRate * 50, 50),
-            ("일정 소화",    eventRate * 30,       30),
-            ("완료 양",      volumeRate * 20,      20)
+            ("할 일 완료율",   taskRate * 50,     50),
+            ("일정 완료 체크", eventCheckRate * 30, 30),
+            ("우선순위 달성",  priorityRate * 20,  20)
         ]
     }
 
@@ -144,7 +156,7 @@ final class DailySummaryViewModel: ObservableObject {
         var categoryMap: [WorkCategory: (items: [String], minutes: Int)] = [:]
 
         for event in events {
-            let cat = detectSingleCategory(from: event.title)
+            let cat = WorkCategory(rawValue: event.category) ?? detectSingleCategory(from: event.title)
             var entry = categoryMap[cat] ?? (items: [], minutes: 0)
             entry.items.append(event.title)
             entry.minutes += event.isAllDay ? 0 : event.durationMinutes

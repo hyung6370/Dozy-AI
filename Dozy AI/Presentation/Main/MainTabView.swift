@@ -8,30 +8,36 @@
 import SwiftUI
 
 struct MainTabView: View {
-    
+
     private let container: DependencyContainer
-    
+    @StateObject private var calendarViewModel: CalendarViewModel
+    @State private var selectedTab = 0
+
     init(container: DependencyContainer) {
         self.container = container
+        _calendarViewModel = StateObject(wrappedValue: CalendarViewModel(container: container))
     }
-    
+
     var body: some View {
-        TabView {
-            HomeView(container: container)
-                .tabItem { Label("홈", systemImage: "house.fill") }
-            
-            CalendarView(container: container)
-                .tabItem { Label("캘린더", systemImage: "calendar") }
-            
+        TabView(selection: $selectedTab) {
+            HomeView(container: container, selectedTab: $selectedTab)
+                .tabItem { Label("홈", image: "house") }
+                .tag(0)
+
+            CalendarView(viewModel: calendarViewModel)
+                .tabItem { Label("캘린더", image: "event") }
+                .tag(1)
+
             InsightDashboardView(container: container)
-                .tabItem { Label("인사이트", systemImage: "chart.bar.fill") }
-            
-            CalendarSettingsView(
-                sourceManager: container.calendarSourceManager,
-                googleSignInService: container.googleSignInService,
-                naverSignInService: container.naverSignInService
-            )
-            .tabItem { Label("설정", systemImage: "gear") }
+                .tabItem { Label("인사이트", image: "poll") }
+                .tag(2)
+
+            SettingsView(container: container)
+                .tabItem { Label("설정", image: "settings") }
+                .tag(3)
+        }
+        .onAppear {
+            calendarViewModel.loadInitialData()
         }
     }
 }

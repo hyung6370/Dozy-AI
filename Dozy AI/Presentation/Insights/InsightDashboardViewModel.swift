@@ -12,7 +12,7 @@ enum InsightPeriod: Int, CaseIterable {
     case week = 7
     case month = 30
     case quarter = 90
-    
+
     var title: String {
         switch self {
         case .week: return "7일"
@@ -23,36 +23,38 @@ enum InsightPeriod: Int, CaseIterable {
 }
 
 final class InsightDashboardViewModel: ObservableObject {
-    
+
     @Published var insights: [InsightMessage] = []
-    
-    // MARK: - Period (B단계에서 UI 연결)
+
+    // MARK: - Period
     @Published var selectedPeriod: InsightPeriod = .month
-    
-    // MARK: - 완료율 (DozyEvent 기반)
+
+    // MARK: - 완료율 (DozyEvent + EventCompletion 기반)
     @Published var averageCompletionRate: Double = 0
     @Published var completionRateChange: Double = 0
     @Published var dailyCompletionRates: [(date: Date, rate: Double)] = []
+    @Published var weeklyCompletionRates: [(date: Date, rate: Double)] = []
     @Published var currentStreak: Int = 0
-    
-    // MARK: - 패턴
+
+    // MARK: - 패턴 (전체 캘린더 소스 기반)
     @Published var hourlyDistribution: [(hour: Int, count: Int)] = []
     @Published var peakHours: [Int] = []
     @Published var weekdayAvgCounts: [(weekday: Int, avg: Double)] = []
     @Published var recurringCount: Int = 0
     @Published var oneTimeCount: Int = 0
-    
+
     // MARK: - WorkLog 기반
     @Published var categoryDistribution: [(category: String, count: Int)] = []
     @Published var productivityScores: [(date: Date, score: Double)] = []
     @Published var averageProductivityScore: Double? = nil
-    
+
     // MARK: - 상태
     @Published var isLoading = false
     @Published var hasDozyData = false
     @Published var hasWorkLogData = false
-    
+
     private let fetchEventsUseCase: FetchDozyEventsForPeriodUseCase
+    private let fetchCalendarEventsUseCase: FetchCalendarEventsForPeriodUseCase
     private let fetchCompletionsUseCase: FetchEventCompletionsForPeriodUseCase
     private let fetchLogsUseCase: FetchRecentLogsUseCase
     private let patternService: PatternAnalysisService
@@ -60,11 +62,13 @@ final class InsightDashboardViewModel: ObservableObject {
 
     init(
         fetchEventsUseCase: FetchDozyEventsForPeriodUseCase,
+        fetchCalendarEventsUseCase: FetchCalendarEventsForPeriodUseCase,
         fetchCompletionsUseCase: FetchEventCompletionsForPeriodUseCase,
         fetchLogsUseCase: FetchRecentLogsUseCase,
         patternService: PatternAnalysisService
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
+        self.fetchCalendarEventsUseCase = fetchCalendarEventsUseCase
         self.fetchCompletionsUseCase = fetchCompletionsUseCase
         self.fetchLogsUseCase = fetchLogsUseCase
         self.patternService = patternService
@@ -79,53 +83,84 @@ final class InsightDashboardViewModel: ObservableObject {
         let prevStart = cal.date(byAdding: .day, value: -days * 2, to: now)!
 
         Publishers.Zip(
-            Publishers.Zip3(
-                fetchEventsUseCase.execute(from: start, to: now),
-                fetchEventsUseCase.execute(from: prevStart, to: start),
-                fetchLogsUseCase.execute(days: days)
-            ),
             Publishers.Zip(
-                fetchCompletionsUseCase.execute(from: start, to: now),
-                fetchCompletionsUseCase.execute(from: prevStart, to: start)
-            )
+                Publishers.Zip3(
+                    fetchEventsUseCase.execute(from: start, to: now),
+                    fetchEventsUseCase.execute(from: prevStart, to: start),
+                    fetchLogsUseCase.execute(days: days)
+                ),
+                Publishers.Zip(
+                    fetchCompletionsUseCase.execute(from: start, to: now),
+                    fetchCompletionsUseCase.execute(from: prevStart, to: start)
+                )
+            ),
+            fetchCalendarEventsUseCase.execute(from: start, to: now)
+                .replaceError(with: [])
+                .setFailureType(to: DozyError.self)
         )
         .receive(on: DispatchQueue.main)
         .sink(
             receiveCompletion: { [weak self] _ in self?.isLoading = false },
-            receiveValue: { [weak self] eventsAndLogs, completions in
+            receiveValue: { [weak self] dozyAndLogs, allCalendarEvents in
                 guard let self else { return }
-                let (current, previous, logs) = eventsAndLogs
-                let (currentCal, previousCal) = completions
+                let ((current, previous, logs), (currentCal, previousCal)) = dozyAndLogs
                 self.isLoading = false
-                self.applyEvents(current: current, previous: previous,
-                                 currentCal: currentCal, previousCal: previousCal,
-                                 days: days)
-                self.applyLogs(logs, events: current, calendarCompletions: currentCal)
+                self.applyEvents(
+                    current: current, previous: previous,
+                    currentCal: currentCal, previousCal: previousCal,
+                    allCalendarEvents: allCalendarEvents,
+                    days: days
+                )
+                self.applyLogs(logs, dozyEvents: current, allCalendarEvents: allCalendarEvents, calendarCompletions: currentCal, days: days)
             }
         )
         .store(in: &cancellables)
     }
 
-    private func applyEvents(current: [DozyEvent], previous: [DozyEvent], currentCal: [EventCompletion], previousCal: [EventCompletion], days: Int) {
-        hasDozyData = !current.isEmpty || !currentCal.isEmpty
+    private func applyEvents(
+        current: [DozyEvent],
+        previous: [DozyEvent],
+        currentCal: [EventCompletion],
+        previousCal: [EventCompletion],
+        allCalendarEvents: [CalendarEvent],
+        days: Int
+    ) {
+        hasDozyData = !allCalendarEvents.isEmpty || !currentCal.isEmpty
+        // 완료율 — 도지 + EventCompletion 기반
         averageCompletionRate = patternService.averageCompletionRate(from: current, calendarCompletions: currentCal)
         completionRateChange = patternService.completionRateChange(current: current, previous: previous, currentCal: currentCal, previousCal: previousCal)
-        dailyCompletionRates = patternService.dailyCompletionRates(from: current, calendarCompletions: currentCal, days: min(days, 30))
+        dailyCompletionRates = patternService.dailyCompletionRates(from: current, calendarCompletions: currentCal, days: days)
+        weeklyCompletionRates = days > 30
+            ? patternService.weeklyCompletionRates(from: current, calendarCompletions: currentCal, weeks: days / 7)
+            : []
         currentStreak = patternService.currentStreak(from: current, calendarCompletions: currentCal)
-        hourlyDistribution = patternService.hourlyDistribution(from: current)
-        peakHours = patternService.peakHours(from: current)
-        weekdayAvgCounts = patternService.weekdayAverageCount(from: current, periodDays: days)
-        
+        // 패턴 — 전체 캘린더 소스 기반
+        hourlyDistribution = patternService.hourlyDistribution(from: allCalendarEvents)
+        peakHours = patternService.peakHours(from: allCalendarEvents)
+        weekdayAvgCounts = patternService.weekdayAverageCount(from: allCalendarEvents, periodDays: days)
+        // 반복 비율 — 도지 이벤트 기반 (recurrenceRule 보유)
         let ratio = patternService.recurrenceRatio(from: current)
         recurringCount = ratio.recurring
         oneTimeCount = ratio.oneTime
     }
-    
-    private func applyLogs(_ logs: [WorkLog], events: [DozyEvent], calendarCompletions: [EventCompletion]) {
+
+    private func applyLogs(
+        _ logs: [WorkLog],
+        dozyEvents: [DozyEvent],
+        allCalendarEvents: [CalendarEvent],
+        calendarCompletions: [EventCompletion],
+        days: Int
+    ) {
         hasWorkLogData = !logs.isEmpty
         categoryDistribution = patternService.categoryDistribution(from: logs)
         productivityScores = patternService.productivityScores(from: logs)
         averageProductivityScore = patternService.averageProductivityScore(from: logs)
-        insights = patternService.generateInsights(events: events, calendarCompletions: calendarCompletions, logs: logs)
+        insights = patternService.generateInsights(
+            allCalendarEvents: allCalendarEvents,
+            dozyEvents: dozyEvents,
+            calendarCompletions: calendarCompletions,
+            logs: logs,
+            periodDays: days
+        )
     }
 }

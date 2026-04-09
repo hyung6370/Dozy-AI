@@ -58,7 +58,10 @@ struct NaverEventItem: Decodable {
             isAllDay: isAllDay == "Y",
             calendarName: calendarName,
             calendarColorHex: colorHex,
-            source: .naver
+            source: .naver,
+            priority: 0,
+            isPinned: false,
+            category: "일반"
         )
     }
 }

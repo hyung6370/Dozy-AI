@@ -21,6 +21,9 @@ final class EventEditViewModel: ObservableObject {
     @Published var recurrenceRule: String
     @Published var recurrenceEndDate: Date
     @Published var selectedColor: Color
+    @Published var priority: Int
+    @Published var isPinned: Bool
+    @Published var category: WorkCategory
     
     let isEditing: Bool
     private let eventToEdit: DozyEvent?
@@ -42,6 +45,9 @@ final class EventEditViewModel: ObservableObject {
             recurrenceRule = e.recurrenceRule
             recurrenceEndDate = e.recurrenceEndDate ?? Calendar.current.date(byAdding: .year, value: 1, to: e.startDate)!
             selectedColor = Color(hex: e.colorHex) ?? .blue
+            priority = e.priority
+            isPinned = e.isPinned
+            category = WorkCategory(rawValue: e.category) ?? .general
         } else {
             let calendar = Calendar.current
             title = ""
@@ -54,6 +60,9 @@ final class EventEditViewModel: ObservableObject {
             recurrenceRule = "none"
             recurrenceEndDate = Calendar.current.date(byAdding: .year, value: 1, to: selectedDate) ?? selectedDate
             selectedColor = .blue
+            priority = 0
+            isPinned = false
+            category = .general
         }
     }
     
@@ -74,6 +83,9 @@ final class EventEditViewModel: ObservableObject {
             event.recurrenceRule = recurrenceRule
             event.recurrenceEndDate = recurrenceRule == "none" ? nil : recurrenceEndDate
             event.colorHex = colorHex
+            event.priority = priority
+            event.isPinned = isPinned
+            event.category = category.rawValue
             onSave(event)
         } else {
             onSave(DozyEvent(
@@ -87,6 +99,9 @@ final class EventEditViewModel: ObservableObject {
                 recurrenceRule: recurrenceRule,
                 recurrenceEndDate: recurrenceRule == "none" ? nil : recurrenceEndDate,
                 notificationMinutesBefore: notificationMinutesBefore,
+                priority: priority,
+                isPinned: isPinned,
+                category: category.rawValue
             ))
         }
     }

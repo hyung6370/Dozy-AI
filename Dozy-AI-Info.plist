@@ -28,11 +28,15 @@
 	<string>$(NAVER_CLIENT_ID)</string>
 	<key>NAVER_CLIENT_SECRET</key>
 	<string>$(NAVER_CLIENT_SECRET)</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>일정 알림을 보내기 위해 알림 권한이 필요합니다.</string>
+	<key>SUPABASE_ANON_KEY</key>
+	<string>$(SUPABASE_ANON_KEY)</string>
+	<key>SUPABASE_HOST</key>
+	<string>$(SUPABASE_HOST)</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 	</array>
-	<key>NSUserNotificationUsageDescription</key>
-	<string>일정 알림을 보내기 위해 알림 권한이 필요합니다.</string>
 </dict>
 </plist>

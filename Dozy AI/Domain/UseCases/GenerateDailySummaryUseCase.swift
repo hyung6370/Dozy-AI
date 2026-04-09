@@ -26,14 +26,16 @@ final class GenerateDailySummaryUseCase {
         events: [CalendarEvent],
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
-        memos: [String]
+        memos: [String],
+        completedEventCount: Int = 0
     ) -> AnyPublisher<DailySummary, DozyError> {
 
         aiService.generateDailySummary(
             events: events,
             completedTasks: completedTasks,
             pendingTasks: pendingTasks,
-            memos: memos
+            memos: memos,
+            completedEventCount: completedEventCount
         )
         .flatMap { [repository] summary -> AnyPublisher<DailySummary, DozyError> in
             // 오늘 WorkLog에 AI 결과를 저장 (없으면 저장 생략하고 summary만 반환)

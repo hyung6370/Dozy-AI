@@ -15,7 +15,8 @@ protocol AIServiceProtocol {
         events: [CalendarEvent],
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
-        memos: [String]
+        memos: [String],
+        completedEventCount: Int
     ) async throws -> DailySummary
     
     /// 빠른 한줄 요약 (위젯, Siri용)
@@ -35,7 +36,8 @@ extension AIServiceProtocol {
         events: [CalendarEvent],
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
-        memos: [String]
+        memos: [String],
+        completedEventCount: Int = 0
     ) -> AnyPublisher<DailySummary, DozyError> {
         Future { promise in
             Task {
@@ -44,7 +46,8 @@ extension AIServiceProtocol {
                         events: events,
                         completedTasks: completedTasks,
                         pendingTasks: pendingTasks,
-                        memos: memos
+                        memos: memos,
+                        completedEventCount: completedEventCount
                     )
                     promise(.success(summary))
                 } catch let error as DozyError {

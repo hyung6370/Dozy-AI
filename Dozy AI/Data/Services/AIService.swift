@@ -13,7 +13,7 @@ final class AIService: AIServiceProtocol {
     
     // MARK: - 일일 요약 생성
     
-    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String]) async throws -> DailySummary {
+    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) async throws -> DailySummary {
         
         // Foundation Models 사용 가능 시 (iOS 26+)
         if #available(iOS 26.0, *), Self.isFoundationModelsAvailable() {
@@ -38,7 +38,8 @@ final class AIService: AIServiceProtocol {
             events: events,
             completedTasks: completedTasks,
             pendingTasks: pendingTasks,
-            memos: memos
+            memos: memos,
+            completedEventCount: completedEventCount
         )
     }
     
@@ -82,7 +83,7 @@ final class AIService: AIServiceProtocol {
     
     // MARK: - NaturalLanguage 기반 로컬 분석
     // NLTagger 키워드 추출 + 규칙 기반 로직 조합
-    private func generateWithLocalAnalysis(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String]) -> DailySummary {
+    private func generateWithLocalAnalysis(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) -> DailySummary {
         let summaryText = buildLocalSummaryText(
             events: events,
             completedTasks: completedTasks,
@@ -106,7 +107,8 @@ final class AIService: AIServiceProtocol {
         let score = calculateProductivityScore(
             events: events,
             completedTasks: completedTasks,
-            pendingTasks: pendingTasks
+            pendingTasks: pendingTasks,
+            completedEventCount: completedEventCount
         )
         
         let totalMinutes = events
@@ -162,42 +164,55 @@ final class AIService: AIServiceProtocol {
     
     // MARK: - 로컬 하이라이트 추출
     private func extractLocalHighlights(events: [CalendarEvent], completedTasks: [TaskItem], memos: [String]) -> [String] {
-        
+
         var highlights: [String] = []
-        
+
         // NLTagger로 키워드 추출
         let allText = (events.map { $0.title } + completedTasks.map { $0.title } + memos)
             .joined(separator: ". ")
         let keywords = extractKeywords(from: allText, count: 3)
-        
-        // 회의 수 체크
-        let meetingCount = events.filter { event in
-            let t = event.title.lowercased()
-            return t.contains("회의") || t.contains("미팅") || t.contains("meeting")
-        }.count
-        
-        if meetingCount > 0 {
-            highlights.append("\(meetingCount)건의 회의에 참석했습니다")
+
+        // 카테고리별 일정 하이라이트 (사용자 지정 카테고리 활용)
+        let categoryGroups = Dictionary(grouping: events.filter { $0.category != WorkCategory.general.rawValue }) { $0.category }
+        if !categoryGroups.isEmpty {
+            for (category, grouped) in categoryGroups.sorted(by: { $0.value.count > $1.value.count }).prefix(3) {
+                let emoji = WorkCategory(rawValue: category)?.emoji ?? "📌"
+                let minutes = grouped.filter { !$0.isAllDay }.reduce(0) { $0 + $1.durationMinutes }
+                if minutes > 0 {
+                    highlights.append("\(emoji) \(category) 관련 일정 \(grouped.count)건 (총 \(minutes)분)")
+                } else {
+                    highlights.append("\(emoji) \(category) 관련 일정 \(grouped.count)건")
+                }
+            }
+        } else {
+            // 폴백: 키워드 기반 회의 수 체크
+            let meetingCount = events.filter { event in
+                let t = event.title.lowercased()
+                return t.contains("회의") || t.contains("미팅") || t.contains("meeting")
+            }.count
+            if meetingCount > 0 {
+                highlights.append("\(meetingCount)건의 회의에 참석했습니다")
+            }
         }
-        
+
         // 바쁜 하루 체크
         let totalMinutes = events.filter { !$0.isAllDay }.reduce(0) { $0 + $1.durationMinutes }
         if totalMinutes > 240 {
             highlights.append("4시간 이상 일정에 투입되어 바쁜 하루였습니다")
         }
-        
+
         // 할 일 성과
         if completedTasks.count >= 5 {
             highlights.append("할 일 \(completedTasks.count)개를 완료하여 생산적인 하루였습니다")
         } else if let topTask = completedTasks.first {
             highlights.append("'\(topTask.title)' 등 \(completedTasks.count)건을 완료했습니다")
         }
-        
+
         // 키워드
         if !keywords.isEmpty {
             highlights.append("주요 키워드: \(keywords.joined(separator: ", "))")
         }
-        
+
         return Array(highlights.prefix(5))
     }
     
@@ -246,11 +261,25 @@ final class AIService: AIServiceProtocol {
     }
     
     // MARK: - 카테고리 감지
+    /// 사용자가 지정한 카테고리를 우선 사용하고, 없으면 키워드 기반 폴백
     private func detectCategory(events: [CalendarEvent], tasks: [TaskItem]) -> String {
+        // 1) 사용자가 명시적으로 지정한 카테고리 집계 ("일반" 제외)
+        let explicitCategories = events
+            .map { $0.category }
+            .filter { $0 != WorkCategory.general.rawValue }
+
+        if !explicitCategories.isEmpty {
+            let grouped = Dictionary(grouping: explicitCategories) { $0 }
+            if let dominant = grouped.max(by: { $0.value.count < $1.value.count }) {
+                return dominant.key
+            }
+        }
+
+        // 2) 폴백: 키워드 기반 감지
         let allTitles = (events.map { $0.title } + tasks.map { $0.title })
             .joined(separator: " ")
             .lowercased()
-        
+
         let keywords: [(WorkCategory, [String])] = [
             (.meeting, ["회의", "미팅", "meeting", "standup", "sync", "1:1", "데일리"]),
             (.review, ["리뷰", "review", "검토", "PR", "코드리뷰", "피드백"]),
@@ -258,12 +287,12 @@ final class AIService: AIServiceProtocol {
             (.planning, ["기획", "플래닝", "planning", "브레인스토밍", "로드맵"]),
             (.documentation, ["문서", "doc", "작성", "wiki", "정리", "보고서"])
         ]
-        
+
         var scores: [WorkCategory: Int] = [:]
         for (category, words) in keywords {
             scores[category] = words.reduce(0) { $0 + (allTitles.contains($1) ? 1 : 0) }
         }
-        
+
         if let top = scores.max(by: { $0.value < $1.value }), top.value > 0 {
             return top.key.rawValue
         }
@@ -271,25 +300,36 @@ final class AIService: AIServiceProtocol {
     }
     
     // MARK: - 생산성 점수
-    // 완료율(50%) + 일정 소화(30%) + 완료 양(20%)
-    private func calculateProductivityScore(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem]) -> Double {
-        
+    // 할 일 완료율(50%) + 일정 완료 체크율(30%) + 우선순위 달성률(20%)
+    private func calculateProductivityScore(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], completedEventCount: Int = 0) -> Double {
+
         var score = 0.0
-        
-        // 완료율 (50%)
+
+        // 1) 할 일 완료율 (50%) — 완료한 할 일 / 전체 할 일
         let totalTasks = completedTasks.count + pendingTasks.count
         if totalTasks > 0 {
             score += (Double(completedTasks.count) / Double(totalTasks)) * 0.5
         } else {
             score += 0.25
         }
-        
-        // 일정 소화 (30%)
-        score += min(Double(events.count) / 5.0, 1.0) * 0.3
-        
-        // 완료 양 (20%)
-        score += min(Double(completedTasks.count) / 8.0, 1.0) * 0.2
-        
+
+        // 2) 일정 완료 체크율 (30%) — 완료 체크한 일정 / 전체 일정
+        if !events.isEmpty {
+            score += (Double(completedEventCount) / Double(events.count)) * 0.3
+        } else {
+            score += 0.15
+        }
+
+        // 3) 우선순위 달성률 (20%) — 우선순위가 있는 할 일 중 완료된 비율
+        let highPriorityCompleted = completedTasks.filter { $0.priority > 0 }.count
+        let highPriorityPending = pendingTasks.filter { $0.priority > 0 }.count
+        let totalHighPriority = highPriorityCompleted + highPriorityPending
+        if totalHighPriority > 0 {
+            score += (Double(highPriorityCompleted) / Double(totalHighPriority)) * 0.2
+        } else {
+            score += 0.1
+        }
+
         return min(max(score, 0.0), 1.0)
     }
     

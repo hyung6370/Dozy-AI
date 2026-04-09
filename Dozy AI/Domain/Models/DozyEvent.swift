@@ -24,7 +24,12 @@ final class DozyEvent {
     var isCompleted: Bool = false
     var recurrenceEndDate: Date? = nil
     var notificationMinutesBefore: Int = -1 // -1: 없음
-    
+    var memos: [String] = []
+    var priority: Int = 0
+    var isPinned: Bool = false
+    var category: String = "일반"
+    var excludedDates: [Date] = []
+
     init(
         id: String = UUID().uuidString,
         title: String,
@@ -36,7 +41,10 @@ final class DozyEvent {
         colorHex: String = "#007AFF",
         recurrenceRule: String = "none",
         recurrenceEndDate: Date? = nil,
-        notificationMinutesBefore: Int = -1
+        notificationMinutesBefore: Int = -1,
+        priority: Int = 0,
+        isPinned: Bool = false,
+        category: String = "일반"
     ) {
         self.id = id
         self.title = title
@@ -51,42 +59,65 @@ final class DozyEvent {
         self.recurrenceRule = recurrenceRule
         self.recurrenceEndDate = recurrenceEndDate
         self.notificationMinutesBefore = notificationMinutesBefore
+        self.priority = priority
+        self.isPinned = isPinned
+        self.category = category
     }
     
     // MARK: - 반복 헬퍼
-    
-    // 원본 날짜 이후에 date에 반복 발생하는지 여부
-    func occursOn(_ date: Date) -> Bool {
-        guard recurrenceRule != "none" else { return false }
+
+    /// 다일 반복 일정을 포함하여, date를 포함하는 반복 인스턴스의 시작일을 반환
+    /// 해당 날짜에 반복 인스턴스가 없으면 nil
+    func occurrenceStart(for date: Date) -> Date? {
+        guard recurrenceRule != "none" else { return nil }
         let cal = Calendar.current
-        let start = cal.startOfDay(for: startDate)
+        let eventStart = cal.startOfDay(for: startDate)
         let target = cal.startOfDay(for: date)
-        guard target > start else { return false }
-        if let end = recurrenceEndDate, target > cal.startOfDay(for: end) { return false }
-        
-        switch recurrenceRule {
-        case "daily": return true
-        case "weekly": return cal.component(.weekday, from: start) == cal.component(.weekday, from: target)
-        case "monthly": return cal.component(.day, from: start) == cal.component(.day, from: target)
-        case "yearly":
-            let s = cal.dateComponents([.month, .day], from: start)
-            let t = cal.dateComponents([.month, .day], from: target)
-            return s.month == t.month && s.day == t.day
-        default: return false
+        guard target > eventStart else { return nil }
+
+        let durationDays = max(0, cal.dateComponents([.day], from: eventStart, to: cal.startOfDay(for: endDate)).day ?? 0)
+
+        // target이 어떤 반복 인스턴스의 N번째 날인지 확인 (0 = 시작일, 1 = 둘째날, ...)
+        for dayOffset in 0...durationDays {
+            guard let candidateStart = cal.date(byAdding: .day, value: -dayOffset, to: target) else { continue }
+            let cs = cal.startOfDay(for: candidateStart)
+            guard cs > eventStart else { continue }
+            if let end = recurrenceEndDate, cs > cal.startOfDay(for: end) { continue }
+            if excludedDates.contains(where: { cal.isDate($0, inSameDayAs: candidateStart) }) { continue }
+
+            let matches: Bool
+            switch recurrenceRule {
+            case "daily": matches = true
+            case "weekly": matches = cal.component(.weekday, from: eventStart) == cal.component(.weekday, from: cs)
+            case "monthly": matches = cal.component(.day, from: eventStart) == cal.component(.day, from: cs)
+            case "yearly":
+                let s = cal.dateComponents([.month, .day], from: eventStart)
+                let t = cal.dateComponents([.month, .day], from: cs)
+                matches = s.month == t.month && s.day == t.day
+            default: matches = false
+            }
+            if matches { return cs }
         }
+        return nil
     }
-    
+
+    func occursOn(_ date: Date) -> Bool {
+        occurrenceStart(for: date) != nil
+    }
+
     // MARK: - CalendarEvent 변환
-    
-    // date 전달 시 반복 인스턴스 날짜로 조정된 CalendarEvent 반환
+
+    // date 전달 시 반복 인스턴스의 시작일 기준으로 조정된 CalendarEvent 반환
     func toCalendarEvent(for date: Date? = nil) -> CalendarEvent {
         var start = startDate
         var end = endDate
         if let date {
             let cal = Calendar.current
+            // 다일 반복 일정: 해당 인스턴스의 시작일 기준으로 날짜 조정
+            let occStart = occurrenceStart(for: date) ?? cal.startOfDay(for: date)
             let diff = cal.dateComponents([.day],
                                           from: cal.startOfDay(for: startDate),
-                                          to: cal.startOfDay(for: date)).day ?? 0
+                                          to: occStart).day ?? 0
             start = cal.date(byAdding: .day, value: diff, to: startDate) ?? startDate
             end = cal.date(byAdding: .day, value: diff, to: endDate) ?? endDate
         }
@@ -101,7 +132,10 @@ final class DozyEvent {
             isAllDay: isAllDay,
             calendarName: "Dozy",
             calendarColorHex: colorHex,
-            source: .dozy
+            source: .dozy,
+            priority: priority,
+            isPinned: isPinned,
+            category: category
         )
     }
 
@@ -117,7 +151,10 @@ final class DozyEvent {
             isAllDay: isAllDay,
             calendarName: "Dozy",
             calendarColorHex: colorHex,
-            source: .dozy
+            source: .dozy,
+            priority: priority,
+            isPinned: isPinned,
+            category: category
         )
     }
 }

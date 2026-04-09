@@ -18,6 +18,7 @@ struct InsightDashboardView: View {
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
             fetchEventsUseCase: container.fetchDozyEventsForPeriodUseCase,
+            fetchCalendarEventsUseCase: container.fetchCalendarEventsForPeriodUseCase,
             fetchCompletionsUseCase: container.fetchEventCompletionsForPeriodUseCase,
             fetchLogsUseCase: container.fetchRecentLogsUseCase,
             patternService: container.patternAnalysisService
@@ -103,6 +104,11 @@ struct InsightDashboardView: View {
     
     // MARK: - 요약 3종 카드
     private var summaryRow: some View {
+        let periodLabel = viewModel.selectedPeriod == .week ? "지난 7일" : viewModel.selectedPeriod == .month ? "지난 30일" : "지난 90일"
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(periodLabel)
+                .font(.subheadline).fontWeight(.semibold)
+                .foregroundStyle(.secondary)
         HStack(spacing: 12) {
             summaryCard(
                 value: "\(Int(viewModel.averageCompletionRate * 100))%",
@@ -129,6 +135,7 @@ struct InsightDashboardView: View {
                     color: .yellow
                 )
             }
+        }
         }
     }
     
@@ -249,23 +256,31 @@ struct InsightDashboardView: View {
         .padding(.vertical, 8)
     }
 
-    // MARK: - 일별 완료율 트렌드
+    // MARK: - 완료율 트렌드
     private var completionTrendCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label("일별 완료율", systemImage: "chart.line.uptrend.xyaxis")
+        let isQuarter = viewModel.selectedPeriod == .quarter
+        let useWeekly = isQuarter && !viewModel.weeklyCompletionRates.isEmpty
+        let chartData = useWeekly ? viewModel.weeklyCompletionRates : viewModel.dailyCompletionRates
+        let chartTitle = useWeekly ? "주간 평균 완료율" : "일별 완료율"
+        let xUnit: Calendar.Component = useWeekly ? .weekOfYear : .day
+        let xStride: Calendar.Component = viewModel.selectedPeriod == .week ? .day : .day
+        let xStrideCount = viewModel.selectedPeriod == .week ? 1 : viewModel.selectedPeriod == .month ? 5 : 7
+
+        return VStack(alignment: .leading, spacing: 10) {
+            Label(chartTitle, systemImage: "chart.line.uptrend.xyaxis")
                 .font(.headline)
-            if viewModel.dailyCompletionRates.isEmpty {
+            if chartData.isEmpty {
                 cardEmptyState(icon: "checkmark.circle", message: "일정을 완료하면\n완료율 추이를 볼 수 있어요")
             } else {
-                Chart(viewModel.dailyCompletionRates, id: \.date) { item in
+                Chart(chartData, id: \.date) { item in
                     LineMark(
-                        x: .value("날짜", item.date, unit: .day),
+                        x: .value("날짜", item.date, unit: xUnit),
                         y: .value("완료율", item.rate * 100)
                     )
                     .foregroundStyle(Color.accentColor)
                     .interpolationMethod(.catmullRom)
                     AreaMark(
-                        x: .value("날짜", item.date, unit: .day),
+                        x: .value("날짜", item.date, unit: xUnit),
                         y: .value("완료율", item.rate * 100)
                     )
                     .foregroundStyle(Color.accentColor.opacity(0.15))
@@ -273,7 +288,7 @@ struct InsightDashboardView: View {
                 }
                 .chartYScale(domain: 0...100)
                 .chartXAxis {
-                    AxisMarks(values: .stride(by: .day, count: 5)) {
+                    AxisMarks(values: .stride(by: xStride, count: xStrideCount)) {
                         AxisValueLabel(format: .dateTime.month().day())
                     }
                 }

@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import OSLog
 
 enum CalendarViewMode: CaseIterable {
     case month, week, day
@@ -24,11 +25,14 @@ struct CalendarEventLayout: Identifiable {
     let id: String
     let title: String
     let colorHex: String
+    let source: CalendarSource
     let startCol: Int
     let endCol: Int
     let row: Int
     let isActualStart: Bool
     let isActualEnd: Bool
+    let isPinned: Bool
+    let priority: Int
 }
 
 enum BarPosition {
@@ -65,6 +69,8 @@ final class CalendarViewModel: ObservableObject {
     @Published var weekLayouts: [Date: [CalendarEventLayout]] = [:]
     @Published var deleteErrorMessage: String? = nil
     @Published var showDeleteSuccess = false
+    @Published var showSuccessAnimation = false
+    @Published var displaySettingsByID: [String: EventDisplaySettings] = [:]
     private var allEventsInMonth: [String: CalendarEvent] = [:]
     
     // MARK: - Dependencies
@@ -80,7 +86,10 @@ final class CalendarViewModel: ObservableObject {
     private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
     private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+    private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
+    private weak var calendarService: CompositeCalendarSerivce?
     private var cancellables = Set<AnyCancellable>()
+    private let displaySettingsRepo: EventDisplaySettingsRepository
     
     init(
         fetchEventsUseCase: FetchCalendarEventUseCase,
@@ -94,7 +103,9 @@ final class CalendarViewModel: ObservableObject {
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
         deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
         toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase,
-        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
+        fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase,
+        displaySettingsRepo: EventDisplaySettingsRepository
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -108,6 +119,8 @@ final class CalendarViewModel: ObservableObject {
         self.deleteCalendarEventUseCase = deleteCalendarEventUseCase
         self.toggleCalendarEventCompletionUseCase = toggleCalendarEventCompletionUseCase
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
+        self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
+        self.displaySettingsRepo = displaySettingsRepo
     }
 
     convenience init(container: DependencyContainer) {
@@ -123,10 +136,21 @@ final class CalendarViewModel: ObservableObject {
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
             deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
             toggleCalendarEventCompletionUseCase: container.toggleCalendarEventCompletionUseCase,
-            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase
+            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
+            fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase,
+            displaySettingsRepo: container.eventDisplaySettingsRepository
         )
+        self.calendarService = container.calendarService
+
+        NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Logger.calendar.info("🔔 dozyDataSyncCompleted 수신 → loadInitialData 재실행")
+                self?.loadInitialData()
+            }
+            .store(in: &cancellables)
     }
-    
+
     // MARK: - Computed
     
     var currentMonthString: String {
@@ -182,7 +206,10 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func showDetail(for event: CalendarEvent) {
-        detailEvent = event
+        // 항상 displaySettings를 적용 (allEventsInMonth 등 raw 이벤트에서 올 수 있음)
+        let applied = event.applying(displaySettingsByID[event.id])
+        Logger.calendar.debug("📋 showDetail: id=\(event.id.prefix(12)) category=\(applied.category) source=\(String(describing: event.source))")
+        detailEvent = applied
         showEventDetail = true
     }
 
@@ -207,16 +234,31 @@ final class CalendarViewModel: ObservableObject {
     // 완료 상태 통합 조회
     func isCompleted(for event: CalendarEvent) -> Bool {
         if event.source == .dozy {
-            return dozyEventsByID[event.id]?.isCompleted ?? false
+            let dozy = dozyEventsByID[event.id]
+            // 반복 일정은 날짜별 완료 체크 (EventCompletion 사용)
+            if let dozy, dozy.recurrenceRule != "none" {
+                return completionsByID[event.id] ?? false
+            }
+            return dozy?.isCompleted ?? false
         }
         return completionsByID[event.id] ?? false
     }
-    
+
     // 완료 토글 (source 분기)
     func toggleCompletion(for event: CalendarEvent) {
         if event.source == .dozy {
             guard let dozyEvent = dozyEventsByID[event.id] else { return }
-            toggleCompletion(for: dozyEvent)
+            // 반복 일정은 날짜별 독립 완료 (EventCompletion 사용)
+            if dozyEvent.recurrenceRule != "none" {
+                toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
+                    .receive(on: DispatchQueue.main)
+                    .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
+                        self?.completionsByID[event.id] = newValue
+                    })
+                    .store(in: &cancellables)
+            } else {
+                toggleCompletion(for: dozyEvent)
+            }
         } else {
             toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
                 .receive(on: DispatchQueue.main)
@@ -358,8 +400,21 @@ final class CalendarViewModel: ObservableObject {
     // MARK: - Fetch
     
     func loadInitialData() {
-        fetchEventsForDate(selectedDate)
-        fetchEventsForMonth()
+        // displaySettings를 먼저 로드한 뒤 fetch — buildLayouts에서 설정이 반영되도록
+        displaySettingsRepo.fetchAll()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] settings in
+                guard let self else { return }
+                self.displaySettingsByID = settings
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }
+            .store(in: &cancellables)
+    }
+
+    func refreshData() {
+        calendarService?.invalidateGoogleCache()
+        loadInitialData()
     }
     
     private func fetchEventsForDate(_ date: Date) {
@@ -373,11 +428,12 @@ final class CalendarViewModel: ObservableObject {
             receiveCompletion: { [weak self] _ in self?.isLoading = false },
             receiveValue: { [weak self] events, dozyEvents in
                 guard let self else { return }
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    self.eventsForSelectedDate = events
-                    self.dozyEventsForSelectedDate = dozyEvents
-                    self.dozyEventsByID = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
-                }
+
+                // DozyEvent 업데이트
+                let newEntries = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                self.dozyEventsForSelectedDate = dozyEvents
+                self.dozyEventsByID.merge(newEntries) { _, new in new }
+
                 // Apple/Google completion 조회
                 let nonDozyIDs = events.filter { $0.source != .dozy }.map { $0.id }
                 if !nonDozyIDs.isEmpty {
@@ -388,10 +444,106 @@ final class CalendarViewModel: ObservableObject {
                         })
                         .store(in: &self.cancellables)
                 }
-                self.isLoading = false
+
+                // Apple/Google 이벤트에 display settings 오버라이드 적용 후 정렬
+                Logger.calendar.debug("🔄 fetchEventsForDate → fetchAll(for: \(nonDozyIDs.count)건)")
+                self.displaySettingsRepo.fetchAll(for: nonDozyIDs)
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] settings in
+                        guard let self else { return }
+                        Logger.calendar.debug("🔄 fetchAll 결과: \(settings.count)건")
+                        for (id, s) in settings {
+                            Logger.calendar.debug("   ↳ id=\(id.prefix(12)) category=\(s.category)")
+                        }
+                        self.displaySettingsByID.merge(settings) { _, new in new }
+                        let applied = events.map { $0.applying(self.displaySettingsByID[$0.id]) }
+                        for e in applied where e.source == .google {
+                            Logger.calendar.debug("🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
+                        }
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            self.eventsForSelectedDate = applied.sorted { a, b in
+                                if a.isPinned != b.isPinned { return a.isPinned }
+                                if a.priority != b.priority {
+                                    let pa = a.priority == 0 ? Int.max : a.priority
+                                    let pb = b.priority == 0 ? Int.max : b.priority
+                                    return pa < pb
+                                }
+                                return a.startDate < b.startDate
+                            }
+                        }
+                        self.isLoading = false
+                    }
+                    .store(in: &self.cancellables)
             }
         )
         .store(in: &cancellables)
+    }
+
+    // MARK: - Display Settings
+
+    func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String? = nil) {
+        if event.source == .dozy {
+            guard let dozy = dozyEventsByID[event.id] else { return }
+            dozy.priority = priority
+            dozy.isPinned = isPinned
+            if let category { dozy.category = category }
+            updateEventUseCase.execute(dozy)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                    self?.fetchEventsForDate(self?.selectedDate ?? Date())
+                    self?.fetchEventsForMonth()
+                })
+                .store(in: &cancellables)
+        } else {
+            let finalCategory = category ?? event.category
+            Logger.calendar.debug("⚙️ updateDisplaySettings(non-dozy): id=\(event.id.prefix(12)) finalCategory=\(finalCategory) priority=\(priority) isPinned=\(isPinned)")
+
+            // 1) eventsForSelectedDate 즉시 갱신 (SwiftData @Model 우회 — 직접 CalendarEvent 생성)
+            if let idx = eventsForSelectedDate.firstIndex(where: { $0.id == event.id }) {
+                let old = eventsForSelectedDate[idx]
+                eventsForSelectedDate[idx] = CalendarEvent(
+                    id: old.id, calendarId: old.calendarId, title: old.title,
+                    startDate: old.startDate, endDate: old.endDate,
+                    location: old.location, notes: old.notes, isAllDay: old.isAllDay,
+                    calendarName: old.calendarName, calendarColorHex: old.calendarColorHex,
+                    source: old.source,
+                    priority: priority, isPinned: isPinned, category: finalCategory
+                )
+                Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
+            } else {
+                Logger.calendar.warning("⚠️ eventsForSelectedDate에서 event.id=\(event.id.prefix(12))를 찾지 못함")
+            }
+
+            // 2) 기존 displaySettings가 있으면 인메모리도 갱신 (이후 fetchEventsForDate 시 applying 정합성)
+            if let settings = displaySettingsByID[event.id] {
+                settings.priority = priority
+                settings.isPinned = isPinned
+                settings.category = finalCategory
+                Logger.calendar.debug("⚙️ displaySettingsByID 갱신 완료")
+            } else {
+                Logger.calendar.debug("⚙️ displaySettingsByID에 기존 항목 없음 (첫 저장)")
+            }
+
+            // 3) DB 저장 → 저장 후 fetch해서 displaySettingsByID 동기화
+            let eventID = event.id
+            displaySettingsRepo.save(
+                eventID: eventID,
+                priority: priority,
+                isPinned: isPinned,
+                category: finalCategory
+            )
+            .flatMap { [displaySettingsRepo] _ -> AnyPublisher<[String: EventDisplaySettings], Never> in
+                Logger.calendar.debug("⚙️ DB save 완료 → fetchAll 시작")
+                return displaySettingsRepo.fetchAll(for: [eventID])
+            }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] settings in
+                guard let self else { return }
+                self.displaySettingsByID.merge(settings) { _, new in new }
+                Logger.calendar.debug("⚙️ displaySettingsByID 동기화 완료: \(settings[eventID]?.category ?? "nil")")
+            }
+            .store(in: &cancellables)
+        }
     }
     
     private func fetchEventsForMonth() {
@@ -420,6 +572,16 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] results in
                 guard let self else { return }
                 self.buildLayouts(from: results)
+            })
+            .store(in: &cancellables)
+
+        // 월 전체 DozyEvent를 dozyEventsByID에 미리 로드 (모든 날짜 탭 시 조회 가능하게)
+        fetchDozyEventsForPeriodUseCase.execute(from: displayStart, to: displayEnd)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] dozyEvents in
+                guard let self else { return }
+                let newEntries = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
+                self.dozyEventsByID.merge(newEntries) { _, new in new }
             })
             .store(in: &cancellables)
     }
@@ -466,7 +628,29 @@ final class CalendarViewModel: ObservableObject {
 
         // 주간 레이아웃 계산
         var newWeekLayouts: [Date: [CalendarEventLayout]] = [:]
-        
+
+        // 반복 일정은 연속 날짜 그룹별로 분리 (예: 매주 월요일 → 각 월요일이 독립 스팬)
+        var segmentedEvents: [(CalendarEvent, Set<Date>)] = []
+        for (_, (event, dates)) in eventDatesMap {
+            let sorted = dates.sorted()
+            var currentGroup: [Date] = []
+            for date in sorted {
+                if let last = currentGroup.last,
+                   let next = cal.date(byAdding: .day, value: 1, to: last),
+                   cal.startOfDay(for: next) == cal.startOfDay(for: date) {
+                    currentGroup.append(date)
+                } else {
+                    if !currentGroup.isEmpty {
+                        segmentedEvents.append((event, Set(currentGroup)))
+                    }
+                    currentGroup = [date]
+                }
+            }
+            if !currentGroup.isEmpty {
+                segmentedEvents.append((event, Set(currentGroup)))
+            }
+        }
+
         for (weekIndex, week) in weeksInMonth.enumerated() {
             let weekSunday = weekStart(for: weekIndex)
             let weekSaturday = cal.date(byAdding: .day, value: 6, to: weekSunday)!
@@ -483,23 +667,29 @@ final class CalendarViewModel: ObservableObject {
             }
             guard !weekDateSet.isEmpty else { continue }
 
-            // 이 주에 걸치는 이벤트 수집 (isActualStart/End를 날짜 비교로 판단)
+            // 이 주에 걸치는 이벤트 수집 (세그먼트 단위로 isActualStart/End 판단)
             var weekEvents: [(CalendarEvent, Int, Int, Bool, Bool)] = []
-            for (_, (event, dates)) in eventDatesMap {
-                let inWeek = dates.filter { weekDateSet.contains($0) }.sorted()
+            for (event, segmentDates) in segmentedEvents {
+                let inWeek = segmentDates.filter { weekDateSet.contains($0) }.sorted()
                 guard !inWeek.isEmpty else { continue }
 
-                let allDates = (eventDatesMap[event.id]?.1 ?? []).sorted()
+                let allDates = segmentDates.sorted()
                 let isStart = allDates.first.map { cal.startOfDay(for: $0) >= wsKey } ?? true
                 let isEnd = allDates.last.map { cal.startOfDay(for: $0) <= cal.startOfDay(for: weekSaturday) } ?? true
 
                 let sc = colMap[inWeek.first!] ?? 0
                 let ec = colMap[inWeek.last!] ?? 6
-                weekEvents.append((event, sc, ec, isStart, isEnd))
+                // displaySettings 오버라이드 적용 (Apple/Google priority·isPinned 반영)
+                let applied = event.applying(displaySettingsByID[event.id])
+                weekEvents.append((applied, sc, ec, isStart, isEnd))
             }
 
-            // 긴 이벤트 우선 정렬
+            // 핀 → 우선순위 → 스팬 순 정렬 (높을수록 위 row에 배치)
             weekEvents.sort { a, b in
+                if a.0.isPinned != b.0.isPinned { return a.0.isPinned }
+                let pa = a.0.priority == 0 ? Int.max : a.0.priority
+                let pb = b.0.priority == 0 ? Int.max : b.0.priority
+                if pa != pb { return pa < pb }
                 let spanA = a.2 - a.1, spanB = b.2 - b.1
                 if spanA != spanB { return spanA > spanB }
                 if a.1 != b.1 { return a.1 < b.1 }
@@ -520,8 +710,11 @@ final class CalendarViewModel: ObservableObject {
 
                 layouts.append(CalendarEventLayout(
                     id: event.id, title: event.title, colorHex: event.calendarColorHex,
+                    source: event.source,
                     startCol: sc, endCol: ec, row: assignedRow,
-                    isActualStart: isStart, isActualEnd: isEnd
+                    isActualStart: isStart, isActualEnd: isEnd,
+                    isPinned: event.isPinned,
+                    priority: event.priority
                 ))
             }
 
@@ -550,6 +743,18 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
+                
+                // 신규 등록 시: 일정 시작일로 포커스 이동
+                if self.eventToEdit == nil {
+                    let cal = Calendar.current
+                    self.selectedDate = event.startDate
+                    // 등록된 일정이 현재 표시 월과 다르면 월도 이동
+                    if !cal.isDate(event.startDate, equalTo: self.currentMonth, toGranularity: .month) {
+                        self.currentMonth = event.startDate
+                    }
+                    self.showSuccessAnimation = true
+                }
+                
                 self.fetchEventsForDate(self.selectedDate)
                 self.fetchEventsForMonth()
                 self.cancelNotificationUseCase.execute(identifier: event.id)
@@ -580,5 +785,46 @@ final class CalendarViewModel: ObservableObject {
                 self.fetchEventsForDate(self.selectedDate)
                 self.fetchEventsForMonth()
             }).store(in: &cancellables)
+    }
+
+    /// 이 일정만 삭제 — 해당 인스턴스의 시작일을 제외 목록에 추가
+    func deleteThisOccurrence(_ event: DozyEvent, date: Date) {
+        let occStart = event.occurrenceStart(for: date) ?? Calendar.current.startOfDay(for: date)
+        event.excludedDates.append(occStart)
+        event.updatedAt = Date()
+        updateEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                guard let self else { return }
+                self.showEventDetail = false
+                self.showDeleteSuccess = true
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }).store(in: &cancellables)
+    }
+
+    /// 이후 모든 일정 삭제 — recurrenceEndDate를 해당 날짜 전날로 설정
+    func deleteFutureOccurrences(_ event: DozyEvent, from date: Date) {
+        let cal = Calendar.current
+        let previousDay = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: date))!
+        event.recurrenceEndDate = previousDay
+        event.updatedAt = Date()
+        updateEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                guard let self else { return }
+                self.showEventDetail = false
+                self.showDeleteSuccess = true
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }).store(in: &cancellables)
+    }
+    
+    // MARK: - Memo
+    func saveMemos(for event: DozyEvent) {
+        updateEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
     }
 }

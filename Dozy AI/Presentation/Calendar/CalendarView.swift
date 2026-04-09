@@ -6,15 +6,16 @@
 //
 
 import SwiftUI
+import Lottie
 
 struct CalendarView: View {
-    
-    @StateObject private var viewModel: CalendarViewModel
-    
-    init(container: DependencyContainer) {
-        _viewModel = StateObject(wrappedValue: CalendarViewModel(container: container))
-    }
-    
+
+    @ObservedObject var viewModel: CalendarViewModel
+    @State private var showLegend = false
+    @State private var longPressDate: Date? = nil
+    @State private var showLongPressAlert = false
+    @Environment(\.scenePhase) private var scenePhase
+
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
@@ -51,16 +52,25 @@ struct CalendarView: View {
                 }
             }
             .refreshable {
-                viewModel.loadInitialData()
+                viewModel.refreshData()
             }
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { viewModel.startCreatingEvent() } label: {
-                        Image(systemName: "plus")
+                    HStack(spacing: 4) {
+                        Button { showLegend = true } label: {
+                            Image(systemName: "questionmark.circle")
+                        }
+                        Button { viewModel.startCreatingEvent() } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
+            }
+            .sheet(isPresented: $showLegend) {
+                CalendarLegendView()
+                    .presentationDetents([.medium])
             }
             .sheet(isPresented: $viewModel.showEventEdit) {
                 EventEditView(
@@ -71,20 +81,7 @@ struct CalendarView: View {
                 }
             }
             .sheet(isPresented: $viewModel.showEventDetail) {
-                if let event = viewModel.detailEvent {
-                    EventDetailView(
-                        event: event,
-                        dozyEvent: viewModel.dozyEventsByID[event.id],
-                        onEdit: { (dozyEvent: DozyEvent) in
-                            viewModel.startEditingEvent(dozyEvent)
-                        },
-                        onDelete: { (dozyEvent: DozyEvent) in
-                            viewModel.requestDelete(event)
-                        },
-                        onEditCalendar: { viewModel.startEditingCalendarEvent($0) },
-                        onDeleteCalendar: { viewModel.deleteCalendarEvent($0) }
-                    )
-                }
+                eventDetailSheet
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
@@ -94,6 +91,15 @@ struct CalendarView: View {
                 }
             }
             .onAppear { viewModel.loadInitialData() }
+            .overlay {
+                if viewModel.showSuccessAnimation {
+                    LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                        viewModel.showSuccessAnimation = false
+                    }
+                    .scaleEffect(0.22)
+                    .allowsHitTesting(false)
+                }
+            }
             .alert(alertTitle, isPresented: $viewModel.showDeleteAlert) {
                 Button("삭제", role: .destructive) {
                     if let e = viewModel.pendingDeleteEvent {
@@ -126,9 +132,52 @@ struct CalendarView: View {
             } message: {
                 Text(viewModel.deleteErrorMessage ?? "")
             }
+            .alert("일정 생성", isPresented: $showLongPressAlert, actions: longPressAlertActions, message: longPressAlertMessage)
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase != .active {
+                    showLegend = false
+                    viewModel.showEventDetail = false
+                    viewModel.showEventEdit = false
+                    viewModel.showCalendarEventEdit = false
+                }
+            }
         }
     }
-    
+
+    // MARK: - Sheets
+
+    @ViewBuilder
+    private var eventDetailSheet: some View {
+        if let event = viewModel.detailEvent {
+            let dozyEvent = viewModel.dozyEventsForSelectedDate.first(where: { $0.id == event.id })
+                ?? viewModel.dozyEventsByID[event.id]
+            EventDetailView(
+                event: event,
+                dozyEvent: dozyEvent,
+                onEdit: { dozyEvent in
+                    viewModel.startEditingEvent(dozyEvent)
+                },
+                onDelete: { dozyEvent in
+                    viewModel.requestDelete(event)
+                },
+                onDeleteThisOnly: { dozyEvent, date in
+                    viewModel.deleteThisOccurrence(dozyEvent, date: date)
+                },
+                onDeleteFutureEvents: { dozyEvent, date in
+                    viewModel.deleteFutureOccurrences(dozyEvent, from: date)
+                },
+                onEditCalendar: { viewModel.startEditingCalendarEvent($0) },
+                onDeleteCalendar: { viewModel.deleteCalendarEvent($0) },
+                onSaveMemos: { dozyEvent in
+                    viewModel.saveMemos(for: dozyEvent)
+                },
+                onUpdateDisplaySettings: { event, priority, isPinned, category in
+                    viewModel.updateDisplaySettings(for: event, priority: priority, isPinned: isPinned, category: category)
+                }
+            )
+        }
+    }
+
     // MARK: - Month Header
     
     private var monthHeader: some View {
@@ -178,6 +227,10 @@ struct CalendarView: View {
                     isToday: { viewModel.isToday($0) },
                     isSelected: { viewModel.isSelected($0) },
                     onSelect: { viewModel.selectDate($0) },
+                    onLongPress: { date in
+                        longPressDate = date
+                        showLongPressAlert = true
+                    },
                     onTapEvent: { viewModel.showDetailForEventID($0) }
                 )
             }
@@ -263,6 +316,45 @@ struct CalendarView: View {
             } label: {
                 Label("삭제", systemImage: "trash")
             }
+        }
+
+        Divider()
+
+        // 핀 토글
+        Button {
+            viewModel.updateDisplaySettings(for: event, priority: event.priority, isPinned: !event.isPinned)
+        } label: {
+            Label(event.isPinned ? "고정 해제" : "상단 고정",
+                  systemImage: event.isPinned ? "pin.slash" : "pin")
+        }
+
+        // 우선순위 서브메뉴
+        Menu("우선순위") {
+            Button("없음")    { viewModel.updateDisplaySettings(for: event, priority: 0, isPinned: event.isPinned) }
+            Button("높음 🔴") { viewModel.updateDisplaySettings(for: event, priority: 1, isPinned: event.isPinned) }
+            Button("중간 🟡") { viewModel.updateDisplaySettings(for: event, priority: 2, isPinned: event.isPinned) }
+            Button("낮음 🔵") { viewModel.updateDisplaySettings(for: event, priority: 3, isPinned: event.isPinned) }
+        }
+    }
+
+    @ViewBuilder
+    private func longPressAlertActions() -> some View {
+        Button("생성") {
+            if let date = longPressDate {
+                viewModel.selectDate(date)
+                viewModel.startCreatingEvent()
+            }
+            longPressDate = nil
+        }
+        Button("취소", role: .cancel) { longPressDate = nil }
+    }
+
+    @ViewBuilder
+    private func longPressAlertMessage() -> some View {
+        if let date = longPressDate {
+            let formatter = DateFormatter()
+            let _ = { formatter.locale = Locale(identifier: "ko_KR"); formatter.dateFormat = "M월 d일(E)" }()
+            Text("\(formatter.string(from: date))에 일정을 생성하시겠습니까?")
         }
     }
 

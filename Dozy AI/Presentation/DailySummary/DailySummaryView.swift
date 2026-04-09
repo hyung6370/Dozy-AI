@@ -21,7 +21,8 @@ struct DailySummaryView: View {
         events: [CalendarEvent],
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
-        memos: [String]
+        memos: [String],
+        completedEventCount: Int = 0
     ) {
         let vm = DailySummaryViewModel(
             generateSummaryUseCase: generateSummaryUseCase,
@@ -31,6 +32,7 @@ struct DailySummaryView: View {
         vm.completedTasks = completedTasks
         vm.pendingTasks = pendingTasks
         vm.memos = memos
+        vm.completedEventCount = completedEventCount
         _viewModel = StateObject(wrappedValue: vm)
     }
 
@@ -629,12 +631,20 @@ private extension DailySummaryView {
 
     func categoryColor(_ category: WorkCategory) -> Color {
         switch category {
-        case .development:    return .blue
-        case .meeting:        return .purple
-        case .review:         return .teal
-        case .planning:       return .orange
-        case .documentation:  return .green
-        case .general:        return .gray
+        case .development:   return .blue
+        case .meeting:       return .purple
+        case .planning:      return .orange
+        case .documentation: return .green
+        case .review:        return .teal
+        case .exercise:      return .pink
+        case .meal:          return .yellow
+        case .medical:       return .red
+        case .study:         return .indigo
+        case .travel:        return .cyan
+        case .shopping:      return Color(hex: "#FF9500") ?? .orange
+        case .family:        return Color(hex: "#34C759") ?? .green
+        case .hobby:         return Color(hex: "#AF52DE") ?? .purple
+        case .general:       return .gray
         }
     }
 }

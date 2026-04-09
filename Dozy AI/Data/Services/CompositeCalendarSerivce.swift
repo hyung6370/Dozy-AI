@@ -30,6 +30,10 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     func requestAccess() -> AnyPublisher<Bool, DozyError> {
         appleService.requestAccess()
     }
+
+    func invalidateGoogleCache() {
+        googleService.invalidateCache()
+    }
     
     func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
@@ -51,19 +55,17 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
                 let all = arrays.flatMap { $0 }
                 var seen = Set<String>()
                 var deduped: [CalendarEvent] = []
-                // apple → google → dozy 순으로 처리해 Apple 이벤트를 우선 유지
-                let ordered = all.sorted { lhs, rhs in
-                    let priority: (CalendarSource) -> Int = {
-                        switch $0 { case .apple: return 0; case .dozy: return 1; default: return 2 }
-                    }
-                    return priority(lhs.source) < priority(rhs.source)
-                }
-                for event in ordered {
-                    let cal = Calendar.current
-                    let day = cal.startOfDay(for: event.startDate)
-                    let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
-                    if seen.insert(key).inserted {
+                // Dozy 이벤트는 항상 유지, Apple/Google 이벤트끼리만 중복 제거
+                for event in all {
+                    if event.source == .dozy {
                         deduped.append(event)
+                    } else {
+                        let cal = Calendar.current
+                        let day = cal.startOfDay(for: event.startDate)
+                        let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
+                        if seen.insert(key).inserted {
+                            deduped.append(event)
+                        }
                     }
                 }
                 return deduped.sorted { $0.startDate < $1.startDate }
@@ -71,6 +73,45 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
             .eraseToAnyPublisher()
     }
     
+    // MARK: - 날짜 범위 조회 (인사이트용)
+
+    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+        var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
+
+        if sourceManager.isEnabled(.apple) {
+            publishers.append(appleService.fetchEvents(from: start, to: end))
+        }
+        if sourceManager.isEnabled(.google) {
+            publishers.append(
+                googleService.fetchEvents(from: start, to: end)
+                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            )
+        }
+        publishers.append(dozyService.fetchEvents(from: start, to: end))
+
+        return Publishers.MergeMany(publishers)
+            .collect()
+            .map { arrays -> [CalendarEvent] in
+                let all = arrays.flatMap { $0 }
+                var seen = Set<String>()
+                var deduped: [CalendarEvent] = []
+                for event in all {
+                    if event.source == .dozy {
+                        deduped.append(event)
+                    } else {
+                        let cal = Calendar.current
+                        let day = cal.startOfDay(for: event.startDate)
+                        let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
+                        if seen.insert(key).inserted {
+                            deduped.append(event)
+                        }
+                    }
+                }
+                return deduped.sorted { $0.startDate < $1.startDate }
+            }
+            .eraseToAnyPublisher()
+    }
+
     // MARK: - CalendarWriteServiceProtocol
     func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
         switch event.source {

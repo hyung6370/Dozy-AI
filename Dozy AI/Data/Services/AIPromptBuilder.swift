@@ -26,10 +26,23 @@ enum AIPromptBuilder {
         
         // 캘린더 일정
         if !events.isEmpty {
-            let lines = events.map { "- \($0.contextString) [\($0.durationMinutes)분]" }
+            let lines = events.map { event in
+                let catLabel = event.category != "일반" ? " [\(event.category)]" : ""
+                return "- \(event.contextString) [\(event.durationMinutes)분]\(catLabel)"
+            }
             sections.append(
                 "## 오늘의 일정 (\(events.count)건)\n\(lines.joined(separator: "\n"))"
             )
+
+            // 카테고리별 분포
+            let catGroups = Dictionary(grouping: events) { $0.category }
+                .filter { $0.key != "일반" }
+            if !catGroups.isEmpty {
+                let catLines = catGroups
+                    .sorted { $0.value.count > $1.value.count }
+                    .map { "\($0.key): \($0.value.count)건" }
+                sections.append("## 카테고리별 일정 분포\n\(catLines.joined(separator: ", "))")
+            }
         } else {
             sections.append("## 오늘의 일정\n- 등록된 일정 없음")
         }

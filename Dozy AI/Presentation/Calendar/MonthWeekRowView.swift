@@ -15,6 +15,7 @@ struct MonthWeekRowView: View {
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
     let onSelect: (Date) -> Void
+    let onLongPress: (Date) -> Void
     let onTapEvent: (String) -> Void
     
     private let headerH: CGFloat = 42
@@ -31,7 +32,7 @@ struct MonthWeekRowView: View {
             let cellW = geo.size.width / 7
             ZStack(alignment: .topLeading) {
 
-                // 빈 영역 탭 → 날짜 선택 (pill/헤더 아래 레이어)
+                // 빈 영역 탭 → 날짜 선택 / 롱프레스 → 일정 생성
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
                         Group {
@@ -39,11 +40,28 @@ struct MonthWeekRowView: View {
                                 Color.clear
                                     .contentShape(Rectangle())
                                     .onTapGesture { onSelect(date) }
+                                    .simultaneousGesture(
+                                        LongPressGesture(minimumDuration: 0.5)
+                                            .onEnded { _ in
+                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                                onLongPress(date)
+                                            }
+                                    )
                             } else {
                                 Color.clear
                             }
                         }
                         .frame(width: cellW, height: totalH)
+                        .overlay(alignment: .top) {
+                            Rectangle()
+                                .fill(Color.primary.opacity(0.06))
+                                .frame(height: 0.5)
+                        }
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .fill(Color.primary.opacity(0.06))
+                                .frame(height: 0.5)
+                        }
                     }
                 }
 
@@ -58,6 +76,13 @@ struct MonthWeekRowView: View {
                                         .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
+                                .simultaneousGesture(
+                                    LongPressGesture(minimumDuration: 0.5)
+                                        .onEnded { _ in
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                            onLongPress(date)
+                                        }
+                                )
                             } else {
                                 Color.clear
                             }
@@ -119,39 +144,65 @@ struct MonthWeekRowView: View {
 
 struct EventPill: View {
     let layout: CalendarEventLayout
-    
+
     private var color: Color { Color(hex: layout.colorHex) ?? .blue }
-    
-    var body: some View {
+    private var isDozy: Bool { layout.source == .dozy }
+
+    private var shape: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
             topLeadingRadius: layout.isActualStart ? 8 : 0,
             bottomLeadingRadius: layout.isActualStart ? 8 : 0,
             bottomTrailingRadius: layout.isActualEnd ? 8 : 0,
             topTrailingRadius: layout.isActualEnd ? 8 : 0
         )
-        .fill(color.opacity(0.75))
-        .overlay(alignment: .leading) {
-            if layout.isActualStart {
-                Text(layout.title)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
+    }
+
+    private var priorityColor: Color? {
+        switch layout.priority {
+        case 1: return .red
+        case 2: return .yellow
+        case 3: return .blue
+        default: return nil
+        }
+    }
+
+    var body: some View {
+        shape
+            .fill(isDozy ? color.opacity(0.2) : color.opacity(0.75))
+            .overlay(alignment: .leading) {
+                if layout.isActualStart {
+                    HStack(spacing: 2) {
+                        if layout.isPinned {
+                            Image(systemName: "pin.fill")
+                                .font(.system(size: 7, weight: .bold))
+                                .foregroundStyle(isDozy ? color : .white)
+                        }
+                        if let pc = priorityColor {
+                            Circle()
+                                .fill(pc)
+                                .frame(width: 5, height: 5)
+                        }
+                        Text(layout.title)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(isDozy ? color : .white)
+                            .lineLimit(1)
+                    }
                     .padding(.leading, 5)
                     .padding(.trailing, 2)
+                }
             }
-        }
-        .clipped()
+            .clipped()
     }
 }
-
-#Preview {
-    MonthWeekRowView(
-        weekDates: (0..<7).map { Calendar.current.date(byAdding: .day, value: $0, to: Date()) },
-        layouts: [],
-        selectedDate: Date(),
-        isToday: { _ in false },
-        isSelected: { _ in false },
-        onSelect: { _ in },
-        onTapEvent: { _ in }
-    )
-}
+//
+//#Preview {
+//    MonthWeekRowView(
+//        weekDates: (0..<7).map { Calendar.current.date(byAdding: .day, value: $0, to: Date()) },
+//        layouts: [],
+//        selectedDate: Date(),
+//        isToday: { _ in false },
+//        isSelected: { _ in false },
+//        onSelect: { _ in },
+//        onTapEvent: { _ in }
+//    )
+//}

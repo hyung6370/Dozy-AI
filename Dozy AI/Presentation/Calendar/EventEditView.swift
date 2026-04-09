@@ -35,6 +35,19 @@ struct EventEditView: View {
                     }
                 }
                 
+                Section("색상") {
+                    ColorPicker("이벤트 색상", selection: $viewModel.selectedColor)
+                }
+
+                Section("카테고리") {
+                    Picker("카테고리", selection: $viewModel.category) {
+                        ForEach(WorkCategory.allCases, id: \.self) { cat in
+                            Text("\(cat.emoji) \(cat.rawValue)").tag(cat)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+                
                 Section("추가 정보") {
                     TextField("장소 (선택)", text: $viewModel.location)
                     TextField("메모 (선택)", text: $viewModel.notes, axis: .vertical)
@@ -69,10 +82,6 @@ struct EventEditView: View {
                         Text("30분 전").tag(30)
                         Text("1시간 전").tag(60)
                     }
-                }
-                
-                Section("색상") {
-                    ColorPicker("이벤트 색상", selection: $viewModel.selectedColor)
                 }
             }
             .navigationTitle(viewModel.isEditing ? "일정 수정" : "새 일정")
