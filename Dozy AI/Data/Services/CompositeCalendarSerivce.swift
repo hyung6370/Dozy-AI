@@ -73,6 +73,45 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
             .eraseToAnyPublisher()
     }
     
+    // MARK: - 날짜 범위 조회 (인사이트용)
+
+    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+        var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
+
+        if sourceManager.isEnabled(.apple) {
+            publishers.append(appleService.fetchEvents(from: start, to: end))
+        }
+        if sourceManager.isEnabled(.google) {
+            publishers.append(
+                googleService.fetchEvents(from: start, to: end)
+                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            )
+        }
+        publishers.append(dozyService.fetchEvents(from: start, to: end))
+
+        return Publishers.MergeMany(publishers)
+            .collect()
+            .map { arrays -> [CalendarEvent] in
+                let all = arrays.flatMap { $0 }
+                var seen = Set<String>()
+                var deduped: [CalendarEvent] = []
+                for event in all {
+                    if event.source == .dozy {
+                        deduped.append(event)
+                    } else {
+                        let cal = Calendar.current
+                        let day = cal.startOfDay(for: event.startDate)
+                        let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
+                        if seen.insert(key).inserted {
+                            deduped.append(event)
+                        }
+                    }
+                }
+                return deduped.sorted { $0.startDate < $1.startDate }
+            }
+            .eraseToAnyPublisher()
+    }
+
     // MARK: - CalendarWriteServiceProtocol
     func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
         switch event.source {

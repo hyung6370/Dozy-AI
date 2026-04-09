@@ -18,6 +18,7 @@ struct InsightDashboardView: View {
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
             fetchEventsUseCase: container.fetchDozyEventsForPeriodUseCase,
+            fetchCalendarEventsUseCase: container.fetchCalendarEventsForPeriodUseCase,
             fetchCompletionsUseCase: container.fetchEventCompletionsForPeriodUseCase,
             fetchLogsUseCase: container.fetchRecentLogsUseCase,
             patternService: container.patternAnalysisService

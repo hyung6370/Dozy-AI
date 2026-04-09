@@ -63,6 +63,81 @@ final class GoogleCalendarService: CalendarServiceProtocol {
             .eraseToAnyPublisher()
     }
     
+    // MARK: - 날짜 범위 조회 (인사이트용 — 단일 API 호출로 효율적)
+
+    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+        guard signInService.isSignedIn else {
+            return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        }
+        return signInService.getValidAccessToken()
+            .flatMap { [weak self] token -> AnyPublisher<[CalendarEvent], DozyError> in
+                guard let self else {
+                    return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+                }
+                return self.fetchAllEvents(from: start, to: end, token: token)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    private func fetchAllEvents(from start: Date, to end: Date, token: String) -> AnyPublisher<[CalendarEvent], DozyError> {
+        fetchCalendarList(token: token)
+            .flatMap { [weak self] calendars -> AnyPublisher<[CalendarEvent], DozyError> in
+                guard let self else {
+                    return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+                }
+                let active = calendars.filter { $0.selected != false }
+                guard !active.isEmpty else {
+                    return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+                }
+                let publishers = active.map { cal in
+                    self.fetchEvents(from: cal, from: start, to: end, token: token)
+                }
+                return Publishers.MergeMany(publishers)
+                    .collect()
+                    .map { $0.flatMap { $0 }.sorted { $0.startDate < $1.startDate } }
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+
+    private func fetchEvents(from calendar: GoogleCalendarItem, from start: Date, to end: Date, token: String) -> AnyPublisher<[CalendarEvent], DozyError> {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        let timeMin = formatter.string(from: start)
+        let timeMax = formatter.string(from: end)
+        let encodedId = calendar.id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? calendar.id
+        guard var components = URLComponents(string: "\(baseURL)/calendars/\(encodedId)/events") else {
+            return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        }
+        components.queryItems = [
+            URLQueryItem(name: "timeMin", value: timeMin),
+            URLQueryItem(name: "timeMax", value: timeMax),
+            URLQueryItem(name: "singleEvents", value: "true"),
+            URLQueryItem(name: "orderBy", value: "startTime"),
+            URLQueryItem(name: "maxResults", value: "2500")
+        ]
+        guard let url = components.url else {
+            return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        }
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map(\.data)
+            .tryMap { data -> [CalendarEvent] in
+                let decoded = try JSONDecoder().decode(GoogleEventsResponse.self, from: data)
+                return (decoded.items ?? []).compactMap {
+                    $0.toCalendarEvent(
+                        calendarName: calendar.summary,
+                        colorHex: calendar.backgroundColor ?? "#4285F4",
+                        calendarId: calendar.id
+                    )
+                }
+            }
+            .replaceError(with: [])
+            .setFailureType(to: DozyError.self)
+            .eraseToAnyPublisher()
+    }
+
     // MARK: - Private
     private func fetchAllEvents(for date: Date, token: String) -> AnyPublisher<[CalendarEvent], DozyError> {
         fetchCalendarList(token: token)

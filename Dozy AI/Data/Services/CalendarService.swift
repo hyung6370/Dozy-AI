@@ -59,6 +59,27 @@ final class CalendarService: CalendarServiceProtocol {
             .eraseToAnyPublisher()
     }
 
+    // MARK: - 날짜 범위 조회 (EventKit 네이티브 지원으로 효율적)
+
+    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+        requestAccessIfNeeded()
+            .flatMap { [eventStore] _ -> AnyPublisher<[CalendarEvent], DozyError> in
+                Future { promise in
+                    let predicate = eventStore.predicateForEvents(
+                        withStart: start,
+                        end: end,
+                        calendars: nil
+                    )
+                    let events = eventStore.events(matching: predicate)
+                        .map { $0.toCalendarEvent() }
+                        .sorted { $0.startDate < $1.startDate }
+                    promise(.success(events))
+                }
+                .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+
     // MARK: - Private Helpers
 
     private func requestAccessIfNeeded() -> AnyPublisher<Void, DozyError> {

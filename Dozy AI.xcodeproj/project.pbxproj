@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CEEBF7E3E8D2D65697104350 /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
 		DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD22F72C44100EEE463 /* DozyError.swift */; };
 		DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */; };
 		DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */; };
@@ -182,6 +183,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FetchCalendarEventsForPeriodUseCase.swift; path = FetchCalendarEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		DD44DDD22F72C44100EEE463 /* DozyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyError.swift; sourceTree = "<group>"; };
 		DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogRepositoryProtocol.swift; sourceTree = "<group>"; };
 		DD808E842F694B2100F4956A /* Dozy AI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dozy AI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -609,6 +611,7 @@
 				F650682E2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift */,
 				F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */,
 				F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */,
+				D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */,
 			);
 			path = UseCases;
 			sourceTree = "<group>";
@@ -843,8 +846,6 @@
 				DD808E932F694B2200F4956A /* PBXTargetDependency */,
 			);
 			name = "Dozy AITests";
-			packageProductDependencies = (
-			);
 			productName = "Dozy AITests";
 			productReference = DD808E912F694B2200F4956A /* Dozy AITests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -863,8 +864,6 @@
 				DD808E9D2F694B2200F4956A /* PBXTargetDependency */,
 			);
 			name = "Dozy AIUITests";
-			packageProductDependencies = (
-			);
 			productName = "Dozy AIUITests";
 			productReference = DD808E9B2F694B2200F4956A /* Dozy AIUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -1090,6 +1089,7 @@
 				F65068312F7D115300F9C124 /* EventCompletionRepository.swift in Sources */,
 				F63C68E42F8642C7003464E8 /* EventDisplaySettings.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
+				CEEBF7E3E8D2D65697104350 /* FetchCalendarEventsForPeriodUseCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

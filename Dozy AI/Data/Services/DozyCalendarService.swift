@@ -37,4 +37,31 @@ final class DozyCalendarService: CalendarServiceProtocol {
         }
         .eraseToAnyPublisher()
     }
+
+    // MARK: - 날짜 범위 조회 (반복 일정 전개 포함)
+    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+        Publishers.Zip(
+            repository.fetchEvents(from: start, to: end),
+            repository.fetchAllRecurring()
+        )
+        .map { all, recurring in
+            let cal = Calendar.current
+            // 비반복 일정
+            let nonRecurring = all
+                .filter { $0.recurrenceRule == "none" || $0.recurrenceRule.isEmpty }
+                .map { $0.toCalendarEvent() }
+            // 반복 일정: 기간 내 각 발생일로 전개
+            var expanded: [CalendarEvent] = []
+            var cursor = cal.startOfDay(for: start)
+            let endDay = cal.startOfDay(for: end)
+            while cursor <= endDay {
+                for event in recurring where event.occursOn(cursor) {
+                    expanded.append(event.toCalendarEvent(for: cursor))
+                }
+                cursor = cal.date(byAdding: .day, value: 1, to: cursor)!
+            }
+            return (nonRecurring + expanded).sorted { $0.startDate < $1.startDate }
+        }
+        .eraseToAnyPublisher()
+    }
 }
