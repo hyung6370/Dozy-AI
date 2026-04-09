@@ -269,7 +269,6 @@ struct HomeView: View {
                 icon: "checkmark.circle.fill",
                 color: .green
             )
-            HomeStatCard(value: "\(viewModel.pendingCount)", label: "남은 할일", icon: "circle.dotted", color: .orange)
         }
     }
 

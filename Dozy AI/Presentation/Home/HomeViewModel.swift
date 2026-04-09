@@ -16,6 +16,7 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Published State
 
     @Published var todayEvents: [CalendarEvent] = []
+    @Published var completionsByEventID: [String: Bool] = [:]
     @Published var completedTasks: [TaskItem] = []
     @Published var pendingTasks: [TaskItem] = []
     @Published var todayLog: WorkLog?
@@ -39,8 +40,8 @@ final class HomeViewModel: ObservableObject {
 
     var todayDateString: String { Date().formattedKorean }
     var eventCount: Int { todayEvents.count }
-    var completedCount: Int { completedTasks.count }
-    var pendingCount: Int { pendingTasks.count }
+    var completedCount: Int { todayEvents.filter { completionsByEventID[$0.id] == true }.count }
+    var pendingCount: Int { todayEvents.filter { completionsByEventID[$0.id] != true }.count }
 
     var hasData: Bool {
         !todayEvents.isEmpty || !completedTasks.isEmpty
@@ -100,6 +101,8 @@ final class HomeViewModel: ObservableObject {
     private let generateDailySummaryUseCase: GenerateDailySummaryUseCase
     private let fetchRecentLogsUseCase: FetchRecentLogsUseCase
     private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
+    private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
+    private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
@@ -111,7 +114,9 @@ final class HomeViewModel: ObservableObject {
         fetchRecentLogsUseCase: FetchRecentLogsUseCase,
         calendarSourceManager: CalendarSourceManager,
         googleSignInService: GoogleSignInService,
-        fetchCalendarEventUseCase: FetchCalendarEventUseCase
+        fetchCalendarEventUseCase: FetchCalendarEventUseCase,
+        fetchDozyEventsUseCase: FetchDozyEventsUseCase,
+        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
@@ -120,6 +125,8 @@ final class HomeViewModel: ObservableObject {
         self.calendarSourceManager = calendarSourceManager
         self.googleSignInService = googleSignInService
         self.fetchCalendarEventUseCase = fetchCalendarEventUseCase
+        self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
+        self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
         
         googleSignInService.$isSignedIn
             .removeDuplicates()
@@ -152,7 +159,9 @@ final class HomeViewModel: ObservableObject {
             fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
             calendarSourceManager: container.calendarSourceManager,
             googleSignInService: container.googleSignInService,
-            fetchCalendarEventUseCase: container.fetchCalendarEventUseCase
+            fetchCalendarEventUseCase: container.fetchCalendarEventUseCase,
+            fetchDozyEventsUseCase: container.fetchDozyEventsUseCase,
+            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase
         )
     }
 
@@ -177,6 +186,7 @@ final class HomeViewModel: ObservableObject {
                     self.completedTasks = result.completedTasks
                     self.pendingTasks = result.pendingTasks
                     self.persistTodayLog(events: result.events, tasks: result.completedTasks)
+                    self.loadCompletions(for: result.events)
                 }
             )
             .store(in: &cancellables)
@@ -184,6 +194,26 @@ final class HomeViewModel: ObservableObject {
         loadRecentLogs()
         loadWeeklyData()
         loadMonthlyData()
+    }
+
+    private func loadCompletions(for events: [CalendarEvent]) {
+        let allIDs = events.map { $0.id }
+        let dozyIDs = Set(events.filter { $0.source == .dozy }.map { $0.id })
+
+        Publishers.Zip(
+            fetchDozyEventsUseCase.execute(for: Date()),
+            fetchEventCompletionsUseCase.execute(for: allIDs)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] dozyEvents, completionsMap in
+            guard let self else { return }
+            var merged: [String: Bool] = completionsMap
+            for event in dozyEvents where dozyIDs.contains(event.id) {
+                merged[event.id] = event.isCompleted
+            }
+            self.completionsByEventID = merged
+        })
+        .store(in: &cancellables)
     }
 
     func loadRecentLogs() {
