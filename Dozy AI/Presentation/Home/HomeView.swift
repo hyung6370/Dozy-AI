@@ -176,21 +176,28 @@ struct HomeView: View {
     // MARK: - Focus Card
 
     private var focusCard: some View {
-        let nextEvent = viewModel.todayEvents.first(where: { $0.endDate > Date() })
+        let now = Date()
+        let currentEvent = viewModel.todayEvents.first(where: { $0.startDate <= now && $0.endDate > now })
+        let upcomingEvent = currentEvent == nil
+            ? viewModel.todayEvents.first(where: { $0.startDate > now })
+            : nil
+        let displayEvent = currentEvent ?? upcomingEvent
+        let label = currentEvent != nil ? "지금 일정" : upcomingEvent != nil ? "다음 일정" : ""
+        let icon = currentEvent != nil ? "circle.fill" : "clock"
 
         return VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                Image(systemName: "scope")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("오늘의 포커스")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.bottom, 10)
+            if let event = displayEvent {
+                HStack(spacing: 6) {
+                    Image(systemName: icon)
+                        .font(.caption)
+                        .foregroundStyle(currentEvent != nil ? .green : .secondary)
+                    Text(label)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.bottom, 10)
 
-            if let event = nextEvent {
                 HStack(alignment: .top, spacing: 12) {
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color(hex: event.calendarColorHex) ?? .blue)
@@ -228,10 +235,10 @@ struct HomeView: View {
                 }
             } else {
                 HStack(spacing: 10) {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image(systemName: viewModel.todayEvents.isEmpty ? "calendar.badge.minus" : "checkmark.circle.fill")
                         .font(.title3)
-                        .foregroundStyle(.green)
-                    Text(viewModel.todayEvents.isEmpty ? "오늘 일정이 없어요" : "오늘 일정을 모두 마쳤어요")
+                        .foregroundStyle(viewModel.todayEvents.isEmpty ? Color.secondary : Color.green)
+                    Text(viewModel.todayEvents.isEmpty ? "오늘 일정이 없습니다." : "남은 일정이 없습니다.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
