@@ -2,6 +2,8 @@
 //  FetchEventCompletionsForPeriodUseCase.swift
 //  Dozy AI
 //
+//  Created by Hyungjun KIM on 4/9/26.
+//
 
 import Foundation
 import Combine
