@@ -162,42 +162,55 @@ final class AIService: AIServiceProtocol {
     
     // MARK: - 로컬 하이라이트 추출
     private func extractLocalHighlights(events: [CalendarEvent], completedTasks: [TaskItem], memos: [String]) -> [String] {
-        
+
         var highlights: [String] = []
-        
+
         // NLTagger로 키워드 추출
         let allText = (events.map { $0.title } + completedTasks.map { $0.title } + memos)
             .joined(separator: ". ")
         let keywords = extractKeywords(from: allText, count: 3)
-        
-        // 회의 수 체크
-        let meetingCount = events.filter { event in
-            let t = event.title.lowercased()
-            return t.contains("회의") || t.contains("미팅") || t.contains("meeting")
-        }.count
-        
-        if meetingCount > 0 {
-            highlights.append("\(meetingCount)건의 회의에 참석했습니다")
+
+        // 카테고리별 일정 하이라이트 (사용자 지정 카테고리 활용)
+        let categoryGroups = Dictionary(grouping: events.filter { $0.category != WorkCategory.general.rawValue }) { $0.category }
+        if !categoryGroups.isEmpty {
+            for (category, grouped) in categoryGroups.sorted(by: { $0.value.count > $1.value.count }).prefix(3) {
+                let emoji = WorkCategory(rawValue: category)?.emoji ?? "📌"
+                let minutes = grouped.filter { !$0.isAllDay }.reduce(0) { $0 + $1.durationMinutes }
+                if minutes > 0 {
+                    highlights.append("\(emoji) \(category) 관련 일정 \(grouped.count)건 (총 \(minutes)분)")
+                } else {
+                    highlights.append("\(emoji) \(category) 관련 일정 \(grouped.count)건")
+                }
+            }
+        } else {
+            // 폴백: 키워드 기반 회의 수 체크
+            let meetingCount = events.filter { event in
+                let t = event.title.lowercased()
+                return t.contains("회의") || t.contains("미팅") || t.contains("meeting")
+            }.count
+            if meetingCount > 0 {
+                highlights.append("\(meetingCount)건의 회의에 참석했습니다")
+            }
         }
-        
+
         // 바쁜 하루 체크
         let totalMinutes = events.filter { !$0.isAllDay }.reduce(0) { $0 + $1.durationMinutes }
         if totalMinutes > 240 {
             highlights.append("4시간 이상 일정에 투입되어 바쁜 하루였습니다")
         }
-        
+
         // 할 일 성과
         if completedTasks.count >= 5 {
             highlights.append("할 일 \(completedTasks.count)개를 완료하여 생산적인 하루였습니다")
         } else if let topTask = completedTasks.first {
             highlights.append("'\(topTask.title)' 등 \(completedTasks.count)건을 완료했습니다")
         }
-        
+
         // 키워드
         if !keywords.isEmpty {
             highlights.append("주요 키워드: \(keywords.joined(separator: ", "))")
         }
-        
+
         return Array(highlights.prefix(5))
     }
     
@@ -246,11 +259,25 @@ final class AIService: AIServiceProtocol {
     }
     
     // MARK: - 카테고리 감지
+    /// 사용자가 지정한 카테고리를 우선 사용하고, 없으면 키워드 기반 폴백
     private func detectCategory(events: [CalendarEvent], tasks: [TaskItem]) -> String {
+        // 1) 사용자가 명시적으로 지정한 카테고리 집계 ("일반" 제외)
+        let explicitCategories = events
+            .map { $0.category }
+            .filter { $0 != WorkCategory.general.rawValue }
+
+        if !explicitCategories.isEmpty {
+            let grouped = Dictionary(grouping: explicitCategories) { $0 }
+            if let dominant = grouped.max(by: { $0.value.count < $1.value.count }) {
+                return dominant.key
+            }
+        }
+
+        // 2) 폴백: 키워드 기반 감지
         let allTitles = (events.map { $0.title } + tasks.map { $0.title })
             .joined(separator: " ")
             .lowercased()
-        
+
         let keywords: [(WorkCategory, [String])] = [
             (.meeting, ["회의", "미팅", "meeting", "standup", "sync", "1:1", "데일리"]),
             (.review, ["리뷰", "review", "검토", "PR", "코드리뷰", "피드백"]),
@@ -258,12 +285,12 @@ final class AIService: AIServiceProtocol {
             (.planning, ["기획", "플래닝", "planning", "브레인스토밍", "로드맵"]),
             (.documentation, ["문서", "doc", "작성", "wiki", "정리", "보고서"])
         ]
-        
+
         var scores: [WorkCategory: Int] = [:]
         for (category, words) in keywords {
             scores[category] = words.reduce(0) { $0 + (allTitles.contains($1) ? 1 : 0) }
         }
-        
+
         if let top = scores.max(by: { $0.value < $1.value }), top.value > 0 {
             return top.key.rawValue
         }

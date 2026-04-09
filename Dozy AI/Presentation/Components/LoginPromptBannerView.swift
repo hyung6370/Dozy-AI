@@ -23,7 +23,7 @@ struct LoginPromptTooltipView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text("데이터를 안전하게 보호하고 싶다면 로그인 하세요 :)")
+                Text("데이터를 안전하게 보호하고 싶다면 로그인을 해보세요 :)")
                     .font(.caption)
                     .foregroundStyle(.primary)
 
