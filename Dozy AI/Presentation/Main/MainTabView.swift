@@ -21,23 +21,22 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             HomeView(container: container, selectedTab: $selectedTab)
-                .tabItem { Label("홈", systemImage: "house.fill") }
+                .tabItem { Label("홈", image: "house") }
                 .tag(0)
 
             CalendarView(viewModel: calendarViewModel)
-                .tabItem { Label("캘린더", systemImage: "calendar") }
+                .tabItem { Label("캘린더", image: "event") }
                 .tag(1)
 
             InsightDashboardView(container: container)
-                .tabItem { Label("인사이트", systemImage: "chart.bar.fill") }
+                .tabItem { Label("인사이트", image: "poll") }
                 .tag(2)
 
             SettingsView(container: container)
-                .tabItem { Label("설정", systemImage: "gear") }
+                .tabItem { Label("설정", image: "settings") }
                 .tag(3)
         }
         .onAppear {
-            // 인트로가 뜨는 동안 캘린더 데이터 미리 로드
             calendarViewModel.loadInitialData()
         }
     }
