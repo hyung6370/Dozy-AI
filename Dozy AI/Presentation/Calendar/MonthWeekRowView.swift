@@ -15,6 +15,7 @@ struct MonthWeekRowView: View {
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
     let onSelect: (Date) -> Void
+    let onLongPress: (Date) -> Void
     let onTapEvent: (String) -> Void
     
     private let headerH: CGFloat = 42
@@ -31,7 +32,7 @@ struct MonthWeekRowView: View {
             let cellW = geo.size.width / 7
             ZStack(alignment: .topLeading) {
 
-                // 빈 영역 탭 → 날짜 선택 (pill/헤더 아래 레이어)
+                // 빈 영역 탭 → 날짜 선택 / 롱프레스 → 일정 생성
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
                         Group {
@@ -39,6 +40,13 @@ struct MonthWeekRowView: View {
                                 Color.clear
                                     .contentShape(Rectangle())
                                     .onTapGesture { onSelect(date) }
+                                    .simultaneousGesture(
+                                        LongPressGesture(minimumDuration: 0.5)
+                                            .onEnded { _ in
+                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                                onLongPress(date)
+                                            }
+                                    )
                             } else {
                                 Color.clear
                             }
@@ -68,6 +76,13 @@ struct MonthWeekRowView: View {
                                         .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
+                                .simultaneousGesture(
+                                    LongPressGesture(minimumDuration: 0.5)
+                                        .onEnded { _ in
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                            onLongPress(date)
+                                        }
+                                )
                             } else {
                                 Color.clear
                             }

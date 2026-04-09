@@ -12,6 +12,8 @@ struct CalendarView: View {
 
     @ObservedObject var viewModel: CalendarViewModel
     @State private var showLegend = false
+    @State private var longPressDate: Date? = nil
+    @State private var showLongPressAlert = false
     @Environment(\.scenePhase) private var scenePhase
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
@@ -130,6 +132,7 @@ struct CalendarView: View {
             } message: {
                 Text(viewModel.deleteErrorMessage ?? "")
             }
+            .alert("일정 생성", isPresented: $showLongPressAlert, actions: longPressAlertActions, message: longPressAlertMessage)
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase != .active {
                     showLegend = false
@@ -224,6 +227,10 @@ struct CalendarView: View {
                     isToday: { viewModel.isToday($0) },
                     isSelected: { viewModel.isSelected($0) },
                     onSelect: { viewModel.selectDate($0) },
+                    onLongPress: { date in
+                        longPressDate = date
+                        showLongPressAlert = true
+                    },
                     onTapEvent: { viewModel.showDetailForEventID($0) }
                 )
             }
@@ -327,6 +334,27 @@ struct CalendarView: View {
             Button("높음 🔴") { viewModel.updateDisplaySettings(for: event, priority: 1, isPinned: event.isPinned) }
             Button("중간 🟡") { viewModel.updateDisplaySettings(for: event, priority: 2, isPinned: event.isPinned) }
             Button("낮음 🔵") { viewModel.updateDisplaySettings(for: event, priority: 3, isPinned: event.isPinned) }
+        }
+    }
+
+    @ViewBuilder
+    private func longPressAlertActions() -> some View {
+        Button("생성") {
+            if let date = longPressDate {
+                viewModel.selectDate(date)
+                viewModel.startCreatingEvent()
+            }
+            longPressDate = nil
+        }
+        Button("취소", role: .cancel) { longPressDate = nil }
+    }
+
+    @ViewBuilder
+    private func longPressAlertMessage() -> some View {
+        if let date = longPressDate {
+            let formatter = DateFormatter()
+            let _ = { formatter.locale = Locale(identifier: "ko_KR"); formatter.dateFormat = "M월 d일(E)" }()
+            Text("\(formatter.string(from: date))에 일정을 생성하시겠습니까?")
         }
     }
 
