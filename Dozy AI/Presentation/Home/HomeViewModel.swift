@@ -269,7 +269,8 @@ final class HomeViewModel: ObservableObject {
             events: todayEvents,
             completedTasks: completedTasks,
             pendingTasks: pendingTasks,
-            memos: todayLog?.memos ?? []
+            memos: todayLog?.memos ?? [],
+            completedEventCount: completedCount
         )
         .receive(on: DispatchQueue.main)
         .sink(

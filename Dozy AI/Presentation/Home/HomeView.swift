@@ -134,7 +134,8 @@ struct HomeView: View {
                 events: viewModel.todayEvents,
                 completedTasks: viewModel.completedTasks,
                 pendingTasks: viewModel.pendingTasks,
-                memos: viewModel.todayLog?.memos ?? []
+                memos: viewModel.todayLog?.memos ?? [],
+                completedEventCount: viewModel.completedCount
             )
         }
         }

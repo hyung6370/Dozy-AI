@@ -44,6 +44,16 @@ struct MonthWeekRowView: View {
                             }
                         }
                         .frame(width: cellW, height: totalH)
+                        .overlay(alignment: .top) {
+                            Rectangle()
+                                .fill(Color.primary.opacity(0.06))
+                                .frame(height: 0.5)
+                        }
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .fill(Color.primary.opacity(0.06))
+                                .frame(height: 0.5)
+                        }
                     }
                 }
 

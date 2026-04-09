@@ -13,7 +13,7 @@ final class AIService: AIServiceProtocol {
     
     // MARK: - 일일 요약 생성
     
-    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String]) async throws -> DailySummary {
+    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) async throws -> DailySummary {
         
         // Foundation Models 사용 가능 시 (iOS 26+)
         if #available(iOS 26.0, *), Self.isFoundationModelsAvailable() {
@@ -38,7 +38,8 @@ final class AIService: AIServiceProtocol {
             events: events,
             completedTasks: completedTasks,
             pendingTasks: pendingTasks,
-            memos: memos
+            memos: memos,
+            completedEventCount: completedEventCount
         )
     }
     
@@ -82,7 +83,7 @@ final class AIService: AIServiceProtocol {
     
     // MARK: - NaturalLanguage 기반 로컬 분석
     // NLTagger 키워드 추출 + 규칙 기반 로직 조합
-    private func generateWithLocalAnalysis(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String]) -> DailySummary {
+    private func generateWithLocalAnalysis(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) -> DailySummary {
         let summaryText = buildLocalSummaryText(
             events: events,
             completedTasks: completedTasks,
@@ -106,7 +107,8 @@ final class AIService: AIServiceProtocol {
         let score = calculateProductivityScore(
             events: events,
             completedTasks: completedTasks,
-            pendingTasks: pendingTasks
+            pendingTasks: pendingTasks,
+            completedEventCount: completedEventCount
         )
         
         let totalMinutes = events
@@ -298,25 +300,36 @@ final class AIService: AIServiceProtocol {
     }
     
     // MARK: - 생산성 점수
-    // 완료율(50%) + 일정 소화(30%) + 완료 양(20%)
-    private func calculateProductivityScore(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem]) -> Double {
-        
+    // 할 일 완료율(50%) + 일정 완료 체크율(30%) + 우선순위 달성률(20%)
+    private func calculateProductivityScore(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], completedEventCount: Int = 0) -> Double {
+
         var score = 0.0
-        
-        // 완료율 (50%)
+
+        // 1) 할 일 완료율 (50%) — 완료한 할 일 / 전체 할 일
         let totalTasks = completedTasks.count + pendingTasks.count
         if totalTasks > 0 {
             score += (Double(completedTasks.count) / Double(totalTasks)) * 0.5
         } else {
             score += 0.25
         }
-        
-        // 일정 소화 (30%)
-        score += min(Double(events.count) / 5.0, 1.0) * 0.3
-        
-        // 완료 양 (20%)
-        score += min(Double(completedTasks.count) / 8.0, 1.0) * 0.2
-        
+
+        // 2) 일정 완료 체크율 (30%) — 완료 체크한 일정 / 전체 일정
+        if !events.isEmpty {
+            score += (Double(completedEventCount) / Double(events.count)) * 0.3
+        } else {
+            score += 0.15
+        }
+
+        // 3) 우선순위 달성률 (20%) — 우선순위가 있는 할 일 중 완료된 비율
+        let highPriorityCompleted = completedTasks.filter { $0.priority > 0 }.count
+        let highPriorityPending = pendingTasks.filter { $0.priority > 0 }.count
+        let totalHighPriority = highPriorityCompleted + highPriorityPending
+        if totalHighPriority > 0 {
+            score += (Double(highPriorityCompleted) / Double(totalHighPriority)) * 0.2
+        } else {
+            score += 0.1
+        }
+
         return min(max(score, 0.0), 1.0)
     }
     

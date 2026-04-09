@@ -21,7 +21,8 @@ struct DailySummaryView: View {
         events: [CalendarEvent],
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
-        memos: [String]
+        memos: [String],
+        completedEventCount: Int = 0
     ) {
         let vm = DailySummaryViewModel(
             generateSummaryUseCase: generateSummaryUseCase,
@@ -31,6 +32,7 @@ struct DailySummaryView: View {
         vm.completedTasks = completedTasks
         vm.pendingTasks = pendingTasks
         vm.memos = memos
+        vm.completedEventCount = completedEventCount
         _viewModel = StateObject(wrappedValue: vm)
     }
 
