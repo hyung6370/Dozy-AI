@@ -31,7 +31,7 @@ struct CalendarSettingsView: View {
                     dozyRow
                     appleRow
                     googleRow
-                    naverRow
+//                    naverRow
                 } header: {
                     Text("연결된 캘린더")
                 } footer: {
