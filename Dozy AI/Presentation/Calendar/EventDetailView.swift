@@ -13,6 +13,8 @@ struct EventDetailView: View {
     let dozyEvent: DozyEvent?
     let onEdit: ((DozyEvent) -> Void)?
     let onDelete: ((DozyEvent) -> Void)?
+    let onDeleteThisOnly: ((DozyEvent, Date) -> Void)?
+    let onDeleteFutureEvents: ((DozyEvent, Date) -> Void)?
     let onEditCalendar: ((CalendarEvent) -> Void)?
     let onDeleteCalendar: ((CalendarEvent) -> Void)?
     let onSaveMemos: ((DozyEvent) -> Void)?
@@ -31,6 +33,7 @@ struct EventDetailView: View {
     @State private var displayPriority: Int = 0
     @State private var displayIsPinned: Bool = false
     @State private var displayCategory: WorkCategory = .general
+    @State private var showRecurringEditConfirm = false
 
     var body: some View {
         NavigationStack {
@@ -257,13 +260,25 @@ struct EventDetailView: View {
             .padding(.horizontal)
 
             Button {
-                dismiss()
-                onEdit?(dozyEvent)
+                if dozyEvent.recurrenceRule != "none" {
+                    showRecurringEditConfirm = true
+                } else {
+                    dismiss()
+                    onEdit?(dozyEvent)
+                }
             } label: {
                 Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
+            .confirmationDialog("반복 일정 수정", isPresented: $showRecurringEditConfirm, titleVisibility: .visible) {
+                Button("모든 반복 일정 수정") {
+                    dismiss()
+                    onEdit?(dozyEvent)
+                }
+            } message: {
+                Text("반복 일정의 모든 항목이 수정됩니다.")
+            }
 
             Button(role: .destructive) {
                 showDozyDeleteConfirm = true
@@ -278,12 +293,26 @@ struct EventDetailView: View {
                 isPresented: $showDozyDeleteConfirm,
                 titleVisibility: .visible
             ) {
-                Button("삭제", role: .destructive) {
-                    onDelete?(dozyEvent)
+                if dozyEvent.recurrenceRule != "none" {
+                    Button("이 일정만 삭제", role: .destructive) {
+                        onDeleteThisOnly?(dozyEvent, event.startDate)
+                        dismiss()
+                    }
+                    Button("이후 모든 일정 삭제", role: .destructive) {
+                        onDeleteFutureEvents?(dozyEvent, event.startDate)
+                        dismiss()
+                    }
+                    Button("모든 반복 일정 삭제", role: .destructive) {
+                        onDelete?(dozyEvent)
+                    }
+                } else {
+                    Button("삭제", role: .destructive) {
+                        onDelete?(dozyEvent)
+                    }
                 }
             } message: {
                 Text(dozyEvent.recurrenceRule != "none"
-                     ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
+                     ? "삭제할 범위를 선택해주세요."
                      : "정말로 삭제하시겠습니까?")
             }
         }

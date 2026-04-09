@@ -12,6 +12,7 @@ struct CalendarView: View {
 
     @ObservedObject var viewModel: CalendarViewModel
     @State private var showLegend = false
+    @Environment(\.scenePhase) private var scenePhase
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -129,6 +130,14 @@ struct CalendarView: View {
             } message: {
                 Text(viewModel.deleteErrorMessage ?? "")
             }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase != .active {
+                    showLegend = false
+                    viewModel.showEventDetail = false
+                    viewModel.showEventEdit = false
+                    viewModel.showCalendarEventEdit = false
+                }
+            }
         }
     }
 
@@ -147,6 +156,12 @@ struct CalendarView: View {
                 },
                 onDelete: { dozyEvent in
                     viewModel.requestDelete(event)
+                },
+                onDeleteThisOnly: { dozyEvent, date in
+                    viewModel.deleteThisOccurrence(dozyEvent, date: date)
+                },
+                onDeleteFutureEvents: { dozyEvent, date in
+                    viewModel.deleteFutureOccurrences(dozyEvent, from: date)
                 },
                 onEditCalendar: { viewModel.startEditingCalendarEvent($0) },
                 onDeleteCalendar: { viewModel.deleteCalendarEvent($0) },

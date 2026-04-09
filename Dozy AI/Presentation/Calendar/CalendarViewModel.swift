@@ -234,16 +234,31 @@ final class CalendarViewModel: ObservableObject {
     // 완료 상태 통합 조회
     func isCompleted(for event: CalendarEvent) -> Bool {
         if event.source == .dozy {
-            return dozyEventsByID[event.id]?.isCompleted ?? false
+            let dozy = dozyEventsByID[event.id]
+            // 반복 일정은 날짜별 완료 체크 (EventCompletion 사용)
+            if let dozy, dozy.recurrenceRule != "none" {
+                return completionsByID[event.id] ?? false
+            }
+            return dozy?.isCompleted ?? false
         }
         return completionsByID[event.id] ?? false
     }
-    
+
     // 완료 토글 (source 분기)
     func toggleCompletion(for event: CalendarEvent) {
         if event.source == .dozy {
             guard let dozyEvent = dozyEventsByID[event.id] else { return }
-            toggleCompletion(for: dozyEvent)
+            // 반복 일정은 날짜별 독립 완료 (EventCompletion 사용)
+            if dozyEvent.recurrenceRule != "none" {
+                toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
+                    .receive(on: DispatchQueue.main)
+                    .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
+                        self?.completionsByID[event.id] = newValue
+                    })
+                    .store(in: &cancellables)
+            } else {
+                toggleCompletion(for: dozyEvent)
+            }
         } else {
             toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
                 .receive(on: DispatchQueue.main)
@@ -613,7 +628,29 @@ final class CalendarViewModel: ObservableObject {
 
         // 주간 레이아웃 계산
         var newWeekLayouts: [Date: [CalendarEventLayout]] = [:]
-        
+
+        // 반복 일정은 연속 날짜 그룹별로 분리 (예: 매주 월요일 → 각 월요일이 독립 스팬)
+        var segmentedEvents: [(CalendarEvent, Set<Date>)] = []
+        for (_, (event, dates)) in eventDatesMap {
+            let sorted = dates.sorted()
+            var currentGroup: [Date] = []
+            for date in sorted {
+                if let last = currentGroup.last,
+                   let next = cal.date(byAdding: .day, value: 1, to: last),
+                   cal.startOfDay(for: next) == cal.startOfDay(for: date) {
+                    currentGroup.append(date)
+                } else {
+                    if !currentGroup.isEmpty {
+                        segmentedEvents.append((event, Set(currentGroup)))
+                    }
+                    currentGroup = [date]
+                }
+            }
+            if !currentGroup.isEmpty {
+                segmentedEvents.append((event, Set(currentGroup)))
+            }
+        }
+
         for (weekIndex, week) in weeksInMonth.enumerated() {
             let weekSunday = weekStart(for: weekIndex)
             let weekSaturday = cal.date(byAdding: .day, value: 6, to: weekSunday)!
@@ -630,13 +667,13 @@ final class CalendarViewModel: ObservableObject {
             }
             guard !weekDateSet.isEmpty else { continue }
 
-            // 이 주에 걸치는 이벤트 수집 (isActualStart/End를 날짜 비교로 판단)
+            // 이 주에 걸치는 이벤트 수집 (세그먼트 단위로 isActualStart/End 판단)
             var weekEvents: [(CalendarEvent, Int, Int, Bool, Bool)] = []
-            for (_, (event, dates)) in eventDatesMap {
-                let inWeek = dates.filter { weekDateSet.contains($0) }.sorted()
+            for (event, segmentDates) in segmentedEvents {
+                let inWeek = segmentDates.filter { weekDateSet.contains($0) }.sorted()
                 guard !inWeek.isEmpty else { continue }
 
-                let allDates = (eventDatesMap[event.id]?.1 ?? []).sorted()
+                let allDates = segmentDates.sorted()
                 let isStart = allDates.first.map { cal.startOfDay(for: $0) >= wsKey } ?? true
                 let isEnd = allDates.last.map { cal.startOfDay(for: $0) <= cal.startOfDay(for: weekSaturday) } ?? true
 
@@ -740,6 +777,39 @@ final class CalendarViewModel: ObservableObject {
     func deleteEvent(_ event: DozyEvent) {
         cancelNotificationUseCase.execute(identifier: event.id)
         deleteEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                guard let self else { return }
+                self.showEventDetail = false
+                self.showDeleteSuccess = true
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }).store(in: &cancellables)
+    }
+
+    /// 이 일정만 삭제 — 해당 인스턴스의 시작일을 제외 목록에 추가
+    func deleteThisOccurrence(_ event: DozyEvent, date: Date) {
+        let occStart = event.occurrenceStart(for: date) ?? Calendar.current.startOfDay(for: date)
+        event.excludedDates.append(occStart)
+        event.updatedAt = Date()
+        updateEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                guard let self else { return }
+                self.showEventDetail = false
+                self.showDeleteSuccess = true
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth()
+            }).store(in: &cancellables)
+    }
+
+    /// 이후 모든 일정 삭제 — recurrenceEndDate를 해당 날짜 전날로 설정
+    func deleteFutureOccurrences(_ event: DozyEvent, from date: Date) {
+        let cal = Calendar.current
+        let previousDay = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: date))!
+        event.recurrenceEndDate = previousDay
+        event.updatedAt = Date()
+        updateEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
