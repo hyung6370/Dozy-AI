@@ -111,19 +111,35 @@ final class WorkLog {
 enum WorkCategory: String, Codable, CaseIterable {
     case development = "개발"
     case meeting = "회의"
-    case review = "리뷰"
     case planning = "기획"
     case documentation = "문서"
+    case review = "리뷰"
+    case exercise = "운동"
+    case meal = "식사"
+    case medical = "병원"
+    case study = "공부"
+    case travel = "여행"
+    case shopping = "쇼핑"
+    case family = "가족"
+    case hobby = "취미"
     case general = "일반"
-    
+
     var emoji: String {
         switch self {
-        case .development: return "💻"
-        case .meeting: return "🤝"
-        case .review: return "🔍"
-        case .planning: return "📋"
+        case .development:   return "💻"
+        case .meeting:       return "🤝"
+        case .planning:      return "📋"
         case .documentation: return "📄"
-        case .general: return "📌"
+        case .review:        return "🔍"
+        case .exercise:      return "🏋️"
+        case .meal:          return "🍽️"
+        case .medical:       return "🏥"
+        case .study:         return "📚"
+        case .travel:        return "✈️"
+        case .shopping:      return "🛍️"
+        case .family:        return "👨‍👩‍👧"
+        case .hobby:         return "🎮"
+        case .general:       return "📌"
         }
     }
 }

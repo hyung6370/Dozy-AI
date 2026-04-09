@@ -144,7 +144,7 @@ final class DailySummaryViewModel: ObservableObject {
         var categoryMap: [WorkCategory: (items: [String], minutes: Int)] = [:]
 
         for event in events {
-            let cat = detectSingleCategory(from: event.title)
+            let cat = WorkCategory(rawValue: event.category) ?? detectSingleCategory(from: event.title)
             var entry = categoryMap[cat] ?? (items: [], minutes: 0)
             entry.items.append(event.title)
             entry.minutes += event.isAllDay ? 0 : event.durationMinutes

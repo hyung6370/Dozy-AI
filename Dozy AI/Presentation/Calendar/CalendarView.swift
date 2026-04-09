@@ -153,8 +153,8 @@ struct CalendarView: View {
                 onSaveMemos: { dozyEvent in
                     viewModel.saveMemos(for: dozyEvent)
                 },
-                onUpdateDisplaySettings: { event, priority, isPinned in
-                    viewModel.updateDisplaySettings(for: event, priority: priority, isPinned: isPinned)
+                onUpdateDisplaySettings: { event, priority, isPinned, category in
+                    viewModel.updateDisplaySettings(for: event, priority: priority, isPinned: isPinned, category: category)
                 }
             )
         }

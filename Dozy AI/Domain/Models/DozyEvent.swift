@@ -27,7 +27,8 @@ final class DozyEvent {
     var memos: [String] = []
     var priority: Int = 0
     var isPinned: Bool = false
-    
+    var category: String = "일반"
+
     init(
         id: String = UUID().uuidString,
         title: String,
@@ -41,7 +42,8 @@ final class DozyEvent {
         recurrenceEndDate: Date? = nil,
         notificationMinutesBefore: Int = -1,
         priority: Int = 0,
-        isPinned: Bool = false
+        isPinned: Bool = false,
+        category: String = "일반"
     ) {
         self.id = id
         self.title = title
@@ -58,6 +60,7 @@ final class DozyEvent {
         self.notificationMinutesBefore = notificationMinutesBefore
         self.priority = priority
         self.isPinned = isPinned
+        self.category = category
     }
     
     // MARK: - 반복 헬퍼
@@ -110,7 +113,8 @@ final class DozyEvent {
             calendarColorHex: colorHex,
             source: .dozy,
             priority: priority,
-            isPinned: isPinned
+            isPinned: isPinned,
+            category: category
         )
     }
 
@@ -128,7 +132,8 @@ final class DozyEvent {
             calendarColorHex: colorHex,
             source: .dozy,
             priority: priority,
-            isPinned: isPinned
+            isPinned: isPinned,
+            category: category
         )
     }
 }

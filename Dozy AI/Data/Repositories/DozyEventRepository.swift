@@ -109,6 +109,9 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             notificationMinutesBefore: event.notificationMinutesBefore,
             memos: event.memos,
             isCompleted: event.isCompleted,
+            priority: event.priority,
+            isPinned: event.isPinned,
+            category: event.category,
             createdAt: event.createdAt,
             updatedAt: event.updatedAt
         )
@@ -155,6 +158,9 @@ private struct DozyEventRow: Codable {
     let notificationMinutesBefore: Int
     let memos: [String]
     let isCompleted: Bool
+    let priority: Int
+    let isPinned: Bool
+    let category: String
     let createdAt: Date
     let updatedAt: Date
 
@@ -172,6 +178,9 @@ private struct DozyEventRow: Codable {
         case notificationMinutesBefore = "notification_minutes_before"
         case memos
         case isCompleted = "is_completed"
+        case priority
+        case isPinned = "is_pinned"
+        case category
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }

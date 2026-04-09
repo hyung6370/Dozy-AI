@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftData
+import OSLog
 
 @MainActor
 final class AuthViewModel: ObservableObject {
@@ -82,11 +83,19 @@ final class AuthViewModel: ObservableObject {
     }
 
     private func syncAfterLogin(userID: String) {
+        Logger.auth.info("🔄 syncAfterLogin 시작 userID=\(userID)")
         syncService.syncAll(userID: userID)
             .receive(on: DispatchQueue.main)
             .sink(
-                receiveCompletion: { _ in },
-                receiveValue: { }
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Logger.auth.error("❌ syncAll 실패: \(error.localizedDescription)")
+                    }
+                },
+                receiveValue: {
+                    Logger.auth.info("✅ syncAll 완료 → dozyDataSyncCompleted 전송")
+                    NotificationCenter.default.post(name: .dozyDataSyncCompleted, object: nil)
+                }
             )
             .store(in: &cancellables)
     }

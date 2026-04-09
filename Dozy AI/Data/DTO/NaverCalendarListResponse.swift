@@ -60,7 +60,8 @@ struct NaverEventItem: Decodable {
             calendarColorHex: colorHex,
             source: .naver,
             priority: 0,
-            isPinned: false
+            isPinned: false,
+            category: "일반"
         )
     }
 }

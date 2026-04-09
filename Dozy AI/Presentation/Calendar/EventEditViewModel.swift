@@ -23,6 +23,7 @@ final class EventEditViewModel: ObservableObject {
     @Published var selectedColor: Color
     @Published var priority: Int
     @Published var isPinned: Bool
+    @Published var category: WorkCategory
     
     let isEditing: Bool
     private let eventToEdit: DozyEvent?
@@ -46,6 +47,7 @@ final class EventEditViewModel: ObservableObject {
             selectedColor = Color(hex: e.colorHex) ?? .blue
             priority = e.priority
             isPinned = e.isPinned
+            category = WorkCategory(rawValue: e.category) ?? .general
         } else {
             let calendar = Calendar.current
             title = ""
@@ -60,6 +62,7 @@ final class EventEditViewModel: ObservableObject {
             selectedColor = .blue
             priority = 0
             isPinned = false
+            category = .general
         }
     }
     
@@ -82,6 +85,7 @@ final class EventEditViewModel: ObservableObject {
             event.colorHex = colorHex
             event.priority = priority
             event.isPinned = isPinned
+            event.category = category.rawValue
             onSave(event)
         } else {
             onSave(DozyEvent(
@@ -96,7 +100,8 @@ final class EventEditViewModel: ObservableObject {
                 recurrenceEndDate: recurrenceRule == "none" ? nil : recurrenceEndDate,
                 notificationMinutesBefore: notificationMinutesBefore,
                 priority: priority,
-                isPinned: isPinned
+                isPinned: isPinned,
+                category: category.rawValue
             ))
         }
     }

@@ -38,6 +38,15 @@ struct EventEditView: View {
                 Section("색상") {
                     ColorPicker("이벤트 색상", selection: $viewModel.selectedColor)
                 }
+
+                Section("카테고리") {
+                    Picker("카테고리", selection: $viewModel.category) {
+                        ForEach(WorkCategory.allCases, id: \.self) { cat in
+                            Text("\(cat.emoji) \(cat.rawValue)").tag(cat)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
                 
                 Section("추가 정보") {
                     TextField("장소 (선택)", text: $viewModel.location)

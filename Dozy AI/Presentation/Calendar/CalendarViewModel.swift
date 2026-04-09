@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import OSLog
 
 enum CalendarViewMode: CaseIterable {
     case month, week, day
@@ -140,8 +141,16 @@ final class CalendarViewModel: ObservableObject {
             displaySettingsRepo: container.eventDisplaySettingsRepository
         )
         self.calendarService = container.calendarService
+
+        NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Logger.calendar.info("🔔 dozyDataSyncCompleted 수신 → loadInitialData 재실행")
+                self?.loadInitialData()
+            }
+            .store(in: &cancellables)
     }
-    
+
     // MARK: - Computed
     
     var currentMonthString: String {
@@ -197,7 +206,10 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func showDetail(for event: CalendarEvent) {
-        detailEvent = event
+        // 항상 displaySettings를 적용 (allEventsInMonth 등 raw 이벤트에서 올 수 있음)
+        let applied = event.applying(displaySettingsByID[event.id])
+        Logger.calendar.debug("📋 showDetail: id=\(event.id.prefix(12)) category=\(applied.category) source=\(String(describing: event.source))")
+        detailEvent = applied
         showEventDetail = true
     }
 
@@ -419,12 +431,20 @@ final class CalendarViewModel: ObservableObject {
                 }
 
                 // Apple/Google 이벤트에 display settings 오버라이드 적용 후 정렬
+                Logger.calendar.debug("🔄 fetchEventsForDate → fetchAll(for: \(nonDozyIDs.count)건)")
                 self.displaySettingsRepo.fetchAll(for: nonDozyIDs)
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self] settings in
                         guard let self else { return }
+                        Logger.calendar.debug("🔄 fetchAll 결과: \(settings.count)건")
+                        for (id, s) in settings {
+                            Logger.calendar.debug("   ↳ id=\(id.prefix(12)) category=\(s.category)")
+                        }
                         self.displaySettingsByID.merge(settings) { _, new in new }
                         let applied = events.map { $0.applying(self.displaySettingsByID[$0.id]) }
+                        for e in applied where e.source == .google {
+                            Logger.calendar.debug("🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
+                        }
                         withAnimation(.easeInOut(duration: 0.25)) {
                             self.eventsForSelectedDate = applied.sorted { a, b in
                                 if a.isPinned != b.isPinned { return a.isPinned }
@@ -446,11 +466,12 @@ final class CalendarViewModel: ObservableObject {
 
     // MARK: - Display Settings
 
-    func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool) {
+    func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String? = nil) {
         if event.source == .dozy {
             guard let dozy = dozyEventsByID[event.id] else { return }
             dozy.priority = priority
             dozy.isPinned = isPinned
+            if let category { dozy.category = category }
             updateEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
@@ -459,9 +480,54 @@ final class CalendarViewModel: ObservableObject {
                 })
                 .store(in: &cancellables)
         } else {
-            displaySettingsRepo.save(eventID: event.id, priority: priority, isPinned: isPinned)
-            fetchEventsForDate(selectedDate)
-            fetchEventsForMonth()
+            let finalCategory = category ?? event.category
+            Logger.calendar.debug("⚙️ updateDisplaySettings(non-dozy): id=\(event.id.prefix(12)) finalCategory=\(finalCategory) priority=\(priority) isPinned=\(isPinned)")
+
+            // 1) eventsForSelectedDate 즉시 갱신 (SwiftData @Model 우회 — 직접 CalendarEvent 생성)
+            if let idx = eventsForSelectedDate.firstIndex(where: { $0.id == event.id }) {
+                let old = eventsForSelectedDate[idx]
+                eventsForSelectedDate[idx] = CalendarEvent(
+                    id: old.id, calendarId: old.calendarId, title: old.title,
+                    startDate: old.startDate, endDate: old.endDate,
+                    location: old.location, notes: old.notes, isAllDay: old.isAllDay,
+                    calendarName: old.calendarName, calendarColorHex: old.calendarColorHex,
+                    source: old.source,
+                    priority: priority, isPinned: isPinned, category: finalCategory
+                )
+                Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
+            } else {
+                Logger.calendar.warning("⚠️ eventsForSelectedDate에서 event.id=\(event.id.prefix(12))를 찾지 못함")
+            }
+
+            // 2) 기존 displaySettings가 있으면 인메모리도 갱신 (이후 fetchEventsForDate 시 applying 정합성)
+            if let settings = displaySettingsByID[event.id] {
+                settings.priority = priority
+                settings.isPinned = isPinned
+                settings.category = finalCategory
+                Logger.calendar.debug("⚙️ displaySettingsByID 갱신 완료")
+            } else {
+                Logger.calendar.debug("⚙️ displaySettingsByID에 기존 항목 없음 (첫 저장)")
+            }
+
+            // 3) DB 저장 → 저장 후 fetch해서 displaySettingsByID 동기화
+            let eventID = event.id
+            displaySettingsRepo.save(
+                eventID: eventID,
+                priority: priority,
+                isPinned: isPinned,
+                category: finalCategory
+            )
+            .flatMap { [displaySettingsRepo] _ -> AnyPublisher<[String: EventDisplaySettings], Never> in
+                Logger.calendar.debug("⚙️ DB save 완료 → fetchAll 시작")
+                return displaySettingsRepo.fetchAll(for: [eventID])
+            }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] settings in
+                guard let self else { return }
+                self.displaySettingsByID.merge(settings) { _, new in new }
+                Logger.calendar.debug("⚙️ displaySettingsByID 동기화 완료: \(settings[eventID]?.category ?? "nil")")
+            }
+            .store(in: &cancellables)
         }
     }
     

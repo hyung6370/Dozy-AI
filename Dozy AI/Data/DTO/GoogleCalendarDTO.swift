@@ -67,7 +67,8 @@ struct GoogleEventItem: Decodable {
             calendarColorHex: colorHex,
             source: .google,
             priority: 0,
-            isPinned: false
+            isPinned: false,
+            category: "일반"
         )
     }
 }
