@@ -62,31 +62,8 @@ final class DailySummaryViewModel: ObservableObject {
 
     var scoreBreakdown: [(label: String, value: Double, maxValue: Double)] {
         guard summary != nil else { return [] }
-
-        // 1) 할 일 완료율 (50%)
-        let totalTasks = completedTasks.count + pendingTasks.count
-        let taskRate = totalTasks > 0
-            ? Double(completedTasks.count) / Double(totalTasks)
-            : 0.5
-
-        // 2) 일정 완료 체크율 (30%)
-        let eventCheckRate = events.isEmpty
-            ? 0.5
-            : Double(completedEventCount) / Double(events.count)
-
-        // 3) 우선순위 달성률 (20%)
-        let highPriorityCompleted = completedTasks.filter { $0.priority > 0 }.count
-        let highPriorityPending   = pendingTasks.filter { $0.priority > 0 }.count
-        let totalHighPriority     = highPriorityCompleted + highPriorityPending
-        let priorityRate = totalHighPriority > 0
-            ? Double(highPriorityCompleted) / Double(totalHighPriority)
-            : 0.5
-
-        return [
-            ("할 일 완료율",   taskRate * 50,     50),
-            ("일정 완료 체크", eventCheckRate * 30, 30),
-            ("우선순위 달성",  priorityRate * 20,  20)
-        ]
+        let total = events.isEmpty ? 2.0 : Double(events.count)
+        return [("일정 완료율", Double(completedEventCount), total)]
     }
 
     var peakHourLabel: String {
@@ -128,7 +105,8 @@ final class DailySummaryViewModel: ObservableObject {
             events: events,
             completedTasks: completedTasks,
             pendingTasks: pendingTasks,
-            memos: memos
+            memos: memos,
+            completedEventCount: completedEventCount
         )
         .receive(on: DispatchQueue.main)
         .sink(
@@ -203,11 +181,16 @@ final class DailySummaryViewModel: ObservableObject {
 
     func buildRecommendationsData() {
         var actions: [RecommendedAction] = []
+        var seenTitles = Set<String>()
 
         if let aiActions = summary?.nextActions {
             for action in aiActions {
+                let cleanTitle = action.replacingOccurrences(of: "^[🔴⏰📋📌]\\s*", with: "", options: .regularExpression)
+                let key = cleanTitle.lowercased()
+                if seenTitles.contains(key) { continue }
+                seenTitles.insert(key)
                 actions.append(RecommendedAction(
-                    title: action.replacingOccurrences(of: "^[🔴⏰📋📌]\\s*", with: "", options: .regularExpression),
+                    title: cleanTitle,
                     reason: "AI 추천",
                     priority: action.contains("🔴") ? .critical
                         : action.contains("⏰") ? .high
@@ -221,7 +204,10 @@ final class DailySummaryViewModel: ObservableObject {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!.endOfDay
 
         for task in pendingTasks {
-            let isDuplicate = actions.contains { $0.title.contains(task.title) }
+            let taskKey = task.title.lowercased()
+            let isDuplicate = actions.contains {
+                $0.title.lowercased().contains(taskKey) || taskKey.contains($0.title.lowercased())
+            }
             if isDuplicate { continue }
 
             let isOverdue = task.dueDate.map { $0 < Date() } ?? false

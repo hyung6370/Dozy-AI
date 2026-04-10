@@ -81,6 +81,7 @@ enum AIResponseParser {
     private static func extractListSection(from text: String, tag: String) -> [String] {
         guard let section = extractSection(from: text, tag: tag) else { return [] }
         
+        var seen = Set<String>()
         return section
             .components(separatedBy: .newlines)
             .map { line in
@@ -89,6 +90,7 @@ enum AIResponseParser {
                     .replacingOccurrences(of: "^\\d+\\.\\s*", with: "", options: .regularExpression)
             }
             .filter { !$0.isEmpty }
+            .filter { seen.insert($0.lowercased()).inserted }
     }
     
     // MARK: - 카테고리 정규화
@@ -140,9 +142,9 @@ enum AIResponseParser {
         events: [CalendarEvent],
         completedTasks: [TaskItem]
     ) -> Double {
-        let eventScore = min(Double(events.count) / 5.0, 1.0) * 0.4
-        let taskScore = min(Double(completedTasks.count) / 8.0, 1.0) * 0.6
-        return eventScore + taskScore
+        let total = completedTasks.count
+        guard total > 0 else { return 0.5 }
+        return min(Double(total) / 8.0, 1.0)
     }
     
     private static func generateFallbackHighlights(

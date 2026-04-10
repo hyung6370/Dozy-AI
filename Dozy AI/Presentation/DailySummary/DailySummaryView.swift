@@ -14,6 +14,7 @@ struct DailySummaryView: View {
 
     @StateObject private var viewModel: DailySummaryViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedAction: RecommendedAction? = nil
 
     init(
         generateSummaryUseCase: GenerateDailySummaryUseCase,
@@ -391,6 +392,17 @@ private extension DailySummaryView {
 
     var recommendationsTab: some View {
         VStack(spacing: 16) {
+            HStack(spacing: 6) {
+                Image(systemName: "bell.badge")
+                    .font(.caption)
+                    .foregroundStyle(.blue)
+                Text("카드를 탭하면 상세 내용, + 버튼으로 미리알림 추가")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal, 4)
+
             HStack(spacing: 16) {
                 VStack {
                     Text("\(viewModel.recommendedActions.filter { $0.priority == .critical }.count)")
@@ -415,6 +427,11 @@ private extension DailySummaryView {
 
             ForEach(viewModel.recommendedActions) { action in
                 recommendationRow(action)
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedAction = action }
+            }
+            .sheet(item: $selectedAction) { action in
+                recommendationDetailSheet(action)
             }
 
             if viewModel.recommendedActions.isEmpty {
@@ -471,6 +488,123 @@ private extension DailySummaryView {
         case .high:     return .orange
         case .normal:   return .blue
         case .low:      return .gray
+        }
+    }
+
+    func recommendationDetailSheet(_ action: RecommendedAction) -> some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+
+                    // 우선순위 배지 + 제목
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 8) {
+                            Text(priorityLabel(action.priority))
+                                .font(.caption).fontWeight(.semibold)
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .background(priorityColor(action.priority).opacity(0.12))
+                                .foregroundStyle(priorityColor(action.priority))
+                                .clipShape(Capsule())
+
+                            if action.isFromAI {
+                                Text("AI 추천")
+                                    .font(.caption).fontWeight(.semibold)
+                                    .padding(.horizontal, 10).padding(.vertical, 4)
+                                    .background(Color.purple.opacity(0.12))
+                                    .foregroundStyle(.purple)
+                                    .clipShape(Capsule())
+                            }
+                        }
+
+                        Text(action.title)
+                            .font(.title3).fontWeight(.semibold)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(priorityColor(action.priority).opacity(0.05), in: RoundedRectangle(cornerRadius: 14))
+
+                    // 추천 이유
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("추천 이유", systemImage: "info.circle")
+                            .font(.subheadline).fontWeight(.semibold)
+                        Text(action.reason)
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+
+                    // 원본 태스크 정보 (있을 경우)
+                    if let task = action.originalTask {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Label("태스크 정보", systemImage: "checklist")
+                                .font(.subheadline).fontWeight(.semibold)
+
+                            if !task.listName.isEmpty {
+                                HStack {
+                                    Text("목록").font(.caption).foregroundStyle(.secondary).frame(width: 60, alignment: .leading)
+                                    Text(task.listName).font(.subheadline)
+                                }
+                            }
+                            if let due = task.dueDate {
+                                HStack {
+                                    Text("마감일").font(.caption).foregroundStyle(.secondary).frame(width: 60, alignment: .leading)
+                                    Text(due.formattedKorean)
+                                        .font(.subheadline)
+                                        .foregroundStyle(due < Date() ? .red : .primary)
+                                }
+                            }
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                    }
+
+                    // 미리알림 추가 버튼
+                    Button {
+                        viewModel.addToReminder(action)
+                    } label: {
+                        HStack {
+                            if viewModel.addedToReminder.contains(action.id) {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("미리알림에 추가됨")
+                            } else {
+                                Image(systemName: "bell.badge")
+                                Text("미리알림에 추가")
+                            }
+                        }
+                        .font(.subheadline).fontWeight(.medium)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            viewModel.addedToReminder.contains(action.id)
+                                ? Color.green.opacity(0.12)
+                                : Color.blue.opacity(0.12),
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
+                        .foregroundStyle(viewModel.addedToReminder.contains(action.id) ? .green : .blue)
+                    }
+                    .disabled(viewModel.addedToReminder.contains(action.id))
+                }
+                .padding()
+            }
+            .navigationTitle("추천 할 일")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("닫기") { selectedAction = nil }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private func priorityLabel(_ priority: RecommendedAction.ActionPriority) -> String {
+        switch priority {
+        case .critical: return "🔴 긴급"
+        case .high:     return "🟠 중요"
+        case .normal:   return "🔵 보통"
+        case .low:      return "⚪ 낮음"
         }
     }
 }

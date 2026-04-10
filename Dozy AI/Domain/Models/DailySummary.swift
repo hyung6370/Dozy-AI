@@ -103,10 +103,15 @@ struct DailySummary: Codable, Equatable {
     /// WorkLog에 결과를 한 번에 반영하는 편의 메서드
     func apply(to log: WorkLog) {
         log.aiSummary = summaryText
-        log.highlights = highlights
-        log.nextActions = nextActions
+        log.highlights = deduplicated(highlights)
+        log.nextActions = deduplicated(nextActions)
         log.category = detectedCategory
         log.productivityScore = productivityScore
         log.updatedAt = Date()
+    }
+
+    private func deduplicated(_ items: [String]) -> [String] {
+        var seen = Set<String>()
+        return items.filter { seen.insert($0.lowercased()).inserted }
     }
 }
