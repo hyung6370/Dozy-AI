@@ -743,13 +743,20 @@ final class CalendarViewModel: ObservableObject {
         let firstWeekdayOffset = cal.component(.weekday, from: monthFirst) - 1
         let monthDisplayStart = cal.date(byAdding: .day, value: -firstWeekdayOffset, to: monthFirst)!
         let monthRange = cal.range(of: .day, in: .month, for: month)!
-        var monthDays: [Date?] = Array(repeating: nil, count: firstWeekdayOffset)
+        // 이전달 날짜도 실제 Date로 채워 인접 달 이벤트가 레이아웃에 포함되게 함
+        var monthDays: [Date] = (0..<firstWeekdayOffset).map {
+            cal.date(byAdding: .day, value: $0 - firstWeekdayOffset, to: monthFirst)!
+        }
         for day in monthRange {
             var comps = cal.dateComponents([.year, .month], from: month)
             comps.day = day
-            monthDays.append(cal.date(from: comps))
+            monthDays.append(cal.date(from: comps)!)
         }
-        while monthDays.count % 7 != 0 { monthDays.append(nil) }
+        var extra = 1
+        while monthDays.count % 7 != 0 {
+            monthDays.append(cal.date(byAdding: .day, value: monthRange.count - 1 + extra, to: monthFirst)!)
+            extra += 1
+        }
         let weeksForMonth = stride(from: 0, to: monthDays.count, by: 7).map { Array(monthDays[$0..<$0+7]) }
 
         var newWeekLayouts: [Date: [CalendarEventLayout]] = [:]
@@ -797,14 +804,11 @@ final class CalendarViewModel: ObservableObject {
 
             var weekDateSet = Set<Date>()
             var colMap: [Date: Int] = [:]
-            for (col, optDate) in week.enumerated() {
-                if let d = optDate {
-                    let key = cal.startOfDay(for: d)
-                    weekDateSet.insert(key)
-                    colMap[key] = col
-                }
+            for (col, date) in week.enumerated() {
+                let key = cal.startOfDay(for: date)
+                weekDateSet.insert(key)
+                colMap[key] = col
             }
-            guard !weekDateSet.isEmpty else { continue }
 
             // 이 주에 걸치는 이벤트 수집 (세그먼트 단위로 isActualStart/End 판단)
             var weekEvents: [(CalendarEvent, Int, Int, Bool, Bool)] = []
