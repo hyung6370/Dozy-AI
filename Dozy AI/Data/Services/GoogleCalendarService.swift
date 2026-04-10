@@ -17,8 +17,11 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         let events: [CalendarEvent]
         let fetchedAt: Date
     }
-    private var cache: [Date: CacheEntry] = [:]
-    private let cacheTTL: TimeInterval = 5 * 60 // 5 minutes
+    private var cache: [Date: CacheEntry] = [:]           // 일별 캐시
+    private var rangeCache: [String: CacheEntry] = [:]    // 범위 캐시
+    private var calendarListCache: (items: [GoogleCalendarItem], fetchedAt: Date)?
+    private let cacheTTL: TimeInterval = 5 * 60           // 5분
+    private let calendarListTTL: TimeInterval = 15 * 60   // 15분
 
     init(signInService: GoogleSignInService) {
         self.signInService = signInService
@@ -27,8 +30,11 @@ final class GoogleCalendarService: CalendarServiceProtocol {
     func invalidateCache(for date: Date? = nil) {
         if let date {
             cache.removeValue(forKey: Calendar.current.startOfDay(for: date))
+            rangeCache.removeAll() // 날짜 범위 캐시도 무효화
         } else {
             cache.removeAll()
+            rangeCache.removeAll()
+            calendarListCache = nil
         }
     }
     
@@ -69,6 +75,10 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         guard signInService.isSignedIn else {
             return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
         }
+        let key = "\(Int(start.timeIntervalSince1970))-\(Int(end.timeIntervalSince1970))"
+        if let entry = rangeCache[key], Date().timeIntervalSince(entry.fetchedAt) < cacheTTL {
+            return Just(entry.events).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        }
         return signInService.getValidAccessToken()
             .flatMap { [weak self] token -> AnyPublisher<[CalendarEvent], DozyError> in
                 guard let self else {
@@ -76,6 +86,9 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 }
                 return self.fetchAllEvents(from: start, to: end, token: token)
             }
+            .handleEvents(receiveOutput: { [weak self] events in
+                self?.rangeCache[key] = CacheEntry(events: events, fetchedAt: Date())
+            })
             .eraseToAnyPublisher()
     }
 
@@ -89,15 +102,149 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 guard !active.isEmpty else {
                     return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }
-                let publishers = active.map { cal in
-                    self.fetchEvents(from: cal, from: start, to: end, token: token)
+                // 단일 캘린더는 직접 조회, 복수 캘린더는 Batch API로 1회 HTTP 요청
+                if active.count == 1 {
+                    return self.fetchEvents(from: active[0], from: start, to: end, token: token)
                 }
-                return Publishers.MergeMany(publishers)
-                    .collect()
-                    .map { $0.flatMap { $0 }.sorted { $0.startDate < $1.startDate } }
+                return self.batchFetchEvents(calendars: active, from: start, to: end, token: token)
+                    .catch { [weak self] _ -> AnyPublisher<[CalendarEvent], DozyError> in
+                        guard let self else {
+                            return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+                        }
+                        let publishers = active.map { cal in
+                            self.fetchEvents(from: cal, from: start, to: end, token: token)
+                        }
+                        return Publishers.MergeMany(publishers)
+                            .collect()
+                            .map { $0.flatMap { $0 }.sorted { $0.startDate < $1.startDate } }
+                            .eraseToAnyPublisher()
+                    }
                     .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
+    }
+
+    // MARK: - Google Batch API (N개 캘린더 이벤트를 1회 HTTP 요청으로 처리)
+
+    private func batchFetchEvents(
+        calendars: [GoogleCalendarItem],
+        from start: Date,
+        to end: Date,
+        token: String
+    ) -> AnyPublisher<[CalendarEvent], DozyError> {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime]
+        let timeMin = iso.string(from: start)
+        let timeMax = iso.string(from: end)
+        let boundary = "batch_dozy_\(UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(12))"
+
+        var body = ""
+        for (index, cal) in calendars.enumerated() {
+            let encodedId = cal.id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? cal.id
+            let qs = [
+                "timeMin=\(timeMin.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")",
+                "timeMax=\(timeMax.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")",
+                "singleEvents=true", "orderBy=startTime", "maxResults=2500"
+            ].joined(separator: "&")
+            body += "--\(boundary)\r\n"
+            body += "Content-Type: application/http\r\n"
+            body += "Content-ID: <cal-\(index)>\r\n\r\n"
+            body += "GET /calendar/v3/calendars/\(encodedId)/events?\(qs) HTTP/1.1\r\n\r\n"
+        }
+        body += "--\(boundary)--"
+
+        guard let url = URL(string: "https://www.googleapis.com/batch/calendar/v3") else {
+            return Fail(error: .googleCalendarFetchFailed).eraseToAnyPublisher()
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.setValue("multipart/mixed; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        req.httpBody = body.data(using: .utf8)
+
+        return URLSession.shared.dataTaskPublisher(for: req)
+            .tryMap { [calendars] data, response -> [CalendarEvent] in
+                guard let http = response as? HTTPURLResponse, http.statusCode == 200,
+                      let ct = http.allHeaderFields["Content-Type"] as? String else {
+                    throw DozyError.googleCalendarFetchFailed
+                }
+                return Self.parseBatchResponse(data: data, contentType: ct, calendars: calendars)
+            }
+            .mapError { ($0 as? DozyError) ?? .googleCalendarFetchFailed }
+            .eraseToAnyPublisher()
+    }
+
+    private static func parseBatchResponse(
+        data: Data,
+        contentType: String,
+        calendars: [GoogleCalendarItem]
+    ) -> [CalendarEvent] {
+        guard let boundaryValue = contentType
+                .components(separatedBy: "boundary=").last?
+                .components(separatedBy: ";").first?
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\" ")) else { return [] }
+        let boundary = "--" + boundaryValue
+        guard let responseStr = String(data: data, encoding: .utf8) else { return [] }
+
+        var allEvents: [CalendarEvent] = []
+        let decoder = JSONDecoder()
+
+        for part in responseStr.components(separatedBy: boundary) {
+            let trimmed = part.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty, trimmed != "--" else { continue }
+
+            // Content-ID: <response-cal-N> → extract index N
+            var calIndex: Int? = nil
+            for line in part.components(separatedBy: "\r\n") {
+                guard line.lowercased().hasPrefix("content-id:") else { continue }
+                let val = line.dropFirst(11).trimmingCharacters(in: .whitespaces)
+                let inner = val.trimmingCharacters(in: CharacterSet(charactersIn: "<>"))
+                    .replacingOccurrences(of: "response-", with: "")
+                    .components(separatedBy: ":").first ?? ""
+                if inner.hasPrefix("cal-"), let idx = Int(inner.dropFirst(4)) {
+                    calIndex = idx
+                }
+                break
+            }
+
+            // HTTP 상태 확인 (두 번째 줄 = HTTP 응답 상태)
+            var isOK = false
+            let partLines = part.components(separatedBy: "\r\n")
+            for line in partLines {
+                if line.hasPrefix("HTTP/") {
+                    isOK = line.contains(" 200 ") || line.contains(" 2")
+                    break
+                }
+            }
+            guard isOK else { continue }
+
+            // JSON 본문: 두 번째 \r\n\r\n 이후
+            var count = 0
+            var jsonStart: String.Index? = nil
+            var searchFrom = part.startIndex
+            while let range = part.range(of: "\r\n\r\n", range: searchFrom..<part.endIndex) {
+                count += 1
+                if count == 2 { jsonStart = range.upperBound; break }
+                searchFrom = range.upperBound
+            }
+            guard let js = jsonStart else { continue }
+            let jsonStr = String(part[js...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !jsonStr.isEmpty,
+                  let jsonData = jsonStr.data(using: .utf8),
+                  let resp = try? decoder.decode(GoogleEventsResponse.self, from: jsonData) else { continue }
+
+            let cal = calIndex.flatMap { $0 < calendars.count ? calendars[$0] : nil }
+            let events = (resp.items ?? []).compactMap {
+                $0.toCalendarEvent(
+                    calendarName: cal?.summary ?? "Google Calendar",
+                    colorHex: cal?.backgroundColor ?? "#4285F4",
+                    calendarId: cal?.id ?? ""
+                )
+            }
+            allEvents.append(contentsOf: events)
+        }
+
+        return allEvents.sorted { $0.startDate < $1.startDate }
     }
 
     private func fetchEvents(from calendar: GoogleCalendarItem, from start: Date, to end: Date, token: String) -> AnyPublisher<[CalendarEvent], DozyError> {
@@ -145,32 +292,40 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 guard let self else {
                     return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }
-                
                 let active = calendars.filter { $0.selected != false }
                 guard !active.isEmpty else {
                     return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }
-                
-                let publishers = active.map { cal in
-                    self.fetchEvents(from: cal, for: date, token: token)
+                if active.count == 1 {
+                    return self.fetchEvents(from: active[0], for: date, token: token)
                 }
-                
-                return Publishers.MergeMany(publishers)
-                    .collect()
-                    .map { $0.flatMap { $0 }.sorted { $0.startDate < $1.startDate } }
-                    .eraseToAnyPublisher()
+                return self.batchFetchEvents(
+                    calendars: active, from: date.startOfDay, to: date.startOfNextDay, token: token
+                )
+                .catch { [weak self] _ -> AnyPublisher<[CalendarEvent], DozyError> in
+                    guard let self else {
+                        return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+                    }
+                    return Publishers.MergeMany(active.map { self.fetchEvents(from: $0, for: date, token: token) })
+                        .collect()
+                        .map { $0.flatMap { $0 }.sorted { $0.startDate < $1.startDate } }
+                        .eraseToAnyPublisher()
+                }
+                .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
     }
     
     private func fetchCalendarList(token: String) -> AnyPublisher<[GoogleCalendarItem], DozyError> {
+        if let cached = calendarListCache,
+           Date().timeIntervalSince(cached.fetchedAt) < calendarListTTL {
+            return Just(cached.items).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        }
         guard let url = URL(string: "\(baseURL)/users/me/calendarList") else {
             return Fail(error: .googleCalendarFetchFailed).eraseToAnyPublisher()
         }
-        
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
         return URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { data, response -> [GoogleCalendarItem] in
                 guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
@@ -180,6 +335,9 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 return decoded.items ?? []
             }
             .mapError { ($0 as? DozyError) ?? .googleCalendarFetchFailed }
+            .handleEvents(receiveOutput: { [weak self] items in
+                self?.calendarListCache = (items: items, fetchedAt: Date())
+            })
             .eraseToAnyPublisher()
     }
     

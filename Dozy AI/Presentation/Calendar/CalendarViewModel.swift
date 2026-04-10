@@ -72,6 +72,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var showSuccessAnimation = false
     @Published var displaySettingsByID: [String: EventDisplaySettings] = [:]
     private var allEventsInMonth: [String: CalendarEvent] = [:]
+    private var loadedMonthKeys = Set<Date>()
     
     // MARK: - Dependencies
     private let fetchEventsUseCase: FetchCalendarEventUseCase
@@ -87,6 +88,7 @@ final class CalendarViewModel: ObservableObject {
     private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
+    private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
     private weak var calendarService: CompositeCalendarSerivce?
     private var cancellables = Set<AnyCancellable>()
     private let displaySettingsRepo: EventDisplaySettingsRepository
@@ -105,6 +107,7 @@ final class CalendarViewModel: ObservableObject {
         toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase,
         fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
         fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase,
+        fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase,
         displaySettingsRepo: EventDisplaySettingsRepository
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
@@ -120,6 +123,7 @@ final class CalendarViewModel: ObservableObject {
         self.toggleCalendarEventCompletionUseCase = toggleCalendarEventCompletionUseCase
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
         self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
+        self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
         self.displaySettingsRepo = displaySettingsRepo
     }
 
@@ -138,6 +142,7 @@ final class CalendarViewModel: ObservableObject {
             toggleCalendarEventCompletionUseCase: container.toggleCalendarEventCompletionUseCase,
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
             fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase,
+            fetchCalendarEventsForPeriodUseCase: container.fetchCalendarEventsForPeriodUseCase,
             displaySettingsRepo: container.eventDisplaySettingsRepository
         )
         self.calendarService = container.calendarService
@@ -146,7 +151,16 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 Logger.calendar.info("🔔 dozyDataSyncCompleted 수신 → loadInitialData 재실행")
+                self?.loadedMonthKeys.removeAll()
                 self?.loadInitialData()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .googleSignInRestored)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Logger.calendar.info("🔔 googleSignInRestored 수신 → 구글 캘린더 새로고침")
+                self?.refreshData()
             }
             .store(in: &cancellables)
     }
@@ -281,7 +295,7 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.fetchEventsForDate(self?.selectedDate ?? Date())
-                self?.fetchEventsForMonth()
+                self?.fetchEventsForMonth(force: true)
             })
             .store(in: &cancellables)
     }
@@ -319,7 +333,7 @@ final class CalendarViewModel: ObservableObject {
                     // EventKit 동기화 후 재조회
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
                         self?.fetchEventsForDate(self?.selectedDate ?? Date())
-                        self?.fetchEventsForMonth()
+                        self?.fetchEventsForMonth(force: true)
                     }
                 }
             )
@@ -414,6 +428,7 @@ final class CalendarViewModel: ObservableObject {
 
     func refreshData() {
         calendarService?.invalidateGoogleCache()
+        loadedMonthKeys.removeAll()
         loadInitialData()
     }
     
@@ -491,7 +506,7 @@ final class CalendarViewModel: ObservableObject {
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                     self?.fetchEventsForDate(self?.selectedDate ?? Date())
-                    self?.fetchEventsForMonth()
+                    self?.fetchEventsForMonth(force: true)
                 })
                 .store(in: &cancellables)
         } else {
@@ -546,32 +561,29 @@ final class CalendarViewModel: ObservableObject {
         }
     }
     
-    private func fetchEventsForMonth() {
+    private func fetchEventsForMonth(_ month: Date? = nil, force: Bool = false) {
         let cal = Calendar.current
-        guard let interval = cal.dateInterval(of: .month, for: currentMonth) else { return }
-        
+        let targetMonth = month ?? currentMonth
+        guard let interval = cal.dateInterval(of: .month, for: targetMonth) else { return }
+
+        let monthKey = cal.date(from: cal.dateComponents([.year, .month], from: targetMonth))!
+        guard force || !loadedMonthKeys.contains(monthKey) else { return }
+
         // 표시 범위 확장 (첫째 주/마지막 주 이전달, 다음달 날짜 포함)
         let firstWeekday = cal.component(.weekday, from: interval.start) - 1
         let displayStart = cal.date(byAdding: .day, value: -firstWeekday, to: interval.start)!
-        
+
         let lastDay = cal.date(byAdding: .day, value: -1, to: interval.end)!
         let lastWeekday = cal.component(.weekday, from: lastDay) - 1
         let displayEnd = cal.date(byAdding: .day, value: 7 - lastWeekday, to: lastDay)!
-        
-        var date = displayStart
-        var publishers: [AnyPublisher<(Date, [CalendarEvent]), DozyError>] = []
-        while date < displayEnd {
-            let d = date
-            publishers.append(fetchEventsUseCase.execute(for: d).map { (d, $0) }.eraseToAnyPublisher())
-            date = cal.date(byAdding: .day, value: 1, to: date)!
-        }
-        
-        Publishers.MergeMany(publishers)
-            .collect()
+
+        fetchCalendarEventsForPeriodUseCase.execute(from: displayStart, to: displayEnd)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] results in
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] events in
                 guard let self else { return }
-                self.buildLayouts(from: results)
+                let results = self.groupEventsByDate(events, from: displayStart, to: displayEnd)
+                self.buildLayouts(from: results, forMonth: targetMonth)
+                self.loadedMonthKeys.insert(monthKey)
             })
             .store(in: &cancellables)
 
@@ -584,9 +596,37 @@ final class CalendarViewModel: ObservableObject {
                 self.dozyEventsByID.merge(newEntries) { _, new in new }
             })
             .store(in: &cancellables)
+
+        // 인접 달 미리 로드 (현재 달 탐색 시에만)
+        if month == nil {
+            prefetchAdjacentMonths()
+        }
+    }
+
+    private func prefetchAdjacentMonths() {
+        let cal = Calendar.current
+        for offset in [-1, 1] {
+            if let adjMonth = cal.date(byAdding: .month, value: offset, to: currentMonth) {
+                fetchEventsForMonth(adjMonth)
+            }
+        }
     }
     
-    private func buildLayouts(from results: [(Date, [CalendarEvent])]) {
+    private func groupEventsByDate(_ events: [CalendarEvent], from start: Date, to end: Date) -> [(Date, [CalendarEvent])] {
+        let cal = Calendar.current
+        var result: [(Date, [CalendarEvent])] = []
+        var date = cal.startOfDay(for: start)
+        let endDay = cal.startOfDay(for: end)
+        while date < endDay {
+            let nextDate = cal.date(byAdding: .day, value: 1, to: date)!
+            let dayEvents = events.filter { $0.startDate < nextDate && $0.endDate > date }
+            result.append((date, dayEvents))
+            date = nextDate
+        }
+        return result
+    }
+
+    private func buildLayouts(from results: [(Date, [CalendarEvent])], forMonth month: Date) {
         let cal = Calendar.current
 
         // 이벤트별 날짜 집합 구성
@@ -603,7 +643,7 @@ final class CalendarViewModel: ObservableObject {
         }
 
         // 월 전체 이벤트 캐시 갱신 (pill 탭 → 상세 조회용)
-        allEventsInMonth = eventDatesMap.mapValues { $0.0 }
+        allEventsInMonth.merge(eventDatesMap.mapValues { $0.0 }) { _, new in new }
         
         var barsDict: [Date: [EventBarInfo]] = [:]
         for (id, (event, dates)) in eventDatesMap {
@@ -623,10 +663,23 @@ final class CalendarViewModel: ObservableObject {
             barsDict[key] = Array((barsDict[key] ?? []).prefix(3))
         }
         withAnimation(.easeInOut(duration: 0.3)) {
-            eventBarsPerDate = barsDict
+            eventBarsPerDate.merge(barsDict) { _, new in new }
         }
 
-        // 주간 레이아웃 계산
+        // 주간 레이아웃 계산 (forMonth 기준 주 배열 로컬 계산)
+        let monthFirst = cal.date(from: cal.dateComponents([.year, .month], from: month))!
+        let firstWeekdayOffset = cal.component(.weekday, from: monthFirst) - 1
+        let monthDisplayStart = cal.date(byAdding: .day, value: -firstWeekdayOffset, to: monthFirst)!
+        let monthRange = cal.range(of: .day, in: .month, for: month)!
+        var monthDays: [Date?] = Array(repeating: nil, count: firstWeekdayOffset)
+        for day in monthRange {
+            var comps = cal.dateComponents([.year, .month], from: month)
+            comps.day = day
+            monthDays.append(cal.date(from: comps))
+        }
+        while monthDays.count % 7 != 0 { monthDays.append(nil) }
+        let weeksForMonth = stride(from: 0, to: monthDays.count, by: 7).map { Array(monthDays[$0..<$0+7]) }
+
         var newWeekLayouts: [Date: [CalendarEventLayout]] = [:]
 
         // 반복 일정은 연속 날짜 그룹별로 분리 (예: 매주 월요일 → 각 월요일이 독립 스팬)
@@ -651,8 +704,8 @@ final class CalendarViewModel: ObservableObject {
             }
         }
 
-        for (weekIndex, week) in weeksInMonth.enumerated() {
-            let weekSunday = weekStart(for: weekIndex)
+        for (weekIndex, week) in weeksForMonth.enumerated() {
+            let weekSunday = cal.date(byAdding: .day, value: weekIndex * 7, to: monthDisplayStart)!
             let weekSaturday = cal.date(byAdding: .day, value: 6, to: weekSunday)!
             let wsKey = cal.startOfDay(for: weekSunday)
 
@@ -721,7 +774,7 @@ final class CalendarViewModel: ObservableObject {
             newWeekLayouts[wsKey] = layouts
         }
         withAnimation(.easeInOut(duration: 0.3)) {
-            weekLayouts = newWeekLayouts
+            weekLayouts.merge(newWeekLayouts) { _, new in new }
         }
     }
     
