@@ -81,7 +81,7 @@ extension CalendarEvent {
             source: source,
             priority: settings.priority,
             isPinned: settings.isPinned,
-            category: settings.category == "일반" ? category : settings.category
+            category: settings.category == UserCategory.defaultName ? category : settings.category
         )
     }
 }

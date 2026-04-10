@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct EventEditView: View {
-    
+
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: EventEditViewModel
+    @Query(sort: \UserCategory.order) private var categories: [UserCategory]
+    @State private var showAddCategory = false
     
     init(eventToEdit: DozyEvent?, selectedDate: Date, onSave: @escaping (DozyEvent) -> Void) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
@@ -41,11 +44,17 @@ struct EventEditView: View {
 
                 Section("카테고리") {
                     Picker("카테고리", selection: $viewModel.category) {
-                        ForEach(WorkCategory.allCases, id: \.self) { cat in
-                            Text("\(cat.emoji) \(cat.rawValue)").tag(cat)
+                        ForEach(categories) { cat in
+                            Text("\(cat.emoji) \(cat.name)").tag(cat.name)
                         }
                     }
                     .pickerStyle(.menu)
+                    Button {
+                        showAddCategory = true
+                    } label: {
+                        Label("카테고리 추가", systemImage: "plus")
+                            .font(.subheadline)
+                    }
                 }
                 
                 Section("추가 정보") {
@@ -86,6 +95,9 @@ struct EventEditView: View {
             }
             .navigationTitle(viewModel.isEditing ? "일정 수정" : "새 일정")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showAddCategory) {
+                CategoryEditSheet()
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("취소") { dismiss() }

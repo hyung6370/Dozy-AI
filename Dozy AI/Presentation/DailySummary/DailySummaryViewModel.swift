@@ -73,6 +73,9 @@ final class DailySummaryViewModel: ObservableObject {
         return peak.label
     }
 
+    // MARK: - 사용자 카테고리 (View에서 주입)
+    var userCategories: [UserCategory] = []
+
     // MARK: - Dependencies (UseCases만)
 
     private let generateSummaryUseCase: GenerateDailySummaryUseCase
@@ -131,25 +134,32 @@ final class DailySummaryViewModel: ObservableObject {
     // MARK: - 하이라이트 데이터 구축
 
     func buildHighlightsData() {
-        var categoryMap: [WorkCategory: (items: [String], minutes: Int)] = [:]
+        var categoryMap: [String: (info: CategoryInfo, items: [String], minutes: Int)] = [:]
+
+        func infoFor(_ name: String) -> CategoryInfo {
+            if let cat = userCategories.first(where: { $0.name == name }) {
+                return CategoryInfo(name: cat.name, emoji: cat.emoji, colorHex: cat.colorHex)
+            }
+            return CategoryInfo(name: name, emoji: "📌", colorHex: "#8E8E93")
+        }
 
         for event in events {
-            let cat = WorkCategory(rawValue: event.category) ?? detectSingleCategory(from: event.title)
-            var entry = categoryMap[cat] ?? (items: [], minutes: 0)
+            let name = event.category
+            var entry = categoryMap[name] ?? (info: infoFor(name), items: [], minutes: 0)
             entry.items.append(event.title)
             entry.minutes += event.isAllDay ? 0 : event.durationMinutes
-            categoryMap[cat] = entry
+            categoryMap[name] = entry
         }
 
         for task in completedTasks {
-            let cat = detectSingleCategory(from: task.title)
-            var entry = categoryMap[cat] ?? (items: [], minutes: 0)
+            let name = UserCategory.defaultName
+            var entry = categoryMap[name] ?? (info: infoFor(name), items: [], minutes: 0)
             entry.items.append("✅ \(task.title)")
-            categoryMap[cat] = entry
+            categoryMap[name] = entry
         }
 
-        categorizedHighlights = categoryMap.map { cat, data in
-            CategorizedHighlight(category: cat, items: data.items, totalMinutes: data.minutes)
+        categorizedHighlights = categoryMap.map { _, data in
+            CategorizedHighlight(category: data.info, items: data.items, totalMinutes: data.minutes)
         }
         .sorted { $0.items.count > $1.items.count }
 
@@ -311,7 +321,7 @@ final class DailySummaryViewModel: ObservableObject {
             } else {
                 points.append(DailyTrendPoint(
                     date: date, score: 0, eventCount: 0, taskCount: 0,
-                    category: WorkCategory.general.rawValue
+                    category: UserCategory.defaultName
                 ))
             }
         }
@@ -323,26 +333,22 @@ final class DailySummaryViewModel: ObservableObject {
             ? 0
             : validScores.reduce(0) { $0 + $1.score } / Double(validScores.count)
 
-        var catCounts: [WorkCategory: Int] = [:]
+        var catCounts: [String: Int] = [:]
         for log in logs {
-            let cat = WorkCategory(rawValue: log.category) ?? .general
-            catCounts[cat, default: 0] += 1
+            catCounts[log.category, default: 0] += 1
         }
 
         let total = max(catCounts.values.reduce(0, +), 1)
-        categoryDistribution = catCounts.map { cat, count in
-            CategoryDistribution(category: cat, count: count, percentage: Double(count) / Double(total))
+        categoryDistribution = catCounts.map { name, count in
+            let info: CategoryInfo
+            if let cat = userCategories.first(where: { $0.name == name }) {
+                info = CategoryInfo(name: cat.name, emoji: cat.emoji, colorHex: cat.colorHex)
+            } else {
+                info = CategoryInfo(name: name, emoji: "📌", colorHex: "#8E8E93")
+            }
+            return CategoryDistribution(category: info, count: count, percentage: Double(count) / Double(total))
         }
         .sorted { $0.count > $1.count }
     }
 
-    private func detectSingleCategory(from title: String) -> WorkCategory {
-        let t = title.lowercased()
-        if ["회의", "미팅", "meeting", "standup", "sync"].contains(where: { t.contains($0) }) { return .meeting }
-        if ["리뷰", "review", "검토", "PR"].contains(where: { t.contains($0) }) { return .review }
-        if ["개발", "코딩", "dev", "배포", "버그", "구현"].contains(where: { t.contains($0) }) { return .development }
-        if ["기획", "플래닝", "설계"].contains(where: { t.contains($0) }) { return .planning }
-        if ["문서", "doc", "작성", "정리"].contains(where: { t.contains($0) }) { return .documentation }
-        return .general
-    }
 }

@@ -26,7 +26,8 @@ final class SyncService {
             uploadDozyEvents(userID: userID),
             uploadEventCompletions(userID: userID),
             uploadWorkLogs(userID: userID),
-            uploadEventDisplaySettings(userID: userID)
+            uploadEventDisplaySettings(userID: userID),
+            uploadUserCategories(userID: userID)
         ])
         .collect()
         .flatMap { [weak self] _ -> AnyPublisher<Void, DozyError> in
@@ -35,7 +36,8 @@ final class SyncService {
                 self.downloadDozyEvents(userID: userID),
                 self.downloadEventCompletions(userID: userID),
                 self.downloadWorkLogs(userID: userID),
-                self.downloadEventDisplaySettings(userID: userID)
+                self.downloadEventDisplaySettings(userID: userID),
+                self.downloadUserCategories(userID: userID)
             ])
             .collect()
             .map { _ in }
@@ -174,6 +176,36 @@ final class SyncService {
                     Logger.sync.info("✅ EventDisplaySettings 업로드 완료 (\(rows.count)건)")
                     promise(.success(()))
                 } catch {
+                    promise(.failure(.unknown(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    private func uploadUserCategories(userID: String) -> AnyPublisher<Void, DozyError> {
+        Future { [weak self] promise in
+            guard let self else { return }
+            Task {
+                do {
+                    let cats = try self.modelContext.fetch(FetchDescriptor<UserCategory>())
+                    let rows = cats.map { c in
+                        UserCategoryRow(
+                            id: c.id,
+                            userID: userID,
+                            name: c.name,
+                            emoji: c.emoji,
+                            colorHex: c.colorHex,
+                            order: c.order,
+                            updatedAt: c.updatedAt
+                        )
+                    }
+                    guard !rows.isEmpty else { promise(.success(())); return }
+                    try await supabase.from("user_categories").upsert(rows, onConflict: "id").execute()
+                    Logger.sync.info("✅ UserCategories 업로드 완료 (\(rows.count)건)")
+                    promise(.success(()))
+                } catch {
+                    Logger.sync.error("❌ UserCategories 업로드 실패: \(error.localizedDescription)")
                     promise(.failure(.unknown(underlying: error)))
                 }
             }
@@ -334,6 +366,55 @@ final class SyncService {
         }
         .eraseToAnyPublisher()
     }
+    private func downloadUserCategories(userID: String) -> AnyPublisher<Void, DozyError> {
+        Future { [weak self] promise in
+            guard let self else { return }
+            Task {
+                do {
+                    let rows: [UserCategoryRow] = try await supabase
+                        .from("user_categories")
+                        .select()
+                        .eq("user_id", value: userID)
+                        .execute()
+                        .value
+                    let existing = try self.modelContext.fetch(FetchDescriptor<UserCategory>())
+                    for row in rows {
+                        if let local = existing.first(where: { $0.id == row.id }) {
+                            // 원격이 더 최신이면 덮어쓰기
+                            if row.updatedAt > local.updatedAt {
+                                local.name = row.name
+                                local.emoji = row.emoji
+                                local.colorHex = row.colorHex
+                                local.order = row.order
+                                local.updatedAt = row.updatedAt
+                            }
+                        } else {
+                            // 이름 중복 방지: 같은 이름의 로컬 카테고리가 있으면 원격 데이터로 업데이트
+                            if let duplicate = existing.first(where: { $0.name == row.name }) {
+                                duplicate.id = row.id
+                                duplicate.emoji = row.emoji
+                                duplicate.colorHex = row.colorHex
+                                duplicate.order = row.order
+                                duplicate.updatedAt = row.updatedAt
+                            } else {
+                                let cat = UserCategory(name: row.name, emoji: row.emoji, colorHex: row.colorHex, order: row.order)
+                                cat.id = row.id
+                                cat.updatedAt = row.updatedAt
+                                self.modelContext.insert(cat)
+                            }
+                        }
+                    }
+                    try self.modelContext.save()
+                    Logger.sync.info("⬇️ UserCategories 다운로드 완료 (\(rows.count)건)")
+                    promise(.success(()))
+                } catch {
+                    Logger.sync.error("❌ UserCategories 다운로드 실패: \(error.localizedDescription)")
+                    promise(.failure(.unknown(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
 }
 
 // MARK: - Supabase Row DTOs
@@ -411,6 +492,25 @@ private struct EventCompletionRow: Codable {
         case eventID = "event_id"
         case isCompleted = "is_completed"
         case eventDate = "event_date"
+        case updatedAt = "updated_at"
+    }
+}
+
+private struct UserCategoryRow: Codable {
+    let id: String
+    let userID: String
+    let name: String
+    let emoji: String
+    let colorHex: String
+    let order: Int
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userID = "user_id"
+        case name, emoji
+        case colorHex = "color_hex"
+        case order
         case updatedAt = "updated_at"
     }
 }

@@ -63,6 +63,9 @@
 		DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */; };
 		DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */; };
 		DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DD9F694D2F6AD2CF001952F6 /* Localizable.strings */; };
+		DDA9A5B62F89560300C1572C /* UserCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B52F89560300C1572C /* UserCategory.swift */; };
+		DDA9A5B92F89564000C1572C /* CategoryEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */; };
+		DDA9A5BA2F89564000C1572C /* CategoryManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */; };
 		F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFD2F7FAA01007B8D9F /* Auth */; };
 		F60ADF002F7FAA01007B8D9F /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFF2F7FAA01007B8D9F /* Functions */; };
 		F60ADF022F7FAA01007B8D9F /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF012F7FAA01007B8D9F /* PostgREST */; };
@@ -116,8 +119,6 @@
 		F619D97E2F7A3BF600084C61 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D97D2F7A3BF600084C61 /* MainTabView.swift */; };
 		F619D9812F7A3CD100084C61 /* CalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9802F7A3CD100084C61 /* CalendarViewModel.swift */; };
 		F619D9832F7A422900084C61 /* DayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9822F7A422900084C61 /* DayCell.swift */; };
-		F6CAFE022FA0000000000001 /* MonthYearPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE012FA0000000000001 /* MonthYearPickerView.swift */; };
-		F6CAFE042FA0000000000002 /* CalendarMonthPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */; };
 		F619D9852F7A43DF00084C61 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9842F7A43DF00084C61 /* CalendarView.swift */; };
 		F619D9872F7A4A1400084C61 /* EventEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */; };
 		F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9882F7A4ADD00084C61 /* EventEditView.swift */; };
@@ -165,6 +166,8 @@
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
 		F6BC59972F739B010090DF3A /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59962F739B010090DF3A /* TaskRow.swift */; };
 		F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59982F739B470090DF3A /* RecentLogRow.swift */; };
+		F6CAFE022FA0000000000001 /* MonthYearPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE012FA0000000000001 /* MonthYearPickerView.swift */; };
+		F6CAFE042FA0000000000002 /* CalendarMonthPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -185,7 +188,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FetchCalendarEventsForPeriodUseCase.swift; path = FetchCalendarEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
+		D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		DD44DDD22F72C44100EEE463 /* DozyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyError.swift; sourceTree = "<group>"; };
 		DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogRepositoryProtocol.swift; sourceTree = "<group>"; };
 		DD808E842F694B2100F4956A /* Dozy AI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dozy AI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -244,6 +247,9 @@
 		DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkShortcut.swift; sourceTree = "<group>"; };
 		DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarizeShortcut.swift; sourceTree = "<group>"; };
 		DD9F694D2F6AD2CF001952F6 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		DDA9A5B52F89560300C1572C /* UserCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCategory.swift; sourceTree = "<group>"; };
+		DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditSheet.swift; sourceTree = "<group>"; };
+		DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryManagementView.swift; sourceTree = "<group>"; };
 		F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUser.swift; sourceTree = "<group>"; };
 		F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
@@ -311,8 +317,6 @@
 		F63C68E32F8642C7003464E8 /* EventDisplaySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDisplaySettings.swift; sourceTree = "<group>"; };
 		F63C68E52F86430D003464E8 /* EventDisplaySettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDisplaySettingsRepository.swift; sourceTree = "<group>"; };
 		F63C68E72F864F0B003464E8 /* CalendarLegendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarLegendView.swift; sourceTree = "<group>"; };
-		F6CAFE012FA0000000000001 /* MonthYearPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthYearPickerView.swift; sourceTree = "<group>"; };
-		F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarMonthPageView.swift; sourceTree = "<group>"; };
 		F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleDozyEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650681C2F7CF09200F9C124 /* WeekGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekGridView.swift; sourceTree = "<group>"; };
 		F650681E2F7CF1B400F9C124 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
@@ -338,6 +342,8 @@
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
 		F6BC59962F739B010090DF3A /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
 		F6BC59982F739B470090DF3A /* RecentLogRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentLogRow.swift; sourceTree = "<group>"; };
+		F6CAFE012FA0000000000001 /* MonthYearPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthYearPickerView.swift; sourceTree = "<group>"; };
+		F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarMonthPageView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -518,6 +524,7 @@
 				DD9F68F12F6ACD74001952F6 /* CalendarEvent.swift */,
 				F619D94E2F75122300084C61 /* CalendarSource.swift */,
 				DD9F68F32F6ACD80001952F6 /* DailySummary.swift */,
+				DDA9A5B52F89560300C1572C /* UserCategory.swift */,
 				DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */,
 				F619D96A2F7A344900084C61 /* DozyEvent.swift */,
 				F65068202F7D072E00F9C124 /* CalendarEventEditRequest.swift */,
@@ -745,6 +752,8 @@
 				F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */,
 				F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */,
 				F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */,
+				DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */,
+				DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */,
 				F60ADF132F832AD6007B8D9F /* SettingsView.swift */,
 			);
 			path = Settings;
@@ -975,6 +984,8 @@
 				DD9F68F02F6ACD62001952F6 /* TaskItem.swift in Sources */,
 				F63C68E02F861F5E003464E8 /* BlobBackgroundView.swift in Sources */,
 				F63C687C2F85E569003464E8 /* LottieView.swift in Sources */,
+				DDA9A5B92F89564000C1572C /* CategoryEditSheet.swift in Sources */,
+				DDA9A5BA2F89564000C1572C /* CategoryManagementView.swift in Sources */,
 				F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */,
 				F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */,
 				F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */,
@@ -1017,6 +1028,7 @@
 				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
 				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,
 				DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */,
+				DDA9A5B62F89560300C1572C /* UserCategory.swift in Sources */,
 				F619D9732F7A36C600084C61 /* CreateDozyEventUseCase.swift in Sources */,
 				F65068272F7D07E100F9C124 /* CalendarWriteServiceProtocol.swift in Sources */,
 				F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */,

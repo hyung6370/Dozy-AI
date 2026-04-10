@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RecentLogRow: View {
     let log: WorkLog
+    @Query(sort: \UserCategory.order) private var categories: [UserCategory]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -20,8 +22,9 @@ struct RecentLogRow: View {
                 Spacer()
                 
                 if !log.category.isEmpty {
-                    let cat = WorkCategory(rawValue: log.category) ?? .general
-                    Text("\(cat.emoji) \(cat.rawValue)")
+                    let userCat = categories.first(where: { $0.name == log.category })
+                    let emoji = userCat?.emoji ?? "📌"
+                    Text("\(emoji) \(log.category)")
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)

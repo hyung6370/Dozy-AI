@@ -94,46 +94,19 @@ enum AIResponseParser {
     }
     
     // MARK: - 카테고리 정규화
-    
+
+    /// AI 응답에서 추출한 카테고리를 그대로 반환 (사용자 정의 카테고리 지원)
     private static func normalizeCategory(_ raw: String) -> String? {
-        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        
-        let mapping: [String: WorkCategory] = [
-            "개발": .development, "코딩": .development, "프로그래밍": .development,
-            "회의": .meeting, "미팅": .meeting,
-            "리뷰": .review, "코드리뷰": .review, "검토": .review,
-            "기획": .planning, "플래닝": .planning,
-            "문서": .documentation, "문서화": .documentation, "작성": .documentation,
-            "일반": .general
-        ]
-        
-        for (keyword, category) in mapping {
-            if trimmed.contains(keyword) { return category.rawValue }
-        }
-        return WorkCategory.general.rawValue
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
-    
-    /// 이벤트 제목에서 카테고리 감지
+
+    /// 이벤트의 기존 카테고리 중 가장 빈도 높은 것 반환
     private static func detectCategoryFromEvents(_ events: [CalendarEvent]) -> String {
-        let allTitles = events.map { $0.title.lowercased() }.joined(separator: " ")
-        
-        let keywords: [(WorkCategory, [String])] = [
-            (.meeting, ["회의", "미팅", "meeting", "standup", "sync", "1:1"]),
-            (.review, ["리뷰", "review", "검토", "PR"]),
-            (.development, ["개발", "코딩", "dev", "sprint", "배포", "deploy"]),
-            (.planning, ["기획", "플래닝", "planning", "브레인스토밍"]),
-            (.documentation, ["문서", "doc", "작성", "wiki", "정리"])
-        ]
-        
-        var scores: [WorkCategory: Int] = [:]
-        for (category, words) in keywords {
-            scores[category] = words.reduce(0) { $0 + (allTitles.contains($1) ? 1 : 0) }
-        }
-        
-        if let top = scores.max(by: { $0.value < $1.value }), top.value > 0 {
-            return top.key.rawValue
-        }
-        return WorkCategory.general.rawValue
+        let nonDefault = events.map { $0.category }.filter { $0 != UserCategory.defaultName }
+        guard !nonDefault.isEmpty else { return UserCategory.defaultName }
+        let grouped = Dictionary(grouping: nonDefault) { $0 }
+        return grouped.max(by: { $0.value.count < $1.value.count })?.key ?? UserCategory.defaultName
     }
     
     // MARK: - 폴백 계산

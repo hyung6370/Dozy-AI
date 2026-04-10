@@ -23,6 +23,7 @@ struct SettingsView: View {
             List {
                 accountSection
                 calendarSection
+                categorySection
             }
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
@@ -155,8 +156,22 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - 카테고리 섹션
+
+    private var categorySection: some View {
+        Section {
+            NavigationLink {
+                CategoryManagementView()
+            } label: {
+                Label("카테고리 관리", systemImage: "tag")
+            }
+        } header: {
+            Text("카테고리")
+        }
+    }
+
     // MARK: - 캘린더 섹션
-    
+
     private var calendarSection: some View {
         Section {
             NavigationLink {

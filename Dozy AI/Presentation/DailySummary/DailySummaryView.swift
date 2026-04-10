@@ -9,12 +9,14 @@
 //  DependencyContainer 전체를 참조하지 않습니다.
 
 import SwiftUI
+import SwiftData
 
 struct DailySummaryView: View {
 
     @StateObject private var viewModel: DailySummaryViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var selectedAction: RecommendedAction? = nil
+    @Query(sort: \UserCategory.order) private var userCategories: [UserCategory]
 
     init(
         generateSummaryUseCase: GenerateDailySummaryUseCase,
@@ -80,9 +82,18 @@ struct DailySummaryView: View {
                 }
             }
             .onAppear {
+                viewModel.userCategories = userCategories
                 if viewModel.summary == nil {
                     viewModel.generateSummary()
+                } else {
+                    viewModel.buildHighlightsData()
+                    viewModel.buildTrendsData()
                 }
+            }
+            .onChange(of: userCategories) { _, new in
+                viewModel.userCategories = new
+                viewModel.buildHighlightsData()
+                viewModel.buildTrendsData()
             }
         }
     }
@@ -245,8 +256,9 @@ private extension DailySummaryView {
         HStack(spacing: 10) {
             MetaChip(icon: "calendar", text: "일정 \(summary.totalEventMinutes)분")
             MetaChip(icon: "checkmark.circle", text: "완료 \(summary.completedTaskCount)건")
-            let cat = WorkCategory(rawValue: summary.detectedCategory) ?? .general
-            MetaChip(icon: "tag", text: "\(cat.emoji) \(cat.rawValue)")
+            let catName = summary.detectedCategory
+            let catEmoji = userCategories.first(where: { $0.name == catName })?.emoji ?? "📌"
+            MetaChip(icon: "tag", text: "\(catEmoji) \(catName)")
         }
     }
 
@@ -320,7 +332,7 @@ private extension DailySummaryView {
             ForEach(viewModel.categorizedHighlights) { group in
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Text("\(group.category.emoji) \(group.category.rawValue)")
+                        Text("\(group.category.emoji) \(group.category.name)")
                             .font(.caption).fontWeight(.semibold)
                         Spacer()
                         if group.totalMinutes > 0 {
@@ -755,7 +767,7 @@ private extension DailySummaryView {
                 ForEach(viewModel.categoryDistribution) { dist in
                     HStack(spacing: 8) {
                         Circle().fill(categoryColor(dist.category)).frame(width: 10, height: 10)
-                        Text("\(dist.category.emoji) \(dist.category.rawValue)").font(.caption)
+                        Text("\(dist.category.emoji) \(dist.category.name)").font(.caption)
                         Spacer()
                         Text("\(dist.count)일").font(.caption).foregroundStyle(.secondary)
                         Text("\(Int(dist.percentage * 100))%")
@@ -771,23 +783,8 @@ private extension DailySummaryView {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    func categoryColor(_ category: WorkCategory) -> Color {
-        switch category {
-        case .development:   return .blue
-        case .meeting:       return .purple
-        case .planning:      return .orange
-        case .documentation: return .green
-        case .review:        return .teal
-        case .exercise:      return .pink
-        case .meal:          return .yellow
-        case .medical:       return .red
-        case .study:         return .indigo
-        case .travel:        return .cyan
-        case .shopping:      return Color(hex: "#FF9500") ?? .orange
-        case .family:        return Color(hex: "#34C759") ?? .green
-        case .hobby:         return Color(hex: "#AF52DE") ?? .purple
-        case .general:       return .gray
-        }
+    func categoryColor(_ category: CategoryInfo) -> Color {
+        Color(hex: category.colorHex) ?? .gray
     }
 }
 

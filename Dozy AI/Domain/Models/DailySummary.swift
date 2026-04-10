@@ -15,10 +15,17 @@ enum SummaryTab: String, CaseIterable {
     case trends = "트렌드"
 }
 
-// MARK: - 하이라이트 카데고리 모델
+// MARK: - 카테고리 정보 (UserCategory 뷰 독립 표현)
+struct CategoryInfo {
+    let name: String
+    let emoji: String
+    let colorHex: String
+}
+
+// MARK: - 하이라이트 카테고리 모델
 struct CategorizedHighlight: Identifiable {
     let id = UUID()
-    let category: WorkCategory
+    let category: CategoryInfo
     let items: [String]
     let totalMinutes: Int
 }
@@ -84,7 +91,7 @@ struct DailyTrendPoint: Identifiable {
 // MARK: - 카테고리 분포 모델
 struct CategoryDistribution: Identifiable {
     let id = UUID()
-    let category: WorkCategory
+    let category: CategoryInfo
     let count: Int
     let percentage: Double
 }
