@@ -284,9 +284,8 @@ struct CalendarView: View {
             }
         }
         .padding(.horizontal, 8)
-        .padding(.bottom, 8)
     }
-    
+
     // MARK: - Calendar Grid
 
     private var monthGrid: some View {
@@ -304,6 +303,11 @@ struct CalendarView: View {
                     selectedDate: viewModel.selectedDate,
                     isToday: { viewModel.isToday($0) },
                     isSelected: { viewModel.isSelected($0) },
+                    isInMonth: { date in
+                        let cal = Calendar.current
+                        return cal.component(.month, from: date) == cal.component(.month, from: month)
+                            && cal.component(.year, from: date) == cal.component(.year, from: month)
+                    },
                     onSelect: { viewModel.selectDate($0) },
                     onLongPress: { date in
                         longPressDate = date

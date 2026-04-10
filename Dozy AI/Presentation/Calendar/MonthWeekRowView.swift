@@ -9,11 +9,12 @@ import SwiftUI
 
 struct MonthWeekRowView: View {
     
-    let weekDates: [Date?]
+    let weekDates: [Date]
     let layouts: [CalendarEventLayout]
     let selectedDate: Date
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
+    let isInMonth: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String) -> Void
@@ -36,58 +37,48 @@ struct MonthWeekRowView: View {
                 // 빈 영역 탭 → 날짜 선택 / 롱프레스 → 일정 생성
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
-                        Group {
-                            if let date = weekDates[col] {
-                                Color.clear
-                                    .contentShape(Rectangle())
-                                    .onTapGesture { onSelect(date) }
-                                    .simultaneousGesture(
-                                        LongPressGesture(minimumDuration: 0.5)
-                                            .onEnded { _ in
-                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                                onLongPress(date)
-                                            }
-                                    )
-                            } else {
-                                Color.clear
+                        let date = weekDates[col]
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture { onSelect(date) }
+                            .simultaneousGesture(
+                                LongPressGesture(minimumDuration: 0.5)
+                                    .onEnded { _ in
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        onLongPress(date)
+                                    }
+                            )
+                            .frame(width: cellW, height: totalH)
+                            .overlay(alignment: .top) {
+                                Rectangle()
+                                    .fill(Color.primary.opacity(0.06))
+                                    .frame(height: 0.5)
                             }
-                        }
-                        .frame(width: cellW, height: totalH)
-                        .overlay(alignment: .top) {
-                            Rectangle()
-                                .fill(Color.primary.opacity(0.06))
-                                .frame(height: 0.5)
-                        }
-                        .overlay(alignment: .bottom) {
-                            Rectangle()
-                                .fill(Color.primary.opacity(0.06))
-                                .frame(height: 0.5)
-                        }
+                            .overlay(alignment: .bottom) {
+                                Rectangle()
+                                    .fill(Color.primary.opacity(0.06))
+                                    .frame(height: 0.5)
+                            }
                     }
                 }
 
                 // 날짜 헤더
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
-                        Group {
-                            if let date = weekDates[col] {
-                                Button { onSelect(date) } label: {
-                                    dayLabel(date: date)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .simultaneousGesture(
-                                    LongPressGesture(minimumDuration: 0.5)
-                                        .onEnded { _ in
-                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                            onLongPress(date)
-                                        }
-                                )
-                            } else {
-                                Color.clear
-                            }
+                        let date = weekDates[col]
+                        Button { onSelect(date) } label: {
+                            dayLabel(date: date)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    onLongPress(date)
+                                }
+                        )
                         .frame(width: cellW, height: headerH)
                     }
                 }
@@ -111,7 +102,8 @@ struct MonthWeekRowView: View {
                             $0.startCol <= col && $0.endCol >= col && $0.row >= maxRows
                         }.count
                         ZStack {
-                            if over > 0, let date = weekDates[col] {
+                            if over > 0 {
+                                let date = weekDates[col]
                                 Button {
                                     onOverflowTap(date)
                                 } label: {
@@ -136,10 +128,14 @@ struct MonthWeekRowView: View {
     @ViewBuilder
     private func dayLabel(date: Date) -> some View {
         let day = Calendar.current.component(.day, from: date)
+        let inMonth = isInMonth(date)
         Text("\(day)")
             .font(.subheadline)
             .fontWeight(isToday(date) ? .bold : .regular)
-            .foregroundStyle((isSelected(date) || isToday(date)) ? .white : .primary)
+            .foregroundStyle(
+                (isSelected(date) || isToday(date)) ? .white :
+                inMonth ? Color.primary : Color.secondary.opacity(0.4)
+            )
             .frame(width: 34, height: 34)
             .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : .clear))
             .frame(maxWidth: .infinity, maxHeight: .infinity)

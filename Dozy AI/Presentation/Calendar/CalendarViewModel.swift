@@ -206,18 +206,25 @@ final class CalendarViewModel: ObservableObject {
         return stride(from: 0, to: days.count, by: 7).map { Array(days[$0..<$0+7]) }
     }
 
-    func weeksFor(month: Date) -> [[Date?]] {
+    func weeksFor(month: Date) -> [[Date]] {
         let cal = Calendar.current
         let first = cal.date(from: cal.dateComponents([.year, .month], from: month))!
         let weekday = cal.component(.weekday, from: first) - 1
         let range = cal.range(of: .day, in: .month, for: month)!
-        var days: [Date?] = Array(repeating: nil, count: weekday)
+        var days: [Date] = []
+        for i in 0..<weekday {
+            days.append(cal.date(byAdding: .day, value: i - weekday, to: first)!)
+        }
         for day in range {
             var comps = cal.dateComponents([.year, .month], from: month)
             comps.day = day
-            days.append(cal.date(from: comps))
+            days.append(cal.date(from: comps)!)
         }
-        while days.count % 7 != 0 { days.append(nil) }
+        var extra = 1
+        while days.count % 7 != 0 {
+            days.append(cal.date(byAdding: .day, value: range.count - 1 + extra, to: first)!)
+            extra += 1
+        }
         return stride(from: 0, to: days.count, by: 7).map { Array(days[$0..<$0+7]) }
     }
 
