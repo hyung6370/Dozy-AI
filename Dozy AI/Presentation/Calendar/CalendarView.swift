@@ -300,11 +300,17 @@ struct CalendarView: View {
             }
             .frame(maxWidth: .infinity)
 
-            Button {
-                isForward = true
-                withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
-            } label: {
-                Image(systemName: "chevron.right").fontWeight(.semibold)
+            HStack {
+                Button {
+                    isForward = true
+                    withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
+                } label: {
+                    Image(systemName: "chevron.right").fontWeight(.semibold)
+                }
+                // 왼쪽 오늘로 돌아가기 버튼과 너비 대칭 맞춤
+                Image(systemName: "arrow.uturn.left")
+                    .fontWeight(.semibold)
+                    .hidden()
             }
         }
         .padding(.horizontal, 20)
