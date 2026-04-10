@@ -54,7 +54,9 @@ struct DailySummaryView: View {
 
                 ScrollView {
                     VStack(spacing: 20) {
-                        if viewModel.isGenerating {
+                        if viewModel.selectedTab == .category {
+                            categoryTab
+                        } else if viewModel.isGenerating {
                             generatingSection
                         } else if viewModel.summary != nil {
                             switch viewModel.selectedTab {
@@ -62,6 +64,7 @@ struct DailySummaryView: View {
                             case .highlights:       highlightsTab
                             case .recommendations:  recommendationsTab
                             case .trends:           trendsTab
+                            case .category:         EmptyView()
                             }
                         } else {
                             emptyStateSection
@@ -83,6 +86,7 @@ struct DailySummaryView: View {
             }
             .onAppear {
                 viewModel.userCategories = userCategories
+                viewModel.buildCategoryAnalysis()
                 if viewModel.summary == nil {
                     viewModel.generateSummary()
                 } else {
@@ -92,6 +96,7 @@ struct DailySummaryView: View {
             }
             .onChange(of: userCategories) { _, new in
                 viewModel.userCategories = new
+                viewModel.buildCategoryAnalysis()
                 viewModel.buildHighlightsData()
                 viewModel.buildTrendsData()
             }
@@ -104,27 +109,29 @@ struct DailySummaryView: View {
 private extension DailySummaryView {
 
     var tabBar: some View {
-        HStack(spacing: 4) {
-            ForEach(SummaryTab.allCases, id: \.self) { tab in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        viewModel.selectedTab = tab
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                ForEach(SummaryTab.allCases, id: \.self) { tab in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.selectedTab = tab
+                        }
+                    } label: {
+                        Text(tab.rawValue)
+                            .font(.caption)
+                            .fontWeight(viewModel.selectedTab == tab ? .semibold : .regular)
+                            .foregroundStyle(viewModel.selectedTab == tab ? tabColor(tab) : .secondary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                viewModel.selectedTab == tab ? tabBackgroundColor(tab) : Color.clear
+                            )
+                            .clipShape(Capsule())
                     }
-                } label: {
-                    Text(tab.rawValue)
-                        .font(.caption)
-                        .fontWeight(viewModel.selectedTab == tab ? .semibold : .regular)
-                        .foregroundStyle(viewModel.selectedTab == tab ? tabColor(tab) : .secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(
-                            viewModel.selectedTab == tab ? tabBackgroundColor(tab) : Color.clear
-                        )
-                        .clipShape(Capsule())
                 }
             }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
         .padding(.vertical, 8)
         .background(Color(.systemBackground))
     }
@@ -135,6 +142,7 @@ private extension DailySummaryView {
         case .highlights:       return .orange
         case .recommendations:  return .blue
         case .trends:           return .green
+        case .category:         return .purple
         }
     }
 
@@ -144,6 +152,7 @@ private extension DailySummaryView {
         case .highlights:       return .orange.opacity(0.1)
         case .recommendations:  return .blue.opacity(0.1)
         case .trends:           return .green.opacity(0.1)
+        case .category:         return .purple.opacity(0.1)
         }
     }
 }
@@ -785,6 +794,415 @@ private extension DailySummaryView {
 
     func categoryColor(_ category: CategoryInfo) -> Color {
         Color(hex: category.colorHex) ?? .gray
+    }
+}
+
+// MARK: - Tab 5: 카테고리 분석
+
+private extension DailySummaryView {
+
+    var categoryTab: some View {
+        VStack(spacing: 20) {
+            categoryOverviewCard
+            if !viewModel.categoryTimeStats.isEmpty {
+                categoryTimeDistributionCard
+                categoryCountBarCard
+                categoryPeakHourCard
+            }
+            categoryWeeklyDominanceCard
+            categoryFocusScoreCard
+        }
+    }
+
+    // MARK: 개요 카드
+    var categoryOverviewCard: some View {
+        let stats = viewModel.categoryTimeStats
+        let topByTime  = stats.first
+        let topByCount = stats.max(by: { $0.eventCount < $1.eventCount })
+        let totalEvents = stats.reduce(0) { $0 + $1.eventCount }
+
+        return VStack(spacing: 12) {
+            HStack {
+                Label("카테고리 분석", systemImage: "chart.pie.fill")
+                    .font(.subheadline).fontWeight(.semibold)
+                    .foregroundStyle(.purple)
+                Spacer()
+                Text("총 \(stats.count)개 카테고리")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Divider()
+
+            HStack(spacing: 0) {
+                VStack(spacing: 4) {
+                    Text("\(totalEvents)")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                    Text("오늘 일정").font(.caption2).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+
+                Divider().frame(height: 36)
+
+                VStack(spacing: 4) {
+                    if let top = topByTime {
+                        Text("\(top.category.emoji) \(top.category.name)")
+                            .font(.subheadline).fontWeight(.semibold).lineLimit(1)
+                        Text("가장 긴 시간").font(.caption2).foregroundStyle(.secondary)
+                    } else {
+                        Text("—").font(.subheadline)
+                        Text("가장 긴 시간").font(.caption2).foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+
+                Divider().frame(height: 36)
+
+                VStack(spacing: 4) {
+                    if let top = topByCount {
+                        Text("\(top.category.emoji) \(top.category.name)")
+                            .font(.subheadline).fontWeight(.semibold).lineLimit(1)
+                        Text("가장 많은 일정").font(.caption2).foregroundStyle(.secondary)
+                    } else {
+                        Text("—").font(.subheadline)
+                        Text("가장 많은 일정").font(.caption2).foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(14)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    // MARK: 시간 분배
+    var categoryTimeDistributionCard: some View {
+        let stats = viewModel.categoryTimeStats
+        let hasTime = stats.contains { $0.totalMinutes > 0 }
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Label("시간 분배", systemImage: "clock.fill")
+                .font(.subheadline).fontWeight(.semibold)
+
+            // 세그먼트 바
+            GeometryReader { geo in
+                HStack(spacing: 2) {
+                    ForEach(stats) { stat in
+                        let w = hasTime
+                            ? geo.size.width * stat.percentage
+                            : geo.size.width * stat.countPercentage
+                        if w > 0 {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(catColor(stat.category))
+                                .frame(width: max(w - 2, 2))
+                        }
+                    }
+                }
+            }
+            .frame(height: 18)
+
+            // 범례
+            VStack(spacing: 8) {
+                ForEach(stats) { stat in
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(catColor(stat.category))
+                            .frame(width: 10, height: 10)
+                        Text("\(stat.category.emoji) \(stat.category.name)")
+                            .font(.caption)
+                        Spacer()
+                        if hasTime && stat.totalMinutes > 0 {
+                            Text(minuteLabel(stat.totalMinutes))
+                                .font(.caption2).foregroundStyle(.secondary)
+                        }
+                        Text(hasTime
+                             ? "\(Int(stat.percentage * 100))%"
+                             : "\(Int(stat.countPercentage * 100))%")
+                            .font(.caption).fontWeight(.medium)
+                            .frame(width: 36, alignment: .trailing)
+                    }
+                }
+            }
+
+            if !hasTime {
+                Text("종일 일정만 있어 시간 기준 대신 건수 기준으로 표시됩니다")
+                    .font(.caption2).foregroundStyle(.tertiary)
+            }
+        }
+        .padding(14)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: 일정 건수 바 차트
+    var categoryCountBarCard: some View {
+        let stats = viewModel.categoryTimeStats
+        let maxCount = max(stats.map { $0.eventCount }.max() ?? 1, 1)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Label("일정 건수", systemImage: "calendar.badge.clock")
+                .font(.subheadline).fontWeight(.semibold)
+
+            ForEach(stats) { stat in
+                HStack(spacing: 10) {
+                    Text("\(stat.category.emoji) \(stat.category.name)")
+                        .font(.caption)
+                        .frame(width: 90, alignment: .leading)
+                        .lineLimit(1)
+
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color(.systemGray4))
+                                .frame(height: 12)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(catColor(stat.category))
+                                .frame(
+                                    width: geo.size.width * CGFloat(stat.eventCount) / CGFloat(maxCount),
+                                    height: 12
+                                )
+                                .animation(.easeOut(duration: 0.6), value: stat.eventCount)
+                        }
+                    }
+                    .frame(height: 12)
+
+                    Text("\(stat.eventCount)건")
+                        .font(.caption2).foregroundStyle(.secondary)
+                        .frame(width: 28, alignment: .trailing)
+                }
+            }
+        }
+        .padding(14)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: 피크 시간대
+    var categoryPeakHourCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("선호 시간대", systemImage: "sun.max.fill")
+                .font(.subheadline).fontWeight(.semibold)
+
+            ForEach(viewModel.categoryHourStats) { stat in
+                HStack(spacing: 12) {
+                    Text("\(stat.category.emoji) \(stat.category.name)")
+                        .font(.caption)
+                        .frame(width: 90, alignment: .leading)
+                        .lineLimit(1)
+                    Image(systemName: "arrow.right")
+                        .font(.caption2).foregroundStyle(.tertiary)
+                    Text(stat.peakHourLabel)
+                        .font(.caption).fontWeight(.medium)
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(catColor(stat.category).opacity(0.15))
+                        .foregroundStyle(catColor(stat.category))
+                        .clipShape(Capsule())
+                    Spacer()
+                }
+            }
+
+            if viewModel.categoryHourStats.isEmpty {
+                Text("시간 데이터가 있는 일정이 없습니다")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(14)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: 주간 카테고리 지배 패턴
+    var categoryWeeklyDominanceCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("주간 카테고리 패턴", systemImage: "calendar.badge.checkmark")
+                .font(.subheadline).fontWeight(.semibold)
+
+            if !viewModel.weeklyTrend.isEmpty {
+                HStack(spacing: 6) {
+                    ForEach(viewModel.weeklyTrend) { point in
+                        let catInfo = viewModel.categoryTimeStats
+                            .first(where: { $0.category.name == point.category })?.category
+                            ?? CategoryInfo(name: point.category, emoji: "📌", colorHex: "#8E8E93")
+                        let isToday = Calendar.current.isDateInToday(point.date)
+
+                        VStack(spacing: 4) {
+                            ZStack {
+                                Circle()
+                                    .fill(point.score > 0
+                                          ? (Color(hex: catInfo.colorHex) ?? .gray).opacity(0.25)
+                                          : Color(.systemGray5))
+                                    .frame(width: 36, height: 36)
+                                if point.score > 0 {
+                                    Text(catInfo.emoji).font(.subheadline)
+                                } else {
+                                    Text("—").font(.caption2).foregroundStyle(.tertiary)
+                                }
+                            }
+                            .overlay(
+                                isToday
+                                    ? Circle().stroke(Color.purple, lineWidth: 2)
+                                    : nil
+                            )
+                            Text(point.weekdayLabel)
+                                .font(.system(size: 9))
+                                .foregroundStyle(isToday ? .purple : .secondary)
+                                .fontWeight(isToday ? .bold : .regular)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+
+                // 범례
+                let usedCategories = Set(viewModel.weeklyTrend.map { $0.category })
+                let legendItems = viewModel.categoryTimeStats.filter { usedCategories.contains($0.category.name) }
+                if !legendItems.isEmpty {
+                    Divider()
+                    FlowLayout(spacing: 6) {
+                        ForEach(legendItems) { stat in
+                            HStack(spacing: 4) {
+                                Text(stat.category.emoji).font(.caption2)
+                                Text(stat.category.name).font(.caption2)
+                            }
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(catColor(stat.category).opacity(0.12))
+                            .foregroundStyle(catColor(stat.category))
+                            .clipShape(Capsule())
+                        }
+                    }
+                }
+            } else {
+                Text("주간 데이터가 부족합니다").font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(14)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: 집중도 점수
+    var categoryFocusScoreCard: some View {
+        let stats = viewModel.categoryTimeStats
+        let focusScore: Double
+        let focusLabel: String
+        let focusColor: Color
+
+        if stats.isEmpty {
+            focusScore = 0
+            focusLabel = "데이터 없음"
+            focusColor = .gray
+        } else if stats.count == 1 {
+            focusScore = 1.0
+            focusLabel = "완전 집중"
+            focusColor = .green
+        } else {
+            // HHI (허핀달-허쉬만 지수): 비중 제곱합
+            let hhi = stats.reduce(0.0) { $0 + pow($1.countPercentage, 2) }
+            focusScore = hhi
+            switch hhi {
+            case 0.6...: focusLabel = "집중형"; focusColor = .green
+            case 0.35..<0.6: focusLabel = "균형형"; focusColor = .blue
+            default: focusLabel = "분산형"; focusColor = .orange
+            }
+        }
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Label("집중도 분석", systemImage: "scope")
+                .font(.subheadline).fontWeight(.semibold)
+
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .stroke(Color(.systemGray4), lineWidth: 8)
+                        .frame(width: 70, height: 70)
+                    Circle()
+                        .trim(from: 0, to: focusScore)
+                        .stroke(focusColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .frame(width: 70, height: 70)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.easeOut(duration: 0.8), value: focusScore)
+                    Text("\(Int(focusScore * 100))")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(focusColor)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(focusLabel)
+                        .font(.headline).fontWeight(.semibold)
+                        .foregroundStyle(focusColor)
+                    Text(focusDescription(stats.count))
+                        .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+            }
+        }
+        .padding(14)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: Helpers
+    func catColor(_ category: CategoryInfo) -> Color {
+        Color(hex: category.colorHex) ?? .gray
+    }
+
+    func minuteLabel(_ minutes: Int) -> String {
+        if minutes >= 60 {
+            let h = minutes / 60
+            let m = minutes % 60
+            return m > 0 ? "\(h)시간 \(m)분" : "\(h)시간"
+        }
+        return "\(minutes)분"
+    }
+
+    func focusDescription(_ categoryCount: Int) -> String {
+        switch categoryCount {
+        case 1: return "오늘 하나의 카테고리에 집중했어요"
+        case 2: return "두 가지 영역에 균형 있게 시간을 썼어요"
+        default: return "\(categoryCount)개 카테고리에 걸쳐 다양하게 활동했어요"
+        }
+    }
+}
+
+// MARK: - FlowLayout (태그 줄바꿈용)
+private struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = computeRows(proposal: proposal, subviews: subviews)
+        let height = rows.map { $0.map { $0.sizeThatFits(.unspecified).height }.max() ?? 0 }.reduce(0) { $0 + $1 + spacing } - spacing
+        return CGSize(width: proposal.width ?? 0, height: max(height, 0))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let rows = computeRows(proposal: ProposedViewSize(width: bounds.width, height: nil), subviews: subviews)
+        var y = bounds.minY
+        for row in rows {
+            var x = bounds.minX
+            let rowHeight = row.map { $0.sizeThatFits(.unspecified).height }.max() ?? 0
+            for subview in row {
+                let size = subview.sizeThatFits(.unspecified)
+                subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+                x += size.width + spacing
+            }
+            y += rowHeight + spacing
+        }
+    }
+
+    private func computeRows(proposal: ProposedViewSize, subviews: Subviews) -> [[LayoutSubview]] {
+        var rows: [[LayoutSubview]] = [[]]
+        var x: CGFloat = 0
+        let maxWidth = proposal.width ?? .infinity
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > maxWidth, !rows[rows.endIndex - 1].isEmpty {
+                rows.append([])
+                x = 0
+            }
+            rows[rows.endIndex - 1].append(subview)
+            x += size.width + spacing
+        }
+        return rows
     }
 }
 

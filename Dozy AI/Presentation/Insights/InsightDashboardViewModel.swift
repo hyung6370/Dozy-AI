@@ -48,6 +48,10 @@ final class InsightDashboardViewModel: ObservableObject {
     @Published var productivityScores: [(date: Date, score: Double)] = []
     @Published var averageProductivityScore: Double? = nil
 
+    // MARK: - 카테고리 분석용 raw 데이터
+    @Published var periodCalendarEvents: [CalendarEvent] = []
+    @Published var periodDozyEvents: [DozyEvent] = []
+
     // MARK: - 상태
     @Published var isLoading = false
     @Published var hasDozyData = false
@@ -126,6 +130,8 @@ final class InsightDashboardViewModel: ObservableObject {
         days: Int
     ) {
         hasDozyData = !allCalendarEvents.isEmpty || !currentCal.isEmpty
+        periodCalendarEvents = allCalendarEvents
+        periodDozyEvents = current
         // 완료율 — 도지 + EventCompletion 기반
         averageCompletionRate = patternService.averageCompletionRate(from: current, calendarCompletions: currentCal)
         completionRateChange = patternService.completionRateChange(current: current, previous: previous, currentCal: currentCal, previousCal: previousCal)

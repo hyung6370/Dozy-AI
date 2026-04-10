@@ -66,6 +66,7 @@
 		DDA9A5B62F89560300C1572C /* UserCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B52F89560300C1572C /* UserCategory.swift */; };
 		DDA9A5B92F89564000C1572C /* CategoryEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */; };
 		DDA9A5BA2F89564000C1572C /* CategoryManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */; };
+		DDA9A5BC2F896A9900C1572C /* CategoryAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5BB2F896A9900C1572C /* CategoryAnalysisView.swift */; };
 		F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFD2F7FAA01007B8D9F /* Auth */; };
 		F60ADF002F7FAA01007B8D9F /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFF2F7FAA01007B8D9F /* Functions */; };
 		F60ADF022F7FAA01007B8D9F /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF012F7FAA01007B8D9F /* PostgREST */; };
@@ -250,6 +251,7 @@
 		DDA9A5B52F89560300C1572C /* UserCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCategory.swift; sourceTree = "<group>"; };
 		DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditSheet.swift; sourceTree = "<group>"; };
 		DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryManagementView.swift; sourceTree = "<group>"; };
+		DDA9A5BB2F896A9900C1572C /* CategoryAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryAnalysisView.swift; sourceTree = "<group>"; };
 		F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUser.swift; sourceTree = "<group>"; };
 		F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
@@ -731,6 +733,7 @@
 		DD9F69382F6AD160001952F6 /* Insights */ = {
 			isa = PBXGroup;
 			children = (
+				DDA9A5BB2F896A9900C1572C /* CategoryAnalysisView.swift */,
 				F65068362F7E533200F9C124 /* InsightDashboardView.swift */,
 				F65068382F7E536700F9C124 /* InsightDashboardViewModel.swift */,
 			);
@@ -1107,6 +1110,7 @@
 				F650682D2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift in Sources */,
 				F63C68E22F862E87003464E8 /* LoginPromptBannerView.swift in Sources */,
 				F65068312F7D115300F9C124 /* EventCompletionRepository.swift in Sources */,
+				DDA9A5BC2F896A9900C1572C /* CategoryAnalysisView.swift in Sources */,
 				F63C68E42F8642C7003464E8 /* EventDisplaySettings.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 				CEEBF7E3E8D2D65697104350 /* FetchCalendarEventsForPeriodUseCase.swift in Sources */,

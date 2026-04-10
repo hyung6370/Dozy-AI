@@ -13,6 +13,7 @@ enum SummaryTab: String, CaseIterable {
     case highlights = "하이라이트"
     case recommendations = "추천"
     case trends = "트렌드"
+    case category = "카테고리"
 }
 
 // MARK: - 카테고리 정보 (UserCategory 뷰 독립 표현)
@@ -120,5 +121,28 @@ struct DailySummary: Codable, Equatable {
     private func deduplicated(_ items: [String]) -> [String] {
         var seen = Set<String>()
         return items.filter { seen.insert($0.lowercased()).inserted }
+    }
+}
+
+// MARK: - 카테고리별 시간/건수 통계 (오늘)
+struct CategoryTimeStat: Identifiable {
+    let id = UUID()
+    let category: CategoryInfo
+    let eventCount: Int
+    let totalMinutes: Int
+    let percentage: Double       // 전체 시간 대비 비중
+    let countPercentage: Double  // 전체 건수 대비 비중
+}
+
+// MARK: - 카테고리별 시간대 패턴 (오늘)
+struct CategoryHourStat: Identifiable {
+    let id = UUID()
+    let category: CategoryInfo
+    let peakHour: Int
+
+    var peakHourLabel: String {
+        let period = peakHour < 12 ? "오전" : "오후"
+        let h = peakHour == 0 ? 12 : (peakHour > 12 ? peakHour - 12 : peakHour)
+        return "\(period) \(h)시"
     }
 }

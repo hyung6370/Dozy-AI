@@ -49,6 +49,10 @@ final class DailySummaryViewModel: ObservableObject {
     @Published var categoryDistribution: [CategoryDistribution] = []
     @Published var weeklyAverageScore: Double = 0
 
+    // MARK: - 카테고리 분석 탭 데이터
+    @Published var categoryTimeStats: [CategoryTimeStat] = []
+    @Published var categoryHourStats: [CategoryHourStat] = []
+
     // MARK: - Computed
 
     var hasEnoughData: Bool {
@@ -185,6 +189,7 @@ final class DailySummaryViewModel: ObservableObject {
             let data = hourMap[hour] ?? (events: 0, tasks: 0)
             return HourlyActivity(hour: hour, eventCount: data.events, taskCount: data.tasks)
         }
+        buildCategoryAnalysis()
     }
 
     // MARK: - 추천 할 일 데이터 구축
@@ -349,6 +354,57 @@ final class DailySummaryViewModel: ObservableObject {
             return CategoryDistribution(category: info, count: count, percentage: Double(count) / Double(total))
         }
         .sorted { $0.count > $1.count }
+    }
+
+    // MARK: - 카테고리 분석 데이터 구축
+    func buildCategoryAnalysis() {
+        var timeMap: [String: (info: CategoryInfo, count: Int, minutes: Int)] = [:]
+        var hourMap: [String: [Int: Int]] = [:]
+
+        func infoFor(_ name: String) -> CategoryInfo {
+            if let cat = userCategories.first(where: { $0.name == name }) {
+                return CategoryInfo(name: cat.name, emoji: cat.emoji, colorHex: cat.colorHex)
+            }
+            return CategoryInfo(name: name, emoji: "📌", colorHex: "#8E8E93")
+        }
+
+        for event in events {
+            let name = event.category
+            var entry = timeMap[name] ?? (info: infoFor(name), count: 0, minutes: 0)
+            entry.count += 1
+            entry.minutes += event.isAllDay ? 0 : event.durationMinutes
+            timeMap[name] = entry
+
+            if !event.isAllDay {
+                let hour = Calendar.current.component(.hour, from: event.startDate)
+                var hours = hourMap[name] ?? [:]
+                hours[hour, default: 0] += 1
+                hourMap[name] = hours
+            }
+        }
+
+        let totalMinutes = max(timeMap.values.reduce(0) { $0 + $1.minutes }, 1)
+        let totalCount   = max(timeMap.values.reduce(0) { $0 + $1.count  }, 1)
+
+        categoryTimeStats = timeMap.map { name, data in
+            CategoryTimeStat(
+                category: data.info,
+                eventCount: data.count,
+                totalMinutes: data.minutes,
+                percentage: Double(data.minutes) / Double(totalMinutes),
+                countPercentage: Double(data.count) / Double(totalCount)
+            )
+        }
+        .sorted { $0.totalMinutes != $1.totalMinutes
+            ? $0.totalMinutes > $1.totalMinutes
+            : $0.eventCount   > $1.eventCount }
+
+        categoryHourStats = hourMap.compactMap { name, hours in
+            guard !hours.isEmpty else { return nil }
+            let peakHour = hours.max(by: { $0.value < $1.value })?.key ?? 9
+            return CategoryHourStat(category: infoFor(name), peakHour: peakHour)
+        }
+        .sorted { $0.category.name < $1.category.name }
     }
 
 }
