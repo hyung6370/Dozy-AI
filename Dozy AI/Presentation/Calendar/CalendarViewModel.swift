@@ -429,6 +429,16 @@ final class CalendarViewModel: ObservableObject {
         }
     }
     
+    func jumpToMonth(year: Int, month: Int) {
+        var comps = DateComponents()
+        comps.year = year
+        comps.month = month
+        comps.day = 1
+        guard let date = Calendar.current.date(from: comps) else { return }
+        currentMonth = date
+        fetchEventsForMonth()
+    }
+
     func selectDate(_ date: Date) {
         selectedDate = date
         fetchEventsForDate(date)

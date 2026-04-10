@@ -16,6 +16,11 @@ struct CalendarView: View {
     @State private var showLongPressAlert = false
     @State private var pageIndex = 1
     @State private var isForward = true
+    @State private var showMonthPicker = false
+    @State private var pickerYear = Calendar.current.component(.year, from: Date())
+    @State private var pickerMonth = Calendar.current.component(.month, from: Date())
+    @State private var showDatePicker = false
+    @State private var pickerDate = Date()
     @Environment(\.scenePhase) private var scenePhase
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
@@ -89,6 +94,32 @@ struct CalendarView: View {
                 CalendarLegendView()
                     .presentationDetents([.medium])
             }
+            .sheet(isPresented: $showMonthPicker) {
+                MonthYearPickerView(
+                    selectedYear: $pickerYear,
+                    selectedMonth: $pickerMonth
+                ) {
+                    let cal = Calendar.current
+                    var comps = DateComponents()
+                    comps.year = pickerYear
+                    comps.month = pickerMonth
+                    comps.day = 1
+                    if let target = cal.date(from: comps) {
+                        isForward = target >= viewModel.currentMonth
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.jumpToMonth(year: pickerYear, month: pickerMonth)
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showDatePicker) {
+                DatePickerSheetView(selectedDate: $pickerDate) {
+                    isForward = pickerDate >= viewModel.selectedDate
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        viewModel.selectDate(pickerDate)
+                    }
+                }
+            }
             .sheet(isPresented: $viewModel.showEventEdit) {
                 EventEditView(
                     eventToEdit: viewModel.eventToEdit,
@@ -153,6 +184,8 @@ struct CalendarView: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase != .active {
                     showLegend = false
+                    showMonthPicker = false
+                    showDatePicker = false
                     viewModel.showEventDetail = false
                     viewModel.showEventEdit = false
                     viewModel.showCalendarEventEdit = false
@@ -208,9 +241,40 @@ struct CalendarView: View {
                 Image(systemName: "chevron.left").fontWeight(.semibold)
             }
 
-            Text(viewModel.currentPeriodString)
-                .font(.title2).fontWeight(.bold)
-                .frame(maxWidth: .infinity)
+            Group {
+                if viewModel.viewMode == .month {
+                    Button {
+                        let cal = Calendar.current
+                        pickerYear = cal.component(.year, from: viewModel.currentMonth)
+                        pickerMonth = cal.component(.month, from: viewModel.currentMonth)
+                        showMonthPicker = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(viewModel.currentPeriodString)
+                                .font(.title2).fontWeight(.bold)
+                            Image(systemName: "chevron.down")
+                                .font(.caption).fontWeight(.semibold)
+                        }
+                        .foregroundStyle(.primary)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button {
+                        pickerDate = viewModel.selectedDate
+                        showDatePicker = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(viewModel.currentPeriodString)
+                                .font(.title2).fontWeight(.bold)
+                            Image(systemName: "chevron.down")
+                                .font(.caption).fontWeight(.semibold)
+                        }
+                        .foregroundStyle(.primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(maxWidth: .infinity)
 
             Button {
                 isForward = true
@@ -408,5 +472,37 @@ struct CalendarView: View {
         .pickerStyle(.segmented)
         .padding(.horizontal)
         .padding(.bottom, 4)
+    }
+}
+
+// MARK: - DatePickerSheetView
+
+private struct DatePickerSheetView: View {
+    @Binding var selectedDate: Date
+    let onConfirm: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            DatePicker("날짜 선택", selection: $selectedDate, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .padding(.horizontal)
+            .navigationTitle("날짜 이동")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("취소") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("이동") {
+                        onConfirm()
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.height(430)])
     }
 }
