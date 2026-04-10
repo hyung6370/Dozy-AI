@@ -14,6 +14,8 @@ struct CalendarView: View {
     @State private var showLegend = false
     @State private var longPressDate: Date? = nil
     @State private var showLongPressAlert = false
+    @State private var pageIndex = 1
+    @State private var isForward = true
     @Environment(\.scenePhase) private var scenePhase
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
@@ -28,17 +30,32 @@ struct CalendarView: View {
                     if viewModel.viewMode != .week {
                         weekdayHeader
                     }
-                    calendarGrid
-                        .gesture(
-                            DragGesture(minimumDistance: 30, coordinateSpace: .local)
-                                .onEnded { value in
-                                    if value.translation.width > 0 {
-                                        viewModel.previousPeriod()
-                                    } else {
+                    ZStack {
+                        calendarGrid
+                            .id(viewModel.currentPeriodString)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: isForward ? .trailing : .leading),
+                                removal: .move(edge: isForward ? .leading : .trailing)
+                            ))
+                    }
+                    .clipped()
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 30, coordinateSpace: .local)
+                            .onEnded { value in
+                                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                                if value.translation.width < -30 {
+                                    isForward = true
+                                    withAnimation(.easeInOut(duration: 0.3)) {
                                         viewModel.nextPeriod()
                                     }
+                                } else if value.translation.width > 30 {
+                                    isForward = false
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        viewModel.previousPeriod()
+                                    }
                                 }
-                        )
+                            }
+                    )
                     Divider().padding(.horizontal)
                     if viewModel.viewMode == .day {
                         DayTimelineView(
@@ -182,15 +199,25 @@ struct CalendarView: View {
     
     private var monthHeader: some View {
         HStack {
-            Button { viewModel.previousPeriod() } label: {
+            Button {
+                isForward = false
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    viewModel.previousPeriod()
+                }
+            } label: {
                 Image(systemName: "chevron.left").fontWeight(.semibold)
             }
-            
+
             Text(viewModel.currentPeriodString)
                 .font(.title2).fontWeight(.bold)
                 .frame(maxWidth: .infinity)
-            
-            Button { viewModel.nextPeriod() } label: {
+
+            Button {
+                isForward = true
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    viewModel.nextPeriod()
+                }
+            } label: {
                 Image(systemName: "chevron.right").fontWeight(.semibold)
             }
         }
