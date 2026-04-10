@@ -216,14 +216,45 @@ struct CalendarView: View {
     }
 
     // MARK: - Month Header
-    
+
+    private var isOnToday: Bool {
+        let cal = Calendar.current
+        switch viewModel.viewMode {
+        case .month:
+            return cal.isDate(viewModel.currentMonth, equalTo: Date(), toGranularity: .month)
+        case .week:
+            return viewModel.currentWeekDates.contains { cal.isDateInToday($0) }
+        case .day:
+            return cal.isDateInToday(viewModel.selectedDate)
+        }
+    }
+
     private var monthHeader: some View {
         HStack {
-            Button {
-                isForward = false
-                withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
-            } label: {
-                Image(systemName: "chevron.left").fontWeight(.semibold)
+            HStack(spacing: 16) {
+                Button {
+                    isForward = viewModel.selectedDate < Date()
+                    if viewModel.viewMode == .month {
+                        let cal = Calendar.current
+                        let todayStart = cal.date(from: cal.dateComponents([.year, .month], from: Date()))!
+                        isForward = viewModel.currentMonth < todayStart
+                        viewModel.setCurrentMonth(Date())
+                    }
+                    viewModel.selectDate(Date())
+                } label: {
+                    Image(systemName: "arrow.uturn.left")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.orange)
+                }
+                .opacity(isOnToday ? 0 : 1)
+                .disabled(isOnToday)
+
+                Button {
+                    isForward = false
+                    withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
+                } label: {
+                    Image(systemName: "chevron.left").fontWeight(.semibold)
+                }
             }
 
             Group {
