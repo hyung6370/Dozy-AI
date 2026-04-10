@@ -140,7 +140,8 @@ struct HomeView: View {
                 completedTasks: viewModel.completedTasks,
                 pendingTasks: viewModel.pendingTasks,
                 memos: viewModel.todayLog?.memos ?? [],
-                completedEventCount: viewModel.completedCount
+                completedEventCount: viewModel.completedCount,
+                existingSummary: viewModel.dailySummary
             )
         }
         .sheet(item: $selectedEvent, onDismiss: {

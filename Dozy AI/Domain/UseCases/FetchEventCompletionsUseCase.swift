@@ -15,7 +15,7 @@ final class FetchEventCompletionsUseCase {
         self.repository = repository
     }
     
-    func execute(for eventIDs: [String]) -> AnyPublisher<[String: Bool], DozyError> {
-        repository.fetchCompletions(for: eventIDs)
+    func execute(for eventIDs: [String], on date: Date) -> AnyPublisher<[String: Bool], DozyError> {
+        repository.fetchCompletions(for: eventIDs, on: date)
     }
 }

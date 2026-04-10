@@ -284,17 +284,21 @@ final class CalendarViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    private func completionKey(for event: CalendarEvent) -> String {
+        EventCompletionRepository.completionKey(eventID: event.id, date: event.startDate)
+    }
+
     // 완료 상태 통합 조회
     func isCompleted(for event: CalendarEvent) -> Bool {
         if event.source == .dozy {
             let dozy = dozyEventsByID[event.id]
             // 반복 일정은 날짜별 완료 체크 (EventCompletion 사용)
             if let dozy, dozy.recurrenceRule != "none" {
-                return completionsByID[event.id] ?? false
+                return completionsByID[completionKey(for: event)] ?? false
             }
             return dozy?.isCompleted ?? false
         }
-        return completionsByID[event.id] ?? false
+        return completionsByID[completionKey(for: event)] ?? false
     }
 
     // 완료 토글 (source 분기)
@@ -306,7 +310,8 @@ final class CalendarViewModel: ObservableObject {
                 toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
                     .receive(on: DispatchQueue.main)
                     .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
-                        self?.completionsByID[event.id] = newValue
+                        guard let self else { return }
+                        self.completionsByID[self.completionKey(for: event)] = newValue
                     })
                     .store(in: &cancellables)
             } else {
@@ -316,7 +321,8 @@ final class CalendarViewModel: ObservableObject {
             toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
-                    self?.completionsByID[event.id] = newValue
+                    guard let self else { return }
+                    self.completionsByID[self.completionKey(for: event)] = newValue
                 })
                 .store(in: &cancellables)
         }
@@ -503,10 +509,12 @@ final class CalendarViewModel: ObservableObject {
                 self.dozyEventsForSelectedDate = dozyEvents
                 self.dozyEventsByID.merge(newEntries) { _, new in new }
 
-                // Apple/Google completion 조회
+                // Apple/Google + Dozy 반복 일정 completion 조회
                 let nonDozyIDs = events.filter { $0.source != .dozy }.map { $0.id }
-                if !nonDozyIDs.isEmpty {
-                    self.fetchEventCompletionsUseCase.execute(for: nonDozyIDs)
+                let recurringDozyIDs = dozyEvents.filter { $0.recurrenceRule != "none" }.map { $0.id }
+                let allCompletionIDs = nonDozyIDs + recurringDozyIDs
+                if !allCompletionIDs.isEmpty {
+                    self.fetchEventCompletionsUseCase.execute(for: allCompletionIDs, on: date)
                         .receive(on: DispatchQueue.main)
                         .sink(receiveCompletion: { _ in }, receiveValue: { dict in
                             self.completionsByID.merge(dict) { _, new in new }

@@ -223,16 +223,26 @@ final class HomeViewModel: ObservableObject {
 
         Publishers.Zip(
             fetchDozyEventsUseCase.execute(for: Date()),
-            fetchEventCompletionsUseCase.execute(for: allIDs)
+            fetchEventCompletionsUseCase.execute(for: allIDs, on: Date())
         )
         .receive(on: DispatchQueue.main)
         .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] dozyEvents, completionsMap in
             guard let self else { return }
-            var merged: [String: Bool] = completionsMap
+            // completionsMap은 복합키(eventID_timestamp) → event.id 단순키로 역변환
+            let today = Date()
+            let dayKey = "_\(Int(Calendar.current.startOfDay(for: today).timeIntervalSince1970))"
+            var merged: [String: Bool] = [:]
+            for (compositeKey, value) in completionsMap {
+                let eventID = compositeKey.hasSuffix(dayKey)
+                    ? String(compositeKey.dropLast(dayKey.count))
+                    : compositeKey
+                merged[eventID] = value
+            }
             var dict: [String: DozyEvent] = [:]
             for event in dozyEvents {
                 dict[event.id] = event
-                if dozyIDs.contains(event.id) {
+                // Dozy 비반복 일정은 isCompleted 직접 사용
+                if dozyIDs.contains(event.id) && event.recurrenceRule == "none" {
                     merged[event.id] = event.isCompleted
                 }
             }

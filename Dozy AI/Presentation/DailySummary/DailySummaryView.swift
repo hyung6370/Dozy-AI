@@ -23,7 +23,8 @@ struct DailySummaryView: View {
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
         memos: [String],
-        completedEventCount: Int = 0
+        completedEventCount: Int = 0,
+        existingSummary: DailySummary? = nil
     ) {
         let vm = DailySummaryViewModel(
             generateSummaryUseCase: generateSummaryUseCase,
@@ -34,6 +35,13 @@ struct DailySummaryView: View {
         vm.pendingTasks = pendingTasks
         vm.memos = memos
         vm.completedEventCount = completedEventCount
+        // 이미 생성된 요약이 있으면 주입 → onAppear에서 재생성 안 함
+        if let existing = existingSummary {
+            vm.summary = existing
+            vm.buildHighlightsData()
+            vm.buildRecommendationsData()
+            vm.buildTrendsData()
+        }
         _viewModel = StateObject(wrappedValue: vm)
     }
 
