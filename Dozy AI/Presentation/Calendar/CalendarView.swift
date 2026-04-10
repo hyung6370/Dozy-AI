@@ -22,6 +22,7 @@ struct CalendarView: View {
     @State private var showDatePicker = false
     @State private var pickerDate = Date()
     @State private var triggerScrollToList = false
+    @State private var currentGridHeight: CGFloat = 0
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
 
@@ -371,11 +372,13 @@ struct CalendarView: View {
     }
 
     // MonthWeekRowView.totalH = 42 + 3*(20+2) + 18 = 126pt
-    private var monthGridHeight: CGFloat {
+    private var monthGridHeight: CGFloat { calcGridHeight(for: viewModel.currentMonth) }
+
+    private func calcGridHeight(for month: Date) -> CGFloat {
         let cal = Calendar.current
-        let first = cal.date(from: cal.dateComponents([.year, .month], from: viewModel.currentMonth))!
+        let first = cal.date(from: cal.dateComponents([.year, .month], from: month))!
         let weekday = cal.component(.weekday, from: first) - 1
-        let dayCount = cal.range(of: .day, in: .month, for: viewModel.currentMonth)!.count
+        let dayCount = cal.range(of: .day, in: .month, for: month)!.count
         let weekCount = (weekday + dayCount + 6) / 7
         return CGFloat(weekCount) * 126 + 8
     }
@@ -399,10 +402,14 @@ struct CalendarView: View {
                 onMonthChanged: { newMonth in
                     isForward = newMonth > viewModel.currentMonth
                     viewModel.setCurrentMonth(newMonth)
+                },
+                onWillChangeMonth: { pendingMonth in
+                    // 슬라이드 애니메이션 시작 전에 높이 미리 반영
+                    currentGridHeight = calcGridHeight(for: pendingMonth)
                 }
             )
-            .frame(height: monthGridHeight)
-            .animation(.easeInOut(duration: 0.3), value: monthGridHeight)
+            .frame(height: currentGridHeight > 0 ? currentGridHeight : monthGridHeight)
+            .onAppear { currentGridHeight = monthGridHeight }
         } else {
             ZStack {
                 calendarGrid

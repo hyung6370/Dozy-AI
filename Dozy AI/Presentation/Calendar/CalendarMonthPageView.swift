@@ -23,6 +23,7 @@ struct MonthPageViewController: UIViewControllerRepresentable {
     let onTapEvent: (String, Date) -> Void
     let onOverflowTap: (Date) -> Void
     let onMonthChanged: (Date) -> Void
+    let onWillChangeMonth: (Date) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -106,6 +107,14 @@ struct MonthPageViewController: UIViewControllerRepresentable {
         }
 
         // MARK: UIPageViewControllerDelegate
+
+        func pageViewController(_ pvc: UIPageViewController,
+                                willTransitionTo pendingViewControllers: [UIViewController]) {
+            guard !isNavigating,
+                  let cell = pendingViewControllers.first as? MonthPageCell
+            else { return }
+            parent.onWillChangeMonth(cell.month)
+        }
 
         func pageViewController(_ pvc: UIPageViewController,
                                 didFinishAnimating finished: Bool,
