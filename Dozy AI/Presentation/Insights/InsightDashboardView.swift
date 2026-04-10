@@ -9,13 +9,16 @@ import SwiftUI
 import Charts
 
 struct InsightDashboardView: View {
-    
+
+    private let container: DependencyContainer
     @StateObject private var viewModel: InsightDashboardViewModel
     @State private var showSwipeHint = true
     @State private var currentPage = 0
     @State private var hintScale: CGFloat = 1.0
-    
+    @State private var showCalendarSettings = false
+
     init(container: DependencyContainer) {
+        self.container = container
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
             fetchEventsUseCase: container.fetchDozyEventsForPeriodUseCase,
             fetchCalendarEventsUseCase: container.fetchCalendarEventsForPeriodUseCase,
@@ -40,7 +43,7 @@ struct InsightDashboardView: View {
                             insightCard
                         }
                         summaryRow
-                        InsightBannerView()
+                        InsightBannerView { showCalendarSettings = true }
                         chartSectionPager
                             .padding(.top, -16)
                     }
@@ -64,6 +67,13 @@ struct InsightDashboardView: View {
             }
             .onAppear { viewModel.loadData() }
             .refreshable { viewModel.loadData() }
+            .sheet(isPresented: $showCalendarSettings) {
+                CalendarSettingsView(
+                    sourceManager: container.calendarSourceManager,
+                    googleSignInService: container.googleSignInService,
+                    naverSignInService: container.naverSignInService
+                )
+            }
         }
     }
     
