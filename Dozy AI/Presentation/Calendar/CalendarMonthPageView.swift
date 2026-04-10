@@ -120,9 +120,13 @@ struct MonthPageViewController: UIViewControllerRepresentable {
                                 didFinishAnimating finished: Bool,
                                 previousViewControllers: [UIViewController],
                                 transitionCompleted completed: Bool) {
-            guard completed, !isNavigating,
-                  let cell = pvc.viewControllers?.first as? MonthPageCell
-            else { return }
+            guard let cell = pvc.viewControllers?.first as? MonthPageCell else { return }
+            if !completed {
+                // 스와이프 취소 → 현재 달 높이로 복원
+                parent.onWillChangeMonth(cell.month)
+                return
+            }
+            guard !isNavigating else { return }
             parent.onMonthChanged(cell.month)
         }
     }

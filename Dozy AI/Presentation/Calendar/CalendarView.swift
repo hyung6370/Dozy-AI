@@ -101,6 +101,7 @@ struct CalendarView: View {
                     comps.day = 1
                     if let target = cal.date(from: comps) {
                         isForward = target >= viewModel.currentMonth
+                        currentGridHeight = calcGridHeight(for: target)
                         withAnimation(.easeInOut(duration: 0.3)) {
                             viewModel.jumpToMonth(year: pickerYear, month: pickerMonth)
                         }
@@ -247,6 +248,7 @@ struct CalendarView: View {
                         let cal = Calendar.current
                         let todayStart = cal.date(from: cal.dateComponents([.year, .month], from: Date()))!
                         isForward = viewModel.currentMonth < todayStart
+                        currentGridHeight = calcGridHeight(for: Date())
                         viewModel.setCurrentMonth(Date())
                     }
                     viewModel.selectDate(Date())
@@ -260,6 +262,10 @@ struct CalendarView: View {
 
                 Button {
                     isForward = false
+                    if viewModel.viewMode == .month {
+                        let prev = Calendar.current.date(byAdding: .month, value: -1, to: viewModel.currentMonth)!
+                        currentGridHeight = calcGridHeight(for: prev)
+                    }
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
                 } label: {
                     Image(systemName: "chevron.left").fontWeight(.semibold)
@@ -304,6 +310,10 @@ struct CalendarView: View {
             HStack {
                 Button {
                     isForward = true
+                    if viewModel.viewMode == .month {
+                        let next = Calendar.current.date(byAdding: .month, value: 1, to: viewModel.currentMonth)!
+                        currentGridHeight = calcGridHeight(for: next)
+                    }
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
                 } label: {
                     Image(systemName: "chevron.right").fontWeight(.semibold)
