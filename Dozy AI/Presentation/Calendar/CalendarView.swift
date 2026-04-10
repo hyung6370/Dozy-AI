@@ -42,7 +42,8 @@ struct CalendarView: View {
                     if viewModel.viewMode == .day {
                         DayTimelineView(
                             events: viewModel.eventsForSelectedDate,
-                            date: viewModel.selectedDate
+                            date: viewModel.selectedDate,
+                            onTapEvent: { viewModel.showDetailForEventID($0) }
                         )
                         .padding(.horizontal)
                     } else {
@@ -356,8 +357,15 @@ struct CalendarView: View {
         .padding(.bottom, 8)
     }
 
-    // MonthWeekRowView.totalH = 42 + 3*(20+2) + 18 = 126pt, 최대 6주 + bottom padding 8
-    private let monthGridMaxHeight: CGFloat = 764
+    // MonthWeekRowView.totalH = 42 + 3*(20+2) + 18 = 126pt
+    private var monthGridHeight: CGFloat {
+        let cal = Calendar.current
+        let first = cal.date(from: cal.dateComponents([.year, .month], from: viewModel.currentMonth))!
+        let weekday = cal.component(.weekday, from: first) - 1
+        let dayCount = cal.range(of: .day, in: .month, for: viewModel.currentMonth)!.count
+        let weekCount = (weekday + dayCount + 6) / 7
+        return CGFloat(weekCount) * 126 + 8
+    }
 
     @ViewBuilder
     private var panCalendarSection: some View {
@@ -380,7 +388,8 @@ struct CalendarView: View {
                     viewModel.setCurrentMonth(newMonth)
                 }
             )
-            .frame(height: monthGridMaxHeight)
+            .frame(height: monthGridHeight)
+            .animation(.easeInOut(duration: 0.3), value: monthGridHeight)
         } else {
             ZStack {
                 calendarGrid

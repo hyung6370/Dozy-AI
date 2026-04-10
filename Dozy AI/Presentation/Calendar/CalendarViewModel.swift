@@ -477,8 +477,8 @@ final class CalendarViewModel: ObservableObject {
         loadInitialData()
     }
     
-    private func fetchEventsForDate(_ date: Date) {
-        isLoading = true
+    private func fetchEventsForDate(_ date: Date, showLoading: Bool = true) {
+        if showLoading { isLoading = true }
         Publishers.Zip(
             fetchEventsUseCase.execute(for: date),
             fetchDozyEventsUseCase.execute(for: date)
@@ -818,9 +818,7 @@ final class CalendarViewModel: ObservableObject {
 
             newWeekLayouts[wsKey] = layouts
         }
-        withAnimation(.easeInOut(duration: 0.3)) {
-            weekLayouts.merge(newWeekLayouts) { _, new in new }
-        }
+        weekLayouts.merge(newWeekLayouts) { _, new in new }
     }
     
     // MARK: - CRUD
@@ -853,8 +851,8 @@ final class CalendarViewModel: ObservableObject {
                     self.showSuccessAnimation = true
                 }
                 
-                self.fetchEventsForDate(self.selectedDate)
-                self.fetchEventsForMonth()
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
                 self.cancelNotificationUseCase.execute(identifier: event.id)
                 if event.notificationMinutesBefore >= 0 {
                     self.scheduleNotificationUseCase.execute(for: event)
@@ -880,8 +878,8 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
-                self.fetchEventsForDate(self.selectedDate)
-                self.fetchEventsForMonth()
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)
     }
 
@@ -896,8 +894,8 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
-                self.fetchEventsForDate(self.selectedDate)
-                self.fetchEventsForMonth()
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)
     }
 
@@ -913,11 +911,11 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
-                self.fetchEventsForDate(self.selectedDate)
-                self.fetchEventsForMonth()
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)
     }
-    
+
     // MARK: - Memo
     func saveMemos(for event: DozyEvent) {
         updateEventUseCase.execute(event)

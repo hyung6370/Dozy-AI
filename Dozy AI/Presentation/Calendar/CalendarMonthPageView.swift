@@ -198,6 +198,7 @@ struct MonthGridContent: View {
                     onOverflowTap: onOverflowTap
                 )
             }
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, 8)
         .padding(.bottom, 8)
