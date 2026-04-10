@@ -23,6 +23,7 @@ struct CalendarView: View {
     @State private var pickerDate = Date()
     @State private var triggerScrollToList = false
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -69,10 +70,16 @@ struct CalendarView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 4) {
                         Button { showLegend = true } label: {
-                            Image(systemName: "questionmark.circle")
+                            Image(colorScheme == .dark ? "Dark-Question" : "Light-Question")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
                         }
                         Button { viewModel.startCreatingEvent() } label: {
-                            Image(systemName: "plus")
+                            Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
                         }
                     }
                 }

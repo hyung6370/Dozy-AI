@@ -89,7 +89,7 @@ struct CalendarSettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(.systemGray6))
                     .frame(width: 34, height: 34)
-                Image("icons8-Google-Logo-48")
+                Image("google")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)

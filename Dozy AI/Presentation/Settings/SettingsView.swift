@@ -114,7 +114,7 @@ struct SettingsView: View {
                 // Google 로그인
                 Button { authViewModel.signInWithGoogle() } label: {
                     HStack(spacing: 10) {
-                        Image("icons8-Google-Logo-48")
+                        Image("google")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 18, height: 18)
@@ -145,7 +145,7 @@ struct SettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(.systemGray6))
                     .frame(width: 34, height: 34)
-                Image("icons8-Google-Logo-48")
+                Image("google")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)

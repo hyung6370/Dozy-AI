@@ -20,6 +20,8 @@ struct HomeTopBarView: View {
         return formatter.string(from: Date())
     }
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         HStack {
             HStack(spacing: 8) {
@@ -37,14 +39,17 @@ struct HomeTopBarView: View {
 
             HStack(spacing: 16) {
                 Button { onNotificationTap() } label: {
-                    Image(hasNotification ? "notifications_active" : "notifications_none")
+                    Image(hasNotification
+                        ? (colorScheme == .dark ? "Dark-Bell-on" : "Light-Bell-on")
+                        : (colorScheme == .dark ? "Dark-Bell-non" : "Light-Bell-non")
+                    )
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
                 }
 
                 Button { onProfileTap() } label: {
-                    Image("person_outline")
+                    Image(colorScheme == .dark ? "Dark-User" : "Light-User")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
