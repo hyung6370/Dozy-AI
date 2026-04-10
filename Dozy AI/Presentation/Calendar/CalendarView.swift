@@ -21,6 +21,7 @@ struct CalendarView: View {
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
     @State private var showDatePicker = false
     @State private var pickerDate = Date()
+    @State private var triggerScrollToList = false
     @Environment(\.scenePhase) private var scenePhase
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
@@ -28,6 +29,7 @@ struct CalendarView: View {
     
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
                     viewModePicker
@@ -45,11 +47,20 @@ struct CalendarView: View {
                         .padding(.horizontal)
                     } else {
                         eventListSection
+                            .id("eventList")
                     }
                 }
             }
             .refreshable {
                 viewModel.refreshData()
+            }
+            .onChange(of: triggerScrollToList) { _, newVal in
+                if newVal {
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        proxy.scrollTo("eventList", anchor: .top)
+                    }
+                    triggerScrollToList = false
+                }
             }
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
@@ -166,6 +177,7 @@ struct CalendarView: View {
                     viewModel.showCalendarEventEdit = false
                 }
             }
+            } // ScrollViewReader
         }
     }
 
@@ -297,7 +309,11 @@ struct CalendarView: View {
                         longPressDate = date
                         showLongPressAlert = true
                     },
-                    onTapEvent: { viewModel.showDetailForEventID($0) }
+                    onTapEvent: { viewModel.showDetailForEventID($0) },
+                    onOverflowTap: { date in
+                        viewModel.selectDate(date)
+                        triggerScrollToList = true
+                    }
                 )
             }
         }
@@ -320,6 +336,10 @@ struct CalendarView: View {
                 onSelect: { viewModel.selectDate($0) },
                 onLongPress: { date in longPressDate = date; showLongPressAlert = true },
                 onTapEvent: { viewModel.showDetailForEventID($0) },
+                onOverflowTap: { date in
+                    viewModel.selectDate(date)
+                    triggerScrollToList = true
+                },
                 onMonthChanged: { newMonth in
                     isForward = newMonth > viewModel.currentMonth
                     viewModel.setCurrentMonth(newMonth)

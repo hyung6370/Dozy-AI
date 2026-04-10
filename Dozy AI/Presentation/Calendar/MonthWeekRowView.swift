@@ -17,6 +17,7 @@ struct MonthWeekRowView: View {
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String) -> Void
+    let onOverflowTap: (Date) -> Void
     
     private let headerH: CGFloat = 42
     private let rowH: CGFloat = 20
@@ -110,12 +111,17 @@ struct MonthWeekRowView: View {
                             $0.startCol <= col && $0.endCol >= col && $0.row >= maxRows
                         }.count
                         ZStack {
-                            if over > 0 {
-                                Text("+\(over)")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.leading, 4)
+                            if over > 0, let date = weekDates[col] {
+                                Button {
+                                    onOverflowTap(date)
+                                } label: {
+                                    Text("+\(over)")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.leading, 4)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                         .frame(width: cellW)

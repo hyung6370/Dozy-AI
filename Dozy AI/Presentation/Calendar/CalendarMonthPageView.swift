@@ -21,6 +21,7 @@ struct MonthPageViewController: UIViewControllerRepresentable {
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String) -> Void
+    let onOverflowTap: (Date) -> Void
     let onMonthChanged: (Date) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
@@ -83,7 +84,8 @@ struct MonthPageViewController: UIViewControllerRepresentable {
                 isSelected: parent.isSelected,
                 onSelect: parent.onSelect,
                 onLongPress: parent.onLongPress,
-                onTapEvent: parent.onTapEvent
+                onTapEvent: parent.onTapEvent,
+                onOverflowTap: parent.onOverflowTap
             )
         }
 
@@ -130,7 +132,8 @@ final class MonthPageCell: UIHostingController<MonthGridContent> {
          isSelected: @escaping (Date) -> Bool,
          onSelect: @escaping (Date) -> Void,
          onLongPress: @escaping (Date) -> Void,
-         onTapEvent: @escaping (String) -> Void) {
+         onTapEvent: @escaping (String) -> Void,
+         onOverflowTap: @escaping (Date) -> Void) {
         self.month = month
         super.init(rootView: MonthGridContent(
             month: month,
@@ -140,7 +143,8 @@ final class MonthPageCell: UIHostingController<MonthGridContent> {
             isSelected: isSelected,
             onSelect: onSelect,
             onLongPress: onLongPress,
-            onTapEvent: onTapEvent
+            onTapEvent: onTapEvent,
+            onOverflowTap: onOverflowTap
         ))
         view.backgroundColor = .clear
     }
@@ -156,7 +160,8 @@ final class MonthPageCell: UIHostingController<MonthGridContent> {
             isSelected: rootView.isSelected,
             onSelect: rootView.onSelect,
             onLongPress: rootView.onLongPress,
-            onTapEvent: rootView.onTapEvent
+            onTapEvent: rootView.onTapEvent,
+            onOverflowTap: rootView.onOverflowTap
         )
     }
 }
@@ -173,6 +178,7 @@ struct MonthGridContent: View {
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String) -> Void
+    let onOverflowTap: (Date) -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -187,7 +193,8 @@ struct MonthGridContent: View {
                     isSelected: isSelected,
                     onSelect: onSelect,
                     onLongPress: onLongPress,
-                    onTapEvent: onTapEvent
+                    onTapEvent: onTapEvent,
+                    onOverflowTap: onOverflowTap
                 )
             }
         }
