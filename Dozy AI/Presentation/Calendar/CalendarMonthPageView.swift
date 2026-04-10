@@ -20,7 +20,7 @@ struct MonthPageViewController: UIViewControllerRepresentable {
     let isSelected: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
-    let onTapEvent: (String) -> Void
+    let onTapEvent: (String, Date) -> Void
     let onOverflowTap: (Date) -> Void
     let onMonthChanged: (Date) -> Void
 
@@ -132,7 +132,7 @@ final class MonthPageCell: UIHostingController<MonthGridContent> {
          isSelected: @escaping (Date) -> Bool,
          onSelect: @escaping (Date) -> Void,
          onLongPress: @escaping (Date) -> Void,
-         onTapEvent: @escaping (String) -> Void,
+         onTapEvent: @escaping (String, Date) -> Void,
          onOverflowTap: @escaping (Date) -> Void) {
         self.month = month
         super.init(rootView: MonthGridContent(
@@ -177,7 +177,7 @@ struct MonthGridContent: View {
     let isSelected: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
-    let onTapEvent: (String) -> Void
+    let onTapEvent: (String, Date) -> Void
     let onOverflowTap: (Date) -> Void
 
     var body: some View {

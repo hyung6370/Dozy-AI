@@ -17,7 +17,7 @@ struct MonthWeekRowView: View {
     let isInMonth: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
-    let onTapEvent: (String) -> Void
+    let onTapEvent: (String, Date) -> Void
     let onOverflowTap: (Date) -> Void
     
     private let headerH: CGFloat = 42
@@ -88,11 +88,12 @@ struct MonthWeekRowView: View {
                     let xOff = cellW * CGFloat(layout.startCol) + (layout.isActualStart ? 2 : 0)
                     let pillW = cellW * CGFloat(layout.endCol - layout.startCol + 1) - (layout.isActualStart ? 2 : 0) - (layout.isActualEnd ? 2 : 0)
                     let yOff = headerH + CGFloat(layout.row) * (rowH + rowGap)
-                    
+                    let pillDate = weekDates[min(layout.startCol, weekDates.count - 1)]
+
                     EventPill(layout: layout)
                         .frame(width: max(0, pillW), height: rowH)
                         .offset(x: xOff, y: yOff)
-                        .onTapGesture { onTapEvent(layout.id) }
+                        .onTapGesture { onTapEvent(layout.eventId, pillDate) }
                 }
                 
                 // 넘침 표시

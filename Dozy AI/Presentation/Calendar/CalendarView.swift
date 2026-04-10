@@ -345,7 +345,7 @@ struct CalendarView: View {
                         longPressDate = date
                         showLongPressAlert = true
                     },
-                    onTapEvent: { viewModel.showDetailForEventID($0) },
+                    onTapEvent: { id, date in viewModel.showDetailForEventID(id, on: date) },
                     onOverflowTap: { date in
                         viewModel.selectDate(date)
                         triggerScrollToList = true
@@ -378,7 +378,7 @@ struct CalendarView: View {
                 isSelected: { viewModel.isSelected($0) },
                 onSelect: { viewModel.selectDate($0) },
                 onLongPress: { date in longPressDate = date; showLongPressAlert = true },
-                onTapEvent: { viewModel.showDetailForEventID($0) },
+                onTapEvent: { id, date in viewModel.showDetailForEventID(id, on: date) },
                 onOverflowTap: { date in
                     viewModel.selectDate(date)
                     triggerScrollToList = true

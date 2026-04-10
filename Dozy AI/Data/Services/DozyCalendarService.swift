@@ -29,7 +29,10 @@ final class DozyCalendarService: CalendarServiceProtocol {
             repository.fetchAllRecurring()
         )
         .map { regular, recurring in
-            let regularEvents = regular.map { $0.toCalendarEvent() }
+            // 비반복 일정만 date range로 처리 (반복 일정은 occursOn으로 전개)
+            let regularEvents = regular
+                .filter { $0.recurrenceRule == "none" || $0.recurrenceRule.isEmpty }
+                .map { $0.toCalendarEvent() }
             let recurringEvents = recurring
                 .filter { $0.occursOn(date) }
                 .map { $0.toCalendarEvent(for: date) }

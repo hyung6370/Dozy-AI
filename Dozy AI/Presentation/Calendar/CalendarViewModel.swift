@@ -22,7 +22,8 @@ enum CalendarViewMode: CaseIterable {
 }
 
 struct CalendarEventLayout: Identifiable {
-    let id: String
+    let id: String       // ForEach 고유 키 (eventId + 위치 조합 — 반복 일정 중복 방지)
+    let eventId: String  // 실제 이벤트 ID (탭·삭제에 사용)
     let title: String
     let colorHex: String
     let source: CalendarSource
@@ -257,7 +258,15 @@ final class CalendarViewModel: ObservableObject {
         showEventDetail = true
     }
 
-    func showDetailForEventID(_ id: String) {
+    func showDetailForEventID(_ id: String, on occurrenceDate: Date? = nil) {
+        // 반복 DozyEvent의 특정 날짜 인스턴스를 직접 재구성 (비동기 fetch 없이 즉시 조회)
+        if let date = occurrenceDate,
+           let dozy = dozyEventsByID[id],
+           dozy.occursOn(date) {
+            let event = dozy.toCalendarEvent(for: date).applying(displaySettingsByID[id])
+            showDetail(for: event)
+            return
+        }
         if let event = eventsForSelectedDate.first(where: { $0.id == id }) {
             showDetail(for: event)
         } else if let event = allEventsInMonth[id] {
@@ -354,7 +363,7 @@ final class CalendarViewModel: ObservableObject {
                     withAnimation(.easeInOut(duration: 0.25)) {
                         self.eventsForSelectedDate.removeAll { $0.id == event.id }
                         for key in self.weekLayouts.keys {
-                            self.weekLayouts[key]?.removeAll { $0.id == event.id }
+                            self.weekLayouts[key]?.removeAll { $0.eventId == event.id }
                         }
                         for key in self.eventBarsPerDate.keys {
                             self.eventBarsPerDate[key]?.removeAll { $0.id == event.id }
@@ -664,7 +673,17 @@ final class CalendarViewModel: ObservableObject {
         let endDay = cal.startOfDay(for: end)
         while date < endDay {
             let nextDate = cal.date(byAdding: .day, value: 1, to: date)!
-            let dayEvents = events.filter { $0.startDate < nextDate && $0.endDate > date }
+            let dayEvents = events.filter { ev in
+                // all-day 이벤트는 endDate == startDate (Dozy 저장 방식: finalEnd = isAllDay ? startDate : endDate)
+                // midnight > midnight = false 가 되어 필터링됨 → effectiveEnd를 다음날 자정으로 보정
+                let effectiveEnd: Date
+                if ev.isAllDay, cal.startOfDay(for: ev.endDate) <= cal.startOfDay(for: ev.startDate) {
+                    effectiveEnd = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: ev.startDate))!
+                } else {
+                    effectiveEnd = ev.endDate
+                }
+                return ev.startDate < nextDate && effectiveEnd > date
+            }
             result.append((date, dayEvents))
             date = nextDate
         }
@@ -730,6 +749,20 @@ final class CalendarViewModel: ObservableObject {
         // 반복 일정은 연속 날짜 그룹별로 분리 (예: 매주 월요일 → 각 월요일이 독립 스팬)
         var segmentedEvents: [(CalendarEvent, Set<Date>)] = []
         for (_, (event, dates)) in eventDatesMap {
+            // 단일 날짜 이벤트(당일 종료)가 여러 날에 걸쳐 있으면 반복 인스턴스이므로 각 날을 독립 세그먼트로
+            let isSingleDayEvent: Bool
+            if event.isAllDay {
+                let dayDiff = cal.dateComponents([.day], from: cal.startOfDay(for: event.startDate),
+                                                 to: cal.startOfDay(for: event.endDate)).day ?? 0
+                isSingleDayEvent = dayDiff <= 1
+            } else {
+                isSingleDayEvent = cal.isDate(event.startDate, inSameDayAs: event.endDate)
+            }
+            if isSingleDayEvent && dates.count > 1 {
+                for date in dates { segmentedEvents.append((event, [date])) }
+                continue
+            }
+
             let sorted = dates.sorted()
             var currentGroup: [Date] = []
             for date in sorted {
@@ -807,7 +840,9 @@ final class CalendarViewModel: ObservableObject {
                 for col in sc...ec { occupied[assignedRow][col] = true }
 
                 layouts.append(CalendarEventLayout(
-                    id: event.id, title: event.title, colorHex: event.calendarColorHex,
+                    id: "\(event.id)_\(sc)_\(assignedRow)",
+                    eventId: event.id,
+                    title: event.title, colorHex: event.calendarColorHex,
                     source: event.source,
                     startCol: sc, endCol: ec, row: assignedRow,
                     isActualStart: isStart, isActualEnd: isEnd,

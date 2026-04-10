@@ -50,15 +50,16 @@ final class EventEditViewModel: ObservableObject {
             category = WorkCategory(rawValue: e.category) ?? .general
         } else {
             let calendar = Calendar.current
+            let defaultEnd = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
             title = ""
             isAllDay = false
-            startDate = calendar.date(bySettingHour: 9,  minute: 0, second: 0, of: selectedDate) ?? selectedDate
-            endDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+            startDate = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+            endDate = defaultEnd
             location = ""
             notes = ""
             notificationMinutesBefore = -1
             recurrenceRule = "none"
-            recurrenceEndDate = Calendar.current.date(byAdding: .year, value: 1, to: selectedDate) ?? selectedDate
+            recurrenceEndDate = defaultEnd  // 이벤트 종료일 기준으로 초기화 (사용자가 반복 종료일을 직접 연장)
             selectedColor = .blue
             priority = 0
             isPinned = false
