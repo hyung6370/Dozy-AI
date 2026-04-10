@@ -35,32 +35,7 @@ struct CalendarView: View {
                     if viewModel.viewMode != .week {
                         weekdayHeader
                     }
-                    ZStack {
-                        calendarGrid
-                            .id(viewModel.currentPeriodString)
-                            .transition(.asymmetric(
-                                insertion: .move(edge: isForward ? .trailing : .leading),
-                                removal: .move(edge: isForward ? .leading : .trailing)
-                            ))
-                    }
-                    .clipped()
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 30, coordinateSpace: .local)
-                            .onEnded { value in
-                                guard abs(value.translation.width) > abs(value.translation.height) else { return }
-                                if value.translation.width < -30 {
-                                    isForward = true
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        viewModel.nextPeriod()
-                                    }
-                                } else if value.translation.width > 30 {
-                                    isForward = false
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        viewModel.previousPeriod()
-                                    }
-                                }
-                            }
-                    )
+                    panCalendarSection
                     Divider().padding(.horizontal)
                     if viewModel.viewMode == .day {
                         DayTimelineView(
@@ -234,9 +209,7 @@ struct CalendarView: View {
         HStack {
             Button {
                 isForward = false
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    viewModel.previousPeriod()
-                }
+                withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
             } label: {
                 Image(systemName: "chevron.left").fontWeight(.semibold)
             }
@@ -278,9 +251,7 @@ struct CalendarView: View {
 
             Button {
                 isForward = true
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    viewModel.nextPeriod()
-                }
+                withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
             } label: {
                 Image(systemName: "chevron.right").fontWeight(.semibold)
             }
@@ -305,14 +276,18 @@ struct CalendarView: View {
     }
     
     // MARK: - Calendar Grid
-    
+
     private var monthGrid: some View {
+        monthGridView(for: viewModel.currentMonth)
+    }
+
+    private func monthGridView(for month: Date) -> some View {
         VStack(spacing: 0) {
-            ForEach(Array(viewModel.weeksInMonth.enumerated()), id: \.offset) { weekIndex, week in
+            ForEach(Array(viewModel.weeksFor(month: month).enumerated()), id: \.offset) { weekIndex, week in
                 MonthWeekRowView(
                     weekDates: week,
                     layouts: viewModel.weekLayouts[
-                        Calendar.current.startOfDay(for: viewModel.weekStart(for: weekIndex))
+                        Calendar.current.startOfDay(for: viewModel.weekStartDate(weekIndex: weekIndex, month: month))
                     ] ?? [],
                     selectedDate: viewModel.selectedDate,
                     isToday: { viewModel.isToday($0) },
@@ -328,6 +303,53 @@ struct CalendarView: View {
         }
         .padding(.horizontal, 8)
         .padding(.bottom, 8)
+    }
+
+    // MonthWeekRowView.totalH = 42 + 3*(20+2) + 18 = 126pt, 최대 6주 + bottom padding 8
+    private let monthGridMaxHeight: CGFloat = 764
+
+    @ViewBuilder
+    private var panCalendarSection: some View {
+        if viewModel.viewMode == .month {
+            MonthPageViewController(
+                currentMonth: viewModel.currentMonth,
+                weekLayouts: viewModel.weekLayouts,
+                selectedDate: viewModel.selectedDate,
+                isToday: { viewModel.isToday($0) },
+                isSelected: { viewModel.isSelected($0) },
+                onSelect: { viewModel.selectDate($0) },
+                onLongPress: { date in longPressDate = date; showLongPressAlert = true },
+                onTapEvent: { viewModel.showDetailForEventID($0) },
+                onMonthChanged: { newMonth in
+                    isForward = newMonth > viewModel.currentMonth
+                    viewModel.setCurrentMonth(newMonth)
+                }
+            )
+            .frame(height: monthGridMaxHeight)
+        } else {
+            ZStack {
+                calendarGrid
+                    .id(viewModel.currentPeriodString)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: isForward ? .trailing : .leading),
+                        removal: .move(edge: isForward ? .leading : .trailing)
+                    ))
+            }
+            .clipped()
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 30, coordinateSpace: .local)
+                    .onEnded { value in
+                        guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                        if value.translation.width < -30 {
+                            isForward = true
+                            withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
+                        } else if value.translation.width > 30 {
+                            isForward = false
+                            withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
+                        }
+                    }
+            )
+        }
     }
 
     private var calendarGrid: some View {
