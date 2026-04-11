@@ -118,8 +118,8 @@ final class DailySummaryViewModel: ObservableObject {
         .receive(on: DispatchQueue.main)
         .sink(
             receiveCompletion: { [weak self] completion in
-                self?.isGenerating = false
                 self?.generationProgress = ""
+                self?.isGenerating = false
                 if case .failure(let error) = completion {
                     self?.errorMessage = error.errorDescription
                 }

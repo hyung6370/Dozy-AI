@@ -126,6 +126,7 @@ final class MockAIService: AIServiceProtocol {
 
 final class MockWorkLogRepository: WorkLogRepositoryProtocol {
     var stubbedLog: WorkLog? = nil
+    var stubbedRecentLogs: [WorkLog] = []
     var stubbedFetchError: DozyError? = nil
     var stubbedSaveError: DozyError? = nil
     private(set) var saveCallCount = 0
@@ -136,7 +137,8 @@ final class MockWorkLogRepository: WorkLogRepositoryProtocol {
     }
 
     func fetchRecentLogs(days: Int) -> AnyPublisher<[WorkLog], DozyError> {
-        Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedFetchError { return Fail(error: error).eraseToAnyPublisher() }
+        return Just(stubbedRecentLogs).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
 
     func save(_ log: WorkLog) -> AnyPublisher<Void, DozyError> {

@@ -17,6 +17,7 @@
 		AA1100020000000000000002 /* UseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000002 /* UseCaseTests.swift */; };
 		AA1100020000000000000003 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000003 /* Mocks.swift */; };
 		AA1100020000000000000004 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000004 /* TestHelpers.swift */; };
+		AA1100020000000000000005 /* ViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000005 /* ViewModelTests.swift */; };
 		DD808EBB2F694B2F00F4956A /* Dozy_AIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */; };
 		DD808EBC2F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB92F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift */; };
 		DD808ED42F694C6F00F4956A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808ED32F694C6F00F4956A /* HomeView.swift */; };
@@ -206,6 +207,7 @@
 		AA1100010000000000000002 /* UseCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCaseTests.swift; sourceTree = "<group>"; };
 		AA1100010000000000000003 /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
 		AA1100010000000000000004 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
+		AA1100010000000000000005 /* ViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelTests.swift; sourceTree = "<group>"; };
 		DD808EB82F694B2F00F4956A /* Dozy_AIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIUITests.swift; sourceTree = "<group>"; };
 		DD808EB92F694B2F00F4956A /* Dozy_AIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AIUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		DD808ED32F694C6F00F4956A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -437,6 +439,7 @@
 				AA1100010000000000000002 /* UseCaseTests.swift */,
 				AA1100010000000000000003 /* Mocks.swift */,
 				AA1100010000000000000004 /* TestHelpers.swift */,
+				AA1100010000000000000005 /* ViewModelTests.swift */,
 			);
 			path = "Dozy AITests";
 			sourceTree = "<group>";
@@ -1138,6 +1141,7 @@
 				AA1100020000000000000002 /* UseCaseTests.swift in Sources */,
 				AA1100020000000000000003 /* Mocks.swift in Sources */,
 				AA1100020000000000000004 /* TestHelpers.swift in Sources */,
+				AA1100020000000000000005 /* ViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
