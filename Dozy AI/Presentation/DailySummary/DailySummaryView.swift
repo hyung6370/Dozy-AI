@@ -52,29 +52,60 @@ struct DailySummaryView: View {
             VStack(spacing: 0) {
                 tabBar
 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        if viewModel.selectedTab == .category {
-                            categoryTab
-                        } else if viewModel.isGenerating {
+                if viewModel.isGenerating {
+                    ScrollView {
+                        VStack(spacing: 20) {
                             generatingSection
-                        } else if viewModel.summary != nil {
-                            switch viewModel.selectedTab {
-                            case .overview:         overviewTab
-                            case .highlights:       highlightsTab
-                            case .recommendations:  recommendationsTab
-                            case .trends:           trendsTab
-                            case .category:         EmptyView()
-                            }
-                        } else {
-                            emptyStateSection
                         }
-
-                        if let error = viewModel.errorMessage {
-                            errorBanner(error)
-                        }
+                        .padding()
                     }
-                    .padding()
+                } else if viewModel.summary != nil {
+                    TabView(selection: Binding(
+                        get: { viewModel.selectedTab },
+                        set: { newTab in
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                viewModel.selectedTab = newTab
+                            }
+                        }
+                    )) {
+                        ScrollView {
+                            VStack(spacing: 20) {
+                                overviewTab
+                                if let error = viewModel.errorMessage { errorBanner(error) }
+                            }
+                            .padding()
+                        }
+                        .tag(SummaryTab.overview)
+
+                        ScrollView {
+                            VStack(spacing: 20) { highlightsTab }.padding()
+                        }
+                        .tag(SummaryTab.highlights)
+
+                        ScrollView {
+                            VStack(spacing: 20) { recommendationsTab }.padding()
+                        }
+                        .tag(SummaryTab.recommendations)
+
+                        ScrollView {
+                            VStack(spacing: 20) { trendsTab }.padding()
+                        }
+                        .tag(SummaryTab.trends)
+
+                        ScrollView {
+                            VStack(spacing: 20) { categoryTab }.padding()
+                        }
+                        .tag(SummaryTab.category)
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                } else {
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            emptyStateSection
+                            if let error = viewModel.errorMessage { errorBanner(error) }
+                        }
+                        .padding()
+                    }
                 }
             }
             .navigationTitle("AI 일정 요약")
