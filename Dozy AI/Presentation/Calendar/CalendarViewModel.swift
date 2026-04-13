@@ -92,6 +92,9 @@ final class CalendarViewModel: ObservableObject {
     private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
     private weak var calendarService: CompositeCalendarSerivce?
     private var cancellables = Set<AnyCancellable>()
+    // 날짜별 이벤트 fetch 전용 — 새 날짜 선택 시 이전 fetch를 자동 취소하기 위해 Set이 아닌 단일 변수 사용
+    private var fetchDateCancellable: AnyCancellable?
+    private var fetchDateSettingsCancellable: AnyCancellable?
     private let displaySettingsRepo: EventDisplaySettingsRepository
     
     init(
@@ -494,7 +497,7 @@ final class CalendarViewModel: ObservableObject {
     
     private func fetchEventsForDate(_ date: Date, showLoading: Bool = true) {
         if showLoading { isLoading = true }
-        Publishers.Zip(
+        fetchDateCancellable = Publishers.Zip(
             fetchEventsUseCase.execute(for: date),
             fetchDozyEventsUseCase.execute(for: date)
         )
@@ -524,7 +527,8 @@ final class CalendarViewModel: ObservableObject {
 
                 // Apple/Google 이벤트에 display settings 오버라이드 적용 후 정렬
                 Logger.calendar.debug("🔄 fetchEventsForDate → fetchAll(for: \(nonDozyIDs.count)건)")
-                self.displaySettingsRepo.fetchAll(for: nonDozyIDs)
+                // 전용 cancellable 사용 → 새 날짜 선택 시 이전 settings fetch 자동 취소
+                self.fetchDateSettingsCancellable = self.displaySettingsRepo.fetchAll(for: nonDozyIDs)
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self] settings in
                         guard let self else { return }
@@ -550,10 +554,8 @@ final class CalendarViewModel: ObservableObject {
                         }
                         self.isLoading = false
                     }
-                    .store(in: &self.cancellables)
             }
         )
-        .store(in: &cancellables)
     }
 
     // MARK: - Display Settings
