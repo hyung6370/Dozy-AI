@@ -271,6 +271,12 @@ final class DailySummaryViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    // MARK: - 추천 액션 삭제
+
+    func removeAction(_ action: RecommendedAction) {
+        recommendedActions.removeAll { $0.id == action.id }
+    }
+
     // MARK: - 리마인더 추가
     // NOTE: 이 메서드는 직접 EKEventStore를 사용합니다.
     // 추후 ReminderServiceProtocol에 addReminder 메서드를 추가하고

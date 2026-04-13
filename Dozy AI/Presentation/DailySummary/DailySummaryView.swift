@@ -262,13 +262,53 @@ private extension DailySummaryView {
     }
 
     func metaChips(_ summary: DailySummary) -> some View {
-        HStack(spacing: 10) {
-            MetaChip(icon: "calendar", text: "일정 \(summary.totalEventMinutes)분")
-            MetaChip(icon: "checkmark.circle", text: "완료 \(summary.completedTaskCount)건")
-            let catName = summary.detectedCategory
-            let catEmoji = userCategories.first(where: { $0.name == catName })?.emoji ?? "📌"
-            MetaChip(icon: "tag", text: "\(catEmoji) \(catName)")
+        let h = summary.totalEventMinutes / 60
+        let m = summary.totalEventMinutes % 60
+        let timeText = h > 0 ? "\(h)시간 \(m)분" : "\(m)분"
+        let catName = summary.detectedCategory
+        let catEmoji = userCategories.first(where: { $0.name == catName })?.emoji ?? "📌"
+        let todayPendingCount = viewModel.pendingTasks.filter { task in
+            guard let due = task.dueDate else { return false }
+            return Calendar.current.compare(due, to: Date(), toGranularity: .day) != .orderedDescending
+        }.count
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                metaCell(icon: "calendar", label: "일정", value: timeText)
+                metaCell(icon: "checkmark.circle", label: "완료", value: "\(summary.completedTaskCount)건")
+            }
+            HStack(spacing: 8) {
+                metaCell(icon: "circle", label: "남은 일", value: "\(todayPendingCount)건")
+                metaCell(icon: "tag", label: "카테고리", value: "\(catEmoji) \(catName)")
+            }
+            Text("Dozy 앱과 애플의 미리알림 앱을 종합해서 나타낸 요약입니다.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .padding(.horizontal, 4)
         }
+    }
+
+    private func metaCell(icon: String, label: String, value: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(width: 20)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     func scoreGradient(for score: Double) -> AngularGradient {
@@ -425,7 +465,7 @@ private extension DailySummaryView {
                 Image(systemName: "bell.badge")
                     .font(.caption)
                     .foregroundStyle(.blue)
-                Text("카드를 탭하면 상세 내용, + 버튼으로 미리알림 추가")
+                Text("탭: 상세보기 · +: 미리알림 추가 · AI카드 왼쪽 스와이프: 삭제")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -454,11 +494,30 @@ private extension DailySummaryView {
             .background(Color(.systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            ForEach(viewModel.recommendedActions) { action in
-                recommendationRow(action)
-                    .contentShape(Rectangle())
-                    .onTapGesture { selectedAction = action }
+            List {
+                ForEach(viewModel.recommendedActions) { action in
+                    recommendationRow(action)
+                        .contentShape(Rectangle())
+                        .onTapGesture { selectedAction = action }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            if action.isFromAI {
+                                Button(role: .destructive) {
+                                    withAnimation {
+                                        viewModel.removeAction(action)
+                                    }
+                                } label: {
+                                    Label("삭제", systemImage: "trash")
+                                }
+                            }
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                }
             }
+            .listStyle(.plain)
+            .scrollDisabled(true)
+            .frame(height: CGFloat(viewModel.recommendedActions.count) * 82)
             .sheet(item: $selectedAction) { action in
                 recommendationDetailSheet(action)
             }
