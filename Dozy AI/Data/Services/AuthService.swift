@@ -125,6 +125,21 @@ final class AuthService: NSObject {
         }
         .eraseToAnyPublisher()
     }
+    
+    // MARK: - 회원탈퇴
+    func deleteAccount() -> AnyPublisher<Void, DozyError> {
+        Future { promise in
+            Task {
+                do {
+                    try await supabase.rpc("delete_user_account").execute()
+                    promise(.success(()))
+                } catch {
+                    promise(.failure(.unknown(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
 
     // MARK: - Nonce Helpers
 

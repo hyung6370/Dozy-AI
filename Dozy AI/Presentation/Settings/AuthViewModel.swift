@@ -155,6 +155,32 @@ final class AuthViewModel: ObservableObject {
             )
             .store(in: &cancellables)
     }
+    
+    // MARK: - 회원탈퇴
+    func deleteAccount() {
+        isLoading = true
+        errorMessage = nil
+        authService.deleteAccount()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] in
+                    guard let self else { return }
+                    // 로컬 데이터 전체 삭제
+                    self.syncService.clearAllLocalData()
+                    // Keychain 정리
+                    KeychainService.delete(forKey: Self.displayNameKey)
+                    // 상태 초기화 → UI가 비로그인 상태로 전환
+                    self.currentUser = nil
+                }
+            )
+            .store(in: &cancellables)
+    }
 
     // MARK: - Private
 

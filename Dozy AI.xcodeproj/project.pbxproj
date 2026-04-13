@@ -7,12 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		537D603E1FCE461BB9A004F8 /* AppVersionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138EDD04FB7644938FBB1BBD /* AppVersionService.swift */; };
+		60321A7CA4214E30AD5EA56A /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */; };
+		65B047887D5346E8ABBD7B8B /* ForceUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D3974F44814EBCA970B11B /* ForceUpdateView.swift */; };
 		AA1100020000000000000001 /* DomainModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000001 /* DomainModelTests.swift */; };
 		AA1100020000000000000002 /* UseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000002 /* UseCaseTests.swift */; };
 		AA1100020000000000000003 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000003 /* Mocks.swift */; };
 		AA1100020000000000000004 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000004 /* TestHelpers.swift */; };
 		AA1100020000000000000005 /* ViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000005 /* ViewModelTests.swift */; };
 		CEEBF7E3E8D2D65697104350 /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
+		D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E74C13AD0E4860A1AE7875 /* KeychainService.swift */; };
 		DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD22F72C44100EEE463 /* DozyError.swift */; };
 		DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */; };
 		DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD808EB02F694B2A00F4956A /* Dozy_AIApp.swift */; };
@@ -81,11 +85,7 @@
 		F60ADF0A2F7FB007007B8D9F /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */; };
 		F60ADF0C2F7FB0B0007B8D9F /* AuthUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */; };
 		F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */; };
-		537D603E1FCE461BB9A004F8 /* AppVersionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138EDD04FB7644938FBB1BBD /* AppVersionService.swift */; };
-		65B047887D5346E8ABBD7B8B /* ForceUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D3974F44814EBCA970B11B /* ForceUpdateView.swift */; };
 		F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */; };
-		D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E74C13AD0E4860A1AE7875 /* KeychainService.swift */; };
-		60321A7CA4214E30AD5EA56A /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */; };
 		F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */; };
 		F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF132F832AD6007B8D9F /* SettingsView.swift */; };
 		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
@@ -133,6 +133,7 @@
 		F619D9872F7A4A1400084C61 /* EventEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */; };
 		F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9882F7A4ADD00084C61 /* EventEditView.swift */; };
 		F619D98B2F7A4C8400084C61 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D98A2F7A4C8400084C61 /* Color+Hex.swift */; };
+		F635FD542F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */; };
 		F63C685E2F84BB70003464E8 /* HomeTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */; };
 		F63C68692F84F481003464E8 /* NotificationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68682F84F481003464E8 /* NotificationRecord.swift */; };
 		F63C686B2F84F4E2003464E8 /* NotificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */; };
@@ -198,6 +199,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		138EDD04FB7644938FBB1BBD /* AppVersionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionService.swift; sourceTree = "<group>"; };
+		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
+		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		AA1100010000000000000001 /* DomainModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModelTests.swift; sourceTree = "<group>"; };
 		AA1100010000000000000002 /* UseCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCaseTests.swift; sourceTree = "<group>"; };
 		AA1100010000000000000003 /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
@@ -269,11 +274,7 @@
 		F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUser.swift; sourceTree = "<group>"; };
 		F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
-		138EDD04FB7644938FBB1BBD /* AppVersionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionService.swift; sourceTree = "<group>"; };
-		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
 		F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthError.swift; sourceTree = "<group>"; };
-		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
-		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		F60ADF132F832AD6007B8D9F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F616DCD02F7B448300FA0476 /* NaverSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverSignInService.swift; sourceTree = "<group>"; };
@@ -320,6 +321,7 @@
 		F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditViewModel.swift; sourceTree = "<group>"; };
 		F619D9882F7A4ADD00084C61 /* EventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditView.swift; sourceTree = "<group>"; };
 		F619D98A2F7A4C8400084C61 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
 		F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTopBarView.swift; sourceTree = "<group>"; };
 		F63C68682F84F481003464E8 /* NotificationRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRecord.swift; sourceTree = "<group>"; };
 		F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRepository.swift; sourceTree = "<group>"; };
@@ -784,6 +786,7 @@
 				DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */,
 				DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */,
 				F60ADF132F832AD6007B8D9F /* SettingsView.swift */,
+				F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1061,6 +1064,7 @@
 				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,
 				DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */,
 				DDA9A5B62F89560300C1572C /* UserCategory.swift in Sources */,
+				F635FD542F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift in Sources */,
 				F619D9732F7A36C600084C61 /* CreateDozyEventUseCase.swift in Sources */,
 				F65068272F7D07E100F9C124 /* CalendarWriteServiceProtocol.swift in Sources */,
 				F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */,

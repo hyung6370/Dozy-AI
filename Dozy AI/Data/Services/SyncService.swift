@@ -380,6 +380,7 @@ final class SyncService {
         }
         .eraseToAnyPublisher()
     }
+    
     private func downloadUserCategories(userID: String) -> AnyPublisher<Void, DozyError> {
         Future { [weak self] promise in
             guard let self else { return }
@@ -428,6 +429,19 @@ final class SyncService {
             }
         }
         .eraseToAnyPublisher()
+    }
+    
+    // MARK: - 로컬 SwiftData 전체 삭제 (탈퇴 시 호출)
+    func clearAllLocalData() {
+        let deletions: [() throws -> Void] = [
+            { try self.modelContext.delete(model: WorkLog.self) },
+            { try self.modelContext.delete(model: EventCompletion.self) },
+            { try self.modelContext.delete(model: EventDisplaySettings.self) },
+            { try self.modelContext.delete(model: UserCategory.self) },
+            { try self.modelContext.delete(model: DozyEvent.self) }
+        ]
+        for deletion in deletions { try? deletion() }
+        try? modelContext.save()
     }
 }
 
