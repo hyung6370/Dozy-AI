@@ -603,6 +603,7 @@ private struct DatePickerSheetView: View {
         NavigationStack {
             DatePicker("날짜 선택", selection: $selectedDate, displayedComponents: .date)
                 .datePickerStyle(.graphical)
+                .environment(\.locale, Locale(identifier: "ko_KR"))
                 .padding(.horizontal)
             .navigationTitle("날짜 이동")
             .navigationBarTitleDisplayMode(.inline)

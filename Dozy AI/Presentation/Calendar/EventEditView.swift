@@ -32,9 +32,12 @@ struct EventEditView: View {
                     
                     if viewModel.isAllDay {
                         DatePicker("날짜", selection: $viewModel.startDate, displayedComponents: .date)
+                            .environment(\.locale, Locale(identifier: "ko_KR"))
                     } else {
                         DatePicker("시작", selection: $viewModel.startDate, displayedComponents: [.date, .hourAndMinute])
+                            .environment(\.locale, Locale(identifier: "ko_KR"))
                         DatePicker("종료", selection: $viewModel.endDate, displayedComponents: [.date, .hourAndMinute])
+                            .environment(\.locale, Locale(identifier: "ko_KR"))
                     }
                 }
                 
@@ -78,6 +81,7 @@ struct EventEditView: View {
                             selection: $viewModel.recurrenceEndDate,
                             displayedComponents: .date
                         )
+                        .environment(\.locale, Locale(identifier: "ko_KR"))
                     }
                 }
                 
