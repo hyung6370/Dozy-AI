@@ -6,15 +6,19 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct RootView: View {
 
     let container: DependencyContainer
     @State private var showIntro = true
     @State private var showPrivacyScreen = false
-    @Environment(\.scenePhase) private var scenePhase
+    @State private var forceUpdateRequired = false
 
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var networkMonitor = NetworkMonitor.shared
+
+    private let appVersionService = AppVersionService()
 
     var body: some View {
         ZStack {
@@ -45,10 +49,20 @@ struct RootView: View {
                     .zIndex(3)
                     .transition(.opacity)
             }
+
+            // 강제 업데이트 화면 — 모든 UI 위에 표시하여 앱 사용 차단
+            if forceUpdateRequired {
+                ForceUpdateView(appStoreURL: AppStoreConfig.appStoreURL)
+                    .zIndex(10)
+                    .transition(.opacity)
+            }
         }
         .animation(.easeInOut(duration: 0.35), value: networkMonitor.isConnected)
+        .animation(.easeInOut(duration: 0.25), value: forceUpdateRequired)
+        .task {
+            await checkForceUpdate()
+        }
         .onChange(of: scenePhase) { _, newPhase in
-            // 인트로 중에는 privacy screen 무시
             guard !showIntro else { return }
 
             switch newPhase {
@@ -58,9 +72,26 @@ struct RootView: View {
                 withAnimation(.easeInOut(duration: 0.4)) {
                     showPrivacyScreen = false
                 }
+                // 포그라운드 복귀 시에도 재체크 (사용자가 업데이트 후 돌아온 경우 해제)
+                Task { await checkForceUpdate() }
             @unknown default:
                 break
             }
+        }
+    }
+
+    // MARK: - Force Update
+
+    @MainActor
+    private func checkForceUpdate() async {
+        guard networkMonitor.isConnected else { return }
+        guard let minimumVersion = await appVersionService.fetchMinimumVersion() else { return }
+        let required = appVersionService.isUpdateRequired(minimumVersion: minimumVersion)
+        withAnimation {
+            forceUpdateRequired = required
+        }
+        if required {
+            Logger.network.warning("🚨 강제 업데이트 필요 — 현재: \(appVersionService.currentVersion), 최소: \(minimumVersion)")
         }
     }
 

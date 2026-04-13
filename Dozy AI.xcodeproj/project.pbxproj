@@ -81,6 +81,8 @@
 		F60ADF0A2F7FB007007B8D9F /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */; };
 		F60ADF0C2F7FB0B0007B8D9F /* AuthUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */; };
 		F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */; };
+		537D603E1FCE461BB9A004F8 /* AppVersionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138EDD04FB7644938FBB1BBD /* AppVersionService.swift */; };
+		65B047887D5346E8ABBD7B8B /* ForceUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D3974F44814EBCA970B11B /* ForceUpdateView.swift */; };
 		F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */; };
 		D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E74C13AD0E4860A1AE7875 /* KeychainService.swift */; };
 		60321A7CA4214E30AD5EA56A /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */; };
@@ -267,6 +269,8 @@
 		F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUser.swift; sourceTree = "<group>"; };
 		F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		138EDD04FB7644938FBB1BBD /* AppVersionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionService.swift; sourceTree = "<group>"; };
+		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
 		F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthError.swift; sourceTree = "<group>"; };
 		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
@@ -699,6 +703,7 @@
 				DD9F69112F6ACF2B001952F6 /* ReminderService.swift */,
 				DD9F69152F6ACF3B001952F6 /* SpeechService.swift */,
 				F68B39B22F83721600FEAFB0 /* SyncService.swift */,
+				138EDD04FB7644938FBB1BBD /* AppVersionService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -835,6 +840,7 @@
 			isa = PBXGroup;
 			children = (
 				F63C68892F85F0CA003464E8 /* IntroView.swift */,
+				50D3974F44814EBCA970B11B /* ForceUpdateView.swift */,
 			);
 			path = Intro;
 			sourceTree = "<group>";
@@ -1011,6 +1017,8 @@
 				DDA9A5B92F89564000C1572C /* CategoryEditSheet.swift in Sources */,
 				DDA9A5BA2F89564000C1572C /* CategoryManagementView.swift in Sources */,
 				F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */,
+				537D603E1FCE461BB9A004F8 /* AppVersionService.swift in Sources */,
+				65B047887D5346E8ABBD7B8B /* ForceUpdateView.swift in Sources */,
 				F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */,
 				F63C68702F84F7A6003464E8 /* NotificationListView.swift in Sources */,
 				F619D9712F7A360D00084C61 /* FetchDozyEventsUseCase.swift in Sources */,
