@@ -77,7 +77,7 @@ struct DailySummaryView: View {
                     .padding()
                 }
             }
-            .navigationTitle("AI 업무 요약")
+            .navigationTitle("AI 일정 요약")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -262,25 +262,31 @@ private extension DailySummaryView {
     }
 
     func metaChips(_ summary: DailySummary) -> some View {
-        let h = summary.totalEventMinutes / 60
-        let m = summary.totalEventMinutes % 60
-        let timeText = h > 0 ? "\(h)시간 \(m)분" : "\(m)분"
         let catName = summary.detectedCategory
         let catEmoji = userCategories.first(where: { $0.name == catName })?.emoji ?? "📌"
-        let todayPendingCount = viewModel.pendingTasks.filter { task in
-            guard let due = task.dueDate else { return false }
-            return Calendar.current.compare(due, to: Date(), toGranularity: .day) != .orderedDescending
-        }.count
+
+        // 전체 일정 수 (종일 포함, 리마인더 제외)
+        let totalEventCount = viewModel.events.count
+
+        // 완료 일정: 종료된 시간제 일정 또는 명시적으로 완료된 일정 (Dozy isCompleted)
+        // 종일 일정은 당일 자동 완료 불가 → Dozy 명시 완료만 반영
+        let timeElapsed = viewModel.events.filter { !$0.isAllDay && $0.endDate <= Date() }.count
+        let elapsedCount = max(timeElapsed, viewModel.completedEventCount)
+
+        // 남은 일정 = 전체 - 완료 (endDate 기반이 아닌 차감 방식)
+        // endDate 기반이면 명시적 완료(isCompleted) 이벤트도 "남은" 것으로 잡히는 오류가 있음
+        let remainingCount = max(0, totalEventCount - elapsedCount)
+
         return VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                metaCell(icon: "calendar", label: "일정", value: timeText)
-                metaCell(icon: "checkmark.circle", label: "완료", value: "\(summary.completedTaskCount)건")
+                metaCell(icon: "calendar",         label: "일정",    value: "\(totalEventCount)건")
+                metaCell(icon: "checkmark.circle", label: "완료",    value: "\(elapsedCount)건")
             }
             HStack(spacing: 8) {
-                metaCell(icon: "circle", label: "남은 일", value: "\(todayPendingCount)건")
-                metaCell(icon: "tag", label: "카테고리", value: "\(catEmoji) \(catName)")
+                metaCell(icon: "circle",           label: "남은 일정", value: "\(remainingCount)건")
+                metaCell(icon: "tag",              label: "오늘의 주요 카테고리", value: "\(catEmoji) \(catName)")
             }
-            Text("Dozy 앱과 애플의 미리알림 앱을 종합해서 나타낸 요약입니다.")
+            Text("Dozy · Apple · Google 캘린더 일정 기준으로 표시됩니다.")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .padding(.horizontal, 4)
@@ -465,7 +471,7 @@ private extension DailySummaryView {
                 Image(systemName: "bell.badge")
                     .font(.caption)
                     .foregroundStyle(.blue)
-                Text("탭: 상세보기 · +: 미리알림 추가 · AI카드 왼쪽 스와이프: 삭제")
+                Text("탭: 상세보기, +: 미리알림 추가, AI카드 왼쪽 스와이프: 삭제")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -726,9 +732,9 @@ private extension DailySummaryView {
             }
             Divider().frame(height: 40)
             VStack {
-                Text("\(viewModel.weeklyTrend.reduce(0) { $0 + $1.taskCount })")
+                Text("\(viewModel.weeklyTrend.filter { $0.eventCount > 0 }.count)")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                Text("총 완료").font(.caption2).foregroundStyle(.secondary)
+                Text("활동일").font(.caption2).foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity)
@@ -777,32 +783,16 @@ private extension DailySummaryView {
             Label("주간 활동량", systemImage: "chart.bar.fill")
                 .font(.subheadline).fontWeight(.semibold)
 
-            HStack(spacing: 12) {
-                HStack(spacing: 4) {
-                    Circle().fill(Color.blue).frame(width: 8, height: 8)
-                    Text("일정").font(.caption2).foregroundStyle(.secondary)
-                }
-                HStack(spacing: 4) {
-                    Circle().fill(Color.green).frame(width: 8, height: 8)
-                    Text("완료").font(.caption2).foregroundStyle(.secondary)
-                }
-            }
-
             let maxActivity = max(
-                viewModel.weeklyTrend.map { $0.eventCount + $0.taskCount }.max() ?? 1, 1
+                viewModel.weeklyTrend.map { $0.eventCount }.max() ?? 1, 1
             )
 
             HStack(alignment: .bottom, spacing: 8) {
                 ForEach(viewModel.weeklyTrend) { point in
                     VStack(spacing: 4) {
-                        VStack(spacing: 0) {
-                            Rectangle().fill(Color.green.opacity(0.7))
-                                .frame(height: CGFloat(point.taskCount) / CGFloat(maxActivity) * 80)
-                            Rectangle().fill(Color.blue.opacity(0.7))
-                                .frame(height: CGFloat(point.eventCount) / CGFloat(maxActivity) * 80)
-                        }
-                        .frame(height: 80, alignment: .bottom)
-                        .clipShape(RoundedRectangle(cornerRadius: 3))
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(point.eventCount > 0 ? Color.blue.opacity(0.7) : Color(.systemGray5))
+                            .frame(height: max(CGFloat(point.eventCount) / CGFloat(maxActivity) * 80, 4))
                         Text(point.weekdayLabel).font(.system(size: 10)).foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
