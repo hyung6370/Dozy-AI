@@ -68,19 +68,21 @@ struct CalendarView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 4) {
-                        Button { showLegend = true } label: {
-                            Image(colorScheme == .dark ? "Dark-Question" : "Light-Question")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                        }
-                        Button { viewModel.startCreatingEvent() } label: {
-                            Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                        }
+                    Button { viewModel.startCreatingEvent() } label: {
+                        Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                    }
+                    .accessibilityLabel("일정 추가")
+                    .accessibilityIdentifier("btn_calendar_add")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showLegend = true } label: {
+                        Image(colorScheme == .dark ? "Dark-Question" : "Light-Question")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
                     }
                 }
             }

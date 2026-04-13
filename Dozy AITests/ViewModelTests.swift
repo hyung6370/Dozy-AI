@@ -10,7 +10,6 @@ import SwiftUI
 
 // MARK: - EventEditViewModel Tests
 
-@MainActor
 final class EventEditViewModelTests: XCTestCase {
 
     // 테스트 기준일: 2026년 4월 11일 토요일
@@ -19,6 +18,18 @@ final class EventEditViewModelTests: XCTestCase {
         return Calendar.current.date(from: c)!
     }()
 
+    // Swift 6에서 ObservableObject+SwiftUI 클래스를 로컬 변수로 생성하면
+    // deinit 시 task-local executor 충돌로 SIGABRT 발생.
+    // tearDown()에서 해제하도록 프로퍼티로 보관.
+    private var vm: EventEditViewModel!
+    private var savedEvent: DozyEvent?
+
+    override func tearDown() {
+        vm = nil
+        savedEvent = nil
+        super.tearDown()
+    }
+
     private func makeDozyEvent(title: String = "테스트", location: String? = nil) -> DozyEvent {
         DozyEvent(title: title, startDate: selectedDate, endDate: selectedDate, location: location)
     }
@@ -26,42 +37,42 @@ final class EventEditViewModelTests: XCTestCase {
     // MARK: init - 새 이벤트
 
     func test_init_newEvent_titleIsEmpty() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertTrue(vm.title.isEmpty)
     }
 
     func test_init_newEvent_isAllDayIsFalse() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertFalse(vm.isAllDay)
     }
 
     func test_init_newEvent_defaultStartIs9AM() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(Calendar.current.component(.hour, from: vm.startDate), 9)
     }
 
     func test_init_newEvent_defaultEndIs10AM() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(Calendar.current.component(.hour, from: vm.endDate), 10)
     }
 
     func test_init_newEvent_isEditingIsFalse() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertFalse(vm.isEditing)
     }
 
     func test_init_newEvent_defaultCategoryIsDefault() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(vm.category, UserCategory.defaultName)
     }
 
     func test_init_newEvent_recurrenceRuleIsNone() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(vm.recurrenceRule, "none")
     }
 
     func test_init_newEvent_priorityIsZero() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(vm.priority, 0)
     }
 
@@ -69,49 +80,49 @@ final class EventEditViewModelTests: XCTestCase {
 
     func test_init_existingEvent_copiesTitle() {
         let event = makeDozyEvent(title: "중요한 미팅")
-        let vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(vm.title, "중요한 미팅")
     }
 
     func test_init_existingEvent_copiesStartDate() {
         let event = makeDozyEvent()
-        let vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(vm.startDate, event.startDate)
     }
 
     func test_init_existingEvent_isEditingIsTrue() {
-        let vm = EventEditViewModel(eventToEdit: makeDozyEvent(), selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: makeDozyEvent(), selectedDate: selectedDate, onSave: { _ in })
         XCTAssertTrue(vm.isEditing)
     }
 
     func test_init_existingEvent_withLocation_copiesLocation() {
         let event = makeDozyEvent(location: "회의실 A")
-        let vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(vm.location, "회의실 A")
     }
 
     func test_init_existingEvent_nilLocation_setsEmptyString() {
         let event = makeDozyEvent(location: nil)
-        let vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
         XCTAssertEqual(vm.location, "")
     }
 
     // MARK: isSavable
 
     func test_isSavable_emptyTitle_returnsFalse() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         vm.title = ""
         XCTAssertFalse(vm.isSavable)
     }
 
     func test_isSavable_whitespaceOnlyTitle_returnsFalse() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         vm.title = "   "
         XCTAssertFalse(vm.isSavable)
     }
 
     func test_isSavable_validTitle_returnsTrue() {
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
         vm.title = "새 이벤트"
         XCTAssertTrue(vm.isSavable)
     }
@@ -119,66 +130,59 @@ final class EventEditViewModelTests: XCTestCase {
     // MARK: save() - 새 이벤트 생성
 
     func test_save_newEvent_callsOnSaveWithCorrectTitle() {
-        var saved: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { saved = $0 }
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "새 미팅"
         vm.save()
-        XCTAssertEqual(saved?.title, "새 미팅")
+        XCTAssertEqual(savedEvent?.title, "새 미팅")
     }
 
     func test_save_newEvent_emptyLocation_setsNil() {
-        var saved: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { saved = $0 }
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "이벤트"; vm.location = ""
         vm.save()
-        XCTAssertNil(saved?.location)
+        XCTAssertNil(savedEvent?.location)
     }
 
     func test_save_newEvent_nonEmptyLocation_preserves() {
-        var saved: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { saved = $0 }
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "이벤트"; vm.location = "회의실 B"
         vm.save()
-        XCTAssertEqual(saved?.location, "회의실 B")
+        XCTAssertEqual(savedEvent?.location, "회의실 B")
     }
 
     func test_save_newEvent_allDayTrue_endEqualsStart() {
-        var saved: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { saved = $0 }
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "종일 이벤트"; vm.isAllDay = true
         vm.save()
-        XCTAssertEqual(saved?.startDate, saved?.endDate)
+        XCTAssertEqual(savedEvent?.startDate, savedEvent?.endDate)
     }
 
     func test_save_newEvent_noRecurrenceRule_recurrenceEndDateIsNil() {
-        var saved: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { saved = $0 }
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "이벤트"; vm.recurrenceRule = "none"
         vm.save()
-        XCTAssertNil(saved?.recurrenceEndDate)
+        XCTAssertNil(savedEvent?.recurrenceEndDate)
     }
 
     func test_save_newEvent_withRecurrenceRule_recurrenceEndDateIsSet() {
-        var saved: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { saved = $0 }
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "이벤트"; vm.recurrenceRule = "weekly"
         vm.save()
-        XCTAssertNotNil(saved?.recurrenceEndDate)
+        XCTAssertNotNil(savedEvent?.recurrenceEndDate)
     }
 
     func test_save_newEvent_emptyNotes_setsNil() {
-        var saved: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { saved = $0 }
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "이벤트"; vm.notes = ""
         vm.save()
-        XCTAssertNil(saved?.notes)
+        XCTAssertNil(savedEvent?.notes)
     }
 
     // MARK: save() - 기존 이벤트 수정 (mutates in place)
 
     func test_save_existingEvent_updatesTitle() {
         let event = makeDozyEvent(title: "원래 제목")
-        let vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
         vm.title = "수정된 제목"
         vm.save()
         XCTAssertEqual(event.title, "수정된 제목")
@@ -186,7 +190,7 @@ final class EventEditViewModelTests: XCTestCase {
 
     func test_save_existingEvent_noRecurrence_clearsRecurrenceEndDate() {
         let event = makeDozyEvent()
-        let vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
+        vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate, onSave: { _ in })
         vm.title = "이벤트"; vm.recurrenceRule = "none"
         vm.save()
         XCTAssertNil(event.recurrenceEndDate)
@@ -194,8 +198,7 @@ final class EventEditViewModelTests: XCTestCase {
 
     func test_save_existingEvent_callsOnSaveWithSameInstance() {
         let event = makeDozyEvent()
-        var savedEvent: DozyEvent?
-        let vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate) { savedEvent = $0 }
+        vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "수정"; vm.save()
         XCTAssertTrue(savedEvent === event)
     }
