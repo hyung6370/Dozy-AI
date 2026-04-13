@@ -68,34 +68,8 @@ struct DailySummaryView: View {
                             }
                         }
                     )) {
-                        ScrollView {
-                            VStack(spacing: 20) {
-                                overviewTab
-                                if let error = viewModel.errorMessage { errorBanner(error) }
-                            }
-                            .padding()
-                        }
-                        .tag(SummaryTab.overview)
-
-                        ScrollView {
-                            VStack(spacing: 20) { highlightsTab }.padding()
-                        }
-                        .tag(SummaryTab.highlights)
-
-                        ScrollView {
-                            VStack(spacing: 20) { recommendationsTab }.padding()
-                        }
-                        .tag(SummaryTab.recommendations)
-
-                        ScrollView {
-                            VStack(spacing: 20) { trendsTab }.padding()
-                        }
-                        .tag(SummaryTab.trends)
-
-                        ScrollView {
-                            VStack(spacing: 20) { categoryTab }.padding()
-                        }
-                        .tag(SummaryTab.category)
+                        dailyTab.tag(SummaryTab.daily)
+                        weeklyTab.tag(SummaryTab.weekly)
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
                 } else {
@@ -140,51 +114,86 @@ struct DailySummaryView: View {
 private extension DailySummaryView {
 
     var tabBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
-                ForEach(SummaryTab.allCases, id: \.self) { tab in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            viewModel.selectedTab = tab
-                        }
-                    } label: {
-                        Text(tab.rawValue)
-                            .font(.caption)
-                            .fontWeight(viewModel.selectedTab == tab ? .semibold : .regular)
-                            .foregroundStyle(viewModel.selectedTab == tab ? tabColor(tab) : .secondary)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(
-                                viewModel.selectedTab == tab ? tabBackgroundColor(tab) : Color.clear
-                            )
-                            .clipShape(Capsule())
-                    }
-                }
+        Picker("", selection: Binding(
+            get: { viewModel.selectedTab },
+            set: { newTab in withAnimation(.easeInOut(duration: 0.2)) { viewModel.selectedTab = newTab } }
+        )) {
+            ForEach(SummaryTab.allCases, id: \.self) { tab in
+                Text(tab.rawValue).tag(tab)
             }
-            .padding(.horizontal)
         }
-        .padding(.vertical, 8)
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+        .padding(.vertical, 10)
         .background(Color(.systemBackground))
     }
 
     func tabColor(_ tab: SummaryTab) -> Color {
         switch tab {
-        case .overview:         return .indigo
-        case .highlights:       return .orange
-        case .recommendations:  return .blue
-        case .trends:           return .green
-        case .category:         return .purple
+        case .daily:  return .indigo
+        case .weekly: return .green
         }
     }
 
     func tabBackgroundColor(_ tab: SummaryTab) -> Color {
         switch tab {
-        case .overview:         return .indigo.opacity(0.1)
-        case .highlights:       return .orange.opacity(0.1)
-        case .recommendations:  return .blue.opacity(0.1)
-        case .trends:           return .green.opacity(0.1)
-        case .category:         return .purple.opacity(0.1)
+        case .daily:  return .indigo.opacity(0.1)
+        case .weekly: return .green.opacity(0.1)
         }
+    }
+}
+
+// MARK: - Daily / Weekly Tab
+
+private extension DailySummaryView {
+
+    var dailyTab: some View {
+        ScrollView {
+            VStack(spacing: 28) {
+                tabSectionHeader(title: "오늘 요약", icon: "doc.text.fill", color: .indigo)
+                overviewTab
+                tabSectionDivider
+                tabSectionHeader(title: "하이라이트", icon: "star.fill", color: .orange)
+                highlightsTab
+                tabSectionDivider
+                tabSectionHeader(title: "카테고리 분석", icon: "chart.pie.fill", color: .purple)
+                categoryTab
+                if let error = viewModel.errorMessage { errorBanner(error) }
+            }
+            .padding()
+        }
+    }
+
+    var weeklyTab: some View {
+        ScrollView {
+            VStack(spacing: 28) {
+                tabSectionHeader(title: "주간 트렌드", icon: "chart.line.uptrend.xyaxis", color: .green)
+                trendsTab
+            }
+            .padding()
+        }
+    }
+
+    private func tabSectionHeader(title: String, icon: String, color: Color) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(color)
+                .frame(width: 28, height: 28)
+                .background(color.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 7))
+            Text(title)
+                .font(.title3)
+                .fontWeight(.bold)
+            Spacer()
+        }
+    }
+
+    private var tabSectionDivider: some View {
+        Rectangle()
+            .fill(Color(.systemGray5))
+            .frame(height: 1)
+            .padding(.vertical, 4)
     }
 }
 

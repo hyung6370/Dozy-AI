@@ -9,11 +9,8 @@ import Foundation
 
 // MARK: - 탭 열거형
 enum SummaryTab: String, CaseIterable {
-    case overview = "요약"
-    case highlights = "하이라이트"
-    case recommendations = "추천"
-    case trends = "트렌드"
-    case category = "카테고리"
+    case daily  = "일별"
+    case weekly = "주별"
 }
 
 // MARK: - 카테고리 정보 (UserCategory 뷰 독립 표현)

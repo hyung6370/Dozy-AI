@@ -29,6 +29,7 @@ struct HomeView: View {
     @State private var calendarEventToEdit: CalendarEvent? = nil
     
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     init(container: DependencyContainer, selectedTab: Binding<Int>) {
         self.container = container
@@ -86,6 +87,12 @@ struct HomeView: View {
                 }
             }
             .refreshable { viewModel.loadTodayData() }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    showSummarySheet = false
+                    selectedEvent = nil
+                }
+            }
             .onAppear {
                 viewModel.loadTodayData()
                 container.notificationRepository.hasUnread()

@@ -16,7 +16,7 @@ final class DailySummaryViewModel: ObservableObject {
 
     // MARK: - 탭 상태
 
-    @Published var selectedTab: SummaryTab = .overview
+    @Published var selectedTab: SummaryTab = .daily
 
     // MARK: - 기본 상태
 
