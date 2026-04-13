@@ -20,9 +20,18 @@ final class SyncService {
     }
     
     // MARK: - 전체 동기화 (로그인 직후 호출)
-    
+
+    /// 마지막 동기화 성공 시각을 UserDefaults에 기록하는 키
+    static let lastSyncTimestampKey = "sync.lastTimestamp"
+
     func syncAll(userID: String) -> AnyPublisher<Void, DozyError> {
-        Publishers.MergeMany([
+        // 네트워크 미연결 시 즉시 실패 반환
+        guard NetworkMonitor.shared.isConnected else {
+            Logger.sync.warning("📵 오프라인 상태 — 동기화 건너뜀")
+            return Fail(error: DozyError.networkUnavailable).eraseToAnyPublisher()
+        }
+
+        return Publishers.MergeMany([
             uploadDozyEvents(userID: userID),
             uploadEventCompletions(userID: userID),
             uploadWorkLogs(userID: userID),
@@ -43,6 +52,11 @@ final class SyncService {
             .map { _ in }
             .eraseToAnyPublisher()
         }
+        .handleEvents(receiveOutput: {
+            // 동기화 성공 시각 기록 → 다음 앱 시작 시 쓰로틀 판단에 사용
+            UserDefaults.standard.set(Date(), forKey: SyncService.lastSyncTimestampKey)
+            Logger.sync.info("📅 동기화 타임스탬프 기록 완료")
+        })
         .eraseToAnyPublisher()
     }
     

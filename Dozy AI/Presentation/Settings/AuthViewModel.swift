@@ -28,6 +28,17 @@ final class AuthViewModel: ObservableObject {
     /// 별도로 Keychain에 보관합니다.
     private static let displayNameKey = "auth.displayName"
 
+    /// 앱 재시작 시 자동 동기화를 쓰로틀링하는 쿨다운 (1시간).
+    /// 명시적 로그인은 항상 동기화하고, .initialSession 복원 시에만 쓰로틀을 적용합니다.
+    private static let syncCooldown: TimeInterval = 3600
+
+    private var isSyncThrottled: Bool {
+        guard let lastSync = UserDefaults.standard.object(forKey: SyncService.lastSyncTimestampKey) as? Date else {
+            return false // 동기화 이력 없음 → 즉시 동기화
+        }
+        return Date().timeIntervalSince(lastSync) < Self.syncCooldown
+    }
+
     init(modelContext: ModelContext) {
         self.syncService = SyncService(modelContext: modelContext)
     }
@@ -56,7 +67,11 @@ final class AuthViewModel: ObservableObject {
                         displayName: KeychainService.load(forKey: Self.displayNameKey),
                         provider: provider
                     )
-                    self.syncAfterLogin(userID: session.user.id.uuidString)
+                    if self.isSyncThrottled {
+                        Logger.auth.info("⏩ 1시간 이내 동기화 이력 있음 — 자동 동기화 건너뜀")
+                    } else {
+                        self.syncAfterLogin(userID: session.user.id.uuidString)
+                    }
 
                 case .tokenRefreshed:
                     Logger.auth.info("🔑 액세스 토큰 자동 갱신 완료")

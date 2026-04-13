@@ -83,6 +83,7 @@
 		F60ADF0E2F7FB10F007B8D9F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */; };
 		F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */; };
 		D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E74C13AD0E4860A1AE7875 /* KeychainService.swift */; };
+		60321A7CA4214E30AD5EA56A /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */; };
 		F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */; };
 		F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF132F832AD6007B8D9F /* SettingsView.swift */; };
 		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
@@ -268,6 +269,7 @@
 		F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthError.swift; sourceTree = "<group>"; };
 		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		F60ADF132F832AD6007B8D9F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F616DCD02F7B448300FA0476 /* NaverSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverSignInService.swift; sourceTree = "<group>"; };
@@ -617,6 +619,7 @@
 				F63C687B2F85E569003464E8 /* LottieView.swift */,
 				F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */,
 				68E74C13AD0E4860A1AE7875 /* KeychainService.swift */,
+				3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -1066,6 +1069,7 @@
 				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
 				F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */,
 				D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */,
+				60321A7CA4214E30AD5EA56A /* NetworkMonitor.swift in Sources */,
 				F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */,
 				F65068352F7DFB6600F9C124 /* MonthWeekRowView.swift in Sources */,
 				F6CAFE022FA0000000000001 /* MonthYearPickerView.swift in Sources */,
