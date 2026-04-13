@@ -126,29 +126,6 @@ final class AuthService: NSObject {
         .eraseToAnyPublisher()
     }
 
-    // MARK: - 세션 복원
-
-    func restoreSession() -> AnyPublisher<AuthUser?, Never> {
-        Future { promise in
-            Task {
-                guard let session = try? await supabase.auth.session else {
-                    promise(.success(nil))
-                    return
-                }
-                let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
-                let provider: AuthProvider = providerString == "google" ? .google : .apple
-                let user = AuthUser(
-                    id: session.user.id.uuidString,
-                    email: session.user.email,
-                    displayName: nil,
-                    provider: provider
-                )
-                promise(.success(user))
-            }
-        }
-        .eraseToAnyPublisher()
-    }
-
     // MARK: - Nonce Helpers
 
     private func randomNonceString(length: Int = 32) -> String {
