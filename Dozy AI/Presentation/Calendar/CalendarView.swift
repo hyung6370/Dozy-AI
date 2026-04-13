@@ -22,7 +22,6 @@ struct CalendarView: View {
     @State private var showDatePicker = false
     @State private var pickerDate = Date()
     @State private var triggerScrollToList = false
-    @State private var currentGridHeight: CGFloat = 0
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
 
@@ -101,7 +100,6 @@ struct CalendarView: View {
                     comps.day = 1
                     if let target = cal.date(from: comps) {
                         isForward = target >= viewModel.currentMonth
-                        currentGridHeight = calcGridHeight(for: target)
                         withAnimation(.easeInOut(duration: 0.3)) {
                             viewModel.jumpToMonth(year: pickerYear, month: pickerMonth)
                         }
@@ -248,7 +246,6 @@ struct CalendarView: View {
                         let cal = Calendar.current
                         let todayStart = cal.date(from: cal.dateComponents([.year, .month], from: Date()))!
                         isForward = viewModel.currentMonth < todayStart
-                        currentGridHeight = calcGridHeight(for: Date())
                         viewModel.setCurrentMonth(Date())
                     }
                     viewModel.selectDate(Date())
@@ -262,10 +259,6 @@ struct CalendarView: View {
 
                 Button {
                     isForward = false
-                    if viewModel.viewMode == .month {
-                        let prev = Calendar.current.date(byAdding: .month, value: -1, to: viewModel.currentMonth)!
-                        currentGridHeight = calcGridHeight(for: prev)
-                    }
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
                 } label: {
                     Image(systemName: "chevron.left").fontWeight(.semibold)
@@ -310,10 +303,6 @@ struct CalendarView: View {
             HStack {
                 Button {
                     isForward = true
-                    if viewModel.viewMode == .month {
-                        let next = Calendar.current.date(byAdding: .month, value: 1, to: viewModel.currentMonth)!
-                        currentGridHeight = calcGridHeight(for: next)
-                    }
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
                 } label: {
                     Image(systemName: "chevron.right").fontWeight(.semibold)
@@ -382,16 +371,8 @@ struct CalendarView: View {
     }
 
     // MonthWeekRowView.totalH = 42 + 3*(20+2) + 18 = 126pt
-    private var monthGridHeight: CGFloat { calcGridHeight(for: viewModel.currentMonth) }
-
-    private func calcGridHeight(for month: Date) -> CGFloat {
-        let cal = Calendar.current
-        let first = cal.date(from: cal.dateComponents([.year, .month], from: month))!
-        let weekday = cal.component(.weekday, from: first) - 1
-        let dayCount = cal.range(of: .day, in: .month, for: month)!.count
-        let weekCount = (weekday + dayCount + 6) / 7
-        return CGFloat(weekCount) * 126 + 8
-    }
+    // 항상 최대 6주 높이 고정 → 달마다 프레임 변경 없이 자연스러운 전환
+    private let monthGridFixedHeight: CGFloat = 6 * 126 + 8  // 764pt
 
     @ViewBuilder
     private var panCalendarSection: some View {
@@ -413,13 +394,9 @@ struct CalendarView: View {
                     isForward = newMonth > viewModel.currentMonth
                     viewModel.setCurrentMonth(newMonth)
                 },
-                onWillChangeMonth: { pendingMonth in
-                    // 슬라이드 애니메이션 시작 전에 높이 미리 반영
-                    currentGridHeight = calcGridHeight(for: pendingMonth)
-                }
+                onWillChangeMonth: { _ in }
             )
-            .frame(height: currentGridHeight > 0 ? currentGridHeight : monthGridHeight)
-            .onAppear { currentGridHeight = monthGridHeight }
+            .frame(height: monthGridFixedHeight)
         } else {
             ZStack {
                 calendarGrid

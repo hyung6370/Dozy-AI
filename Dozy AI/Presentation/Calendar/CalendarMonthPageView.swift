@@ -122,8 +122,7 @@ struct MonthPageViewController: UIViewControllerRepresentable {
                                 transitionCompleted completed: Bool) {
             guard let cell = pvc.viewControllers?.first as? MonthPageCell else { return }
             if !completed {
-                // 스와이프 취소 → 현재 달 높이로 복원
-                parent.onWillChangeMonth(cell.month)
+                // 스와이프 취소 → 높이를 바꾼 적 없으므로 복원 불필요
                 return
             }
             guard !isNavigating else { return }
