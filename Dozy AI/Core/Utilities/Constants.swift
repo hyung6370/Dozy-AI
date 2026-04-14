@@ -10,6 +10,7 @@ import Foundation
 extension Notification.Name {
     static let dozyDataSyncCompleted = Notification.Name("dozy.dataSyncCompleted")
     static let googleSignInRestored = Notification.Name("dozy.googleSignInRestored")
+    static let dozyEventChanged = Notification.Name("dozy.eventChanged")
 }
 
 // MARK: - App Store

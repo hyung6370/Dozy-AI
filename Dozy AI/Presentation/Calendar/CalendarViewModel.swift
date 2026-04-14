@@ -692,7 +692,7 @@ final class CalendarViewModel: ObservableObject {
                 } else {
                     effectiveEnd = ev.endDate
                 }
-                return ev.startDate < nextDate && effectiveEnd > date
+                return ev.startDate < nextDate && effectiveEnd >= date
             }
             result.append((date, dayEvents))
             date = nextDate
@@ -902,6 +902,7 @@ final class CalendarViewModel: ObservableObject {
                 
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
+                NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
                 self.cancelNotificationUseCase.execute(identifier: event.id)
                 if event.notificationMinutesBefore >= 0 {
                     self.scheduleNotificationUseCase.execute(for: event)

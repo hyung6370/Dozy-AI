@@ -165,6 +165,11 @@ final class HomeViewModel: ObservableObject {
                 self.loadTodayData()
             }
             .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadTodayData() }
+            .store(in: &cancellables)
     }
 
     convenience init(container: DependencyContainer) {
