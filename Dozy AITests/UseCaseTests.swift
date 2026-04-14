@@ -228,13 +228,13 @@ final class GenerateDailySummaryUseCaseTests: XCTestCase {
     override func tearDown() { cancellables.removeAll(); super.tearDown() }
 
     func test_execute_returnsSummaryFromAI() throws {
-        aiService.stubbedSummary = makeTestSummary(summaryText: "AI가 생성한 요약")
+        aiService.stubbedSummary = makeTestSummary(summaryText: "Dozy가 생성한 요약")
         repository.stubbedLog = nil
 
         let result = try awaitPublisher(
             useCase.execute(events: [], completedTasks: [], pendingTasks: [], memos: [])
         )
-        XCTAssertEqual(result.summaryText, "AI가 생성한 요약")
+        XCTAssertEqual(result.summaryText, "Dozy가 생성한 요약")
     }
 
     func test_execute_whenLogExists_savesToRepository() throws {

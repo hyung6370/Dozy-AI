@@ -522,12 +522,12 @@ struct HomeView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(viewModel.hasSummary ? "AI 업무 요약 보기" : "AI 업무 요약 생성")
+                    Text(viewModel.hasSummary ? "Dozy 일정 요약 보기" : "Dozy 일정 요약 생성")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundStyle(.primary)
                     Text(viewModel.isSummarizing
-                         ? "AI가 분석 중입니다..."
+                         ? "Dozy가 분석 중입니다..."
                          : viewModel.hasSummary
                          ? "생산성 점수: \(viewModel.scorePercentage)점"
                          : "오늘 하루를 AI가 분석합니다")
@@ -553,7 +553,7 @@ struct HomeView: View {
 
     private func aiSummaryDetail(_ log: WorkLog) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("AI 업무 요약")
+            Text("Dozy 일정 요약")
                 .font(.footnote)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)

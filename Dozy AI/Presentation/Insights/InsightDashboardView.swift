@@ -453,7 +453,7 @@ struct InsightDashboardView: View {
             Label("생산성 점수 추이", systemImage: "star.fill")
                 .font(.headline)
             if viewModel.productivityScores.isEmpty {
-                cardEmptyState(icon: "star", message: "AI 일일 요약을 생성하면\n생산성 점수를 추적할 수 있어요")
+                cardEmptyState(icon: "star", message: "Dozy 일일 요약을 생성하면\n생산성 점수를 추적할 수 있어요")
             } else {
                 Chart(viewModel.productivityScores, id: \.date) { item in
                     LineMark(
@@ -477,7 +477,7 @@ struct InsightDashboardView: View {
             Label("업무 카테고리", systemImage: "chart.pie")
                 .font(.headline)
             if viewModel.categoryDistribution.isEmpty {
-                cardEmptyState(icon: "chart.pie", message: "AI 요약이 쌓이면\n카테고리 분포를 볼 수 있어요")
+                cardEmptyState(icon: "chart.pie", message: "Dozy 요약이 쌓이면\n카테고리 분포를 볼 수 있어요")
             } else {
                 Chart(viewModel.categoryDistribution, id: \.category) { item in
                     SectorMark(

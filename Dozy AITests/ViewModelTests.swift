@@ -431,7 +431,7 @@ final class DailySummaryViewModelTests: XCTestCase {
     }
 
     func test_buildRecommendationsData_fromAI_usesAISuggestions() {
-        viewModel.summary = makeTestSummary(nextActions: ["AI 추천 작업"])
+        viewModel.summary = makeTestSummary(nextActions: ["Dozy 추천 작업"])
         viewModel.buildRecommendationsData()
         XCTAssertFalse(viewModel.recommendedActions.isEmpty)
         XCTAssertTrue(viewModel.recommendedActions.first?.isFromAI ?? false)

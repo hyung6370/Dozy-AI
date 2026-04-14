@@ -37,7 +37,7 @@ struct BannerItem: Identifiable {
 extension BannerItem {
     static let placeholders: [BannerItem] = [
         BannerItem(
-            title: "AI가 하루를 분석합니다",
+            title: "Dozy가 하루를 분석합니다",
             subtitle: "일정·할 일·메모를 기반으로 생산성을 측정해요",
             gradientColors: [.blue, .indigo],
             iconName: "brain.head.profile"

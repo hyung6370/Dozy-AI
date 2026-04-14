@@ -41,7 +41,7 @@ enum DozyError: LocalizedError {
         case .saveFailed:
             return "저장에 실패했습니다."
         case .aiSummarizationFailed:
-            return "AI 요약 생성에 실패했습니다."
+            return "Dozy 요약 생성에 실패했습니다."
         case .speechRecognitionFailed:
             return "음성 인식에 실패했습니다."
         case .unknown(let error):

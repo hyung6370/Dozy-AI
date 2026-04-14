@@ -598,7 +598,7 @@ private extension DailySummaryView {
                     Text(action.title)
                         .font(.subheadline).fontWeight(.medium).lineLimit(1)
                     if action.isFromAI {
-                        Text("AI")
+                        Text("Dozy")
                             .font(.system(size: 9)).fontWeight(.bold)
                             .padding(.horizontal, 5).padding(.vertical, 2)
                             .background(Color.purple.opacity(0.15))
@@ -650,7 +650,7 @@ private extension DailySummaryView {
                                 .clipShape(Capsule())
 
                             if action.isFromAI {
-                                Text("AI 추천")
+                                Text("Dozy 추천")
                                     .font(.caption).fontWeight(.semibold)
                                     .padding(.horizontal, 10).padding(.vertical, 4)
                                     .background(Color.purple.opacity(0.12))
@@ -1313,7 +1313,7 @@ private extension DailySummaryView {
             ProgressView().scaleEffect(1.5)
             Text(viewModel.generationProgress)
                 .font(.subheadline).foregroundStyle(.secondary)
-            Text("AI가 오늘 하루를 분석하고 있습니다...")
+            Text("Dozy가 오늘 하루를 분석하고 있습니다...")
                 .font(.caption).foregroundStyle(.tertiary)
         }
         .padding(.top, 80)
@@ -1323,7 +1323,7 @@ private extension DailySummaryView {
         VStack(spacing: 16) {
             Image(systemName: "brain.head.profile")
                 .font(.system(size: 48)).foregroundStyle(.secondary)
-            Text("AI 요약을 생성하려면\n일정이나 메모 데이터가 필요합니다")
+            Text("Dozy 요약을 생성하려면\n일정이나 메모 데이터가 필요합니다")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)

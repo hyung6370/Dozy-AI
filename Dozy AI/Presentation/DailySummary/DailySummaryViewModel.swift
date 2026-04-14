@@ -206,7 +206,7 @@ final class DailySummaryViewModel: ObservableObject {
                 seenTitles.insert(key)
                 actions.append(RecommendedAction(
                     title: cleanTitle,
-                    reason: "AI 추천",
+                    reason: "Dozy 추천",
                     priority: action.contains("🔴") ? .critical
                         : action.contains("⏰") ? .high
                         : .normal,
