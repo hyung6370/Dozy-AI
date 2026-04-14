@@ -38,21 +38,31 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
         
-        if sourceManager.isEnabled(.apple) {
+        let appleEnabled = sourceManager.isEnabled(.apple)
+        let googleEnabled = sourceManager.isEnabled(.google)
+
+        if appleEnabled {
             publishers.append(appleService.fetchEvents(for: date))
         }
-        if sourceManager.isEnabled(.google) {
+        if googleEnabled {
             publishers.append(
                 googleService.fetchEvents(for: date)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }
         publishers.append(dozyService.fetchEvents(for: date))
-        
+
         return Publishers.MergeMany(publishers)
             .collect()
             .map { arrays -> [CalendarEvent] in
-                let all = arrays.flatMap { $0 }
+                var all = arrays.flatMap { $0 }
+                // Apple이 활성화된 경우 Google 공휴일 캘린더 이벤트 제외
+                if appleEnabled && googleEnabled {
+                    all = all.filter { event in
+                        guard event.source == .google else { return true }
+                        return !(event.calendarId?.contains("#holiday@group.v.calendar.google.com") ?? false)
+                    }
+                }
                 var seen = Set<String>()
                 var deduped: [CalendarEvent] = []
                 // Dozy 이벤트는 항상 유지, Apple/Google 이벤트끼리만 중복 제거
@@ -78,10 +88,13 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
 
-        if sourceManager.isEnabled(.apple) {
+        let appleEnabled = sourceManager.isEnabled(.apple)
+        let googleEnabled = sourceManager.isEnabled(.google)
+
+        if appleEnabled {
             publishers.append(appleService.fetchEvents(from: start, to: end))
         }
-        if sourceManager.isEnabled(.google) {
+        if googleEnabled {
             publishers.append(
                 googleService.fetchEvents(from: start, to: end)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
@@ -92,7 +105,14 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         return Publishers.MergeMany(publishers)
             .collect()
             .map { arrays -> [CalendarEvent] in
-                let all = arrays.flatMap { $0 }
+                var all = arrays.flatMap { $0 }
+                // Apple이 활성화된 경우 Google 공휴일 캘린더 이벤트 제외
+                if appleEnabled && googleEnabled {
+                    all = all.filter { event in
+                        guard event.source == .google else { return true }
+                        return !(event.calendarId?.contains("#holiday@group.v.calendar.google.com") ?? false)
+                    }
+                }
                 var seen = Set<String>()
                 var deduped: [CalendarEvent] = []
                 for event in all {

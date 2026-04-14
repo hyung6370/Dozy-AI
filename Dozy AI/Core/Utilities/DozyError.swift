@@ -24,6 +24,7 @@ enum DozyError: LocalizedError {
     case calendarWriteFailed(underlying: Error)
     case calendarEventNotFound
     case googleCalendarWriteFailed(statusCode: Int)
+    case networkUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -57,6 +58,8 @@ enum DozyError: LocalizedError {
             return "캘린더 일정 수정/삭제에 실패했습니다. (\(error.localizedDescription))"
         case .calendarEventNotFound:
             return "삭제할 일정을 찾을 수 없습니다. 이미 삭제되었거나 캘린더 접근 권한을 확인해주세요."
+        case .networkUnavailable:
+            return "네트워크에 연결되지 않았습니다. Wi-Fi 또는 셀룰러 연결을 확인해주세요."
         case .googleCalendarWriteFailed(let statusCode):
             switch statusCode {
             case 401: return "Google 인증이 만료되었습니다. 다시 로그인해주세요. (401)"

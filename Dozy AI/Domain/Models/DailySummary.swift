@@ -9,16 +9,21 @@ import Foundation
 
 // MARK: - 탭 열거형
 enum SummaryTab: String, CaseIterable {
-    case overview = "요약"
-    case highlights = "하이라이트"
-    case recommendations = "추천"
-    case trends = "트렌드"
+    case daily  = "일별"
+    case weekly = "주별"
 }
 
-// MARK: - 하이라이트 카데고리 모델
+// MARK: - 카테고리 정보 (UserCategory 뷰 독립 표현)
+struct CategoryInfo {
+    let name: String
+    let emoji: String
+    let colorHex: String
+}
+
+// MARK: - 하이라이트 카테고리 모델
 struct CategorizedHighlight: Identifiable {
     let id = UUID()
-    let category: WorkCategory
+    let category: CategoryInfo
     let items: [String]
     let totalMinutes: Int
 }
@@ -84,7 +89,7 @@ struct DailyTrendPoint: Identifiable {
 // MARK: - 카테고리 분포 모델
 struct CategoryDistribution: Identifiable {
     let id = UUID()
-    let category: WorkCategory
+    let category: CategoryInfo
     let count: Int
     let percentage: Double
 }
@@ -103,10 +108,38 @@ struct DailySummary: Codable, Equatable {
     /// WorkLog에 결과를 한 번에 반영하는 편의 메서드
     func apply(to log: WorkLog) {
         log.aiSummary = summaryText
-        log.highlights = highlights
-        log.nextActions = nextActions
+        log.highlights = deduplicated(highlights)
+        log.nextActions = deduplicated(nextActions)
         log.category = detectedCategory
         log.productivityScore = productivityScore
         log.updatedAt = Date()
+    }
+
+    private func deduplicated(_ items: [String]) -> [String] {
+        var seen = Set<String>()
+        return items.filter { seen.insert($0.lowercased()).inserted }
+    }
+}
+
+// MARK: - 카테고리별 시간/건수 통계 (오늘)
+struct CategoryTimeStat: Identifiable {
+    let id = UUID()
+    let category: CategoryInfo
+    let eventCount: Int
+    let totalMinutes: Int
+    let percentage: Double       // 전체 시간 대비 비중
+    let countPercentage: Double  // 전체 건수 대비 비중
+}
+
+// MARK: - 카테고리별 시간대 패턴 (오늘)
+struct CategoryHourStat: Identifiable {
+    let id = UUID()
+    let category: CategoryInfo
+    let peakHour: Int
+
+    var peakHourLabel: String {
+        let period = peakHour < 12 ? "오전" : "오후"
+        let h = peakHour == 0 ? 12 : (peakHour > 12 ? peakHour - 12 : peakHour)
+        return "\(period) \(h)시"
     }
 }

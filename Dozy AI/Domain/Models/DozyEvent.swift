@@ -73,7 +73,7 @@ final class DozyEvent {
         let cal = Calendar.current
         let eventStart = cal.startOfDay(for: startDate)
         let target = cal.startOfDay(for: date)
-        guard target > eventStart else { return nil }
+        guard target >= eventStart else { return nil }
 
         let durationDays = max(0, cal.dateComponents([.day], from: eventStart, to: cal.startOfDay(for: endDate)).day ?? 0)
 
@@ -81,7 +81,7 @@ final class DozyEvent {
         for dayOffset in 0...durationDays {
             guard let candidateStart = cal.date(byAdding: .day, value: -dayOffset, to: target) else { continue }
             let cs = cal.startOfDay(for: candidateStart)
-            guard cs > eventStart else { continue }
+            guard cs >= eventStart else { continue }
             if let end = recurrenceEndDate, cs > cal.startOfDay(for: end) { continue }
             if excludedDates.contains(where: { cal.isDate($0, inSameDayAs: candidateStart) }) { continue }
 

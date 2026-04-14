@@ -16,7 +16,7 @@ final class DailySummaryViewModel: ObservableObject {
 
     // MARK: - 탭 상태
 
-    @Published var selectedTab: SummaryTab = .overview
+    @Published var selectedTab: SummaryTab = .daily
 
     // MARK: - 기본 상태
 
@@ -49,6 +49,10 @@ final class DailySummaryViewModel: ObservableObject {
     @Published var categoryDistribution: [CategoryDistribution] = []
     @Published var weeklyAverageScore: Double = 0
 
+    // MARK: - 카테고리 분석 탭 데이터
+    @Published var categoryTimeStats: [CategoryTimeStat] = []
+    @Published var categoryHourStats: [CategoryHourStat] = []
+
     // MARK: - Computed
 
     var hasEnoughData: Bool {
@@ -62,31 +66,8 @@ final class DailySummaryViewModel: ObservableObject {
 
     var scoreBreakdown: [(label: String, value: Double, maxValue: Double)] {
         guard summary != nil else { return [] }
-
-        // 1) 할 일 완료율 (50%)
-        let totalTasks = completedTasks.count + pendingTasks.count
-        let taskRate = totalTasks > 0
-            ? Double(completedTasks.count) / Double(totalTasks)
-            : 0.5
-
-        // 2) 일정 완료 체크율 (30%)
-        let eventCheckRate = events.isEmpty
-            ? 0.5
-            : Double(completedEventCount) / Double(events.count)
-
-        // 3) 우선순위 달성률 (20%)
-        let highPriorityCompleted = completedTasks.filter { $0.priority > 0 }.count
-        let highPriorityPending   = pendingTasks.filter { $0.priority > 0 }.count
-        let totalHighPriority     = highPriorityCompleted + highPriorityPending
-        let priorityRate = totalHighPriority > 0
-            ? Double(highPriorityCompleted) / Double(totalHighPriority)
-            : 0.5
-
-        return [
-            ("할 일 완료율",   taskRate * 50,     50),
-            ("일정 완료 체크", eventCheckRate * 30, 30),
-            ("우선순위 달성",  priorityRate * 20,  20)
-        ]
+        let total = events.isEmpty ? 2.0 : Double(events.count)
+        return [("일정 완료율", Double(completedEventCount), total)]
     }
 
     var peakHourLabel: String {
@@ -95,6 +76,9 @@ final class DailySummaryViewModel: ObservableObject {
         }
         return peak.label
     }
+
+    // MARK: - 사용자 카테고리 (View에서 주입)
+    var userCategories: [UserCategory] = []
 
     // MARK: - Dependencies (UseCases만)
 
@@ -128,13 +112,14 @@ final class DailySummaryViewModel: ObservableObject {
             events: events,
             completedTasks: completedTasks,
             pendingTasks: pendingTasks,
-            memos: memos
+            memos: memos,
+            completedEventCount: completedEventCount
         )
         .receive(on: DispatchQueue.main)
         .sink(
             receiveCompletion: { [weak self] completion in
-                self?.isGenerating = false
                 self?.generationProgress = ""
+                self?.isGenerating = false
                 if case .failure(let error) = completion {
                     self?.errorMessage = error.errorDescription
                 }
@@ -153,25 +138,32 @@ final class DailySummaryViewModel: ObservableObject {
     // MARK: - 하이라이트 데이터 구축
 
     func buildHighlightsData() {
-        var categoryMap: [WorkCategory: (items: [String], minutes: Int)] = [:]
+        var categoryMap: [String: (info: CategoryInfo, items: [String], minutes: Int)] = [:]
+
+        func infoFor(_ name: String) -> CategoryInfo {
+            if let cat = userCategories.first(where: { $0.name == name }) {
+                return CategoryInfo(name: cat.name, emoji: cat.emoji, colorHex: cat.colorHex)
+            }
+            return CategoryInfo(name: name, emoji: "📌", colorHex: "#8E8E93")
+        }
 
         for event in events {
-            let cat = WorkCategory(rawValue: event.category) ?? detectSingleCategory(from: event.title)
-            var entry = categoryMap[cat] ?? (items: [], minutes: 0)
+            let name = event.category
+            var entry = categoryMap[name] ?? (info: infoFor(name), items: [], minutes: 0)
             entry.items.append(event.title)
             entry.minutes += event.isAllDay ? 0 : event.durationMinutes
-            categoryMap[cat] = entry
+            categoryMap[name] = entry
         }
 
         for task in completedTasks {
-            let cat = detectSingleCategory(from: task.title)
-            var entry = categoryMap[cat] ?? (items: [], minutes: 0)
+            let name = UserCategory.defaultName
+            var entry = categoryMap[name] ?? (info: infoFor(name), items: [], minutes: 0)
             entry.items.append("✅ \(task.title)")
-            categoryMap[cat] = entry
+            categoryMap[name] = entry
         }
 
-        categorizedHighlights = categoryMap.map { cat, data in
-            CategorizedHighlight(category: cat, items: data.items, totalMinutes: data.minutes)
+        categorizedHighlights = categoryMap.map { _, data in
+            CategorizedHighlight(category: data.info, items: data.items, totalMinutes: data.minutes)
         }
         .sorted { $0.items.count > $1.items.count }
 
@@ -197,17 +189,23 @@ final class DailySummaryViewModel: ObservableObject {
             let data = hourMap[hour] ?? (events: 0, tasks: 0)
             return HourlyActivity(hour: hour, eventCount: data.events, taskCount: data.tasks)
         }
+        buildCategoryAnalysis()
     }
 
     // MARK: - 추천 할 일 데이터 구축
 
     func buildRecommendationsData() {
         var actions: [RecommendedAction] = []
+        var seenTitles = Set<String>()
 
         if let aiActions = summary?.nextActions {
             for action in aiActions {
+                let cleanTitle = action.replacingOccurrences(of: "^[🔴⏰📋📌]\\s*", with: "", options: .regularExpression)
+                let key = cleanTitle.lowercased()
+                if seenTitles.contains(key) { continue }
+                seenTitles.insert(key)
                 actions.append(RecommendedAction(
-                    title: action.replacingOccurrences(of: "^[🔴⏰📋📌]\\s*", with: "", options: .regularExpression),
+                    title: cleanTitle,
                     reason: "AI 추천",
                     priority: action.contains("🔴") ? .critical
                         : action.contains("⏰") ? .high
@@ -221,7 +219,10 @@ final class DailySummaryViewModel: ObservableObject {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!.endOfDay
 
         for task in pendingTasks {
-            let isDuplicate = actions.contains { $0.title.contains(task.title) }
+            let taskKey = task.title.lowercased()
+            let isDuplicate = actions.contains {
+                $0.title.lowercased().contains(taskKey) || taskKey.contains($0.title.lowercased())
+            }
             if isDuplicate { continue }
 
             let isOverdue = task.dueDate.map { $0 < Date() } ?? false
@@ -268,6 +269,12 @@ final class DailySummaryViewModel: ObservableObject {
                 }
             )
             .store(in: &cancellables)
+    }
+
+    // MARK: - 추천 액션 삭제
+
+    func removeAction(_ action: RecommendedAction) {
+        recommendedActions.removeAll { $0.id == action.id }
     }
 
     // MARK: - 리마인더 추가
@@ -325,7 +332,7 @@ final class DailySummaryViewModel: ObservableObject {
             } else {
                 points.append(DailyTrendPoint(
                     date: date, score: 0, eventCount: 0, taskCount: 0,
-                    category: WorkCategory.general.rawValue
+                    category: UserCategory.defaultName
                 ))
             }
         }
@@ -337,26 +344,73 @@ final class DailySummaryViewModel: ObservableObject {
             ? 0
             : validScores.reduce(0) { $0 + $1.score } / Double(validScores.count)
 
-        var catCounts: [WorkCategory: Int] = [:]
+        var catCounts: [String: Int] = [:]
         for log in logs {
-            let cat = WorkCategory(rawValue: log.category) ?? .general
-            catCounts[cat, default: 0] += 1
+            catCounts[log.category, default: 0] += 1
         }
 
         let total = max(catCounts.values.reduce(0, +), 1)
-        categoryDistribution = catCounts.map { cat, count in
-            CategoryDistribution(category: cat, count: count, percentage: Double(count) / Double(total))
+        categoryDistribution = catCounts.map { name, count in
+            let info: CategoryInfo
+            if let cat = userCategories.first(where: { $0.name == name }) {
+                info = CategoryInfo(name: cat.name, emoji: cat.emoji, colorHex: cat.colorHex)
+            } else {
+                info = CategoryInfo(name: name, emoji: "📌", colorHex: "#8E8E93")
+            }
+            return CategoryDistribution(category: info, count: count, percentage: Double(count) / Double(total))
         }
         .sorted { $0.count > $1.count }
     }
 
-    private func detectSingleCategory(from title: String) -> WorkCategory {
-        let t = title.lowercased()
-        if ["회의", "미팅", "meeting", "standup", "sync"].contains(where: { t.contains($0) }) { return .meeting }
-        if ["리뷰", "review", "검토", "PR"].contains(where: { t.contains($0) }) { return .review }
-        if ["개발", "코딩", "dev", "배포", "버그", "구현"].contains(where: { t.contains($0) }) { return .development }
-        if ["기획", "플래닝", "설계"].contains(where: { t.contains($0) }) { return .planning }
-        if ["문서", "doc", "작성", "정리"].contains(where: { t.contains($0) }) { return .documentation }
-        return .general
+    // MARK: - 카테고리 분석 데이터 구축
+    func buildCategoryAnalysis() {
+        var timeMap: [String: (info: CategoryInfo, count: Int, minutes: Int)] = [:]
+        var hourMap: [String: [Int: Int]] = [:]
+
+        func infoFor(_ name: String) -> CategoryInfo {
+            if let cat = userCategories.first(where: { $0.name == name }) {
+                return CategoryInfo(name: cat.name, emoji: cat.emoji, colorHex: cat.colorHex)
+            }
+            return CategoryInfo(name: name, emoji: "📌", colorHex: "#8E8E93")
+        }
+
+        for event in events {
+            let name = event.category
+            var entry = timeMap[name] ?? (info: infoFor(name), count: 0, minutes: 0)
+            entry.count += 1
+            entry.minutes += event.isAllDay ? 0 : event.durationMinutes
+            timeMap[name] = entry
+
+            if !event.isAllDay {
+                let hour = Calendar.current.component(.hour, from: event.startDate)
+                var hours = hourMap[name] ?? [:]
+                hours[hour, default: 0] += 1
+                hourMap[name] = hours
+            }
+        }
+
+        let totalMinutes = max(timeMap.values.reduce(0) { $0 + $1.minutes }, 1)
+        let totalCount   = max(timeMap.values.reduce(0) { $0 + $1.count  }, 1)
+
+        categoryTimeStats = timeMap.map { name, data in
+            CategoryTimeStat(
+                category: data.info,
+                eventCount: data.count,
+                totalMinutes: data.minutes,
+                percentage: Double(data.minutes) / Double(totalMinutes),
+                countPercentage: Double(data.count) / Double(totalCount)
+            )
+        }
+        .sorted { $0.totalMinutes != $1.totalMinutes
+            ? $0.totalMinutes > $1.totalMinutes
+            : $0.eventCount   > $1.eventCount }
+
+        categoryHourStats = hourMap.compactMap { name, hours in
+            guard !hours.isEmpty else { return nil }
+            let peakHour = hours.max(by: { $0.value < $1.value })?.key ?? 9
+            return CategoryHourStat(category: infoFor(name), peakHour: peakHour)
+        }
+        .sorted { $0.category.name < $1.category.name }
     }
+
 }

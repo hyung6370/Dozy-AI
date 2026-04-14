@@ -61,6 +61,8 @@ struct IntroView: View {
         self.onFinished = onFinished
     }
 
+    @Environment(\.colorScheme) private var colorScheme
+
     // Animation states
     @State private var logoVisible = false
     @State private var logoScale: CGFloat = 0.3
@@ -75,7 +77,7 @@ struct IntroView: View {
         GeometryReader { geo in
             ZStack {
                 // MARK: Background
-                Color(hex: "#EEF0FF")
+                (colorScheme == .dark ? Color(hex: "#0D0F1A") : Color(hex: "#EEF0FF"))
                     .ignoresSafeArea()
 
                 // MARK: Blobs
@@ -119,7 +121,18 @@ struct IntroView: View {
             }
             .onAppear {
                 generateBlobs(in: geo.size)
-                startSequence()
+                if isPrivacy {
+                    logoVisible = true
+                    logoScale = 1.0
+                    titleVisible = true
+                    titleOffset = 0
+                    subtitleVisible = true
+                } else {
+                    startSequence()
+                }
+            }
+            .onChange(of: colorScheme) { _, _ in
+                generateBlobs(in: geo.size)
             }
         }
         .opacity(screenOpacity)
@@ -128,12 +141,23 @@ struct IntroView: View {
 
     // MARK: - Blob Generation
 
-    private let blobColors: [Color] = [
-        Color(hex: "#6E82FF").opacity(0.55),
-        Color(hex: "#A78BFA").opacity(0.5),
-        Color(hex: "#60A5FA").opacity(0.5),
-        Color(hex: "#F472B6").opacity(0.4)
-    ]
+    private var blobColors: [Color] {
+        if colorScheme == .dark {
+            return [
+                Color(hex: "#4C5FD5").opacity(0.6),
+                Color(hex: "#7C5CCC").opacity(0.55),
+                Color(hex: "#2D6EBF").opacity(0.5),
+                Color(hex: "#B04E8A").opacity(0.45)
+            ]
+        } else {
+            return [
+                Color(hex: "#6E82FF").opacity(0.55),
+                Color(hex: "#A78BFA").opacity(0.5),
+                Color(hex: "#60A5FA").opacity(0.5),
+                Color(hex: "#F472B6").opacity(0.4)
+            ]
+        }
+    }
 
     private func generateBlobs(in size: CGSize) {
         blobs = (0..<8).map { i in

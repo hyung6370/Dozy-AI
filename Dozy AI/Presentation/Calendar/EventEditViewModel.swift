@@ -23,7 +23,7 @@ final class EventEditViewModel: ObservableObject {
     @Published var selectedColor: Color
     @Published var priority: Int
     @Published var isPinned: Bool
-    @Published var category: WorkCategory
+    @Published var category: String
     
     let isEditing: Bool
     private let eventToEdit: DozyEvent?
@@ -47,22 +47,23 @@ final class EventEditViewModel: ObservableObject {
             selectedColor = Color(hex: e.colorHex) ?? .blue
             priority = e.priority
             isPinned = e.isPinned
-            category = WorkCategory(rawValue: e.category) ?? .general
+            category = e.category
         } else {
             let calendar = Calendar.current
+            let defaultEnd = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
             title = ""
             isAllDay = false
-            startDate = calendar.date(bySettingHour: 9,  minute: 0, second: 0, of: selectedDate) ?? selectedDate
-            endDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+            startDate = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+            endDate = defaultEnd
             location = ""
             notes = ""
             notificationMinutesBefore = -1
             recurrenceRule = "none"
-            recurrenceEndDate = Calendar.current.date(byAdding: .year, value: 1, to: selectedDate) ?? selectedDate
+            recurrenceEndDate = defaultEnd  // 이벤트 종료일 기준으로 초기화 (사용자가 반복 종료일을 직접 연장)
             selectedColor = .blue
             priority = 0
             isPinned = false
-            category = .general
+            category = UserCategory.defaultName
         }
     }
     
@@ -85,7 +86,7 @@ final class EventEditViewModel: ObservableObject {
             event.colorHex = colorHex
             event.priority = priority
             event.isPinned = isPinned
-            event.category = category.rawValue
+            event.category = category
             onSave(event)
         } else {
             onSave(DozyEvent(
@@ -101,7 +102,7 @@ final class EventEditViewModel: ObservableObject {
                 notificationMinutesBefore: notificationMinutesBefore,
                 priority: priority,
                 isPinned: isPinned,
-                category: category.rawValue
+                category: category
             ))
         }
     }

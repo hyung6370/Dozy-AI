@@ -28,7 +28,7 @@ struct CalendarLegendView: View {
                     // Google
                     row(name: "Google 캘린더", logo: {
                         AnyView(
-                            Image("icons8-Google-Logo-48")
+                            Image("google")
                                 .resizable().scaledToFit()
                         )
                     }, bar: {

@@ -9,14 +9,16 @@ import SwiftUI
 
 struct MonthWeekRowView: View {
     
-    let weekDates: [Date?]
+    let weekDates: [Date]
     let layouts: [CalendarEventLayout]
     let selectedDate: Date
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
+    let isInMonth: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
-    let onTapEvent: (String) -> Void
+    let onTapEvent: (String, Date) -> Void
+    let onOverflowTap: (Date) -> Void
     
     private let headerH: CGFloat = 42
     private let rowH: CGFloat = 20
@@ -35,58 +37,48 @@ struct MonthWeekRowView: View {
                 // 빈 영역 탭 → 날짜 선택 / 롱프레스 → 일정 생성
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
-                        Group {
-                            if let date = weekDates[col] {
-                                Color.clear
-                                    .contentShape(Rectangle())
-                                    .onTapGesture { onSelect(date) }
-                                    .simultaneousGesture(
-                                        LongPressGesture(minimumDuration: 0.5)
-                                            .onEnded { _ in
-                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                                onLongPress(date)
-                                            }
-                                    )
-                            } else {
-                                Color.clear
+                        let date = weekDates[col]
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture { onSelect(date) }
+                            .simultaneousGesture(
+                                LongPressGesture(minimumDuration: 0.5)
+                                    .onEnded { _ in
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        onLongPress(date)
+                                    }
+                            )
+                            .frame(width: cellW, height: totalH)
+                            .overlay(alignment: .top) {
+                                Rectangle()
+                                    .fill(Color.primary.opacity(0.06))
+                                    .frame(height: 0.5)
                             }
-                        }
-                        .frame(width: cellW, height: totalH)
-                        .overlay(alignment: .top) {
-                            Rectangle()
-                                .fill(Color.primary.opacity(0.06))
-                                .frame(height: 0.5)
-                        }
-                        .overlay(alignment: .bottom) {
-                            Rectangle()
-                                .fill(Color.primary.opacity(0.06))
-                                .frame(height: 0.5)
-                        }
+                            .overlay(alignment: .bottom) {
+                                Rectangle()
+                                    .fill(Color.primary.opacity(0.06))
+                                    .frame(height: 0.5)
+                            }
                     }
                 }
 
                 // 날짜 헤더
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
-                        Group {
-                            if let date = weekDates[col] {
-                                Button { onSelect(date) } label: {
-                                    dayLabel(date: date)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .simultaneousGesture(
-                                    LongPressGesture(minimumDuration: 0.5)
-                                        .onEnded { _ in
-                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                            onLongPress(date)
-                                        }
-                                )
-                            } else {
-                                Color.clear
-                            }
+                        let date = weekDates[col]
+                        Button { onSelect(date) } label: {
+                            dayLabel(date: date)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    onLongPress(date)
+                                }
+                        )
                         .frame(width: cellW, height: headerH)
                     }
                 }
@@ -96,13 +88,17 @@ struct MonthWeekRowView: View {
                     let xOff = cellW * CGFloat(layout.startCol) + (layout.isActualStart ? 2 : 0)
                     let pillW = cellW * CGFloat(layout.endCol - layout.startCol + 1) - (layout.isActualStart ? 2 : 0) - (layout.isActualEnd ? 2 : 0)
                     let yOff = headerH + CGFloat(layout.row) * (rowH + rowGap)
-                    
+                    let pillDate = weekDates[min(layout.startCol, weekDates.count - 1)]
+                    // pill이 걸친 컬럼 중 현재 달 날짜가 하나라도 있으면 정상 표시, 전부 인접 달이면 흐리게
+                    let pillInMonth = (layout.startCol...layout.endCol).contains { isInMonth(weekDates[min($0, weekDates.count - 1)]) }
+
                     EventPill(layout: layout)
                         .frame(width: max(0, pillW), height: rowH)
                         .offset(x: xOff, y: yOff)
-                        .onTapGesture { onTapEvent(layout.id) }
+                        .opacity(pillInMonth ? 1.0 : 0.5)
+                        .onTapGesture { onTapEvent(layout.eventId, pillDate) }
                 }
-                
+
                 // 넘침 표시
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
@@ -111,11 +107,17 @@ struct MonthWeekRowView: View {
                         }.count
                         ZStack {
                             if over > 0 {
-                                Text("+\(over)")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.leading, 4)
+                                let date = weekDates[col]
+                                Button {
+                                    onOverflowTap(date)
+                                } label: {
+                                    Text("+\(over)")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.secondary.opacity(isInMonth(date) ? 1.0 : 0.4))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.leading, 4)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                         .frame(width: cellW)
@@ -130,10 +132,14 @@ struct MonthWeekRowView: View {
     @ViewBuilder
     private func dayLabel(date: Date) -> some View {
         let day = Calendar.current.component(.day, from: date)
+        let inMonth = isInMonth(date)
         Text("\(day)")
             .font(.subheadline)
             .fontWeight(isToday(date) ? .bold : .regular)
-            .foregroundStyle((isSelected(date) || isToday(date)) ? .white : .primary)
+            .foregroundStyle(
+                (isSelected(date) || isToday(date)) ? .white :
+                inMonth ? Color.primary : Color.secondary.opacity(0.4)
+            )
             .frame(width: 34, height: 34)
             .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : .clear))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -145,8 +151,20 @@ struct MonthWeekRowView: View {
 struct EventPill: View {
     let layout: CalendarEventLayout
 
+    @Environment(\.colorScheme) private var colorScheme
+
     private var color: Color { Color(hex: layout.colorHex) ?? .blue }
     private var isDozy: Bool { layout.source == .dozy }
+    private var isGoogle: Bool { layout.source == .google }
+
+    /// Google 이벤트 텍스트: 같은 색조·채도 0.85·밝기 0.65 고정 → 중간 톤으로 검정과 거리를 둠
+    private var googleTextColor: Color {
+        if colorScheme == .dark { return .white }
+        let base = UIColor(Color(hex: layout.colorHex) ?? color)
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        base.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+        return Color(hue: Double(h), saturation: 0.85, brightness: 0.65)
+    }
 
     private var shape: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
@@ -175,7 +193,7 @@ struct EventPill: View {
                         if layout.isPinned {
                             Image(systemName: "pin.fill")
                                 .font(.system(size: 7, weight: .bold))
-                                .foregroundStyle(isDozy ? color : .white)
+                                .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : .white)
                         }
                         if let pc = priorityColor {
                             Circle()
@@ -184,7 +202,7 @@ struct EventPill: View {
                         }
                         Text(layout.title)
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(isDozy ? color : .white)
+                            .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : .white)
                             .lineLimit(1)
                     }
                     .padding(.leading, 5)

@@ -22,8 +22,14 @@ struct HomeView: View {
     @State private var showDeleteMemoAlert = false
     @State private var hasNotification = false
     @State private var showNotificationSheet = false
+    @State private var selectedEvent: CalendarEvent? = nil
+    @State private var pendingDozyEdit: DozyEvent? = nil
+    @State private var pendingCalendarEdit: CalendarEvent? = nil
+    @State private var dozyEventToEdit: DozyEvent? = nil
+    @State private var calendarEventToEdit: CalendarEvent? = nil
     
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     init(container: DependencyContainer, selectedTab: Binding<Int>) {
         self.container = container
@@ -81,6 +87,12 @@ struct HomeView: View {
                 }
             }
             .refreshable { viewModel.loadTodayData() }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    showSummarySheet = false
+                    selectedEvent = nil
+                }
+            }
             .onAppear {
                 viewModel.loadTodayData()
                 container.notificationRepository.hasUnread()
@@ -135,8 +147,46 @@ struct HomeView: View {
                 completedTasks: viewModel.completedTasks,
                 pendingTasks: viewModel.pendingTasks,
                 memos: viewModel.todayLog?.memos ?? [],
-                completedEventCount: viewModel.completedCount
+                completedEventCount: viewModel.completedCount,
+                existingSummary: viewModel.dailySummary
             )
+        }
+        .sheet(item: $selectedEvent, onDismiss: {
+            if let pending = pendingDozyEdit {
+                dozyEventToEdit = pending
+                pendingDozyEdit = nil
+            } else if let pending = pendingCalendarEdit {
+                calendarEventToEdit = pending
+                pendingCalendarEdit = nil
+            }
+        }) { event in
+            EventDetailView(
+                event: event,
+                dozyEvent: viewModel.dozyEventsByID[event.id],
+                onEdit: { dozy in pendingDozyEdit = dozy; selectedEvent = nil },
+                onDelete: { dozy in viewModel.deleteDozyEvent(dozy); selectedEvent = nil },
+                onDeleteThisOnly: { dozy, date in viewModel.deleteThisOccurrence(dozy, date: date); selectedEvent = nil },
+                onDeleteFutureEvents: { dozy, date in viewModel.deleteFutureOccurrences(dozy, from: date); selectedEvent = nil },
+                onEditCalendar: { ev in pendingCalendarEdit = ev; selectedEvent = nil },
+                onDeleteCalendar: { ev in viewModel.deleteCalendarEvent(ev); selectedEvent = nil },
+                onSaveMemos: { viewModel.saveMemos(for: $0) },
+                onUpdateDisplaySettings: { ev, priority, isPinned, category in
+                    viewModel.updateDisplaySettings(for: ev, priority: priority, isPinned: isPinned, category: category)
+                }
+            )
+        }
+        .sheet(item: $dozyEventToEdit) { dozy in
+            EventEditView(
+                eventToEdit: dozy,
+                selectedDate: dozy.startDate
+            ) { saved in
+                viewModel.saveDozyEvent(saved)
+            }
+        }
+        .sheet(item: $calendarEventToEdit) { ev in
+            CalendarEventEditView(event: ev) { edit in
+                viewModel.saveCalendarEvent(ev, edit: edit)
+            }
         }
         }
     }
@@ -296,6 +346,8 @@ struct HomeView: View {
 
             ForEach(viewModel.filteredEvents) { event in
                 EventRow(event: event)
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedEvent = event }
             }
         }
     }

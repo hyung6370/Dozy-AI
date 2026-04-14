@@ -10,6 +10,7 @@ import SwiftUI
 struct NotificationListView: View {
     
     @StateObject private var viewModel: NotificationViewModel
+    @Environment(\.colorScheme) private var colorScheme
     
     init(repository: NotificationRepository) {
         _viewModel = StateObject(wrappedValue: NotificationViewModel(repository: repository))
@@ -30,7 +31,7 @@ struct NotificationListView: View {
     
     private var emptyView: some View {
         VStack(spacing: 12) {
-            Image("notifications_none")
+            Image(colorScheme == .dark ? "Dark-Bell-non" : "Light-Bell-non")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 48, height: 48)

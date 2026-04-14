@@ -84,8 +84,13 @@ final class GoogleSignInService: ObservableObject {
     
     // MARK: - Private
     private func updateState(user: GIDGoogleUser?) {
+        let wasSignedIn = isSignedIn
         isSignedIn = user != nil
         userEmail = user?.profile?.email
         userName = user?.profile?.name
+        // 로그인 미완료 → 완료 전환 시 캘린더 새로고침 트리거
+        if !wasSignedIn && isSignedIn {
+            NotificationCenter.default.post(name: .googleSignInRestored, object: nil)
+        }
     }
 }

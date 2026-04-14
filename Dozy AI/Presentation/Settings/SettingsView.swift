@@ -7,12 +7,22 @@
 
 import SwiftUI
 import Lottie
+import SafariServices
 
 struct SettingsView: View {
     
     @EnvironmentObject private var authViewModel: AuthViewModel
     @State private var showSignOutAlert = false
+    @State private var showDeleteAccountAlert = false
     private let container: DependencyContainer
+
+    private var privacyPolicyURL: URL? {
+        guard
+            let str = Bundle.main.infoDictionary?["PRIVACY_POLICY_URL"] as? String,
+            let url = URL(string: str)
+        else { return nil }
+        return url
+    }
     
     init(container: DependencyContainer) {
         self.container = container
@@ -23,6 +33,9 @@ struct SettingsView: View {
             List {
                 accountSection
                 calendarSection
+                categorySection
+                infoSection
+                dangerZoneSection
             }
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
@@ -48,6 +61,14 @@ struct SettingsView: View {
                 Button("확인", role: .cancel) { authViewModel.errorMessage = nil }
             } message: {
                 Text(authViewModel.errorMessage ?? "")
+            }
+            .alert("계정을 탈퇴하시겠습니까?", isPresented: $showDeleteAccountAlert) {
+                Button("탈퇴", role: .destructive) {
+                    authViewModel.deleteAccount()
+                }
+                Button("취소", role: .cancel) { }
+            } message: {
+                Text("모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.")
             }
         }
     }
@@ -114,7 +135,7 @@ struct SettingsView: View {
                 // Google 로그인
                 Button { authViewModel.signInWithGoogle() } label: {
                     HStack(spacing: 10) {
-                        Image("icons8-Google-Logo-48")
+                        Image("google")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 18, height: 18)
@@ -145,7 +166,7 @@ struct SettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(.systemGray6))
                     .frame(width: 34, height: 34)
-                Image("icons8-Google-Logo-48")
+                Image("google")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
@@ -155,8 +176,65 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - 카테고리 섹션
+
+    private var categorySection: some View {
+        Section {
+            NavigationLink {
+                CategoryManagementView()
+            } label: {
+                Label("카테고리 관리", systemImage: "tag")
+            }
+        } header: {
+            Text("카테고리")
+        }
+    }
+
+    // MARK: - 앱 정보 섹션
+
+    private var infoSection: some View {
+        Section {
+            Button {
+                guard let url = privacyPolicyURL,
+                      let topVC = UIApplication.shared.topViewController else { return }
+                let safari = SFSafariViewController(url: url)
+                topVC.present(safari, animated: true)
+            } label: {
+                Label("개인정보 처리방침", systemImage: "hand.raised")
+            }
+            .foregroundStyle(.primary)
+            .disabled(privacyPolicyURL == nil)
+
+            HStack {
+                Label("버전", systemImage: "info.circle")
+                Spacer()
+                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
+                    .foregroundStyle(.secondary)
+            }
+        } header: {
+            Text("앱 정보")
+        }
+    }
+
+    // MARK: - 계정 탈퇴 섹션
+
+    @ViewBuilder
+    private var dangerZoneSection: some View {
+        if authViewModel.isLoggedIn {
+            Section {
+                Button(role: .destructive) {
+                    showDeleteAccountAlert = true
+                } label: {
+                    Label("계정 탈퇴", systemImage: "person.crop.circle.badge.minus")
+                }
+            } footer: {
+                Text("탈퇴 시 모든 데이터가 영구 삭제되며 복구할 수 없습니다.")
+            }
+        }
+    }
+
     // MARK: - 캘린더 섹션
-    
+
     private var calendarSection: some View {
         Section {
             NavigationLink {

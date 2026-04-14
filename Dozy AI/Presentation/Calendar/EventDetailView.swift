@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct EventDetailView: View {
     
@@ -21,6 +22,8 @@ struct EventDetailView: View {
     let onUpdateDisplaySettings: ((CalendarEvent, Int, Bool, String?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \UserCategory.order) private var categories: [UserCategory]
+    @Query private var allDisplaySettings: [EventDisplaySettings]
     @State private var showCalendarDeleteConfirm = false
     @State private var showDozyDeleteConfirm = false
     @State private var memoText = ""
@@ -32,7 +35,7 @@ struct EventDetailView: View {
     @State private var memos: [String] = []
     @State private var displayPriority: Int = 0
     @State private var displayIsPinned: Bool = false
-    @State private var displayCategory: WorkCategory = .general
+    @State private var displayCategory: String = UserCategory.defaultName
     @State private var showRecurringEditConfirm = false
 
     var body: some View {
@@ -54,8 +57,14 @@ struct EventDetailView: View {
                 memos = dozyEvent?.memos ?? []
                 displayPriority = event.priority
                 displayIsPinned = event.isPinned
-                displayCategory = WorkCategory(rawValue: event.category) ?? .general
-                print("📌 EventDetailView.onAppear: id=\(event.id.prefix(12)) event.category=\(event.category) → displayCategory=\(displayCategory.rawValue)")
+                // DozyEvent는 @Model 참조 타입 → 항상 최신 category 반영
+                // Apple/Google 이벤트는 EventDisplaySettings에서 직접 조회
+                if let dozyEvent {
+                    displayCategory = dozyEvent.category
+                } else {
+                    let settings = allDisplaySettings.first(where: { $0.eventID == event.id })
+                    displayCategory = settings?.category ?? event.category
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -214,7 +223,7 @@ struct EventDetailView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
                 .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory.rawValue)
+                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
                 }
 
                 Divider().padding(.leading)
@@ -231,7 +240,7 @@ struct EventDetailView: View {
                     }
                     .pickerStyle(.menu)
                     .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory.rawValue)
+                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
                     }
                 }
                 .padding(.horizontal)
@@ -244,13 +253,13 @@ struct EventDetailView: View {
                         .foregroundStyle(.primary)
                     Spacer()
                     Picker("", selection: $displayCategory) {
-                        ForEach(WorkCategory.allCases, id: \.self) { cat in
-                            Text("\(cat.emoji) \(cat.rawValue)").tag(cat)
+                        ForEach(categories) { cat in
+                            Text("\(cat.emoji) \(cat.name)").tag(cat.name)
                         }
                     }
                     .pickerStyle(.menu)
                     .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue.rawValue)
+                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
                     }
                 }
                 .padding(.horizontal)
@@ -332,7 +341,7 @@ struct EventDetailView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
                 .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory.rawValue)
+                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
                 }
 
                 Divider().padding(.leading)
@@ -349,7 +358,7 @@ struct EventDetailView: View {
                     }
                     .pickerStyle(.menu)
                     .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory.rawValue)
+                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
                     }
                 }
                 .padding(.horizontal)
@@ -362,13 +371,13 @@ struct EventDetailView: View {
                         .foregroundStyle(.primary)
                     Spacer()
                     Picker("", selection: $displayCategory) {
-                        ForEach(WorkCategory.allCases, id: \.self) { cat in
-                            Text("\(cat.emoji) \(cat.rawValue)").tag(cat)
+                        ForEach(categories) { cat in
+                            Text("\(cat.emoji) \(cat.name)").tag(cat.name)
                         }
                     }
                     .pickerStyle(.menu)
                     .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue.rawValue)
+                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
                     }
                 }
                 .padding(.horizontal)

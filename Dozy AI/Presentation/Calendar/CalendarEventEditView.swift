@@ -42,7 +42,9 @@ struct CalendarEventEditView: View {
                 Section("시간") {
                     Toggle("종일", isOn: $isAllDay)
                     DatePicker("시작", selection: $startDate, displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
+                        .environment(\.locale, Locale(identifier: "ko_KR"))
                     DatePicker("종료", selection: $endDate, displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
+                        .environment(\.locale, Locale(identifier: "ko_KR"))
                 }
                 Section("위치") {
                     TextField("위치 (선택)", text: $location)

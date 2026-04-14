@@ -35,6 +35,7 @@ final class HomeViewModel: ObservableObject {
     @Published var weeklyEvents: [[CalendarEvent]] = []
     @Published var weeklyDates: [Date] = []
     @Published var monthlySummary: MonthlySummary? = nil
+    @Published var dozyEventsByID: [String: DozyEvent] = [:]
 
     // MARK: - Computed Properties
 
@@ -103,6 +104,11 @@ final class HomeViewModel: ObservableObject {
     private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
     private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+    private let deleteDozyEventUseCase: DeleteDozyEventUseCase
+    private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
+    private let updateDozyEventUseCase: UpdateDozyEventUseCase
+    private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
+    private let displaySettingsRepo: EventDisplaySettingsRepository
     var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
@@ -116,7 +122,12 @@ final class HomeViewModel: ObservableObject {
         googleSignInService: GoogleSignInService,
         fetchCalendarEventUseCase: FetchCalendarEventUseCase,
         fetchDozyEventsUseCase: FetchDozyEventsUseCase,
-        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+        fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
+        deleteDozyEventUseCase: DeleteDozyEventUseCase,
+        deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
+        updateDozyEventUseCase: UpdateDozyEventUseCase,
+        updateCalendarEventUseCase: UpdateCalendarEventUseCase,
+        displaySettingsRepo: EventDisplaySettingsRepository
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
@@ -127,6 +138,11 @@ final class HomeViewModel: ObservableObject {
         self.fetchCalendarEventUseCase = fetchCalendarEventUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
+        self.deleteDozyEventUseCase = deleteDozyEventUseCase
+        self.deleteCalendarEventUseCase = deleteCalendarEventUseCase
+        self.updateDozyEventUseCase = updateDozyEventUseCase
+        self.updateCalendarEventUseCase = updateCalendarEventUseCase
+        self.displaySettingsRepo = displaySettingsRepo
         
         googleSignInService.$isSignedIn
             .removeDuplicates()
@@ -161,7 +177,12 @@ final class HomeViewModel: ObservableObject {
             googleSignInService: container.googleSignInService,
             fetchCalendarEventUseCase: container.fetchCalendarEventUseCase,
             fetchDozyEventsUseCase: container.fetchDozyEventsUseCase,
-            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase
+            fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
+            deleteDozyEventUseCase: container.deleteDozyEventUseCase,
+            deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
+            updateDozyEventUseCase: container.updateDozyEventUseCase,
+            updateCalendarEventUseCase: container.updateCalendarEventUseCase,
+            displaySettingsRepo: container.eventDisplaySettingsRepository
         )
     }
 
@@ -202,15 +223,30 @@ final class HomeViewModel: ObservableObject {
 
         Publishers.Zip(
             fetchDozyEventsUseCase.execute(for: Date()),
-            fetchEventCompletionsUseCase.execute(for: allIDs)
+            fetchEventCompletionsUseCase.execute(for: allIDs, on: Date())
         )
         .receive(on: DispatchQueue.main)
         .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] dozyEvents, completionsMap in
             guard let self else { return }
-            var merged: [String: Bool] = completionsMap
-            for event in dozyEvents where dozyIDs.contains(event.id) {
-                merged[event.id] = event.isCompleted
+            // completionsMap은 복합키(eventID_timestamp) → event.id 단순키로 역변환
+            let today = Date()
+            let dayKey = "_\(Int(Calendar.current.startOfDay(for: today).timeIntervalSince1970))"
+            var merged: [String: Bool] = [:]
+            for (compositeKey, value) in completionsMap {
+                let eventID = compositeKey.hasSuffix(dayKey)
+                    ? String(compositeKey.dropLast(dayKey.count))
+                    : compositeKey
+                merged[eventID] = value
             }
+            var dict: [String: DozyEvent] = [:]
+            for event in dozyEvents {
+                dict[event.id] = event
+                // Dozy 비반복 일정은 isCompleted 직접 사용
+                if dozyIDs.contains(event.id) && event.recurrenceRule == "none" {
+                    merged[event.id] = event.isCompleted
+                }
+            }
+            self.dozyEventsByID = dict
             self.completionsByEventID = merged
         })
         .store(in: &cancellables)
@@ -382,6 +418,98 @@ final class HomeViewModel: ObservableObject {
             errorMessage = error.errorDescription
         default:
             errorMessage = error.errorDescription
+        }
+    }
+
+    // MARK: - Event Detail Actions
+
+    func saveDozyEvent(_ event: DozyEvent) {
+        updateDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func saveCalendarEvent(_ event: CalendarEvent, edit: CalendarEventEditRequest) {
+        updateCalendarEventUseCase.execute(event, with: edit)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func saveMemos(for dozyEvent: DozyEvent) {
+        updateDozyEventUseCase.execute(dozyEvent)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    func deleteDozyEvent(_ dozyEvent: DozyEvent) {
+        deleteDozyEventUseCase.execute(dozyEvent)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func deleteThisOccurrence(_ dozyEvent: DozyEvent, date: Date) {
+        let occStart = dozyEvent.occurrenceStart(for: date) ?? Calendar.current.startOfDay(for: date)
+        dozyEvent.excludedDates.append(occStart)
+        dozyEvent.updatedAt = Date()
+        updateDozyEventUseCase.execute(dozyEvent)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func deleteFutureOccurrences(_ dozyEvent: DozyEvent, from date: Date) {
+        let cal = Calendar.current
+        dozyEvent.recurrenceEndDate = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: date))!
+        dozyEvent.updatedAt = Date()
+        updateDozyEventUseCase.execute(dozyEvent)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func deleteCalendarEvent(_ event: CalendarEvent) {
+        deleteCalendarEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String?) {
+        if event.source == .dozy {
+            guard let dozy = dozyEventsByID[event.id] else { return }
+            dozy.priority = priority
+            dozy.isPinned = isPinned
+            if let category { dozy.category = category }
+            updateDozyEventUseCase.execute(dozy)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                    self?.loadTodayData()
+                })
+                .store(in: &cancellables)
+        } else {
+            let finalCategory = category ?? event.category
+            displaySettingsRepo.save(eventID: event.id, priority: priority, isPinned: isPinned, category: finalCategory)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] _ in
+                    self?.loadTodayData()
+                })
+                .store(in: &cancellables)
         }
     }
 }

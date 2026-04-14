@@ -24,8 +24,10 @@ final class FetchDozyEventsUseCase {
             repository.fetchAllRecurring()
         )
         .map { regular, recurring in
+            // 비반복 일정만 date range로 처리 (반복 일정은 occursOn으로 전개)
+            let regularOnly = regular.filter { $0.recurrenceRule == "none" || $0.recurrenceRule.isEmpty }
             let recurringToday = recurring.filter { $0.occursOn(date) }
-            return (regular + recurringToday).sorted { $0.startDate < $1.startDate }
+            return (regularOnly + recurringToday).sorted { $0.startDate < $1.startDate }
         }
         .eraseToAnyPublisher()
     }

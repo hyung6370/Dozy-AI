@@ -76,19 +76,50 @@ final class DependencyContainer: ObservableObject {
     // MARK: - Init
 
     init() {
+        let schema = Schema([
+            WorkLog.self, UserPattern.self, DozyEvent.self,
+            EventCompletion.self, NotificationRecord.self,
+            EventDisplaySettings.self, UserCategory.self
+        ])
         do {
-            let schema = Schema([
-                WorkLog.self,
-                UserPattern.self,
-                DozyEvent.self,
-                EventCompletion.self,
-                NotificationRecord.self,
-                EventDisplaySettings.self
-            ])
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             self.modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {
-            fatalError("SwiftData ModelContainer 초기화 실패: \(error)")
+            // 스키마 변경으로 인한 스토어 호환 불가 시 스토어 재생성
+            // 로그인 사용자는 Supabase에서 데이터 재동기화됨
+            Self.destroyLocalStore()
+            do {
+                let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+                self.modelContainer = try ModelContainer(for: schema, configurations: [config])
+            } catch {
+                fatalError("SwiftData ModelContainer 초기화 실패: \(error)")
+            }
         }
+        seedDefaultCategoriesIfNeeded()
+    }
+
+    private static func destroyLocalStore() {
+        let fm = FileManager.default
+        guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+        let storeExtensions = [".store", ".store-shm", ".store-wal",
+                               ".sqlite", ".sqlite-shm", ".sqlite-wal",
+                               ".db", ".db-shm", ".db-wal"]
+        let files = (try? fm.contentsOfDirectory(at: appSupport, includingPropertiesForKeys: nil)) ?? []
+        for file in files where storeExtensions.contains(where: { file.lastPathComponent.hasSuffix($0) }) {
+            try? fm.removeItem(at: file)
+        }
+    }
+
+    private func seedDefaultCategoriesIfNeeded() {
+        let context = modelContainer.mainContext
+        let count = (try? context.fetchCount(FetchDescriptor<UserCategory>())) ?? 0
+        guard count == 0 else { return }
+        let defaults: [(String, String, String)] = [
+            ("일반", "📌", "#8E8E93")
+        ]
+        for (i, (name, emoji, color)) in defaults.enumerated() {
+            context.insert(UserCategory(name: name, emoji: emoji, colorHex: color, order: i))
+        }
+        try? context.save()
     }
 }

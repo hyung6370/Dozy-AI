@@ -20,11 +20,13 @@ extension Color {
     }
     
     func toHex() -> String? {
-        guard let components = UIColor(self).cgColor.components, components.count >= 3 else { return nil }
+        // cgColor.components는 P3/extended 컬러스페이스에서 잘못된 값을 반환할 수 있음
+        // getRed(_:green:blue:alpha:)는 항상 sRGB로 변환하여 정확한 hex를 반환
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a) else { return nil }
         return String(format: "#%02X%02X%02X",
-                      Int(components[0] * 255),
-                      Int(components[1] * 255),
-                      Int(components[2] * 255)
-        )
+                      Int(lroundf(Float(r) * 255)),
+                      Int(lroundf(Float(g) * 255)),
+                      Int(lroundf(Float(b) * 255)))
     }
 }

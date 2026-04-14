@@ -125,25 +125,17 @@ final class AuthService: NSObject {
         }
         .eraseToAnyPublisher()
     }
-
-    // MARK: - 세션 복원
-
-    func restoreSession() -> AnyPublisher<AuthUser?, Never> {
+    
+    // MARK: - 회원탈퇴
+    func deleteAccount() -> AnyPublisher<Void, DozyError> {
         Future { promise in
             Task {
-                guard let session = try? await supabase.auth.session else {
-                    promise(.success(nil))
-                    return
+                do {
+                    try await supabase.rpc("delete_user_account").execute()
+                    promise(.success(()))
+                } catch {
+                    promise(.failure(.unknown(underlying: error)))
                 }
-                let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
-                let provider: AuthProvider = providerString == "google" ? .google : .apple
-                let user = AuthUser(
-                    id: session.user.id.uuidString,
-                    email: session.user.email,
-                    displayName: nil,
-                    provider: provider
-                )
-                promise(.success(user))
             }
         }
         .eraseToAnyPublisher()

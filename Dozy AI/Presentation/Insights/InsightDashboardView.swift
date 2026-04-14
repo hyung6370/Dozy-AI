@@ -9,13 +9,16 @@ import SwiftUI
 import Charts
 
 struct InsightDashboardView: View {
-    
+
+    private let container: DependencyContainer
     @StateObject private var viewModel: InsightDashboardViewModel
     @State private var showSwipeHint = true
     @State private var currentPage = 0
     @State private var hintScale: CGFloat = 1.0
-    
+    @State private var showCalendarSettings = false
+
     init(container: DependencyContainer) {
+        self.container = container
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
             fetchEventsUseCase: container.fetchDozyEventsForPeriodUseCase,
             fetchCalendarEventsUseCase: container.fetchCalendarEventsForPeriodUseCase,
@@ -40,7 +43,8 @@ struct InsightDashboardView: View {
                             insightCard
                         }
                         summaryRow
-                        InsightBannerView()
+                        categoryAnalysisLink
+                        InsightBannerView { showCalendarSettings = true }
                         chartSectionPager
                             .padding(.top, -16)
                     }
@@ -64,6 +68,13 @@ struct InsightDashboardView: View {
             }
             .onAppear { viewModel.loadData() }
             .refreshable { viewModel.loadData() }
+            .sheet(isPresented: $showCalendarSettings) {
+                CalendarSettingsView(
+                    sourceManager: container.calendarSourceManager,
+                    googleSignInService: container.googleSignInService,
+                    naverSignInService: container.naverSignInService
+                )
+            }
         }
     }
     
@@ -240,6 +251,40 @@ struct InsightDashboardView: View {
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .frame(height: 520)
+    }
+
+    // MARK: - 카테고리 분석 링크
+    private var categoryAnalysisLink: some View {
+        NavigationLink {
+            CategoryAnalysisView(
+                events: viewModel.periodCalendarEvents,
+                dozyEvents: viewModel.periodDozyEvents,
+                period: viewModel.selectedPeriod
+            )
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "chart.pie.fill")
+                    .font(.title2)
+                    .foregroundStyle(.purple)
+                    .frame(width: 40, height: 40)
+                    .background(.purple.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("카테고리 분석")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text("시간 분배 · 완료율 · 요일 패턴 · 집중도")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding()
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        }
     }
 
     // MARK: - 카드 Empty State 공통

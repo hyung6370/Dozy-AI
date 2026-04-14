@@ -36,20 +36,27 @@ final class CalendarService: CalendarServiceProtocol {
     // MARK: - 이벤트 조회
 
     func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+        fetchEvents(for: date, excludeSubscriptions: false)
+    }
+
+    func fetchEvents(for date: Date, excludeSubscriptions: Bool) -> AnyPublisher<[CalendarEvent], DozyError> {
         requestAccessIfNeeded()
             .flatMap { [eventStore] _ -> AnyPublisher<[CalendarEvent], DozyError> in
                 Future { promise in
                     let start = date.startOfDay
                     let end = date.startOfNextDay
+                    let calendars = excludeSubscriptions
+                        ? eventStore.calendars(for: .event).filter { $0.type != .subscription }
+                        : nil
 
                     let predicate = eventStore.predicateForEvents(
                         withStart: start,
                         end: end,
-                        calendars: nil
+                        calendars: calendars
                     )
 
                     let events = eventStore.events(matching: predicate)
-                        .map { $0.toCalendarEvent() }          // ← Mapper 사용
+                        .map { $0.toCalendarEvent() }
                         .sorted { $0.startDate < $1.startDate }
 
                     promise(.success(events))
@@ -62,13 +69,20 @@ final class CalendarService: CalendarServiceProtocol {
     // MARK: - 날짜 범위 조회 (EventKit 네이티브 지원으로 효율적)
 
     func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+        fetchEvents(from: start, to: end, excludeSubscriptions: false)
+    }
+
+    func fetchEvents(from start: Date, to end: Date, excludeSubscriptions: Bool) -> AnyPublisher<[CalendarEvent], DozyError> {
         requestAccessIfNeeded()
             .flatMap { [eventStore] _ -> AnyPublisher<[CalendarEvent], DozyError> in
                 Future { promise in
+                    let calendars = excludeSubscriptions
+                        ? eventStore.calendars(for: .event).filter { $0.type != .subscription }
+                        : nil
                     let predicate = eventStore.predicateForEvents(
                         withStart: start,
                         end: end,
-                        calendars: nil
+                        calendars: calendars
                     )
                     let events = eventStore.events(matching: predicate)
                         .map { $0.toCalendarEvent() }

@@ -173,15 +173,14 @@ final class AIService: AIServiceProtocol {
         let keywords = extractKeywords(from: allText, count: 3)
 
         // 카테고리별 일정 하이라이트 (사용자 지정 카테고리 활용)
-        let categoryGroups = Dictionary(grouping: events.filter { $0.category != WorkCategory.general.rawValue }) { $0.category }
+        let categoryGroups = Dictionary(grouping: events.filter { $0.category != UserCategory.defaultName }) { $0.category }
         if !categoryGroups.isEmpty {
             for (category, grouped) in categoryGroups.sorted(by: { $0.value.count > $1.value.count }).prefix(3) {
-                let emoji = WorkCategory(rawValue: category)?.emoji ?? "📌"
                 let minutes = grouped.filter { !$0.isAllDay }.reduce(0) { $0 + $1.durationMinutes }
                 if minutes > 0 {
-                    highlights.append("\(emoji) \(category) 관련 일정 \(grouped.count)건 (총 \(minutes)분)")
+                    highlights.append("📌 \(category) 관련 일정 \(grouped.count)건 (총 \(minutes)분)")
                 } else {
-                    highlights.append("\(emoji) \(category) 관련 일정 \(grouped.count)건")
+                    highlights.append("📌 \(category) 관련 일정 \(grouped.count)건")
                 }
             }
         } else {
@@ -261,12 +260,11 @@ final class AIService: AIServiceProtocol {
     }
     
     // MARK: - 카테고리 감지
-    /// 사용자가 지정한 카테고리를 우선 사용하고, 없으면 키워드 기반 폴백
+    /// 사용자가 지정한 카테고리를 우선 사용하고, 없으면 기본값 반환
     private func detectCategory(events: [CalendarEvent], tasks: [TaskItem]) -> String {
-        // 1) 사용자가 명시적으로 지정한 카테고리 집계 ("일반" 제외)
         let explicitCategories = events
             .map { $0.category }
-            .filter { $0 != WorkCategory.general.rawValue }
+            .filter { $0 != UserCategory.defaultName }
 
         if !explicitCategories.isEmpty {
             let grouped = Dictionary(grouping: explicitCategories) { $0 }
@@ -275,62 +273,14 @@ final class AIService: AIServiceProtocol {
             }
         }
 
-        // 2) 폴백: 키워드 기반 감지
-        let allTitles = (events.map { $0.title } + tasks.map { $0.title })
-            .joined(separator: " ")
-            .lowercased()
-
-        let keywords: [(WorkCategory, [String])] = [
-            (.meeting, ["회의", "미팅", "meeting", "standup", "sync", "1:1", "데일리"]),
-            (.review, ["리뷰", "review", "검토", "PR", "코드리뷰", "피드백"]),
-            (.development, ["개발", "코딩", "dev", "sprint", "배포", "deploy", "버그", "구현"]),
-            (.planning, ["기획", "플래닝", "planning", "브레인스토밍", "로드맵"]),
-            (.documentation, ["문서", "doc", "작성", "wiki", "정리", "보고서"])
-        ]
-
-        var scores: [WorkCategory: Int] = [:]
-        for (category, words) in keywords {
-            scores[category] = words.reduce(0) { $0 + (allTitles.contains($1) ? 1 : 0) }
-        }
-
-        if let top = scores.max(by: { $0.value < $1.value }), top.value > 0 {
-            return top.key.rawValue
-        }
-        return WorkCategory.general.rawValue
+        return UserCategory.defaultName
     }
     
     // MARK: - 생산성 점수
     // 할 일 완료율(50%) + 일정 완료 체크율(30%) + 우선순위 달성률(20%)
     private func calculateProductivityScore(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], completedEventCount: Int = 0) -> Double {
-
-        var score = 0.0
-
-        // 1) 할 일 완료율 (50%) — 완료한 할 일 / 전체 할 일
-        let totalTasks = completedTasks.count + pendingTasks.count
-        if totalTasks > 0 {
-            score += (Double(completedTasks.count) / Double(totalTasks)) * 0.5
-        } else {
-            score += 0.25
-        }
-
-        // 2) 일정 완료 체크율 (30%) — 완료 체크한 일정 / 전체 일정
-        if !events.isEmpty {
-            score += (Double(completedEventCount) / Double(events.count)) * 0.3
-        } else {
-            score += 0.15
-        }
-
-        // 3) 우선순위 달성률 (20%) — 우선순위가 있는 할 일 중 완료된 비율
-        let highPriorityCompleted = completedTasks.filter { $0.priority > 0 }.count
-        let highPriorityPending = pendingTasks.filter { $0.priority > 0 }.count
-        let totalHighPriority = highPriorityCompleted + highPriorityPending
-        if totalHighPriority > 0 {
-            score += (Double(highPriorityCompleted) / Double(totalHighPriority)) * 0.2
-        } else {
-            score += 0.1
-        }
-
-        return min(max(score, 0.0), 1.0)
+        guard !events.isEmpty else { return 0.5 }
+        return Double(completedEventCount) / Double(events.count)
     }
     
     // MARK: - NLTagger 키워드 추출
