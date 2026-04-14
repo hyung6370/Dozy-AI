@@ -110,6 +110,8 @@ final class HomeViewModel: ObservableObject {
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let displaySettingsRepo: EventDisplaySettingsRepository
     var cancellables = Set<AnyCancellable>()
+    private var todayDataCancellable: AnyCancellable?
+    private var completionFetchCancellable: AnyCancellable?
 
     // MARK: - Init
 
@@ -197,7 +199,9 @@ final class HomeViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        fetchTodayDataUseCase.execute()
+        // 단일 cancellable 사용 → 이전 fetch가 느릴 때 새 fetch가 시작되면 이전 구독을 자동 취소
+        // (Set<AnyCancellable>에 쌓이면 느린 Google API 응답이 최신 완료 상태를 덮어쓰는 race condition 발생)
+        todayDataCancellable = fetchTodayDataUseCase.execute()
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -215,7 +219,6 @@ final class HomeViewModel: ObservableObject {
                     self.loadCompletions(for: result.events)
                 }
             )
-            .store(in: &cancellables)
 
         loadRecentLogs()
         loadWeeklyData()
@@ -226,7 +229,8 @@ final class HomeViewModel: ObservableObject {
         let allIDs = events.map { $0.id }
         let dozyIDs = Set(events.filter { $0.source == .dozy }.map { $0.id })
 
-        Publishers.Zip(
+        // 단일 cancellable 사용 → 이전 완료 fetch가 새 결과를 덮어쓰는 race condition 방지
+        completionFetchCancellable = Publishers.Zip(
             fetchDozyEventsUseCase.execute(for: Date()),
             fetchEventCompletionsUseCase.execute(for: allIDs, on: Date())
         )
@@ -254,7 +258,6 @@ final class HomeViewModel: ObservableObject {
             self.dozyEventsByID = dict
             self.completionsByEventID = merged
         })
-        .store(in: &cancellables)
     }
 
     func loadRecentLogs() {

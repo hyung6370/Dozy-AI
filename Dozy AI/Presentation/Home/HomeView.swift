@@ -326,7 +326,7 @@ struct HomeView: View {
             HomeStatCard(value: "\(viewModel.eventCount)", label: "오늘 일정", icon: "calendar", color: .blue)
             HomeStatCard(
                 value: "\(viewModel.completedCount)/\(viewModel.completedCount + viewModel.pendingCount)",
-                label: "할일 완료",
+                label: "할 일 완료",
                 icon: "checkmark.circle.fill",
                 color: .green
             )
@@ -348,7 +348,7 @@ struct HomeView: View {
             }
 
             ForEach(viewModel.filteredEvents) { event in
-                EventRow(event: event)
+                EventRow(event: event, isCompleted: viewModel.completionsByEventID[event.id] == true)
                     .contentShape(Rectangle())
                     .onTapGesture { selectedEvent = event }
             }

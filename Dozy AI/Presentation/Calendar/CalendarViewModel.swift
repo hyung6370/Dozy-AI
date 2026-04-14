@@ -286,6 +286,7 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.dozyEventsByID[event.id] = event
+                NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
             })
             .store(in: &cancellables)
     }
@@ -304,7 +305,9 @@ final class CalendarViewModel: ObservableObject {
             }
             return dozy?.isCompleted ?? false
         }
-        return completionsByID[completionKey(for: event)] ?? false
+        // Apple/Google: 현재 선택 날짜 기준으로 키 조회 (다일 종일 일정 대응)
+        let key = EventCompletionRepository.completionKey(eventID: event.id, date: selectedDate)
+        return completionsByID[key] ?? false
     }
 
     // 완료 토글 (source 분기)
@@ -324,11 +327,15 @@ final class CalendarViewModel: ObservableObject {
                 toggleCompletion(for: dozyEvent)
             }
         } else {
-            toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
+            // Apple/Google: 선택 날짜를 eventDate로 저장 → 다일 종일 일정도 날짜별 독립 완료 유지
+            let eventDate = selectedDate
+            toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: eventDate)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
                     guard let self else { return }
-                    self.completionsByID[self.completionKey(for: event)] = newValue
+                    let key = EventCompletionRepository.completionKey(eventID: event.id, date: eventDate)
+                    self.completionsByID[key] = newValue
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
                 })
                 .store(in: &cancellables)
         }
