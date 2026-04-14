@@ -151,7 +151,10 @@ struct HomeView: View {
                 pendingTasks: viewModel.pendingTasks,
                 memos: viewModel.todayLog?.memos ?? [],
                 completedEventCount: viewModel.completedCount,
-                existingSummary: viewModel.dailySummary
+                existingSummary: viewModel.dailySummary,
+                onSummaryGenerated: { summary in
+                    viewModel.dailySummary = summary
+                }
             )
         }
         .sheet(item: $selectedEvent, onDismiss: {
@@ -425,7 +428,10 @@ struct HomeView: View {
         .background(Color.indigo.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.indigo.opacity(0.1), lineWidth: 1))
         .contentShape(Rectangle())
-        .onTapGesture { showSummarySheet = true }
+        .onTapGesture {
+            viewModel.loadTodayData()
+            showSummarySheet = true
+        }
     }
 
     private func scoreColor(_ score: Double) -> Color {
@@ -501,8 +507,10 @@ struct HomeView: View {
 
     private var aiGenerateButton: some View {
         Button {
-            if viewModel.hasSummary { showSummarySheet = true }
-            else { viewModel.generateAISummary() }
+            if viewModel.hasSummary {
+                viewModel.loadTodayData()
+                showSummarySheet = true
+            } else { viewModel.generateAISummary() }
         } label: {
             HStack(spacing: 12) {
                 if viewModel.isSummarizing {

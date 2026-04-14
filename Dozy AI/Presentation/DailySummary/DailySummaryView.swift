@@ -18,6 +18,8 @@ struct DailySummaryView: View {
     @State private var selectedAction: RecommendedAction? = nil
     @Query(sort: \UserCategory.order) private var userCategories: [UserCategory]
 
+    var onSummaryGenerated: ((DailySummary) -> Void)?
+
     init(
         generateSummaryUseCase: GenerateDailySummaryUseCase,
         fetchRecentLogsUseCase: FetchRecentLogsUseCase,
@@ -26,8 +28,10 @@ struct DailySummaryView: View {
         pendingTasks: [TaskItem],
         memos: [String],
         completedEventCount: Int = 0,
-        existingSummary: DailySummary? = nil
+        existingSummary: DailySummary? = nil,
+        onSummaryGenerated: ((DailySummary) -> Void)? = nil
     ) {
+        self.onSummaryGenerated = onSummaryGenerated
         let vm = DailySummaryViewModel(
             generateSummaryUseCase: generateSummaryUseCase,
             fetchRecentLogsUseCase: fetchRecentLogsUseCase
@@ -104,6 +108,11 @@ struct DailySummaryView: View {
                 viewModel.buildCategoryAnalysis()
                 viewModel.buildHighlightsData()
                 viewModel.buildTrendsData()
+            }
+            .onChange(of: viewModel.summary) { _, newSummary in
+                if let newSummary {
+                    onSummaryGenerated?(newSummary)
+                }
             }
         }
     }
