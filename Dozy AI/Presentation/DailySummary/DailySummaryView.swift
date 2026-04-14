@@ -82,7 +82,7 @@ struct DailySummaryView: View {
                     }
                 }
             }
-            .navigationTitle("AI 일정 요약")
+            .navigationTitle("Dozy 일정 요약")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

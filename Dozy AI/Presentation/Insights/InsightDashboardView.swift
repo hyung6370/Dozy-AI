@@ -11,14 +11,16 @@ import Charts
 struct InsightDashboardView: View {
 
     private let container: DependencyContainer
+    @Binding var selectedTab: Int
     @StateObject private var viewModel: InsightDashboardViewModel
     @State private var showSwipeHint = true
     @State private var currentPage = 0
     @State private var hintScale: CGFloat = 1.0
     @State private var showCalendarSettings = false
 
-    init(container: DependencyContainer) {
+    init(container: DependencyContainer, selectedTab: Binding<Int>) {
         self.container = container
+        self._selectedTab = selectedTab
         _viewModel = StateObject(wrappedValue: InsightDashboardViewModel(
             fetchEventsUseCase: container.fetchDozyEventsForPeriodUseCase,
             fetchCalendarEventsUseCase: container.fetchCalendarEventsForPeriodUseCase,
@@ -67,6 +69,9 @@ struct InsightDashboardView: View {
                 viewModel.loadData()
             }
             .onAppear { viewModel.loadData() }
+            .onChange(of: selectedTab) { _, newTab in
+                if newTab == 2 { viewModel.loadData() }
+            }
             .refreshable { viewModel.loadData() }
             .sheet(isPresented: $showCalendarSettings) {
                 CalendarSettingsView(
@@ -81,7 +86,7 @@ struct InsightDashboardView: View {
     // MARK: - Insight Card
     private var insightCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("AI 인사이트", systemImage: "sparkles")
+            Label("Dozy 인사이트", systemImage: "sparkles")
                 .font(.headline)
             ForEach(viewModel.insights) { insight in
                 HStack(alignment: .top, spacing: 10) {

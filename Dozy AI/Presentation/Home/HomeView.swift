@@ -100,6 +100,9 @@ struct HomeView: View {
                     .sink { hasNotification = $0 }
                     .store(in: &viewModel.cancellables)
             }
+            .onChange(of: selectedTab) { _, newTab in
+                if newTab == 0 { viewModel.loadTodayData() }
+            }
             .alert("권한 필요", isPresented: $viewModel.showPermissionAlert) {
                 Button("설정 열기") {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -373,7 +376,7 @@ struct HomeView: View {
     private func aiSummaryPreview(_ summary: DailySummary) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label("AI 요약", systemImage: "sparkles")
+                Label("Dozy 요약", systemImage: "sparkles")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.indigo)

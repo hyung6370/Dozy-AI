@@ -57,7 +57,7 @@ struct MainTabView: View {
                 .tabItem { Label("캘린더", image: calendarIconName) }
                 .tag(1)
 
-            InsightDashboardView(container: container)
+            InsightDashboardView(container: container, selectedTab: $selectedTab)
                 .tabItem { Label("인사이트", image: insightIconName) }
                 .tag(2)
 
@@ -67,6 +67,9 @@ struct MainTabView: View {
         }
         .onAppear {
             calendarViewModel.loadInitialData()
+        }
+        .onChange(of: selectedTab) { _, newTab in
+            if newTab == 1 { calendarViewModel.refreshData() }
         }
     }
 }
