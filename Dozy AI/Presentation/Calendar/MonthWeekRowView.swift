@@ -201,7 +201,7 @@ struct EventPill: View {
                                 .frame(width: 5, height: 5)
                         }
                         Text(layout.title)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : .white)
                             .lineLimit(1)
                     }

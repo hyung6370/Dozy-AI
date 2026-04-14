@@ -95,6 +95,9 @@ final class CalendarViewModel: ObservableObject {
     // 날짜별 이벤트 fetch 전용 — 새 날짜 선택 시 이전 fetch를 자동 취소하기 위해 Set이 아닌 단일 변수 사용
     private var fetchDateCancellable: AnyCancellable?
     private var fetchDateSettingsCancellable: AnyCancellable?
+    // 월별 이벤트 fetch 전용 — 같은 월에 대한 이전 fetch를 자동 취소하여 오래된 결과가 최신 결과를 덮어쓰지 않도록 함
+    private var monthFetchCancellables: [Date: AnyCancellable] = [:]
+    private var monthDozyFetchCancellables: [Date: AnyCancellable] = [:]
     private let displaySettingsRepo: EventDisplaySettingsRepository
     
     init(
@@ -641,7 +644,9 @@ final class CalendarViewModel: ObservableObject {
         let lastWeekday = cal.component(.weekday, from: lastDay) - 1
         let displayEnd = cal.date(byAdding: .day, value: 7 - lastWeekday, to: lastDay)!
 
-        fetchCalendarEventsForPeriodUseCase.execute(from: displayStart, to: displayEnd)
+        // 같은 월에 대한 이전 fetch가 있으면 자동 취소 (오래된 결과가 최신 결과를 덮어쓰는 경합 방지)
+        monthFetchCancellables[monthKey] = fetchCalendarEventsForPeriodUseCase
+            .execute(from: displayStart, to: displayEnd)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] events in
                 guard let self else { return }
@@ -649,17 +654,16 @@ final class CalendarViewModel: ObservableObject {
                 self.buildLayouts(from: results, forMonth: targetMonth)
                 self.loadedMonthKeys.insert(monthKey)
             })
-            .store(in: &cancellables)
 
         // 월 전체 DozyEvent를 dozyEventsByID에 미리 로드 (모든 날짜 탭 시 조회 가능하게)
-        fetchDozyEventsForPeriodUseCase.execute(from: displayStart, to: displayEnd)
+        monthDozyFetchCancellables[monthKey] = fetchDozyEventsForPeriodUseCase
+            .execute(from: displayStart, to: displayEnd)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] dozyEvents in
                 guard let self else { return }
                 let newEntries = Dictionary(uniqueKeysWithValues: dozyEvents.map { ($0.id, $0) })
                 self.dozyEventsByID.merge(newEntries) { _, new in new }
             })
-            .store(in: &cancellables)
 
         // 인접 달 미리 로드 (현재 달 탐색 시에만)
         if month == nil {
@@ -684,15 +688,20 @@ final class CalendarViewModel: ObservableObject {
         while date < endDay {
             let nextDate = cal.date(byAdding: .day, value: 1, to: date)!
             let dayEvents = events.filter { ev in
-                // all-day 이벤트는 endDate == startDate (Dozy 저장 방식: finalEnd = isAllDay ? startDate : endDate)
-                // midnight > midnight = false 가 되어 필터링됨 → effectiveEnd를 다음날 자정으로 보정
                 let effectiveEnd: Date
-                if ev.isAllDay, cal.startOfDay(for: ev.endDate) <= cal.startOfDay(for: ev.startDate) {
-                    effectiveEnd = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: ev.startDate))!
+                if ev.isAllDay {
+                    if ev.source == .dozy {
+                        // Dozy all-day: endDate는 포함 마지막 날 (단일 일정이면 startDate와 동일)
+                        let inclusive = max(cal.startOfDay(for: ev.endDate), cal.startOfDay(for: ev.startDate))
+                        effectiveEnd = cal.date(byAdding: .day, value: 1, to: inclusive)!
+                    } else {
+                        // 시스템(Google/Apple) all-day: endDate는 이미 다음날 자정 (exclusive)
+                        effectiveEnd = ev.endDate
+                    }
                 } else {
                     effectiveEnd = ev.endDate
                 }
-                return ev.startDate < nextDate && effectiveEnd >= date
+                return ev.startDate < nextDate && effectiveEnd > date
             }
             result.append((date, dayEvents))
             date = nextDate
@@ -737,7 +746,12 @@ final class CalendarViewModel: ObservableObject {
             barsDict[key] = Array((barsDict[key] ?? []).prefix(3))
         }
         withAnimation(.easeInOut(duration: 0.3)) {
-            eventBarsPerDate.merge(barsDict) { _, new in new }
+            // merge가 아닌 명시적 덮어쓰기: 이벤트가 없는 날짜도 반드시 갱신하여
+            // 삭제된 이벤트의 bar가 캘린더 그리드에 남지 않도록 함
+            for (date, _) in results {
+                let key = cal.startOfDay(for: date)
+                eventBarsPerDate[key] = barsDict[key]
+            }
         }
 
         // 주간 레이아웃 계산 (forMonth 기준 주 배열 로컬 계산)
