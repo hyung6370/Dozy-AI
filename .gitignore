@@ -35,3 +35,4 @@ Podfile.lock
 # 🔐 Secrets — 절대 커밋하지 않음
 **/Config/Secrets.xcconfig
 **/Config/Production.xcconfig
+fastlane/api_key.p8
