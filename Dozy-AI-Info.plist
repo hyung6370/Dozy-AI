@@ -35,7 +35,7 @@
 	<key>SUPABASE_HOST</key>
 	<string>$(SUPABASE_HOST)</string>
 	<key>PRIVACY_POLICY_URL</key>
-	<string>https://dozy-landing.vercel.app/privacy</string>
+	<string>https://www.dozyapp.kr/privacy</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
