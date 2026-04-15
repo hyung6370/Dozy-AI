@@ -8,6 +8,7 @@ import OSLog
 extension Logger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.dozy.ai"
 
+    static let app      = Logger(subsystem: subsystem, category: "App")
     static let sync     = Logger(subsystem: subsystem, category: "Sync")
     static let calendar = Logger(subsystem: subsystem, category: "Calendar")
     static let auth     = Logger(subsystem: subsystem, category: "Auth")

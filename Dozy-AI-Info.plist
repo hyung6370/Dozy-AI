@@ -34,6 +34,10 @@
 	<string>$(SUPABASE_ANON_KEY)</string>
 	<key>SUPABASE_HOST</key>
 	<string>$(SUPABASE_HOST)</string>
+	<key>PROD_SUPABASE_ANON_KEY</key>
+	<string>$(PROD_SUPABASE_ANON_KEY)</string>
+	<key>PROD_SUPABASE_HOST</key>
+	<string>$(PROD_SUPABASE_HOST)</string>
 	<key>PRIVACY_POLICY_URL</key>
 	<string>https://www.dozyapp.kr/privacy</string>
 	<key>UIBackgroundModes</key>
