@@ -56,7 +56,10 @@ struct Dozy_AIApp: App {
                 container.notificationService.requestAuthorization()
                     .sink { _ in }
                     .store(in: &container.notificationCancellables)
-                authViewModel.startAuthListener()
+                Task {
+                    await authViewModel.clearSessionIfReinstalled()
+                    authViewModel.startAuthListener()
+                }
             }
             .environmentObject(authViewModel)
     }

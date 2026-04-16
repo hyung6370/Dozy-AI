@@ -45,6 +45,20 @@ final class AuthViewModel: ObservableObject {
 
     var isLoggedIn: Bool { currentUser != nil }
 
+    // MARK: - 재설치 감지
+
+    /// UserDefaults 플래그가 없으면 새 설치(또는 재설치)로 판단해 Keychain 세션을 초기화합니다.
+    /// 삭제 시 UserDefaults는 지워지지만 Keychain은 유지되므로,
+    /// 이 메서드를 startAuthListener() 전에 await 해서 호출해야 합니다.
+    func clearSessionIfReinstalled() async {
+        let key = "app.hasLaunchedBefore"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        try? await supabase.auth.signOut()
+        KeychainService.delete(forKey: Self.displayNameKey)
+        Logger.auth.info("🔄 재설치 감지 → Keychain 세션 초기화 완료")
+    }
+
     // MARK: - Auth State Listener
 
     /// 앱 시작 시 한 번 호출합니다.
