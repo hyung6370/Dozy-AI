@@ -53,9 +53,6 @@ struct Dozy_AIApp: App {
                 _ = container.naverSignInService.handle(url: url)
             }
             .onAppear {
-                container.notificationService.requestAuthorization()
-                    .sink { _ in }
-                    .store(in: &container.notificationCancellables)
                 Task {
                     await authViewModel.clearSessionIfReinstalled()
                     authViewModel.startAuthListener()

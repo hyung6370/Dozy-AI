@@ -13,13 +13,52 @@ struct WeatherCardView: View {
 
     var body: some View {
         Group {
-            if let weather = service.weather {
-                weatherContent(weather)
-            } else {
+            switch service.state {
+            case .idle:
+                permissionPromptView
+            case .loading:
                 loadingView
+            case .loaded:
+                if let weather = service.weather {
+                    weatherContent(weather)
+                }
+            case .denied:
+                deniedView
+            case .failed:
+                failedView
             }
         }
-        .onAppear { service.fetchIfNeeded() }
+    }
+
+    // MARK: - Permission Prompt (idle)
+
+    private var permissionPromptView: some View {
+        Button { service.fetchIfNeeded() } label: {
+            HStack(spacing: 14) {
+                Text("🌤️")
+                    .font(.system(size: 36))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("오늘의 날씨")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    Text("탭해서 현재 위치 날씨를 확인하세요")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Loading
@@ -40,11 +79,73 @@ struct WeatherCardView: View {
         )
     }
 
+    // MARK: - Denied
+
+    private var deniedView: some View {
+        Button {
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        } label: {
+            HStack(spacing: 14) {
+                Text("📍")
+                    .font(.system(size: 36))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("위치 권한 필요")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    Text("설정에서 위치 접근을 허용해주세요")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Text("설정 열기")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.blue)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Failed
+
+    private var failedView: some View {
+        Button { service.fetchIfNeeded() } label: {
+            HStack(spacing: 14) {
+                Text("⚠️")
+                    .font(.system(size: 36))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("날씨를 불러오지 못했습니다")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    Text("탭해서 다시 시도하세요")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Weather Content
 
     private func weatherContent(_ weather: CurrentWeatherInfo) -> some View {
         VStack(spacing: 0) {
-            // 위치
             if let city = service.locationName {
                 HStack(spacing: 4) {
                     Image(systemName: "location.fill")
@@ -62,7 +163,6 @@ struct WeatherCardView: View {
 
             Spacer()
 
-            // 날씨 아이콘 + 기온
             VStack(spacing: 4) {
                 Text(weather.emoji)
                     .font(.system(size: 64))
@@ -78,7 +178,6 @@ struct WeatherCardView: View {
 
             Spacer()
 
-            // 하단 구분선 + 상세 정보
             Divider()
                 .overlay(Color.white.opacity(0.3))
                 .padding(.horizontal, 20)

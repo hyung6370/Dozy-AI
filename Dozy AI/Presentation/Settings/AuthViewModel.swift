@@ -81,6 +81,7 @@ final class AuthViewModel: ObservableObject {
                         displayName: KeychainService.load(forKey: Self.displayNameKey),
                         provider: provider
                     )
+                    self.requestNotificationPermissionIfNeeded()
                     if self.isSyncThrottled {
                         Logger.auth.info("⏩ 1시간 이내 동기화 이력 있음 — 자동 동기화 건너뜀")
                     } else {
@@ -120,6 +121,7 @@ final class AuthViewModel: ObservableObject {
                     if let name = user.displayName {
                         KeychainService.save(name, forKey: Self.displayNameKey)
                     }
+                    self?.requestNotificationPermissionIfNeeded()
                     self?.showCongratulationAnimation = true
                     self?.syncAfterLogin(userID: user.id)
                 }
@@ -146,6 +148,7 @@ final class AuthViewModel: ObservableObject {
                     if let name = user.displayName {
                         KeychainService.save(name, forKey: Self.displayNameKey)
                     }
+                    self?.requestNotificationPermissionIfNeeded()
                     self?.showCongratulationAnimation = true
                     self?.syncAfterLogin(userID: user.id)
                 }
@@ -197,6 +200,13 @@ final class AuthViewModel: ObservableObject {
     }
 
     // MARK: - Private
+
+    private func requestNotificationPermissionIfNeeded() {
+        let notificationService = NotificationService()
+        notificationService.requestAuthorization()
+            .sink { _ in }
+            .store(in: &cancellables)
+    }
 
     private func syncAfterLogin(userID: String) {
         Logger.auth.info("🔄 syncAfterLogin 시작 userID=\(userID)")
