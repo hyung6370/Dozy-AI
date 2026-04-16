@@ -422,13 +422,15 @@ final class HomeViewModel: ObservableObject {
             summaryText = "오늘 \(completedCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다."
         }
 
+        let score = todayEvents.isEmpty ? 0.0 : Double(completedCount) / Double(todayEvents.count)
+
         dailySummary = DailySummary(
             date: log.date,
             summaryText: summaryText,
             highlights: log.highlights,
             nextActions: log.nextActions,
             detectedCategory: log.category,
-            productivityScore: log.productivityScore ?? 0.0,
+            productivityScore: score,
             totalEventMinutes: totalMinutes,
             completedTaskCount: log.completedTaskTitles.count
         )
