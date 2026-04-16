@@ -1,0 +1,48 @@
+default_platform(:ios)
+
+platform :ios do
+
+  # ── App Store Connect API Key ──────────────────────────────────────────────
+  def api_key
+    app_store_connect_api_key(
+      key_id: "3J7D3KMFK9",
+      issuer_id: "af50aef2-47fe-4b8e-9cb1-821ad1e0e236",
+      key_filepath: "./fastlane/api_key.p8"
+    )
+  end
+
+  # ── Beta: TestFlight 배포 ───────────────────────────────────────────────────
+  desc "TestFlight에 베타 빌드 배포"
+  lane :beta do
+    latest = latest_testflight_build_number(api_key: api_key)
+    increment_build_number(build_number: latest + 1)
+    build_app(
+      scheme: "Dozy AI",
+      configuration: "Release",
+      export_method: "app-store"
+    )
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  # ── Release: App Store 배포 ────────────────────────────────────────────────
+  desc "App Store에 릴리즈 빌드 배포"
+  lane :release do
+    latest = latest_testflight_build_number(api_key: api_key)
+    increment_build_number(build_number: latest + 1)
+    build_app(
+      scheme: "Dozy AI",
+      configuration: "Release",
+      export_method: "app-store"
+    )
+    upload_to_app_store(
+      api_key: api_key,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false
+    )
+  end
+
+end
