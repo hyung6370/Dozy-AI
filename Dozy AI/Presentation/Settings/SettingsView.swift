@@ -117,7 +117,24 @@ struct SettingsView: View {
             if authViewModel.isLoading {
                 ProgressView().frame(maxWidth: .infinity)
             } else {
-                // Apple 로그인
+                // Apple 로그인 (DEBUG 개발 환경에서는 미지원)
+                #if DEBUG
+                if AppEnvironment.current != .development {
+                    Button { authViewModel.signInWithApple() } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "apple.logo")
+                                .font(.system(size: 16, weight: .medium))
+                            Text("Apple로 로그인")
+                                .font(.subheadline).fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.primary, in: RoundedRectangle(cornerRadius: 10))
+                        .foregroundStyle(Color(uiColor: .systemBackground))
+                    }
+                    .buttonStyle(.plain)
+                }
+                #else
                 Button { authViewModel.signInWithApple() } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "apple.logo")
@@ -131,7 +148,8 @@ struct SettingsView: View {
                     .foregroundStyle(Color(uiColor: .systemBackground))
                 }
                 .buttonStyle(.plain)
-                
+                #endif
+
                 // Google 로그인
                 Button { authViewModel.signInWithGoogle() } label: {
                     HStack(spacing: 10) {

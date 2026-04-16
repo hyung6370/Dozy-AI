@@ -46,6 +46,14 @@ struct HomeView: View {
                     if !authViewModel.isLoggedIn {
                         loginPromptBanner
                     }
+                    if !viewModel.isLoading {
+                        if let summary = viewModel.dailySummary {
+                            aiSummaryPreview(summary)
+                        }
+                        if let log = viewModel.todayLog, !log.aiSummary.isEmpty {
+                            aiSummaryDetail(log)
+                        }
+                    }
                     focusCard
                     statsRow
 
@@ -56,15 +64,9 @@ struct HomeView: View {
                         if !viewModel.todayEvents.isEmpty {
                             eventListSection
                         }
-                        if let summary = viewModel.dailySummary {
-                            aiSummaryPreview(summary)
-                        }
                         memoSection
-//                        aiGenerateButton
-                        if let log = viewModel.todayLog, !log.aiSummary.isEmpty {
-                            aiSummaryDetail(log)
-                        }
                     }
+                    // aiGenerateButton
                 }
                 .padding()
             }
