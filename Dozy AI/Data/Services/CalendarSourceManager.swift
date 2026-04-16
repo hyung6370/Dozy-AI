@@ -17,7 +17,10 @@ final class CalendarSourceManager: ObservableObject {
     
     init() {
         if let raw = defaults.array(forKey: storageKey) as? [String] {
-            enabledSources = Set(raw.compactMap { CalendarSource(rawValue: $0) })
+            var sources = Set(raw.compactMap { CalendarSource(rawValue: $0) })
+            // Google Calendar API 심사 완료 전까지 강제 비활성화
+            sources.remove(.google)
+            enabledSources = sources
         } else {
             enabledSources = [.apple]
         }
