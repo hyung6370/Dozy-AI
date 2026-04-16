@@ -22,7 +22,7 @@ final class CalendarSourceManager: ObservableObject {
             sources.remove(.google)
             enabledSources = sources
         } else {
-            enabledSources = [.apple]
+            enabledSources = []
         }
     }
     
