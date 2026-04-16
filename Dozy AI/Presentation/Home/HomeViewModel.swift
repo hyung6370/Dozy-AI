@@ -257,6 +257,11 @@ final class HomeViewModel: ObservableObject {
             }
             self.dozyEventsByID = dict
             self.completionsByEventID = merged
+
+            // 완료 데이터 로드 후 stored summary 복원 (정확한 completedCount 사용)
+            if let log = self.todayLog, !log.aiSummary.isEmpty {
+                self.restoreSummaryFromLog(log)
+            }
         })
     }
 
@@ -393,7 +398,7 @@ final class HomeViewModel: ObservableObject {
                 receiveValue: { [weak self] log in
                     guard let self else { return }
                     self.todayLog = log
-                    // 저장된 AI 요약이 있으면 복원
+                    // loadCompletions보다 늦게 완료된 경우를 대비해 여기서도 복원 시도
                     if !log.aiSummary.isEmpty {
                         self.restoreSummaryFromLog(log)
                     }
@@ -403,13 +408,23 @@ final class HomeViewModel: ObservableObject {
     }
 
     private func restoreSummaryFromLog(_ log: WorkLog) {
-        let totalMinutes = todayEvents
-            .filter { !$0.isAllDay }
-            .reduce(0) { $0 + $1.durationMinutes }
+        let completedEvents = todayEvents.filter { completionsByEventID[$0.id] == true && !$0.isAllDay }
+        let totalMinutes = completedEvents.reduce(0) { $0 + $1.durationMinutes }
+
+        // 현재 completedCount 기반으로 텍스트 재계산 (DB 저장 텍스트 무시)
+        let summaryText: String
+        if completedCount == 0 {
+            summaryText = "오늘은 아직 완료된 일정이 없습니다."
+        } else {
+            let hours = totalMinutes / 60
+            let mins  = totalMinutes % 60
+            let timeStr = hours > 0 ? "\(hours)시간 \(mins)분" : "\(mins)분"
+            summaryText = "오늘 \(completedCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다."
+        }
 
         dailySummary = DailySummary(
             date: log.date,
-            summaryText: log.aiSummary,
+            summaryText: summaryText,
             highlights: log.highlights,
             nextActions: log.nextActions,
             detectedCategory: log.category,

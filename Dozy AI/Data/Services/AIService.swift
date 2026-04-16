@@ -88,7 +88,8 @@ final class AIService: AIServiceProtocol {
             events: events,
             completedTasks: completedTasks,
             pendingTasks: pendingTasks,
-            memos: memos
+            memos: memos,
+            completedEventCount: completedEventCount
         )
         
         let highlights = extractLocalHighlights(
@@ -128,23 +129,25 @@ final class AIService: AIServiceProtocol {
     }
     
     // MARK: - 로컬 요약 텍스트 생성
-    private func buildLocalSummaryText(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String]) -> String {
-        
+    private func buildLocalSummaryText(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) -> String {
+
         var parts: [String] = []
-        
-        if events.isEmpty {
-            parts.append("오늘은 등록된 일정이 없었습니다.")
+
+        if completedEventCount == 0 {
+            parts.append("오늘은 아직 완료된 일정이 없습니다.")
         } else {
-            let totalMinutes = events
+            let now = Date()
+            let pastEvents = events.filter { $0.endDate <= now }
+            let totalMinutes = pastEvents
                 .filter { !$0.isAllDay }
                 .reduce(0) { $0 + $1.durationMinutes }
             let hours = totalMinutes / 60
             let mins = totalMinutes % 60
             let timeStr = hours > 0 ? "\(hours)시간 \(mins)분" : "\(mins)분"
-            
-            parts.append("오늘 \(events.count)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다.")
-            
-            if let longest = events.filter({ !$0.isAllDay }).max(by: { $0.durationMinutes < $1.durationMinutes }) {
+
+            parts.append("오늘 \(completedEventCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다.")
+
+            if let longest = pastEvents.filter({ !$0.isAllDay }).max(by: { $0.durationMinutes < $1.durationMinutes }) {
                 parts.append("가장 긴 일정은 '\(longest.title)'(\(longest.durationMinutes)분)이었습니다.")
             }
         }

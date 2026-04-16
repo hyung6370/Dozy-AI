@@ -560,7 +560,7 @@ struct HomeView: View {
                 .padding(.leading, 2)
 
             VStack(alignment: .leading, spacing: 10) {
-                Text(log.aiSummary)
+                Text(viewModel.dailySummary?.summaryText ?? log.aiSummary)
                     .font(.subheadline)
                     .lineSpacing(4)
 
@@ -583,6 +583,7 @@ struct HomeView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
             .background(Color.blue.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.blue.opacity(0.1), lineWidth: 1))
