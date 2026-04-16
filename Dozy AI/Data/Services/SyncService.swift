@@ -31,12 +31,23 @@ final class SyncService {
             return Fail(error: DozyError.networkUnavailable).eraseToAnyPublisher()
         }
 
+        // 업로드 실패는 무시하고 다운로드는 항상 실행
+        // (재설치 시 빈 로컬 DB의 임시 데이터가 Supabase 제약 조건에 걸려도 다운로드 체인이 끊기지 않도록)
+        let resilientUpload: (AnyPublisher<Void, DozyError>) -> AnyPublisher<Void, DozyError> = { publisher in
+            publisher
+                .catch { error -> AnyPublisher<Void, DozyError> in
+                    Logger.sync.warning("⚠️ 업로드 실패 (무시하고 계속): \(error.localizedDescription)")
+                    return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+                }
+                .eraseToAnyPublisher()
+        }
+
         return Publishers.MergeMany([
-            uploadDozyEvents(userID: userID),
-            uploadEventCompletions(userID: userID),
-            uploadWorkLogs(userID: userID),
-            uploadEventDisplaySettings(userID: userID),
-            uploadUserCategories(userID: userID)
+            resilientUpload(uploadDozyEvents(userID: userID)),
+            resilientUpload(uploadEventCompletions(userID: userID)),
+            resilientUpload(uploadWorkLogs(userID: userID)),
+            resilientUpload(uploadEventDisplaySettings(userID: userID)),
+            resilientUpload(uploadUserCategories(userID: userID))
         ])
         .collect()
         .flatMap { [weak self] _ -> AnyPublisher<Void, DozyError> in
@@ -215,6 +226,9 @@ final class SyncService {
                         )
                     }
                     guard !rows.isEmpty else { promise(.success(())); return }
+                    // onConflict: "id" 로 먼저 시도. id가 없으면 새 행을 INSERT하는데,
+                    // user_id+name 유니크 제약이 있으면 실패할 수 있으므로
+                    // 외부 resilientUpload wrapper가 이 에러를 잡아서 다운로드를 보장한다.
                     try await supabase.from("user_categories").upsert(rows, onConflict: "id").execute()
                     Logger.sync.info("✅ UserCategories 업로드 완료 (\(rows.count)건)")
                     promise(.success(()))

@@ -60,7 +60,7 @@ struct HomeView: View {
                             aiSummaryPreview(summary)
                         }
                         memoSection
-                        aiGenerateButton
+//                        aiGenerateButton
                         if let log = viewModel.todayLog, !log.aiSummary.isEmpty {
                             aiSummaryDetail(log)
                         }

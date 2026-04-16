@@ -110,10 +110,24 @@ final class DependencyContainer: ObservableObject {
         }
     }
 
+    /// 앱이 최초 실행(또는 재설치 후 재실행)일 때 기본 카테고리를 시드합니다.
+    /// Keychain 플래그를 이용해 재설치 여부를 감지합니다.
+    /// - 최초 설치: 플래그 없음 + SwiftData 비어있음 → 시드 후 플래그 저장
+    /// - 재설치: 플래그 있음 + SwiftData 비어있음 → 시드 건너뜀 (Supabase에서 동기화됨)
+    /// - 일반 재실행: SwiftData에 이미 카테고리 있음 → 시드 건너뜀
+    private static let hasSeededCategoriesKey = "app.hasSeededCategories"
+
     private func seedDefaultCategoriesIfNeeded() {
         let context = modelContainer.mainContext
         let count = (try? context.fetchCount(FetchDescriptor<UserCategory>())) ?? 0
         guard count == 0 else { return }
+
+        // 재설치 감지: Keychain 플래그가 이미 있으면 이전에 시드한 적 있음
+        // → 사용자 카테고리는 Supabase 동기화로 복원되므로 재시드 불필요
+        if KeychainService.load(forKey: Self.hasSeededCategoriesKey) != nil {
+            return
+        }
+
         let defaults: [(String, String, String)] = [
             ("일반", "📌", "#8E8E93")
         ]
@@ -121,5 +135,6 @@ final class DependencyContainer: ObservableObject {
             context.insert(UserCategory(name: name, emoji: emoji, colorHex: color, order: i))
         }
         try? context.save()
+        KeychainService.save("1", forKey: Self.hasSeededCategoriesKey)
     }
 }
