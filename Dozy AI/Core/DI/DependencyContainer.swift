@@ -34,6 +34,7 @@ final class DependencyContainer: ObservableObject {
     lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
     lazy var aiService: AIServiceProtocol = AIService()
     lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
+    lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(modelContext: modelContainer.mainContext)
     lazy var googleSignInService = GoogleSignInService()
     lazy var naverSignInService = NaverSignInService()
     lazy var calendarSourceManager = CalendarSourceManager()

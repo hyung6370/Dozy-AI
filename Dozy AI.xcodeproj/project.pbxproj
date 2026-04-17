@@ -191,6 +191,7 @@
 		E2B674ED2C774CC681FEAB8B /* JoinSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */; };
 		A461CC4832C74438806A2785 /* LeaveSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */; };
 		3F4A985290CA47AEB58A872A /* RegenerateSharedCalendarInviteCodeUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */; };
+		2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -392,6 +393,7 @@
 		4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaveSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegenerateSharedCalendarInviteCodeUseCase.swift; sourceTree = "<group>"; };
+		8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarRealtimeService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -725,6 +727,7 @@
 		DD9F690E2F6ACEF2001952F6 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */,
 				96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */,
 				F619D9412F73B38B00084C61 /* AIResponseParser.swift */,
 				DD9F69132F6ACF33001952F6 /* AIService.swift */,
@@ -1043,6 +1046,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */,
 				807EED356A2F4E5095F4C7F4 /* SharedCalendar.swift in Sources */,
 				C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */,
 				68281F28BBEE44519243499A /* SharedCalendarResults.swift in Sources */,

@@ -25,7 +25,10 @@ struct Dozy_AIApp: App {
     init() {
         let container = DependencyContainer()
         _container = StateObject(wrappedValue: container)
-        _authViewModel = StateObject(wrappedValue: AuthViewModel(modelContext: container.modelContainer.mainContext))
+        _authViewModel = StateObject(wrappedValue: AuthViewModel(
+            modelContext: container.modelContainer.mainContext,
+            realtimeService: container.sharedCalendarRealtimeService
+        ))
     }
 
     var body: some Scene {
