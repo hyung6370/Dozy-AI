@@ -29,6 +29,10 @@ final class DozyEvent {
     var isPinned: Bool = false
     var category: String = "일반"
     var excludedDates: [Date] = []
+    var sharedCalendarID: String? = nil
+    /// 이벤트 생성자(소유자)의 user_id. 공유 캘린더에서 파트너 이벤트를 덮어쓰지 않기 위해 추적.
+    /// nil = 로컬 생성 후 아직 동기화되지 않음 (업로드 시 현재 사용자로 간주)
+    var ownerID: String? = nil
 
     init(
         id: String = UUID().uuidString,
@@ -44,7 +48,9 @@ final class DozyEvent {
         notificationMinutesBefore: Int = -1,
         priority: Int = 0,
         isPinned: Bool = false,
-        category: String = "일반"
+        category: String = "일반",
+        sharedCalendarID: String? = nil,
+        ownerID: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -62,7 +68,11 @@ final class DozyEvent {
         self.priority = priority
         self.isPinned = isPinned
         self.category = category
+        self.sharedCalendarID = sharedCalendarID
+        self.ownerID = ownerID
     }
+
+    var isShared: Bool { sharedCalendarID != nil }
     
     // MARK: - 반복 헬퍼
 
@@ -135,7 +145,8 @@ final class DozyEvent {
             source: .dozy,
             priority: priority,
             isPinned: isPinned,
-            category: category
+            category: category,
+            sharedCalendarID: sharedCalendarID
         )
     }
 
@@ -154,7 +165,8 @@ final class DozyEvent {
             source: .dozy,
             priority: priority,
             isPinned: isPinned,
-            category: category
+            category: category,
+            sharedCalendarID: sharedCalendarID
         )
     }
 }

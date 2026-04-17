@@ -596,7 +596,8 @@ final class CalendarViewModel: ObservableObject {
                     location: old.location, notes: old.notes, isAllDay: old.isAllDay,
                     calendarName: old.calendarName, calendarColorHex: old.calendarColorHex,
                     source: old.source,
-                    priority: priority, isPinned: isPinned, category: finalCategory
+                    priority: priority, isPinned: isPinned, category: finalCategory,
+                    sharedCalendarID: old.sharedCalendarID
                 )
                 Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
             } else {

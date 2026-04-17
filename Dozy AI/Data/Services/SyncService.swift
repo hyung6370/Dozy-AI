@@ -78,8 +78,11 @@ final class SyncService {
             guard let self else { return }
             Task {
                 do {
-                    let events = try self.modelContext.fetch(FetchDescriptor<DozyEvent>())
-                    Logger.sync.info("⬆️ DozyEvents 업로드 시작 (\(events.count)건)")
+                    let allEvents = try self.modelContext.fetch(FetchDescriptor<DozyEvent>())
+                    // 파트너 소유 이벤트는 내가 덮어쓰지 않도록 필터링.
+                    // nil은 로컬 생성 후 미동기화 상태 → 내 소유로 간주하고 업로드.
+                    let events = allEvents.filter { $0.ownerID == nil || $0.ownerID == userID }
+                    Logger.sync.info("⬆️ DozyEvents 업로드 시작 (\(events.count)건, 전체 \(allEvents.count)건 중)")
                     let rows = events.map { event in
                         DozyEventRow(
                             id: event.id,
@@ -99,6 +102,7 @@ final class SyncService {
                             priority: event.priority,
                             isPinned: event.isPinned,
                             category: event.category,
+                            sharedCalendarID: event.sharedCalendarID,
                             createdAt: event.createdAt,
                             updatedAt: event.updatedAt
                         )
@@ -248,34 +252,43 @@ final class SyncService {
             guard let self else { return }
             Task {
                 do {
+                    // user_id 필터 제거: RLS가 (내 이벤트) OR (내가 멤버인 공유 캘린더 이벤트)를 반환
                     let rows: [DozyEventRow] = try await supabase
                         .from("dozy_events")
                         .select()
-                        .eq("user_id", value: userID)
                         .execute()
                         .value
                     let existing = try self.modelContext.fetch(FetchDescriptor<DozyEvent>())
-                    let existingIDs = Set(existing.map { $0.id })
-                    for row in rows where !existingIDs.contains(row.id) {
-                        let event = DozyEvent(
-                            id: row.id,
-                            title: row.title,
-                            startDate: row.startDate,
-                            endDate: row.endDate,
-                            isAllDay: row.isAllDay,
-                            location: row.location,
-                            notes: row.notes,
-                            colorHex: row.colorHex,
-                            recurrenceRule: row.recurrenceRule,
-                            recurrenceEndDate: row.recurrenceEndDate,
-                            notificationMinutesBefore: row.notificationMinutesBefore,
-                            priority: row.priority,
-                            isPinned: row.isPinned,
-                            category: row.category
-                        )
-                        event.memos = row.memos
-                        event.isCompleted = row.isCompleted
-                        self.modelContext.insert(event)
+                    let existingByID = Dictionary(uniqueKeysWithValues: existing.map { ($0.id, $0) })
+                    for row in rows {
+                        if let local = existingByID[row.id] {
+                            // 기존 이벤트: ownerID가 nil이면 한 번 backfill (업로드 소유권 구분용)
+                            if local.ownerID == nil {
+                                local.ownerID = row.userID
+                            }
+                        } else {
+                            let event = DozyEvent(
+                                id: row.id,
+                                title: row.title,
+                                startDate: row.startDate,
+                                endDate: row.endDate,
+                                isAllDay: row.isAllDay,
+                                location: row.location,
+                                notes: row.notes,
+                                colorHex: row.colorHex,
+                                recurrenceRule: row.recurrenceRule,
+                                recurrenceEndDate: row.recurrenceEndDate,
+                                notificationMinutesBefore: row.notificationMinutesBefore,
+                                priority: row.priority,
+                                isPinned: row.isPinned,
+                                category: row.category,
+                                sharedCalendarID: row.sharedCalendarID,
+                                ownerID: row.userID
+                            )
+                            event.memos = row.memos
+                            event.isCompleted = row.isCompleted
+                            self.modelContext.insert(event)
+                        }
                     }
                     try self.modelContext.save()
                     Logger.sync.info("⬇️ DozyEvents 다운로드 완료 (\(rows.count)건)")
@@ -479,6 +492,7 @@ private struct DozyEventRow: Codable {
     let priority: Int
     let isPinned: Bool
     let category: String
+    let sharedCalendarID: String?
     let createdAt: Date
     let updatedAt: Date
 
@@ -499,6 +513,7 @@ private struct DozyEventRow: Codable {
         case priority
         case isPinned = "is_pinned"
         case category
+        case sharedCalendarID = "shared_calendar_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }

@@ -61,7 +61,8 @@ struct NaverEventItem: Decodable {
             source: .naver,
             priority: 0,
             isPinned: false,
-            category: "일반"
+            category: "일반",
+            sharedCalendarID: nil
         )
     }
 }

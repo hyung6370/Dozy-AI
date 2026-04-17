@@ -182,6 +182,7 @@ struct CategoryEditSheet: View {
                 memos: e.memos, isCompleted: e.isCompleted,
                 priority: e.priority, isPinned: e.isPinned,
                 category: e.category,
+                sharedCalendarID: e.sharedCalendarID,
                 createdAt: e.createdAt, updatedAt: e.updatedAt
             )
         }
@@ -227,6 +228,7 @@ private struct DozyEventRow: Codable {
     let priority: Int
     let isPinned: Bool
     let category: String
+    let sharedCalendarID: String?
     let createdAt: Date
     let updatedAt: Date
 
@@ -247,6 +249,7 @@ private struct DozyEventRow: Codable {
         case priority
         case isPinned = "is_pinned"
         case category
+        case sharedCalendarID = "shared_calendar_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
