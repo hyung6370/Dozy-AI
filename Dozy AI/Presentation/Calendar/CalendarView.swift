@@ -119,7 +119,8 @@ struct CalendarView: View {
             .sheet(isPresented: $viewModel.showEventEdit) {
                 EventEditView(
                     eventToEdit: viewModel.eventToEdit,
-                    selectedDate: viewModel.selectedDate
+                    selectedDate: viewModel.selectedDate,
+                    sharedCalendars: viewModel.mySharedCalendars
                 ) { event in
                     viewModel.saveEvent(event)
                 }

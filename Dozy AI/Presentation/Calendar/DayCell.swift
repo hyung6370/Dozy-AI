@@ -54,10 +54,18 @@ struct EventBarView: View {
     var body: some View {
         switch bar.position {
         case .single:
-            Circle()
-                .fill(color)
-                .frame(width: 5, height: 5)
-                .frame(maxWidth: .infinity)
+            ZStack(alignment: .topTrailing) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 5, height: 5)
+                if bar.isShared {
+                    Image(systemName: "person.2.fill")
+                        .font(.system(size: 4))
+                        .foregroundStyle(color)
+                        .offset(x: 5, y: -3)
+                }
+            }
+            .frame(maxWidth: .infinity)
         case .start:
             HStack(spacing: 0) {
                 Spacer(minLength: 0)

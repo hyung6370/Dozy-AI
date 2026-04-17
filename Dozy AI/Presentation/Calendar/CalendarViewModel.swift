@@ -44,6 +44,7 @@ struct EventBarInfo: Identifiable {
     let id: String
     let colorHex: String
     let position: BarPosition
+    var isShared: Bool = false
 }
 
 final class CalendarViewModel: ObservableObject {
@@ -72,6 +73,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var showDeleteSuccess = false
     @Published var showSuccessAnimation = false
     @Published var displaySettingsByID: [String: EventDisplaySettings] = [:]
+    @Published var mySharedCalendars: [SharedCalendar] = []
     private var allEventsInMonth: [String: CalendarEvent] = [:]
     private var loadedMonthKeys = Set<Date>()
     
@@ -91,6 +93,7 @@ final class CalendarViewModel: ObservableObject {
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
     private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
     private weak var calendarService: CompositeCalendarSerivce?
+    private var sharedCalendarService: SharedCalendarServiceProtocol?
     private var cancellables = Set<AnyCancellable>()
     // 날짜별 이벤트 fetch 전용 — 새 날짜 선택 시 이전 fetch를 자동 취소하기 위해 Set이 아닌 단일 변수 사용
     private var fetchDateCancellable: AnyCancellable?
@@ -153,6 +156,7 @@ final class CalendarViewModel: ObservableObject {
             displaySettingsRepo: container.eventDisplaySettingsRepository
         )
         self.calendarService = container.calendarService
+        self.sharedCalendarService = container.sharedCalendarService
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -497,6 +501,17 @@ final class CalendarViewModel: ObservableObject {
                 self.fetchEventsForMonth()
             }
             .store(in: &cancellables)
+        loadMySharedCalendars()
+    }
+
+    func loadMySharedCalendars() {
+        sharedCalendarService?.fetchMyCalendars()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] calendars in self?.mySharedCalendars = calendars }
+            )
+            .store(in: &cancellables)
     }
 
     func refreshData() {
@@ -746,7 +761,7 @@ final class CalendarViewModel: ObservableObject {
                 else if date == sorted.last { pos = .end }
                 else { pos = .middle }
                 barsDict[date, default: []].append(
-                    EventBarInfo(id: id, colorHex: event.calendarColorHex, position: pos)
+                    EventBarInfo(id: id, colorHex: event.calendarColorHex, position: pos, isShared: event.isShared)
                 )
             }
         }

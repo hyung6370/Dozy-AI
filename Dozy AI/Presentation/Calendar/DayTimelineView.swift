@@ -142,6 +142,11 @@ struct DayTimelineView: View {
                     .fontWeight(.medium)
                     .lineLimit(height > 40 ? 2 : 1)
                 Spacer(minLength: 0)
+                if event.isShared {
+                    Image(systemName: "person.2.fill")
+                        .font(.system(size: 8))
+                        .foregroundStyle((Color(hex: event.calendarColorHex) ?? .blue).opacity(0.8))
+                }
             }
             if height > 36 {
                 Text(event.timeRangeString)

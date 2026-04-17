@@ -15,10 +15,11 @@ struct EventEditView: View {
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
     @State private var showAddCategory = false
     
-    init(eventToEdit: DozyEvent?, selectedDate: Date, onSave: @escaping (DozyEvent) -> Void) {
+    init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [], onSave: @escaping (DozyEvent) -> Void) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: eventToEdit,
             selectedDate: selectedDate,
+            sharedCalendars: sharedCalendars,
             onSave: onSave
         ))
     }
@@ -94,6 +95,19 @@ struct EventEditView: View {
                         Text("15분 전").tag(15)
                         Text("30분 전").tag(30)
                         Text("1시간 전").tag(60)
+                    }
+                }
+
+                if !viewModel.sharedCalendars.isEmpty {
+                    Section("공유 캘린더") {
+                        Picker("공유", selection: $viewModel.sharedCalendarID) {
+                            Text("없음").tag(String?.none)
+                            ForEach(viewModel.sharedCalendars) { cal in
+                                Label(cal.name, systemImage: "person.2.fill")
+                                    .tag(Optional(cal.id))
+                            }
+                        }
+                        .pickerStyle(.menu)
                     }
                 }
             }
