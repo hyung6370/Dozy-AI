@@ -192,6 +192,11 @@
 		A461CC4832C74438806A2785 /* LeaveSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */; };
 		3F4A985290CA47AEB58A872A /* RegenerateSharedCalendarInviteCodeUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */; };
 		2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */; };
+		7AA956AF8C3141189744783D /* SharedCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9885C44E183149258A057270 /* SharedCalendarViewModel.swift */; };
+		2984E159921D4484ACDA83E9 /* SharedCalendarListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */; };
+		CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */; };
+		5E394932A4FB4627A517D1CB /* SharedCalendarJoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */; };
+		5B0F554A76C543C39CE91437 /* SharedCalendarDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -394,6 +399,11 @@
 		1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaveSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegenerateSharedCalendarInviteCodeUseCase.swift; sourceTree = "<group>"; };
 		8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarRealtimeService.swift; sourceTree = "<group>"; };
+		9885C44E183149258A057270 /* SharedCalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarViewModel.swift; sourceTree = "<group>"; };
+		3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarListView.swift; sourceTree = "<group>"; };
+		D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarCreateView.swift; sourceTree = "<group>"; };
+		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
+		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -505,6 +515,7 @@
 		DD808EBE2F694BC600F4956A /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				7DE596AB58A548A7BD623102 /* SharedCalendar */,
 				F63C688A2F85F0CA003464E8 /* Intro */,
 				F63C686C2F84F786003464E8 /* Notifications */,
 				F619D97F2F7A3CC200084C61 /* Calendar */,
@@ -891,7 +902,20 @@
 			path = Intro;
 			sourceTree = "<group>";
 		};
-/* End PBXGroup section */
+
+		7DE596AB58A548A7BD623102 /* SharedCalendar */ = {
+			isa = PBXGroup;
+			children = (
+				9885C44E183149258A057270 /* SharedCalendarViewModel.swift */,
+				3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */,
+				D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */,
+				FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */,
+				F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */,
+			);
+			path = SharedCalendar;
+			sourceTree = "<group>";
+		};
+		/* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		DD808E832F694B2100F4956A /* Dozy AI */ = {
@@ -1046,6 +1070,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7AA956AF8C3141189744783D /* SharedCalendarViewModel.swift in Sources */,
+				2984E159921D4484ACDA83E9 /* SharedCalendarListView.swift in Sources */,
+				CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */,
+				5E394932A4FB4627A517D1CB /* SharedCalendarJoinView.swift in Sources */,
+				5B0F554A76C543C39CE91437 /* SharedCalendarDetailView.swift in Sources */,
 				2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */,
 				807EED356A2F4E5095F4C7F4 /* SharedCalendar.swift in Sources */,
 				C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */,

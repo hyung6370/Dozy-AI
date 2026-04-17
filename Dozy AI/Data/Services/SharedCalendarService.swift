@@ -19,15 +19,26 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
         return Future { promise in
             Task {
                 do {
-                    let row: CreateCalendarRow = try await supabase
+                    let res: RPCResponse = try await supabase
                         .rpc("create_shared_calendar", params: ["p_name": name])
-                        .single()
                         .execute()
                         .value
+                    if let err = res.error {
+                        switch err {
+                        case "invalid_name": promise(.failure(.sharedCalendarInvalidName))
+                        default:             promise(.failure(.sharedCalendarCodeGenerationFailed))
+                        }
+                        return
+                    }
+                    guard let calendarID = res.calendarID,
+                          let inviteCode = res.inviteCode,
+                          let expiresAt  = res.inviteCodeExpiresAt else {
+                        promise(.failure(.sharedCalendarCodeGenerationFailed)); return
+                    }
                     promise(.success(SharedCalendarCreationResult(
-                        calendarID: row.id,
-                        inviteCode: row.inviteCode,
-                        inviteCodeExpiresAt: row.inviteCodeExpiresAt
+                        calendarID: calendarID,
+                        inviteCode: inviteCode,
+                        inviteCodeExpiresAt: expiresAt
                     )))
                 } catch {
                     Logger.sharedCalendar.error("create 실패: \(error)")
@@ -44,25 +55,21 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
         return Future { promise in
             Task {
                 do {
-                    let row: JoinCalendarRow = try await supabase
+                    let res: RPCResponse = try await supabase
                         .rpc("join_shared_calendar", params: ["p_invite_code": inviteCode.uppercased()])
-                        .single()
                         .execute()
                         .value
-                    switch row.status {
-                    case "ok":
-                        promise(.success(SharedCalendarJoinResult(calendarID: row.calendarID ?? "")))
-                    case "invalid_code":
-                        promise(.failure(.sharedCalendarInvalidCode))
-                    case "expired":
-                        promise(.failure(.sharedCalendarExpiredCode))
-                    case "full":
-                        promise(.failure(.sharedCalendarFull))
-                    case "already_member":
-                        promise(.failure(.sharedCalendarAlreadyMember(calendarID: row.calendarID ?? "")))
-                    default:
-                        promise(.failure(.sharedCalendarCodeGenerationFailed))
+                    if let err = res.error {
+                        switch err {
+                        case "invalid_code":   promise(.failure(.sharedCalendarInvalidCode))
+                        case "expired_code":   promise(.failure(.sharedCalendarExpiredCode))
+                        case "calendar_full":  promise(.failure(.sharedCalendarFull))
+                        case "already_member": promise(.failure(.sharedCalendarAlreadyMember(calendarID: res.calendarID ?? "")))
+                        default:               promise(.failure(.sharedCalendarCodeGenerationFailed))
+                        }
+                        return
                     }
+                    promise(.success(SharedCalendarJoinResult(calendarID: res.calendarID ?? "")))
                 } catch {
                     Logger.sharedCalendar.error("join 실패: \(error)")
                     promise(.failure(.unknown(underlying: error)))
@@ -78,23 +85,23 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
         return Future { promise in
             Task {
                 do {
-                    let row: RegenerateCodeRow = try await supabase
+                    let res: RPCResponse = try await supabase
                         .rpc("regenerate_shared_calendar_invite_code",
                              params: ["p_calendar_id": calendarID])
-                        .single()
                         .execute()
                         .value
-                    switch row.status {
-                    case "ok":
-                        promise(.success(SharedCalendarInviteCodeResult(
-                            inviteCode: row.inviteCode ?? "",
-                            inviteCodeExpiresAt: row.inviteCodeExpiresAt ?? Date()
-                        )))
-                    case "not_owner":
-                        promise(.failure(.sharedCalendarNotOwner))
-                    default:
-                        promise(.failure(.sharedCalendarCodeGenerationFailed))
+                    if let err = res.error {
+                        switch err {
+                        case "not_owner": promise(.failure(.sharedCalendarNotOwner))
+                        default:          promise(.failure(.sharedCalendarCodeGenerationFailed))
+                        }
+                        return
                     }
+                    guard let code = res.inviteCode, let expiresAt = res.inviteCodeExpiresAt else {
+                        promise(.failure(.sharedCalendarCodeGenerationFailed)); return
+                    }
+                    promise(.success(SharedCalendarInviteCodeResult(
+                        inviteCode: code, inviteCodeExpiresAt: expiresAt)))
                 } catch {
                     Logger.sharedCalendar.error("regenerateInviteCode 실패: \(error)")
                     promise(.failure(.unknown(underlying: error)))
@@ -194,33 +201,21 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
 
 // MARK: - Private DTOs
 
-private struct CreateCalendarRow: Decodable {
-    let id: String
-    let inviteCode: String
-    let inviteCodeExpiresAt: Date
-    enum CodingKeys: String, CodingKey {
-        case id
-        case inviteCode = "invite_code"
-        case inviteCodeExpiresAt = "invite_code_expires_at"
-    }
-}
-
-private struct JoinCalendarRow: Decodable {
-    let status: String
+/// 모든 RPC 함수가 공유하는 통합 응답 DTO.
+/// 성공: success=true + 함수별 필드
+/// 실패: error="error_code" + 선택적 calendar_id
+private struct RPCResponse: Decodable {
+    let success: Bool?
+    let error: String?
     let calendarID: String?
-    enum CodingKeys: String, CodingKey {
-        case status
-        case calendarID = "calendar_id"
-    }
-}
-
-private struct RegenerateCodeRow: Decodable {
-    let status: String
     let inviteCode: String?
     let inviteCodeExpiresAt: Date?
+
     enum CodingKeys: String, CodingKey {
-        case status
-        case inviteCode = "invite_code"
+        case success
+        case error
+        case calendarID         = "calendar_id"
+        case inviteCode         = "invite_code"
         case inviteCodeExpiresAt = "invite_code_expires_at"
     }
 }

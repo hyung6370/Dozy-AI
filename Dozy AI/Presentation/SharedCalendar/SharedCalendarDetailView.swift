@@ -1,0 +1,186 @@
+//
+//  SharedCalendarDetailView.swift
+//  Dozy AI
+//
+
+import SwiftUI
+
+struct SharedCalendarDetailView: View {
+
+    let calendar: SharedCalendar
+    @ObservedObject var viewModel: SharedCalendarViewModel
+    @EnvironmentObject private var authViewModel: AuthViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var showLeaveAlert = false
+    @State private var copied = false
+    @State private var currentCode: String
+
+    init(calendar: SharedCalendar, viewModel: SharedCalendarViewModel) {
+        self.calendar = calendar
+        self.viewModel = viewModel
+        _currentCode = State(initialValue: calendar.inviteCode ?? "")
+    }
+
+    private var currentUserID: String { authViewModel.currentUser?.id ?? "" }
+    private var members: [SharedCalendarMember] { viewModel.membersMap[calendar.id] ?? [] }
+    private var isOwner: Bool { members.first(where: { $0.userID == currentUserID })?.role == .owner }
+    private var isCodeExpired: Bool {
+        guard let exp = calendar.inviteCodeExpiresAt else { return false }
+        return exp < Date()
+    }
+
+    var body: some View {
+        List {
+            membersSection
+            if !currentCode.isEmpty {
+                inviteCodeSection
+            }
+            leaveSection
+        }
+        .navigationTitle(calendar.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .alert(
+            isOwner ? "캘린더를 삭제할까요?" : "공유 캘린더에서 나갈까요?",
+            isPresented: $showLeaveAlert
+        ) {
+            Button(isOwner ? "삭제" : "나가기", role: .destructive) {
+                viewModel.leave(calendar: calendar, currentUserID: currentUserID) {
+                    dismiss()
+                }
+            }
+            Button("취소", role: .cancel) { }
+        } message: {
+            Text(isOwner
+                 ? "캘린더와 모든 공유 일정이 파트너에게도 삭제됩니다."
+                 : "공유 일정은 유지되지만 더 이상 함께 관리할 수 없어요.")
+        }
+        .onAppear { viewModel.loadMembers(calendarID: calendar.id) }
+        .onReceive(viewModel.$calendars) { updated in
+            if let fresh = updated.first(where: { $0.id == calendar.id }),
+               let code = fresh.inviteCode {
+                currentCode = code
+            }
+        }
+    }
+
+    // MARK: - Members Section
+
+    private var membersSection: some View {
+        Section("멤버") {
+            ForEach(members, id: \.userID) { member in
+                HStack {
+                    Image(systemName: member.role == .owner ? "crown.fill" : "person.fill")
+                        .foregroundStyle(member.role == .owner ? .yellow : .secondary)
+                        .frame(width: 24)
+                    Text(member.userID == currentUserID ? "나" : "파트너")
+                        .font(.subheadline)
+                    Spacer()
+                    Text(member.role == .owner ? "소유자" : "멤버")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(Color(.systemGray6), in: Capsule())
+                }
+                .padding(.vertical, 2)
+            }
+            if members.isEmpty {
+                Text("멤버 정보를 불러오는 중...")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    // MARK: - Invite Code Section
+
+    private var inviteCodeSection: some View {
+        Section {
+            VStack(spacing: 16) {
+                HStack {
+                    Spacer()
+                    Text(currentCode)
+                        .font(.system(size: 32, weight: .bold, design: .monospaced))
+                        .tracking(6)
+                        .foregroundStyle(isCodeExpired ? Color(.systemGray3) : Color.accentColor)
+                    Spacer()
+                }
+
+                if isCodeExpired {
+                    Label("코드가 만료됐어요", systemImage: "clock.badge.exclamationmark")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+
+                HStack(spacing: 16) {
+                    Button {
+                        UIPasteboard.general.string = currentCode
+                        copied = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { copied = false }
+                    } label: {
+                        Label(copied ? "복사됨" : "복사", systemImage: copied ? "checkmark" : "doc.on.doc")
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+                            .foregroundStyle(copied ? .green : .primary)
+                    }
+                    .buttonStyle(.plain)
+                    .animation(.easeInOut(duration: 0.2), value: copied)
+
+                    ShareLink(
+                        item: shareText,
+                        subject: Text("Dozy AI 공유 캘린더 초대")
+                    ) {
+                        Label("공유", systemImage: "square.and.arrow.up")
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical, 8)
+
+            if isOwner {
+                Button {
+                    viewModel.regenerateCode(calendarID: calendar.id) { newCode in
+                        currentCode = newCode
+                    }
+                } label: {
+                    Label("새 코드 발급", systemImage: "arrow.clockwise")
+                        .foregroundStyle(.primary)
+                }
+            }
+        } header: {
+            Text("초대 코드")
+        } footer: {
+            if let exp = calendar.inviteCodeExpiresAt {
+                Text("만료: \(exp.formatted(.dateTime.month().day().hour().minute()))")
+            }
+        }
+    }
+
+    // MARK: - Leave Section
+
+    private var leaveSection: some View {
+        Section {
+            Button(role: .destructive) {
+                showLeaveAlert = true
+            } label: {
+                Label(
+                    isOwner ? "공유 캘린더 삭제" : "공유 캘린더 나가기",
+                    systemImage: isOwner ? "trash" : "rectangle.portrait.and.arrow.right"
+                )
+            }
+        }
+    }
+
+    // MARK: - Share Text
+
+    private var shareText: String {
+        "Dozy AI 공유 캘린더에 초대됐어요! 📅\n코드: \(currentCode)\n\n앱에서 '초대 코드로 참여하기'를 눌러 입력하세요."
+    }
+}
