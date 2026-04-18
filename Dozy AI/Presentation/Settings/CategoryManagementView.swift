@@ -12,6 +12,7 @@ import Supabase
 struct CategoryManagementView: View {
 
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
+    @Query private var allDozyEvents: [DozyEvent]
     @Environment(\.modelContext) private var context
     @State private var showAddSheet = false
     @State private var editingCategory: UserCategory? = nil
@@ -66,15 +67,20 @@ struct CategoryManagementView: View {
         )) {
             Button("삭제", role: .destructive) {
                 if let cat = deletingCategory {
+                    let catName = cat.name
                     let catID = cat.id
+                    for event in allDozyEvents where event.category == catName {
+                        event.category = UserCategory.defaultName
+                    }
                     context.delete(cat)
+                    try? context.save()
                     Task { await deleteFromSupabase(id: catID) }
                 }
                 deletingCategory = nil
             }
             Button("취소", role: .cancel) { deletingCategory = nil }
         } message: {
-            Text("'\(deletingCategory?.name ?? "")'을(를) 삭제하시겠습니까?\n해당 카테고리로 등록된 일정은 유지됩니다.")
+            Text("'\(deletingCategory?.name ?? "")'을(를) 삭제하시겠습니까?\n해당 카테고리의 일정은 '일반'으로 변경됩니다.")
         }
     }
 

@@ -419,31 +419,53 @@ final class SyncService {
                         .eq("user_id", value: userID)
                         .execute()
                         .value
-                    let existing = try self.modelContext.fetch(FetchDescriptor<UserCategory>())
+                    let allLocal = try self.modelContext.fetch(FetchDescriptor<UserCategory>())
+
+                    // 로컬 중복(같은 이름 여러 개) 먼저 정리 — updatedAt 기준 최신 하나만 남김
+                    var seenNames: [String: UserCategory] = [:]
+                    for cat in allLocal {
+                        if let existing = seenNames[cat.name] {
+                            self.modelContext.delete(cat.updatedAt >= existing.updatedAt ? existing : cat)
+                            seenNames[cat.name] = cat.updatedAt >= existing.updatedAt ? cat : existing
+                        } else {
+                            seenNames[cat.name] = cat
+                        }
+                    }
+
+                    // 루프 중 insert도 추적하기 위해 딕셔너리 사용
+                    var byID: [String: UserCategory] = Dictionary(
+                        allLocal.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a }
+                    )
+                    var byName: [String: UserCategory] = Dictionary(
+                        allLocal.map { ($0.name, $0) }, uniquingKeysWith: { a, b in
+                            a.updatedAt >= b.updatedAt ? a : b
+                        }
+                    )
+
                     for row in rows {
-                        if let local = existing.first(where: { $0.id == row.id }) {
-                            // 원격이 더 최신이면 덮어쓰기
+                        if let local = byID[row.id] {
                             if row.updatedAt > local.updatedAt {
                                 local.name = row.name
                                 local.emoji = row.emoji
                                 local.colorHex = row.colorHex
                                 local.order = row.order
                                 local.updatedAt = row.updatedAt
+                                byName[row.name] = local
                             }
+                        } else if let nameMatch = byName[row.name] {
+                            nameMatch.id = row.id
+                            nameMatch.emoji = row.emoji
+                            nameMatch.colorHex = row.colorHex
+                            nameMatch.order = row.order
+                            nameMatch.updatedAt = row.updatedAt
+                            byID[row.id] = nameMatch
                         } else {
-                            // 이름 중복 방지: 같은 이름의 로컬 카테고리가 있으면 원격 데이터로 업데이트
-                            if let duplicate = existing.first(where: { $0.name == row.name }) {
-                                duplicate.id = row.id
-                                duplicate.emoji = row.emoji
-                                duplicate.colorHex = row.colorHex
-                                duplicate.order = row.order
-                                duplicate.updatedAt = row.updatedAt
-                            } else {
-                                let cat = UserCategory(name: row.name, emoji: row.emoji, colorHex: row.colorHex, order: row.order)
-                                cat.id = row.id
-                                cat.updatedAt = row.updatedAt
-                                self.modelContext.insert(cat)
-                            }
+                            let cat = UserCategory(name: row.name, emoji: row.emoji, colorHex: row.colorHex, order: row.order)
+                            cat.id = row.id
+                            cat.updatedAt = row.updatedAt
+                            self.modelContext.insert(cat)
+                            byID[row.id] = cat
+                            byName[row.name] = cat
                         }
                     }
                     try self.modelContext.save()
