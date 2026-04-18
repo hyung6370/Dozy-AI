@@ -21,7 +21,6 @@ struct HomeView: View {
     @State private var showEditMemoAlert = false
     @State private var deletingMemoIndex: Int? = nil
     @State private var showDeleteMemoAlert = false
-    @State private var hasNotification = false
     @State private var showNotificationSheet = false
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var pendingDozyEdit: DozyEvent? = nil
@@ -85,7 +84,7 @@ struct HomeView: View {
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 HomeTopBarView(
-                    hasNotification: hasNotification,
+                    hasNotification: viewModel.hasNotification,
                     onNotificationTap: { showNotificationSheet = true },
                     onProfileTap: { selectedTab = 3 }
                 )
@@ -112,10 +111,7 @@ struct HomeView: View {
             }
             .onAppear {
                 viewModel.loadTodayData()
-                container.notificationRepository.hasUnread()
-                    .receive(on: DispatchQueue.main)
-                    .sink { hasNotification = $0 }
-                    .store(in: &viewModel.cancellables)
+                viewModel.refreshNotificationBadge()
             }
             .onChange(of: selectedTab) { _, newTab in
                 if newTab == 0 { viewModel.loadTodayData() }
@@ -154,10 +150,7 @@ struct HomeView: View {
         }
         .onChange(of: showNotificationSheet) { _, isShowing in
             guard !isShowing else { return }
-            container.notificationRepository.hasUnread()
-                .receive(on: DispatchQueue.main)
-                .sink { hasNotification = $0 }
-                .store(in: &viewModel.cancellables)
+            viewModel.refreshNotificationBadge()
         }
         .sheet(isPresented: $showSummarySheet) {
             DailySummaryView(

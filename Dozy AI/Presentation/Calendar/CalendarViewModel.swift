@@ -48,6 +48,7 @@ struct EventBarInfo: Identifiable {
     var isShared: Bool = false
 }
 
+@MainActor
 final class CalendarViewModel: ObservableObject {
 
     // MARK: - Published

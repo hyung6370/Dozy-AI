@@ -20,10 +20,10 @@ final class AuthViewModel: ObservableObject {
     @Published var showCongratulationAnimation = false
     @Published var pendingInviteCode: String? = nil
 
-    private let authService = AuthService()
+    private let authService: AuthService
     private let syncService: SyncService
     private let realtimeService: SharedCalendarRealtimeService
-    private let sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
+    private let sharedCalendarService: SharedCalendarServiceProtocol
     private var cancellables = Set<AnyCancellable>()
 
     /// Keychain에 displayName을 저장할 때 사용하는 키.
@@ -42,7 +42,14 @@ final class AuthViewModel: ObservableObject {
         return Date().timeIntervalSince(lastSync) < Self.syncCooldown
     }
 
-    init(modelContext: ModelContext, realtimeService: SharedCalendarRealtimeService) {
+    init(
+        modelContext: ModelContext,
+        authService: AuthService,
+        sharedCalendarService: SharedCalendarServiceProtocol,
+        realtimeService: SharedCalendarRealtimeService
+    ) {
+        self.authService = authService
+        self.sharedCalendarService = sharedCalendarService
         self.syncService = SyncService(modelContext: modelContext)
         self.realtimeService = realtimeService
     }

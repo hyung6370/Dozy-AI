@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftUI
 
+@MainActor
 final class EventEditViewModel: ObservableObject {
     
     @Published var title: String

@@ -8,6 +8,7 @@
 import Combine
 import UIKit
 
+@MainActor
 final class CalendarSettingsViewModel: ObservableObject {
 
     @Published var errorMessage: String?

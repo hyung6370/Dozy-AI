@@ -12,6 +12,7 @@ import Foundation
 import Combine
 import EventKit
 
+@MainActor
 final class DailySummaryViewModel: ObservableObject {
 
     // MARK: - 탭 상태

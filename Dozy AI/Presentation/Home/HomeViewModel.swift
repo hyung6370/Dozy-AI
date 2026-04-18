@@ -12,6 +12,7 @@ import Foundation
 import Combine
 import SwiftData
 
+@MainActor
 final class HomeViewModel: ObservableObject {
 
     // MARK: - Published State
@@ -30,6 +31,7 @@ final class HomeViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
     @Published var showSuccessAnimation = false
+    @Published var hasNotification = false
     
     @Published var selectedSource: CalendarSource? = nil
     
@@ -112,6 +114,7 @@ final class HomeViewModel: ObservableObject {
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let displaySettingsRepo: EventDisplaySettingsRepository
+    private let notificationRepository: NotificationRepository
     var cancellables = Set<AnyCancellable>()
     private var todayDataCancellable: AnyCancellable?
     private var completionFetchCancellable: AnyCancellable?
@@ -133,7 +136,8 @@ final class HomeViewModel: ObservableObject {
         createDozyEventUseCase: CreateDozyEventUseCase,
         updateDozyEventUseCase: UpdateDozyEventUseCase,
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
-        displaySettingsRepo: EventDisplaySettingsRepository
+        displaySettingsRepo: EventDisplaySettingsRepository,
+        notificationRepository: NotificationRepository
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
@@ -150,6 +154,7 @@ final class HomeViewModel: ObservableObject {
         self.updateDozyEventUseCase = updateDozyEventUseCase
         self.updateCalendarEventUseCase = updateCalendarEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
+        self.notificationRepository = notificationRepository
         
         googleSignInService.$isSignedIn
             .removeDuplicates()
@@ -195,8 +200,16 @@ final class HomeViewModel: ObservableObject {
             createDozyEventUseCase: container.createDozyEventUseCase,
             updateDozyEventUseCase: container.updateDozyEventUseCase,
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
-            displaySettingsRepo: container.eventDisplaySettingsRepository
+            displaySettingsRepo: container.eventDisplaySettingsRepository,
+            notificationRepository: container.notificationRepository
         )
+    }
+
+    func refreshNotificationBadge() {
+        notificationRepository.hasUnread()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.hasNotification = $0 }
+            .store(in: &cancellables)
     }
 
     // MARK: - 데이터 로드

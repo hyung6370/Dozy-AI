@@ -27,6 +27,8 @@ struct Dozy_AIApp: App {
         _container = StateObject(wrappedValue: container)
         _authViewModel = StateObject(wrappedValue: AuthViewModel(
             modelContext: container.modelContainer.mainContext,
+            authService: container.authService,
+            sharedCalendarService: container.sharedCalendarService,
             realtimeService: container.sharedCalendarRealtimeService
         ))
     }
