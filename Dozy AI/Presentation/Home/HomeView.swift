@@ -484,9 +484,10 @@ struct HomeView: View {
                 }
             }
 
-            HStack(spacing: 10) {
-                TextField("메모를 남겨보세요", text: $memoText)
+            HStack(alignment: .bottom, spacing: 10) {
+                TextField("메모를 남겨보세요", text: $memoText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
+                    .lineLimit(1...)
                     .onSubmit { submitMemo() }
 
                 Button { submitMemo() } label: {
