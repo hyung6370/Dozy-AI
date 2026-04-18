@@ -94,6 +94,8 @@ struct HomeView: View {
                 if newPhase == .inactive || newPhase == .background {
                     showSummarySheet = false
                     selectedEvent = nil
+                    showEditMemoAlert = false
+                    showDeleteMemoAlert = false
                 }
             }
             .onAppear {
