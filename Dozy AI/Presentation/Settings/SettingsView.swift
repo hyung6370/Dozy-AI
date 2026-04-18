@@ -33,7 +33,6 @@ struct SettingsView: View {
             List {
                 accountSection
                 calendarSection
-                sharedCalendarSection
                 categorySection
                 infoSection
                 dangerZoneSection
@@ -265,23 +264,15 @@ struct SettingsView: View {
             } label: {
                 Label("캘린더 연동", systemImage: "calendar.badge.plus")
             }
-        } header: {
-            Text("캘린더")
-        }
-    }
-
-    // MARK: - 공유 캘린더 섹션
-
-    @ViewBuilder
-    private var sharedCalendarSection: some View {
-        if authViewModel.isLoggedIn {
-            Section {
+            if authViewModel.isLoggedIn {
                 NavigationLink {
                     SharedCalendarListView(container: container)
                 } label: {
                     Label("공유 캘린더", systemImage: "calendar.badge.person.crop")
                 }
             }
+        } header: {
+            Text("캘린더")
         }
     }
 }
