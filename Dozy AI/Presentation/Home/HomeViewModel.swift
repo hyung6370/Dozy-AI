@@ -28,6 +28,7 @@ final class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
+    @Published var showSuccessAnimation = false
     
     @Published var selectedSource: CalendarSource? = nil
     
@@ -106,6 +107,7 @@ final class HomeViewModel: ObservableObject {
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
     private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
+    private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let displaySettingsRepo: EventDisplaySettingsRepository
@@ -127,6 +129,7 @@ final class HomeViewModel: ObservableObject {
         fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
         deleteDozyEventUseCase: DeleteDozyEventUseCase,
         deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
+        createDozyEventUseCase: CreateDozyEventUseCase,
         updateDozyEventUseCase: UpdateDozyEventUseCase,
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
         displaySettingsRepo: EventDisplaySettingsRepository
@@ -142,6 +145,7 @@ final class HomeViewModel: ObservableObject {
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
         self.deleteDozyEventUseCase = deleteDozyEventUseCase
         self.deleteCalendarEventUseCase = deleteCalendarEventUseCase
+        self.createDozyEventUseCase = createDozyEventUseCase
         self.updateDozyEventUseCase = updateDozyEventUseCase
         self.updateCalendarEventUseCase = updateCalendarEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
@@ -187,6 +191,7 @@ final class HomeViewModel: ObservableObject {
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
             deleteDozyEventUseCase: container.deleteDozyEventUseCase,
             deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
+            createDozyEventUseCase: container.createDozyEventUseCase,
             updateDozyEventUseCase: container.updateDozyEventUseCase,
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
             displaySettingsRepo: container.eventDisplaySettingsRepository
@@ -449,10 +454,15 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Event Detail Actions
 
     func saveDozyEvent(_ event: DozyEvent) {
-        updateDozyEventUseCase.execute(event)
+        let isNew = dozyEventsByID[event.id] == nil
+        let publisher = isNew
+            ? createDozyEventUseCase.execute(event)
+            : updateDozyEventUseCase.execute(event)
+        publisher
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.loadTodayData()
+                if isNew { self?.showSuccessAnimation = true }
             })
             .store(in: &cancellables)
     }

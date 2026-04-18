@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import Lottie
 
 struct HomeView: View {
 
@@ -27,6 +28,8 @@ struct HomeView: View {
     @State private var pendingCalendarEdit: CalendarEvent? = nil
     @State private var dozyEventToEdit: DozyEvent? = nil
     @State private var calendarEventToEdit: CalendarEvent? = nil
+    @State private var showCreateFromEmptyAlert = false
+    @State private var showNewEventSheet = false
     
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
@@ -70,6 +73,15 @@ struct HomeView: View {
                     // aiGenerateButton
                 }
                 .padding()
+            }
+            .overlay {
+                if viewModel.showSuccessAnimation {
+                    LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                        viewModel.showSuccessAnimation = false
+                    }
+                    .scaleEffect(0.22)
+                    .allowsHitTesting(false)
+                }
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 HomeTopBarView(
@@ -199,6 +211,15 @@ struct HomeView: View {
                 viewModel.saveCalendarEvent(ev, edit: edit)
             }
         }
+        .alert("새로운 일정을 만들어볼까요?", isPresented: $showCreateFromEmptyAlert) {
+            Button("만들기") { showNewEventSheet = true }
+            Button("취소", role: .cancel) { }
+        }
+        .sheet(isPresented: $showNewEventSheet) {
+            EventEditView(eventToEdit: nil, selectedDate: Date()) { saved in
+                viewModel.saveDozyEvent(saved)
+            }
+        }
         }
     }
 
@@ -296,13 +317,34 @@ struct HomeView: View {
                         .background(timeUntilColor(event).opacity(0.1), in: Capsule())
                 }
             } else {
-                HStack(spacing: 10) {
-                    Image(systemName: viewModel.todayEvents.isEmpty ? "calendar.badge.minus" : "checkmark.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(viewModel.todayEvents.isEmpty ? Color.secondary : Color.green)
-                    Text(viewModel.todayEvents.isEmpty ? "오늘 일정이 없습니다." : "남은 일정이 없습니다.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                if viewModel.todayEvents.isEmpty {
+                    Button {
+                        showCreateFromEmptyAlert = true
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "calendar.badge.minus")
+                                .font(.title3)
+                                .foregroundStyle(Color.secondary)
+                            Text("오늘 일정이 없습니다.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button {
+                        showCreateFromEmptyAlert = true
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(Color.green)
+                            Text("남은 일정이 없습니다.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
