@@ -36,7 +36,16 @@ struct EventDetailView: View {
     @State private var displayPriority: Int = 0
     @State private var displayIsPinned: Bool = false
     @State private var displayCategory: String = UserCategory.defaultName
+    @State private var originalPriority: Int = 0
+    @State private var originalIsPinned: Bool = false
+    @State private var originalCategory: String = UserCategory.defaultName
     @State private var showRecurringEditConfirm = false
+
+    private var hasChanges: Bool {
+        displayPriority != originalPriority
+            || displayIsPinned != originalIsPinned
+            || displayCategory != originalCategory
+    }
 
     var body: some View {
         NavigationStack {
@@ -65,9 +74,23 @@ struct EventDetailView: View {
                     let settings = allDisplaySettings.first(where: { $0.eventID == event.id })
                     displayCategory = settings?.category ?? event.category
                 }
+                originalPriority = displayPriority
+                originalIsPinned = displayIsPinned
+                originalCategory = displayCategory
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if hasChanges {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("저장") {
+                            onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, displayCategory)
+                            originalPriority = displayPriority
+                            originalIsPinned = displayIsPinned
+                            originalCategory = displayCategory
+                        }
+                        .fontWeight(.semibold)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("닫기") { dismiss() }
                 }
@@ -78,14 +101,21 @@ struct EventDetailView: View {
     // MARK: - Header
     
     private var headerSection: some View {
-        HStack(spacing: 14) {
+        let currentCategory = categories.first(where: { $0.name == displayCategory })
+        let barColor: Color = {
+            if event.source == .dozy, let cat = currentCategory {
+                return Color(hex: cat.colorHex) ?? .blue
+            }
+            return Color(hex: event.calendarColorHex) ?? .blue
+        }()
+        return HStack(spacing: 14) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                .fill(barColor)
                 .frame(width: 6, height: 56)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    if let emoji = categories.first(where: { $0.name == displayCategory })?.emoji {
+                    if let emoji = currentCategory?.emoji {
                         Text(emoji).font(.title3)
                     }
                     Text(event.title)
@@ -227,9 +257,6 @@ struct EventDetailView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
-                .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
-                }
 
                 Divider().padding(.leading)
 
@@ -244,9 +271,6 @@ struct EventDetailView: View {
                         Text("낮음 🔵").tag(3)
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -263,9 +287,6 @@ struct EventDetailView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -350,9 +371,6 @@ struct EventDetailView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
-                .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
-                }
 
                 Divider().padding(.leading)
 
@@ -367,9 +385,6 @@ struct EventDetailView: View {
                         Text("낮음 🔵").tag(3)
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -386,9 +401,6 @@ struct EventDetailView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)

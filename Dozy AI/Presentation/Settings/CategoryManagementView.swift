@@ -69,12 +69,18 @@ struct CategoryManagementView: View {
                 if let cat = deletingCategory {
                     let catName = cat.name
                     let catID = cat.id
+                    var affected: [DozyEvent] = []
                     for event in allDozyEvents where event.category == catName {
                         event.category = UserCategory.defaultName
+                        event.updatedAt = Date()
+                        affected.append(event)
                     }
                     context.delete(cat)
                     try? context.save()
-                    Task { await deleteFromSupabase(id: catID) }
+                    Task {
+                        await deleteFromSupabase(id: catID)
+                        if !affected.isEmpty { await upsertEventsToSupabase(affected) }
+                    }
                 }
                 deletingCategory = nil
             }
@@ -103,6 +109,73 @@ struct CategoryManagementView: View {
         guard let userID = try? await supabase.auth.session.user.id.uuidString else { return }
         let rows = cats.map { UserCategoryRow(id: $0.id, userID: userID, name: $0.name, emoji: $0.emoji, colorHex: $0.colorHex, order: $0.order, updatedAt: $0.updatedAt) }
         try? await supabase.from("user_categories").upsert(rows, onConflict: "id").execute()
+    }
+
+    private func upsertEventsToSupabase(_ events: [DozyEvent]) async {
+        guard let userID = try? await supabase.auth.session.user.id.uuidString else { return }
+        let rows = events.map { e in
+            DozyEventRow(
+                id: e.id, userID: userID,
+                title: e.title, startDate: e.startDate, endDate: e.endDate,
+                isAllDay: e.isAllDay, location: e.location, notes: e.notes,
+                colorHex: e.colorHex, recurrenceRule: e.recurrenceRule,
+                recurrenceEndDate: e.recurrenceEndDate,
+                notificationMinutesBefore: e.notificationMinutesBefore,
+                memos: e.memos, isCompleted: e.isCompleted,
+                priority: e.priority, isPinned: e.isPinned,
+                category: e.category,
+                sharedCalendarID: e.sharedCalendarID,
+                createdAt: e.createdAt, updatedAt: e.updatedAt
+            )
+        }
+        try? await supabase.from("dozy_events").upsert(rows, onConflict: "id").execute()
+    }
+}
+
+// MARK: - Supabase Event DTO
+
+private struct DozyEventRow: Codable {
+    let id: String
+    let userID: String
+    let title: String
+    let startDate: Date
+    let endDate: Date
+    let isAllDay: Bool
+    let location: String?
+    let notes: String?
+    let colorHex: String
+    let recurrenceRule: String
+    let recurrenceEndDate: Date?
+    let notificationMinutesBefore: Int
+    let memos: [String]
+    let isCompleted: Bool
+    let priority: Int
+    let isPinned: Bool
+    let category: String
+    let sharedCalendarID: String?
+    let createdAt: Date
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userID = "user_id"
+        case title
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case isAllDay = "is_all_day"
+        case location, notes
+        case colorHex = "color_hex"
+        case recurrenceRule = "recurrence_rule"
+        case recurrenceEndDate = "recurrence_end_date"
+        case notificationMinutesBefore = "notification_minutes_before"
+        case memos
+        case isCompleted = "is_completed"
+        case priority
+        case isPinned = "is_pinned"
+        case category
+        case sharedCalendarID = "shared_calendar_id"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
 }
 

@@ -10,6 +10,7 @@
 
 import Foundation
 import Combine
+import SwiftData
 
 final class HomeViewModel: ObservableObject {
 
@@ -530,7 +531,13 @@ final class HomeViewModel: ObservableObject {
             guard let dozy = dozyEventsByID[event.id] else { return }
             dozy.priority = priority
             dozy.isPinned = isPinned
-            if let category { dozy.category = category }
+            if let category {
+                dozy.category = category
+                if let ctx = dozy.modelContext,
+                   let cat = try? ctx.fetch(FetchDescriptor<UserCategory>()).first(where: { $0.name == category }) {
+                    dozy.colorHex = cat.colorHex
+                }
+            }
             updateDozyEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in

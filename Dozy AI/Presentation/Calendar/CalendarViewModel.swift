@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import SwiftData
 import OSLog
 
 enum CalendarViewMode: CaseIterable {
@@ -590,7 +591,14 @@ final class CalendarViewModel: ObservableObject {
             guard let dozy = dozyEventsByID[event.id] else { return }
             dozy.priority = priority
             dozy.isPinned = isPinned
-            if let category { dozy.category = category }
+            if let category {
+                dozy.category = category
+                // 카테고리가 바뀌면 일정 색상도 해당 카테고리 색으로 동기화
+                if let ctx = dozy.modelContext,
+                   let cat = try? ctx.fetch(FetchDescriptor<UserCategory>()).first(where: { $0.name == category }) {
+                    dozy.colorHex = cat.colorHex
+                }
+            }
             updateEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
