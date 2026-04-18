@@ -62,7 +62,7 @@ struct MainTabView: View {
                 .tabItem { Label("홈", image: homeIconName) }
                 .tag(0)
 
-            CalendarView(viewModel: calendarViewModel)
+            CalendarView(container: container, viewModel: calendarViewModel)
                 .tabItem { Label("캘린더", image: calendarIconName) }
                 .tag(1)
 

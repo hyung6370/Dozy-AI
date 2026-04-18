@@ -197,6 +197,7 @@
 		CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */; };
 		5E394932A4FB4627A517D1CB /* SharedCalendarJoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */; };
 		5B0F554A76C543C39CE91437 /* SharedCalendarDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */; };
+		44039241C37345B9A25246E9 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D808CA427DE3411D99E36895 /* SearchView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -404,6 +405,7 @@
 		D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarCreateView.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
+		D808CA427DE3411D99E36895 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -527,6 +529,7 @@
 				DD9F69332F6AD0CC001952F6 /* VoiceInput */,
 				DD9F69382F6AD160001952F6 /* Insights */,
 				F619D95D2F7528A300084C61 /* Settings */,
+				31B06EB5B88145D5864E4404 /* Search */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -915,7 +918,15 @@
 			path = SharedCalendar;
 			sourceTree = "<group>";
 		};
-		/* End PBXGroup section */
+				31B06EB5B88145D5864E4404 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				D808CA427DE3411D99E36895 /* SearchView.swift */,
+			);
+			path = Search;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		DD808E832F694B2100F4956A /* Dozy AI */ = {
@@ -1234,6 +1245,7 @@
 				F63C68E42F8642C7003464E8 /* EventDisplaySettings.swift in Sources */,
 				DD9F690B2F6ACEC2001952F6 /* WorkLogRepository.swift in Sources */,
 				CEEBF7E3E8D2D65697104350 /* FetchCalendarEventsForPeriodUseCase.swift in Sources */,
+				44039241C37345B9A25246E9 /* SearchView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
