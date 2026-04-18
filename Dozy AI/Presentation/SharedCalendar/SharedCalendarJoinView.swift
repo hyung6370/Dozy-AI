@@ -10,6 +10,8 @@ struct SharedCalendarJoinView: View {
     @ObservedObject var viewModel: SharedCalendarViewModel
     @Environment(\.dismiss) private var dismiss
 
+    var initialCode: String = ""
+
     @State private var code = ""
     @State private var joined = false
     @FocusState private var isFocused: Bool
@@ -89,7 +91,10 @@ struct SharedCalendarJoinView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .onAppear { isFocused = true }
+        .onAppear {
+            if !initialCode.isEmpty { code = String(initialCode.uppercased().prefix(6)) }
+            isFocused = true
+        }
     }
 
     private var codeInputField: some View {

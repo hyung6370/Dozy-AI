@@ -54,6 +54,7 @@ struct Dozy_AIApp: App {
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
                 _ = container.naverSignInService.handle(url: url)
+                handleUniversalLink(url)
             }
             .onAppear {
                 Task {
@@ -62,6 +63,15 @@ struct Dozy_AIApp: App {
                 }
             }
             .environmentObject(authViewModel)
+    }
+
+    private func handleUniversalLink(_ url: URL) {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
+              ["dozyapp.kr", "www.dozyapp.kr"].contains(components.host),
+              components.path == "/shared-calendar/join",
+              let code = components.queryItems?.first(where: { $0.name == "code" })?.value,
+              !code.isEmpty else { return }
+        authViewModel.pendingInviteCode = code
     }
 }
 

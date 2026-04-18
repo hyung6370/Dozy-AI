@@ -18,6 +18,7 @@ final class AuthViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var showCongratulationAnimation = false
+    @Published var pendingInviteCode: String? = nil
 
     private let authService = AuthService()
     private let syncService: SyncService
