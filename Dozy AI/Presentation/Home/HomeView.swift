@@ -532,7 +532,6 @@ struct HomeView: View {
                 TextField("메모를 남겨보세요", text: $memoText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(1...)
-                    .onSubmit { submitMemo() }
 
                 Button { submitMemo() } label: {
                     Image(systemName: "plus.circle.fill")
