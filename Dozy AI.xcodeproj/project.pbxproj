@@ -42,7 +42,7 @@
 		DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		DD9F68F92F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */; };
 		DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FA2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift */; };
-		DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FC2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift */; };
+		DD9F68FD2F6ACE25001952F6 /* SaveWorkLogUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FC2F6ACE25001952F6 /* SaveWorkLogUseCase.swift */; };
 		DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */; };
 		DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69012F6ACE5C001952F6 /* CalendarServiceProtocol.swift */; };
 		DD9F69042F6ACE69001952F6 /* ReminderServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */; };
@@ -175,7 +175,7 @@
 		F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7F88A300F9C124 /* InsightBannerView.swift */; };
 		F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		F6B0413B2F8F4CB500EEAC89 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */; };
-		F6BC59912F7396450090DF3A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* File.swift */; };
+		F6BC59912F7396450090DF3A /* StatBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* StatBadge.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
 		F6BC59972F739B010090DF3A /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59962F739B010090DF3A /* TaskRow.swift */; };
@@ -255,7 +255,7 @@
 		DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPattern.swift; sourceTree = "<group>"; };
 		DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateDailySummaryUseCase.swift; sourceTree = "<group>"; };
 		DD9F68FA2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsUseCase.swift; sourceTree = "<group>"; };
-		DD9F68FC2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzeWorkPatternUseCase.swift; sourceTree = "<group>"; };
+		DD9F68FC2F6ACE25001952F6 /* SaveWorkLogUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveWorkLogUseCase.swift; sourceTree = "<group>"; };
 		DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendNextTaskUseCase.swift; sourceTree = "<group>"; };
 		DD9F69012F6ACE5C001952F6 /* CalendarServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarServiceProtocol.swift; sourceTree = "<group>"; };
 		DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderServiceProtocol.swift; sourceTree = "<group>"; };
@@ -383,7 +383,7 @@
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		F6B041F52F90751A00EEAC89 /* Dozy AIRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AIRelease.entitlements"; sourceTree = "<group>"; };
-		F6BC59902F7396450090DF3A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		F6BC59902F7396450090DF3A /* StatBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBadge.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
 		F6BC59962F739B010090DF3A /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
@@ -617,7 +617,7 @@
 				DD9F693F2F6AD1D5001952F6 /* SummaryCard.swift */,
 				DD9F69412F6AD1DE001952F6 /* PatternChart.swift */,
 				DD9F69432F6AD1EB001952F6 /* VoiceWaveformView.swift */,
-				F6BC59902F7396450090DF3A /* File.swift */,
+				F6BC59902F7396450090DF3A /* StatBadge.swift */,
 				F6BC59922F73977B0090DF3A /* SectionHeader.swift */,
 				F6BC59942F7399E90090DF3A /* EventRow.swift */,
 				F6BC59962F739B010090DF3A /* TaskRow.swift */,
@@ -631,6 +631,7 @@
 				F63C687D2F85E654003464E8 /* LottieOverlayView.swift */,
 				F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */,
 				E1F2E5C2128D432DB7FA7A8C /* WeatherCardView.swift */,
+				F63C687B2F85E569003464E8 /* LottieView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -670,7 +671,6 @@
 				DD9F68EB2F6ACD36001952F6 /* Constants.swift */,
 				DD44DDD22F72C44100EEE463 /* DozyError.swift */,
 				DD9F68E92F6ACD2E001952F6 /* Logger.swift */,
-				F63C687B2F85E569003464E8 /* LottieView.swift */,
 				F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */,
 				68E74C13AD0E4860A1AE7875 /* KeychainService.swift */,
 				3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */,
@@ -685,7 +685,7 @@
 				4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */,
 				1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */,
 				AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */,
-				DD9F68FC2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift */,
+				DD9F68FC2F6ACE25001952F6 /* SaveWorkLogUseCase.swift */,
 				F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */,
 				F619D9722F7A36C600084C61 /* CreateDozyEventUseCase.swift */,
 				F650682A2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift */,
@@ -1208,13 +1208,13 @@
 				F60ADF0C2F7FB0B0007B8D9F /* AuthUser.swift in Sources */,
 				DD9F68EE2F6ACD5B001952F6 /* WorkLog.swift in Sources */,
 				DD9F691B2F6ACF74001952F6 /* SwiftDataContainer.swift in Sources */,
-				F6BC59912F7396450090DF3A /* File.swift in Sources */,
+				F6BC59912F7396450090DF3A /* StatBadge.swift in Sources */,
 				F63C687E2F85E654003464E8 /* LottieOverlayView.swift in Sources */,
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
 				F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */,
 				F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */,
 				F619D9832F7A422900084C61 /* DayCell.swift in Sources */,
-				DD9F68FD2F6ACE25001952F6 /* AnalyzeWorkPatternUseCase.swift in Sources */,
+				DD9F68FD2F6ACE25001952F6 /* SaveWorkLogUseCase.swift in Sources */,
 				F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */,
 				DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */,
 				F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */,
