@@ -73,7 +73,7 @@ struct InsightDashboardView: View {
                 if newTab == 2 { viewModel.loadData() }
             }
             .refreshable { viewModel.loadData() }
-            .sheet(isPresented: $showCalendarSettings) {
+            .navigationDestination(isPresented: $showCalendarSettings) {
                 CalendarSettingsView(
                     sourceManager: container.calendarSourceManager,
                     googleSignInService: container.googleSignInService,
