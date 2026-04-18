@@ -57,8 +57,6 @@ struct CategoryEditSheet: View {
                             Text(emoji)
                                 .font(.title2)
                                 .padding(6)
-                                .background(Color(.systemGray5))
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)
                         TextField("카테고리 이름", text: $name)
@@ -281,38 +279,22 @@ private struct EmojiPickerSheet: View {
     @Binding var selectedEmoji: String
     @Environment(\.dismiss) private var dismiss
     @State private var input: String = ""
-    @FocusState private var isFocused: Bool
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 32) {
-                Text("이모지 키보드(🌐)로\n원하는 이모지를 선택하세요")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-
                 Text(input.isEmpty ? selectedEmoji : input)
                     .font(.system(size: 72))
                     .frame(width: 120, height: 120)
                     .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
-                    .onTapGesture { isFocused = true }
 
-                // 이모지 입력을 받는 숨김 TextField
-                TextField("", text: $input)
-                    .focused($isFocused)
-                    .onChange(of: input) { _, new in
-                        if let emoji = new.filter({ $0.isEmoji }).last {
-                            input = String(emoji)
-                        } else {
-                            input = ""
-                        }
-                    }
-                    .opacity(0.01)
+                // 이모지 키보드를 자동으로 띄우는 숨김 입력 뷰
+                EmojiKeyboardField(text: $input)
                     .frame(width: 1, height: 1)
+                    .opacity(0.01)
             }
             .padding(.top, 40)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onAppear { isFocused = true }
             .navigationTitle("이모지 선택")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -329,6 +311,50 @@ private struct EmojiPickerSheet: View {
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+// MARK: - 이모지 키보드 강제 UIViewRepresentable
+
+private struct EmojiKeyboardField: UIViewRepresentable {
+
+    @Binding var text: String
+
+    func makeUIView(context: Context) -> InternalEmojiTextField {
+        let tf = InternalEmojiTextField()
+        tf.delegate = context.coordinator
+        DispatchQueue.main.async { tf.becomeFirstResponder() }
+        return tf
+    }
+
+    func updateUIView(_ uiView: InternalEmojiTextField, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: EmojiKeyboardField
+        init(_ parent: EmojiKeyboardField) { self.parent = parent }
+
+        func textField(_ textField: UITextField,
+                       shouldChangeCharactersIn range: NSRange,
+                       replacementString string: String) -> Bool {
+            let current = textField.text ?? ""
+            let newText = (current as NSString).replacingCharacters(in: range, with: string)
+            if let emoji = newText.filter({ $0.isEmoji }).last {
+                parent.text = String(emoji)
+                textField.text = String(emoji)
+            } else {
+                parent.text = ""
+                textField.text = ""
+            }
+            return false
+        }
+    }
+}
+
+private class InternalEmojiTextField: UITextField {
+    override var textInputMode: UITextInputMode? {
+        UITextInputMode.activeInputModes.first { $0.primaryLanguage == "emoji" }
     }
 }
 
