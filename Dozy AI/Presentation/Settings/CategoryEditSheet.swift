@@ -281,44 +281,59 @@ private struct EmojiPickerSheet: View {
     @Binding var selectedEmoji: String
     @Environment(\.dismiss) private var dismiss
     @State private var input: String = ""
-
-    private let emojis = [
-        "📌","💼","🏃","📚","🍽️","🏥","✈️","🛍️","👨‍👩‍👧","🎮","💻","🤝","📋",
-        "📄","🔍","🏋️","🎯","🎨","🎵","⚽","🧪","🌱","🔧","📱","🌐","🧠",
-        "💡","🚀","⭐","🔥","💬","📊","🗂️","🧹","🍀","🎁","🏠","🚗","🎓"
-    ]
-
-    var filtered: [String] {
-        input.isEmpty ? emojis : emojis.filter { $0.contains(input) }
-    }
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         NavigationStack {
-            VStack {
-                TextField("검색", text: $input)
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.horizontal)
+            VStack(spacing: 32) {
+                Text("이모지 키보드(🌐)로\n원하는 이모지를 선택하세요")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 16) {
-                    ForEach(filtered, id: \.self) { emoji in
-                        Text(emoji)
-                            .font(.title)
-                            .onTapGesture {
-                                selectedEmoji = emoji
-                                dismiss()
-                            }
+                Text(input.isEmpty ? selectedEmoji : input)
+                    .font(.system(size: 72))
+                    .frame(width: 120, height: 120)
+                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
+                    .onTapGesture { isFocused = true }
+
+                // 이모지 입력을 받는 숨김 TextField
+                TextField("", text: $input)
+                    .focused($isFocused)
+                    .onChange(of: input) { _, new in
+                        if let emoji = new.filter({ $0.isEmoji }).last {
+                            input = String(emoji)
+                        } else {
+                            input = ""
+                        }
                     }
-                }
-                .padding()
+                    .opacity(0.01)
+                    .frame(width: 1, height: 1)
             }
+            .padding(.top, 40)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onAppear { isFocused = true }
             .navigationTitle("이모지 선택")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("취소") { dismiss() }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("닫기") { dismiss() }
+                    Button("완료") {
+                        if !input.isEmpty { selectedEmoji = input }
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
                 }
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+private extension Character {
+    var isEmoji: Bool {
+        unicodeScalars.contains { $0.properties.isEmojiPresentation }
     }
 }
