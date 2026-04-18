@@ -24,6 +24,7 @@ struct CategoryEditSheet: View {
     @State private var selectedColor: Color
     @State private var showEmojiPicker = false
     private let originalName: String
+    private let originalColorHex: String
 
     private let presetColors: [Color] = [
         .blue, .purple, .orange, .green, .teal, .pink,
@@ -42,6 +43,7 @@ struct CategoryEditSheet: View {
         _emoji = State(initialValue: e)
         _selectedColor = State(initialValue: c)
         originalName = n
+        originalColorHex = category?.colorHex ?? "#8E8E93"
     }
 
     var isEditing: Bool { category != nil }
@@ -112,20 +114,28 @@ struct CategoryEditSheet: View {
         var affectedSettings: [EventDisplaySettings] = []
         if let cat = category {
             let oldName = originalName
+            let oldColorHex = originalColorHex
             cat.name = trimmedName
             cat.emoji = emoji
             cat.colorHex = colorHex
             cat.updatedAt = Date()
             target = cat
-            // 이름이 바뀐 경우 해당 카테고리를 사용하는 모든 레코드 업데이트
-            if oldName != trimmedName {
+
+            let nameChanged = oldName != trimmedName
+            let colorChanged = oldColorHex != colorHex
+
+            if nameChanged || colorChanged {
                 for event in allDozyEvents where event.category == oldName {
-                    event.category = trimmedName
+                    if nameChanged { event.category = trimmedName }
+                    if colorChanged { event.colorHex = colorHex }
+                    event.updatedAt = Date()
                     affectedEvents.append(event)
                 }
-                for settings in allDisplaySettings where settings.category == oldName {
-                    settings.category = trimmedName
-                    affectedSettings.append(settings)
+                if nameChanged {
+                    for settings in allDisplaySettings where settings.category == oldName {
+                        settings.category = trimmedName
+                        affectedSettings.append(settings)
+                    }
                 }
                 try? context.save()
             }

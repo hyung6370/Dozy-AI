@@ -268,6 +268,11 @@ struct EventDetailView: View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal)
 
+            Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+
             Button {
                 if dozyEvent.recurrenceRule != "none" {
                     showRecurringEditConfirm = true
@@ -385,6 +390,11 @@ struct EventDetailView: View {
             }
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal)
+
+            Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
 
             Button {
                 dismiss()

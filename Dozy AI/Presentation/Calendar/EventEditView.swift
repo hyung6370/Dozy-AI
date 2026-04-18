@@ -42,23 +42,28 @@ struct EventEditView: View {
                     }
                 }
                 
-                Section("색상") {
-                    ColorPicker("이벤트 색상", selection: $viewModel.selectedColor)
-                }
-
-                Section("카테고리") {
+                Section {
                     Picker("카테고리", selection: $viewModel.category) {
                         ForEach(categories) { cat in
                             Text("\(cat.emoji) \(cat.name)").tag(cat.name)
                         }
                     }
                     .pickerStyle(.menu)
+                    .onChange(of: viewModel.category) { _, newName in
+                        if let cat = categories.first(where: { $0.name == newName }) {
+                            viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
+                        }
+                    }
                     Button {
                         showAddCategory = true
                     } label: {
                         Label("카테고리 추가", systemImage: "plus")
                             .font(.subheadline)
                     }
+                } header: {
+                    Text("카테고리")
+                } footer: {
+                    Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
                 }
                 
                 Section("추가 정보") {
@@ -113,6 +118,11 @@ struct EventEditView: View {
             }
             .navigationTitle(viewModel.isEditing ? "일정 수정" : "새 일정")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                if let cat = categories.first(where: { $0.name == viewModel.category }) {
+                    viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
+                }
+            }
             .sheet(isPresented: $showAddCategory) {
                 CategoryEditSheet()
             }
