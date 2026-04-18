@@ -82,10 +82,15 @@ struct EventDetailView: View {
             RoundedRectangle(cornerRadius: 4)
                 .fill(Color(hex: event.calendarColorHex) ?? .blue)
                 .frame(width: 6, height: 56)
-            
+
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.title)
-                    .font(.title2).fontWeight(.bold)
+                HStack(spacing: 6) {
+                    if let emoji = categories.first(where: { $0.name == displayCategory })?.emoji {
+                        Text(emoji).font(.title3)
+                    }
+                    Text(event.title)
+                        .font(.title2).fontWeight(.bold)
+                }
                 Text(event.calendarName)
                     .font(.caption).foregroundStyle(.secondary)
             }
