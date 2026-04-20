@@ -8,6 +8,7 @@ import SwiftUI
 struct SharedCalendarListView: View {
 
     @StateObject private var viewModel: SharedCalendarViewModel
+    @ObservedObject private var activeStore = ActiveSharedCalendarStore.shared
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
@@ -157,8 +158,15 @@ struct SharedCalendarListView: View {
                     .foregroundStyle(Color.accentColor)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(calendar.name)
-                    .font(.subheadline).fontWeight(.medium)
+                HStack(spacing: 6) {
+                    Text(calendar.name)
+                        .font(.subheadline).fontWeight(.medium)
+                    if activeStore.isActive(calendar.id) {
+                        Image(systemName: "star.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.yellow)
+                    }
+                }
                 Text("\(memberCount)명 참여 중")
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -127,6 +127,7 @@ final class SharedCalendarViewModel: ObservableObject {
                 receiveValue: { [weak self] in
                     self?.calendars.removeAll { $0.id == calendar.id }
                     self?.membersMap.removeValue(forKey: calendar.id)
+                    ActiveSharedCalendarStore.shared.clearIfMatches(calendar.id)
                     completion()
                 }
             )

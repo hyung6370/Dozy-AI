@@ -9,6 +9,7 @@ struct SharedCalendarDetailView: View {
 
     let calendar: SharedCalendar
     @ObservedObject var viewModel: SharedCalendarViewModel
+    @ObservedObject private var activeStore = ActiveSharedCalendarStore.shared
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -37,6 +38,7 @@ struct SharedCalendarDetailView: View {
 
     var body: some View {
         List {
+            defaultCalendarSection
             membersSection
             if !currentCode.isEmpty {
                 inviteCodeSection
@@ -113,6 +115,28 @@ struct SharedCalendarDetailView: View {
                let code = fresh.inviteCode {
                 currentCode = code
             }
+        }
+    }
+
+    // MARK: - Default Calendar Toggle
+
+    private var defaultCalendarSection: some View {
+        Section {
+            Toggle(isOn: Binding(
+                get: { activeStore.isActive(calendar.id) },
+                set: { newVal in
+                    activeStore.setActive(newVal ? calendar.id : nil)
+                }
+            )) {
+                Label {
+                    Text("기본 캘린더로 설정")
+                } icon: {
+                    Image(systemName: activeStore.isActive(calendar.id) ? "star.fill" : "star")
+                        .foregroundStyle(.yellow)
+                }
+            }
+        } footer: {
+            Text("기본으로 지정한 공유 캘린더의 일정만 캘린더 탭에 표시됩니다.")
         }
     }
 
