@@ -182,6 +182,17 @@ final class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.loadTodayData() }
             .store(in: &cancellables)
+
+        // 기본 공유 캘린더 변경 감지 → 오늘 데이터 재로드
+        ActiveSharedCalendarStore.shared.$activeCalendarID
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.dozyEventsByID.removeAll()
+                self.loadTodayData()
+            }
+            .store(in: &cancellables)
     }
 
     convenience init(container: DependencyContainer) {

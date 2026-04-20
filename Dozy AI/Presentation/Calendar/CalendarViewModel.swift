@@ -137,6 +137,22 @@ final class CalendarViewModel: ObservableObject {
         self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
         self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
         self.displaySettingsRepo = displaySettingsRepo
+        subscribeToActiveSharedCalendarChanges()
+    }
+
+    /// 기본 공유 캘린더가 바뀌면 캐시를 비우고 재fetch한다.
+    private func subscribeToActiveSharedCalendarChanges() {
+        ActiveSharedCalendarStore.shared.$activeCalendarID
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.dozyEventsByID.removeAll()
+                self.eventsForSelectedDate.removeAll()
+                self.dozyEventsForSelectedDate.removeAll()
+                self.refreshData()
+            }
+            .store(in: &cancellables)
     }
 
     convenience init(container: DependencyContainer) {

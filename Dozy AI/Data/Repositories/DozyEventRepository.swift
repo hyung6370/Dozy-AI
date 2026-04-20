@@ -24,7 +24,21 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 let context = modelContainer.mainContext
                 let start = startDate
                 let end = endDate
-                let predicate = #Predicate<DozyEvent> { $0.startDate < end && $0.endDate >= start }
+                let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
+
+                let predicate: Predicate<DozyEvent>
+                if let activeID {
+                    predicate = #Predicate<DozyEvent> {
+                        $0.startDate < end && $0.endDate >= start &&
+                        ($0.sharedCalendarID == nil || $0.sharedCalendarID == activeID)
+                    }
+                } else {
+                    predicate = #Predicate<DozyEvent> {
+                        $0.startDate < end && $0.endDate >= start &&
+                        $0.sharedCalendarID == nil
+                    }
+                }
+
                 let descriptor = FetchDescriptor<DozyEvent>(
                     predicate: predicate,
                     sortBy: [SortDescriptor(\.startDate)]
@@ -129,7 +143,20 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
         Future { [modelContainer] promise in
             Task { @MainActor in
                 let context = modelContainer.mainContext
-                let predicate = #Predicate<DozyEvent> { $0.recurrenceRule != "none" }
+                let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
+
+                let predicate: Predicate<DozyEvent>
+                if let activeID {
+                    predicate = #Predicate<DozyEvent> {
+                        $0.recurrenceRule != "none" &&
+                        ($0.sharedCalendarID == nil || $0.sharedCalendarID == activeID)
+                    }
+                } else {
+                    predicate = #Predicate<DozyEvent> {
+                        $0.recurrenceRule != "none" && $0.sharedCalendarID == nil
+                    }
+                }
+
                 let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
                 do {
                     promise(.success(try context.fetch(descriptor)))
