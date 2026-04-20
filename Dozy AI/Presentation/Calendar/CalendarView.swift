@@ -10,8 +10,10 @@ import Lottie
 
 struct CalendarView: View {
 
+    let container: DependencyContainer
     @ObservedObject var viewModel: CalendarViewModel
     @State private var showLegend = false
+    @State private var showSearch = false
     @State private var longPressDate: Date? = nil
     @State private var showLongPressAlert = false
     @State private var pageIndex = 1
@@ -67,6 +69,16 @@ struct CalendarView: View {
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showSearch = true } label: {
+                        Image(colorScheme == .dark ? "Dark-Search" : "Light-Search")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                    }
+                    .accessibilityLabel("검색")
+                    .accessibilityIdentifier("btn_calendar_search")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { viewModel.startCreatingEvent() } label: {
                         Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
@@ -89,6 +101,9 @@ struct CalendarView: View {
             .sheet(isPresented: $showLegend) {
                 CalendarLegendView()
                     .presentationDetents([.medium])
+            }
+            .fullScreenCover(isPresented: $showSearch) {
+                SearchView(container: container)
             }
             .sheet(isPresented: $showMonthPicker) {
                 MonthYearPickerView(
@@ -119,7 +134,8 @@ struct CalendarView: View {
             .sheet(isPresented: $viewModel.showEventEdit) {
                 EventEditView(
                     eventToEdit: viewModel.eventToEdit,
-                    selectedDate: viewModel.selectedDate
+                    selectedDate: viewModel.selectedDate,
+                    sharedCalendars: viewModel.mySharedCalendars
                 ) { event in
                     viewModel.saveEvent(event)
                 }
@@ -182,9 +198,13 @@ struct CalendarView: View {
                     showLegend = false
                     showMonthPicker = false
                     showDatePicker = false
+                    showLongPressAlert = false
                     viewModel.showEventDetail = false
                     viewModel.showEventEdit = false
                     viewModel.showCalendarEventEdit = false
+                    viewModel.showDeleteAlert = false
+                    viewModel.showDeleteSuccess = false
+                    viewModel.deleteErrorMessage = nil
                 }
             }
             } // ScrollViewReader

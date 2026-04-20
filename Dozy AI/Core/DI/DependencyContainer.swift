@@ -33,6 +33,9 @@ final class DependencyContainer: ObservableObject {
     lazy var scheduleNotificationUseCase = ScheduleNotificationUseCase(service: notificationService, notificationRepository: notificationRepository)
     lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
     lazy var aiService: AIServiceProtocol = AIService()
+    lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
+    lazy var authService = AuthService()
+    lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(modelContext: modelContainer.mainContext)
     lazy var googleSignInService = GoogleSignInService()
     lazy var naverSignInService = NaverSignInService()
     lazy var calendarSourceManager = CalendarSourceManager()
@@ -69,6 +72,10 @@ final class DependencyContainer: ObservableObject {
     lazy var fetchDozyEventsForPeriodUseCase = FetchDozyEventsForPeriodUseCase(repository: dozyEventRepository)
     lazy var fetchEventCompletionsForPeriodUseCase = FetchEventCompletionsForPeriodUseCase(repository: eventCompletionRepository)
     lazy var fetchCalendarEventsForPeriodUseCase = FetchCalendarEventsForPeriodUseCase(calendarService: calendarService)
+    lazy var createSharedCalendarUseCase = CreateSharedCalendarUseCase(service: sharedCalendarService)
+    lazy var joinSharedCalendarUseCase = JoinSharedCalendarUseCase(service: sharedCalendarService)
+    lazy var leaveSharedCalendarUseCase = LeaveSharedCalendarUseCase(service: sharedCalendarService)
+    lazy var regenerateSharedCalendarInviteCodeUseCase = RegenerateSharedCalendarInviteCodeUseCase(service: sharedCalendarService)
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()

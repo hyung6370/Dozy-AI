@@ -24,6 +24,7 @@ struct CategoryEditSheet: View {
     @State private var selectedColor: Color
     @State private var showEmojiPicker = false
     private let originalName: String
+    private let originalColorHex: String
 
     private let presetColors: [Color] = [
         .blue, .purple, .orange, .green, .teal, .pink,
@@ -42,6 +43,7 @@ struct CategoryEditSheet: View {
         _emoji = State(initialValue: e)
         _selectedColor = State(initialValue: c)
         originalName = n
+        originalColorHex = category?.colorHex ?? "#8E8E93"
     }
 
     var isEditing: Bool { category != nil }
@@ -57,8 +59,6 @@ struct CategoryEditSheet: View {
                             Text(emoji)
                                 .font(.title2)
                                 .padding(6)
-                                .background(Color(.systemGray5))
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)
                         TextField("카테고리 이름", text: $name)
@@ -114,20 +114,28 @@ struct CategoryEditSheet: View {
         var affectedSettings: [EventDisplaySettings] = []
         if let cat = category {
             let oldName = originalName
+            let oldColorHex = originalColorHex
             cat.name = trimmedName
             cat.emoji = emoji
             cat.colorHex = colorHex
             cat.updatedAt = Date()
             target = cat
-            // 이름이 바뀐 경우 해당 카테고리를 사용하는 모든 레코드 업데이트
-            if oldName != trimmedName {
+
+            let nameChanged = oldName != trimmedName
+            let colorChanged = oldColorHex != colorHex
+
+            if nameChanged || colorChanged {
                 for event in allDozyEvents where event.category == oldName {
-                    event.category = trimmedName
+                    if nameChanged { event.category = trimmedName }
+                    if colorChanged { event.colorHex = colorHex }
+                    event.updatedAt = Date()
                     affectedEvents.append(event)
                 }
-                for settings in allDisplaySettings where settings.category == oldName {
-                    settings.category = trimmedName
-                    affectedSettings.append(settings)
+                if nameChanged {
+                    for settings in allDisplaySettings where settings.category == oldName {
+                        settings.category = trimmedName
+                        affectedSettings.append(settings)
+                    }
                 }
                 try? context.save()
             }
@@ -182,6 +190,7 @@ struct CategoryEditSheet: View {
                 memos: e.memos, isCompleted: e.isCompleted,
                 priority: e.priority, isPinned: e.isPinned,
                 category: e.category,
+                sharedCalendarID: e.sharedCalendarID,
                 createdAt: e.createdAt, updatedAt: e.updatedAt
             )
         }
@@ -227,6 +236,7 @@ private struct DozyEventRow: Codable {
     let priority: Int
     let isPinned: Bool
     let category: String
+    let sharedCalendarID: String?
     let createdAt: Date
     let updatedAt: Date
 
@@ -247,6 +257,7 @@ private struct DozyEventRow: Codable {
         case priority
         case isPinned = "is_pinned"
         case category
+        case sharedCalendarID = "shared_calendar_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -279,43 +290,86 @@ private struct EmojiPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var input: String = ""
 
-    private let emojis = [
-        "📌","💼","🏃","📚","🍽️","🏥","✈️","🛍️","👨‍👩‍👧","🎮","💻","🤝","📋",
-        "📄","🔍","🏋️","🎯","🎨","🎵","⚽","🧪","🌱","🔧","📱","🌐","🧠",
-        "💡","🚀","⭐","🔥","💬","📊","🗂️","🧹","🍀","🎁","🏠","🚗","🎓"
-    ]
-
-    var filtered: [String] {
-        input.isEmpty ? emojis : emojis.filter { $0.contains(input) }
-    }
-
     var body: some View {
         NavigationStack {
-            VStack {
-                TextField("검색", text: $input)
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.horizontal)
+            VStack(spacing: 32) {
+                Text(input.isEmpty ? selectedEmoji : input)
+                    .font(.system(size: 72))
+                    .frame(width: 120, height: 120)
+                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 16) {
-                    ForEach(filtered, id: \.self) { emoji in
-                        Text(emoji)
-                            .font(.title)
-                            .onTapGesture {
-                                selectedEmoji = emoji
-                                dismiss()
-                            }
-                    }
-                }
-                .padding()
+                // 이모지 키보드를 자동으로 띄우는 숨김 입력 뷰
+                EmojiKeyboardField(text: $input)
+                    .frame(width: 1, height: 1)
+                    .opacity(0.01)
             }
+            .padding(.top, 40)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("이모지 선택")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("취소") { dismiss() }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("닫기") { dismiss() }
+                    Button("완료") {
+                        if !input.isEmpty { selectedEmoji = input }
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
                 }
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+// MARK: - 이모지 키보드 강제 UIViewRepresentable
+
+private struct EmojiKeyboardField: UIViewRepresentable {
+
+    @Binding var text: String
+
+    func makeUIView(context: Context) -> InternalEmojiTextField {
+        let tf = InternalEmojiTextField()
+        tf.delegate = context.coordinator
+        DispatchQueue.main.async { tf.becomeFirstResponder() }
+        return tf
+    }
+
+    func updateUIView(_ uiView: InternalEmojiTextField, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: EmojiKeyboardField
+        init(_ parent: EmojiKeyboardField) { self.parent = parent }
+
+        func textField(_ textField: UITextField,
+                       shouldChangeCharactersIn range: NSRange,
+                       replacementString string: String) -> Bool {
+            let current = textField.text ?? ""
+            let newText = (current as NSString).replacingCharacters(in: range, with: string)
+            if let emoji = newText.filter({ $0.isEmoji }).last {
+                parent.text = String(emoji)
+                textField.text = String(emoji)
+            } else {
+                parent.text = ""
+                textField.text = ""
+            }
+            return false
+        }
+    }
+}
+
+private class InternalEmojiTextField: UITextField {
+    override var textInputMode: UITextInputMode? {
+        UITextInputMode.activeInputModes.first { $0.primaryLanguage == "emoji" }
+    }
+}
+
+private extension Character {
+    var isEmoji: Bool {
+        unicodeScalars.contains { $0.properties.isEmojiPresentation }
     }
 }

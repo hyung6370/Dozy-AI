@@ -11,8 +11,10 @@ struct MainTabView: View {
 
     private let container: DependencyContainer
     @StateObject private var calendarViewModel: CalendarViewModel
+    @StateObject private var sharedCalendarViewModel: SharedCalendarViewModel
     @State private var selectedTab = 0
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var authViewModel: AuthViewModel
 
     private var homeIconName: String {
         let isSelected = selectedTab == 0
@@ -45,6 +47,13 @@ struct MainTabView: View {
     init(container: DependencyContainer) {
         self.container = container
         _calendarViewModel = StateObject(wrappedValue: CalendarViewModel(container: container))
+        _sharedCalendarViewModel = StateObject(wrappedValue: SharedCalendarViewModel(
+            createUseCase: container.createSharedCalendarUseCase,
+            joinUseCase: container.joinSharedCalendarUseCase,
+            leaveUseCase: container.leaveSharedCalendarUseCase,
+            regenerateUseCase: container.regenerateSharedCalendarInviteCodeUseCase,
+            service: container.sharedCalendarService
+        ))
     }
 
     var body: some View {
@@ -53,7 +62,7 @@ struct MainTabView: View {
                 .tabItem { Label("홈", image: homeIconName) }
                 .tag(0)
 
-            CalendarView(viewModel: calendarViewModel)
+            CalendarView(container: container, viewModel: calendarViewModel)
                 .tabItem { Label("캘린더", image: calendarIconName) }
                 .tag(1)
 
@@ -71,5 +80,16 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { _, newTab in
             if newTab == 1 { calendarViewModel.refreshData() }
         }
+        .sheet(item: Binding(
+            get: { authViewModel.pendingInviteCode.map { InviteCodeWrapper(code: $0) } },
+            set: { if $0 == nil { authViewModel.pendingInviteCode = nil } }
+        )) { wrapper in
+            SharedCalendarJoinView(viewModel: sharedCalendarViewModel, initialCode: wrapper.code)
+        }
     }
+}
+
+private struct InviteCodeWrapper: Identifiable {
+    let code: String
+    var id: String { code }
 }

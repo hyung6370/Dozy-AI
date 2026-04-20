@@ -25,6 +25,14 @@ enum DozyError: LocalizedError {
     case calendarEventNotFound
     case googleCalendarWriteFailed(statusCode: Int)
     case networkUnavailable
+    // Shared Calendar
+    case sharedCalendarInvalidCode
+    case sharedCalendarExpiredCode
+    case sharedCalendarFull
+    case sharedCalendarAlreadyMember(calendarID: String)
+    case sharedCalendarNotOwner
+    case sharedCalendarInvalidName
+    case sharedCalendarCodeGenerationFailed
 
     var errorDescription: String? {
         switch self {
@@ -67,6 +75,20 @@ enum DozyError: LocalizedError {
             case 404: return "삭제할 Google 일정을 찾을 수 없습니다. (404)"
             default:  return "Google 캘린더 삭제에 실패했습니다. (HTTP \(statusCode))"
             }
+        case .sharedCalendarInvalidCode:
+            return "잘못된 초대 코드입니다."
+        case .sharedCalendarExpiredCode:
+            return "초대 코드가 만료되었습니다. 상대에게 새 코드를 요청해주세요."
+        case .sharedCalendarFull:
+            return "공유 캘린더는 최대 2명까지 참여할 수 있습니다."
+        case .sharedCalendarAlreadyMember:
+            return "이미 참여한 공유 캘린더입니다."
+        case .sharedCalendarNotOwner:
+            return "이 동작은 캘린더 소유자만 수행할 수 있습니다."
+        case .sharedCalendarInvalidName:
+            return "캘린더 이름을 입력해주세요."
+        case .sharedCalendarCodeGenerationFailed:
+            return "초대 코드 생성에 실패했습니다. 잠시 후 다시 시도해주세요."
         }
     }
 }

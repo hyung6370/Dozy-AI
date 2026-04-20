@@ -12,6 +12,15 @@ import SafariServices
 struct SettingsView: View {
     
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
+
+    private func settingIcon(_ lightName: String, _ darkName: String) -> some View {
+        Image(colorScheme == .dark ? darkName : lightName)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 22, height: 22)
+    }
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     private let container: DependencyContainer
@@ -69,6 +78,13 @@ struct SettingsView: View {
                 Button("취소", role: .cancel) { }
             } message: {
                 Text("모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.")
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    showSignOutAlert = false
+                    showDeleteAccountAlert = false
+                    authViewModel.errorMessage = nil
+                }
             }
         }
     }
@@ -201,7 +217,9 @@ struct SettingsView: View {
             NavigationLink {
                 CategoryManagementView()
             } label: {
-                Label("카테고리 관리", systemImage: "tag")
+                Label { Text("카테고리 관리") } icon: {
+                    settingIcon("Light-Management-Category", "Dark-Management-Category")
+                }
             }
         } header: {
             Text("카테고리")
@@ -218,13 +236,17 @@ struct SettingsView: View {
                 let safari = SFSafariViewController(url: url)
                 topVC.present(safari, animated: true)
             } label: {
-                Label("개인정보 처리방침", systemImage: "hand.raised")
+                Label { Text("개인정보 처리방침") } icon: {
+                    settingIcon("Light-Privacy", "Dark-Privacy")
+                }
             }
             .foregroundStyle(.primary)
             .disabled(privacyPolicyURL == nil)
 
             HStack {
-                Label("버전", systemImage: "info.circle")
+                Label { Text("버전") } icon: {
+                    settingIcon("Light-Version", "Dark-Version")
+                }
                 Spacer()
                 Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
                     .foregroundStyle(.secondary)
@@ -243,7 +265,9 @@ struct SettingsView: View {
                 Button(role: .destructive) {
                     showDeleteAccountAlert = true
                 } label: {
-                    Label("계정 탈퇴", systemImage: "person.crop.circle.badge.minus")
+                    Label { Text("계정 탈퇴") } icon: {
+                        settingIcon("Light-Delete-Account", "Dark-Delete-Account")
+                    }
                 }
             } footer: {
                 Text("탈퇴 시 모든 데이터가 영구 삭제되며 복구할 수 없습니다.")
@@ -262,8 +286,19 @@ struct SettingsView: View {
                     naverSignInService: container.naverSignInService
                 )
             } label: {
-                Label("캘린더 연동", systemImage: "calendar.badge.plus")
+                Label { Text("캘린더 연동") } icon: {
+                    settingIcon("Light-Integrate-Calendar", "Dark-Integrate-Calendar")
+                }
             }
+//            if authViewModel.isLoggedIn {
+//                NavigationLink {
+//                    SharedCalendarListView(container: container)
+//                } label: {
+//                    Label { Text("공유 캘린더") } icon: {
+//                        settingIcon("Light-Share-Calendar", "Dark-Share-Calendar")
+//                    }
+//                }
+//            }
         } header: {
             Text("캘린더")
         }

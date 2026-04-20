@@ -22,6 +22,7 @@ enum InsightPeriod: Int, CaseIterable {
     }
 }
 
+@MainActor
 final class InsightDashboardViewModel: ObservableObject {
 
     @Published var insights: [InsightMessage] = []

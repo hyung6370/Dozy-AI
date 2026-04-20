@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import Lottie
 
 struct HomeView: View {
 
@@ -20,13 +21,14 @@ struct HomeView: View {
     @State private var showEditMemoAlert = false
     @State private var deletingMemoIndex: Int? = nil
     @State private var showDeleteMemoAlert = false
-    @State private var hasNotification = false
     @State private var showNotificationSheet = false
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var pendingDozyEdit: DozyEvent? = nil
     @State private var pendingCalendarEdit: CalendarEvent? = nil
     @State private var dozyEventToEdit: DozyEvent? = nil
     @State private var calendarEventToEdit: CalendarEvent? = nil
+    @State private var showCreateFromEmptyAlert = false
+    @State private var showNewEventSheet = false
     
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
@@ -71,9 +73,18 @@ struct HomeView: View {
                 }
                 .padding()
             }
+            .overlay {
+                if viewModel.showSuccessAnimation {
+                    LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                        viewModel.showSuccessAnimation = false
+                    }
+                    .scaleEffect(0.22)
+                    .allowsHitTesting(false)
+                }
+            }
             .safeAreaInset(edge: .top, spacing: 0) {
                 HomeTopBarView(
-                    hasNotification: hasNotification,
+                    hasNotification: viewModel.hasNotification,
                     onNotificationTap: { showNotificationSheet = true },
                     onProfileTap: { selectedTab = 3 }
                 )
@@ -94,14 +105,17 @@ struct HomeView: View {
                 if newPhase == .inactive || newPhase == .background {
                     showSummarySheet = false
                     selectedEvent = nil
+                    showEditMemoAlert = false
+                    showDeleteMemoAlert = false
+                    dozyEventToEdit = nil
+                    calendarEventToEdit = nil
+                    showCreateFromEmptyAlert = false
+                    showNewEventSheet = false
                 }
             }
             .onAppear {
                 viewModel.loadTodayData()
-                container.notificationRepository.hasUnread()
-                    .receive(on: DispatchQueue.main)
-                    .sink { hasNotification = $0 }
-                    .store(in: &viewModel.cancellables)
+                viewModel.refreshNotificationBadge()
             }
             .onChange(of: selectedTab) { _, newTab in
                 if newTab == 0 { viewModel.loadTodayData() }
@@ -140,10 +154,7 @@ struct HomeView: View {
         }
         .onChange(of: showNotificationSheet) { _, isShowing in
             guard !isShowing else { return }
-            container.notificationRepository.hasUnread()
-                .receive(on: DispatchQueue.main)
-                .sink { hasNotification = $0 }
-                .store(in: &viewModel.cancellables)
+            viewModel.refreshNotificationBadge()
         }
         .sheet(isPresented: $showSummarySheet) {
             DailySummaryView(
@@ -195,6 +206,15 @@ struct HomeView: View {
         .sheet(item: $calendarEventToEdit) { ev in
             CalendarEventEditView(event: ev) { edit in
                 viewModel.saveCalendarEvent(ev, edit: edit)
+            }
+        }
+        .alert("새로운 일정을 만들어볼까요?", isPresented: $showCreateFromEmptyAlert) {
+            Button("만들기") { showNewEventSheet = true }
+            Button("취소", role: .cancel) { }
+        }
+        .sheet(isPresented: $showNewEventSheet) {
+            EventEditView(eventToEdit: nil, selectedDate: Date()) { saved in
+                viewModel.saveDozyEvent(saved)
             }
         }
         }
@@ -294,13 +314,34 @@ struct HomeView: View {
                         .background(timeUntilColor(event).opacity(0.1), in: Capsule())
                 }
             } else {
-                HStack(spacing: 10) {
-                    Image(systemName: viewModel.todayEvents.isEmpty ? "calendar.badge.minus" : "checkmark.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(viewModel.todayEvents.isEmpty ? Color.secondary : Color.green)
-                    Text(viewModel.todayEvents.isEmpty ? "오늘 일정이 없습니다." : "남은 일정이 없습니다.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                if viewModel.todayEvents.isEmpty {
+                    Button {
+                        showCreateFromEmptyAlert = true
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "calendar.badge.minus")
+                                .font(.title3)
+                                .foregroundStyle(Color.secondary)
+                            Text("오늘 일정이 없습니다.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button {
+                        showCreateFromEmptyAlert = true
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(Color.green)
+                            Text("남은 일정이 없습니다.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -484,10 +525,10 @@ struct HomeView: View {
                 }
             }
 
-            HStack(spacing: 10) {
-                TextField("메모를 남겨보세요", text: $memoText)
+            HStack(alignment: .bottom, spacing: 10) {
+                TextField("메모를 남겨보세요", text: $memoText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
-                    .onSubmit { submitMemo() }
+                    .lineLimit(1...)
 
                 Button { submitMemo() } label: {
                     Image(systemName: "plus.circle.fill")

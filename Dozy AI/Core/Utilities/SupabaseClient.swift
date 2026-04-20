@@ -9,7 +9,15 @@ import Foundation
 import Supabase
 import OSLog
 
-let supabase: SupabaseClient = {
+var supabase: SupabaseClient = buildSupabaseClient()
+
+/// 환경 선택 후 supabase를 올바른 환경으로 재초기화합니다.
+/// DEBUG 전용 — AppCoordinator.setup() 진입 시 AppEnvironment 설정 직후 호출.
+func rebuildSupabaseClient() {
+    supabase = buildSupabaseClient()
+}
+
+private func buildSupabaseClient() -> SupabaseClient {
     let info = Bundle.main.infoDictionary ?? [:]
 
     #if DEBUG
@@ -39,4 +47,4 @@ let supabase: SupabaseClient = {
             auth: .init(emitLocalSessionAsInitialSession: true)
         )
     )
-}()
+}

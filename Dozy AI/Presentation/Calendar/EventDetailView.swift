@@ -22,6 +22,7 @@ struct EventDetailView: View {
     let onUpdateDisplaySettings: ((CalendarEvent, Int, Bool, String?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
     @Query private var allDisplaySettings: [EventDisplaySettings]
     @State private var showCalendarDeleteConfirm = false
@@ -36,7 +37,16 @@ struct EventDetailView: View {
     @State private var displayPriority: Int = 0
     @State private var displayIsPinned: Bool = false
     @State private var displayCategory: String = UserCategory.defaultName
+    @State private var originalPriority: Int = 0
+    @State private var originalIsPinned: Bool = false
+    @State private var originalCategory: String = UserCategory.defaultName
     @State private var showRecurringEditConfirm = false
+
+    private var hasChanges: Bool {
+        displayPriority != originalPriority
+            || displayIsPinned != originalIsPinned
+            || displayCategory != originalCategory
+    }
 
     var body: some View {
         NavigationStack {
@@ -65,9 +75,32 @@ struct EventDetailView: View {
                     let settings = allDisplaySettings.first(where: { $0.eventID == event.id })
                     displayCategory = settings?.category ?? event.category
                 }
+                originalPriority = displayPriority
+                originalIsPinned = displayIsPinned
+                originalCategory = displayCategory
             }
             .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    showEditMemoAlert = false
+                    showDeleteMemoAlert = false
+                    showRecurringEditConfirm = false
+                    showDozyDeleteConfirm = false
+                    showCalendarDeleteConfirm = false
+                }
+            }
             .toolbar {
+                if hasChanges {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("저장") {
+                            onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, displayCategory)
+                            originalPriority = displayPriority
+                            originalIsPinned = displayIsPinned
+                            originalCategory = displayCategory
+                        }
+                        .fontWeight(.semibold)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("닫기") { dismiss() }
                 }
@@ -78,14 +111,26 @@ struct EventDetailView: View {
     // MARK: - Header
     
     private var headerSection: some View {
-        HStack(spacing: 14) {
+        let currentCategory = categories.first(where: { $0.name == displayCategory })
+        let barColor: Color = {
+            if event.source == .dozy, let cat = currentCategory {
+                return Color(hex: cat.colorHex) ?? .blue
+            }
+            return Color(hex: event.calendarColorHex) ?? .blue
+        }()
+        return HStack(spacing: 14) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                .fill(barColor)
                 .frame(width: 6, height: 56)
-            
+
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.title)
-                    .font(.title2).fontWeight(.bold)
+                HStack(spacing: 6) {
+                    if let emoji = currentCategory?.emoji {
+                        Text(emoji).font(.title3)
+                    }
+                    Text(event.title)
+                        .font(.title2).fontWeight(.bold)
+                }
                 Text(event.calendarName)
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -222,9 +267,6 @@ struct EventDetailView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
-                .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
-                }
 
                 Divider().padding(.leading)
 
@@ -239,9 +281,6 @@ struct EventDetailView: View {
                         Text("낮음 🔵").tag(3)
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -258,15 +297,17 @@ struct EventDetailView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
             }
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal)
+
+            Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
 
             Button {
                 if dozyEvent.recurrenceRule != "none" {
@@ -340,9 +381,6 @@ struct EventDetailView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
-                .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
-                }
 
                 Divider().padding(.leading)
 
@@ -357,9 +395,6 @@ struct EventDetailView: View {
                         Text("낮음 🔵").tag(3)
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -376,15 +411,17 @@ struct EventDetailView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
             }
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal)
+
+            Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
 
             Button {
                 dismiss()

@@ -18,9 +18,12 @@ final class AuthViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var showCongratulationAnimation = false
+    @Published var pendingInviteCode: String? = nil
 
-    private let authService = AuthService()
+    private let authService: AuthService
     private let syncService: SyncService
+    private let realtimeService: SharedCalendarRealtimeService
+    private let sharedCalendarService: SharedCalendarServiceProtocol
     private var cancellables = Set<AnyCancellable>()
 
     /// Keychain에 displayName을 저장할 때 사용하는 키.
@@ -39,8 +42,16 @@ final class AuthViewModel: ObservableObject {
         return Date().timeIntervalSince(lastSync) < Self.syncCooldown
     }
 
-    init(modelContext: ModelContext) {
+    init(
+        modelContext: ModelContext,
+        authService: AuthService,
+        sharedCalendarService: SharedCalendarServiceProtocol,
+        realtimeService: SharedCalendarRealtimeService
+    ) {
+        self.authService = authService
+        self.sharedCalendarService = sharedCalendarService
         self.syncService = SyncService(modelContext: modelContext)
+        self.realtimeService = realtimeService
     }
 
     var isLoggedIn: Bool { currentUser != nil }
@@ -92,6 +103,7 @@ final class AuthViewModel: ObservableObject {
                     Logger.auth.info("🔑 액세스 토큰 자동 갱신 완료")
 
                 case .signedOut:
+                    self.realtimeService.stopAll()
                     self.currentUser = nil
                     KeychainService.delete(forKey: Self.displayNameKey)
 
@@ -218,9 +230,32 @@ final class AuthViewModel: ObservableObject {
                         Logger.auth.error("❌ syncAll 실패: \(error.localizedDescription)")
                     }
                 },
-                receiveValue: {
+                receiveValue: { [weak self] in
                     Logger.auth.info("✅ syncAll 완료 → dozyDataSyncCompleted 전송")
                     NotificationCenter.default.post(name: .dozyDataSyncCompleted, object: nil)
+                    self?.startSharedCalendarRealtime()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    private func startSharedCalendarRealtime() {
+        sharedCalendarService.fetchMyCalendars()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Logger.auth.warning("⚠️ 공유 캘린더 목록 조회 실패: \(error.localizedDescription)")
+                    }
+                },
+                receiveValue: { [weak self] calendars in
+                    guard let self else { return }
+                    for cal in calendars {
+                        self.realtimeService.startWatching(calendarID: cal.id)
+                    }
+                    if !calendars.isEmpty {
+                        Logger.auth.info("📡 공유 캘린더 Realtime 구독 시작 (\(calendars.count)개)")
+                    }
                 }
             )
             .store(in: &cancellables)

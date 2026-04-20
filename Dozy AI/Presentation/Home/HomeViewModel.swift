@@ -10,7 +10,9 @@
 
 import Foundation
 import Combine
+import SwiftData
 
+@MainActor
 final class HomeViewModel: ObservableObject {
 
     // MARK: - Published State
@@ -28,6 +30,8 @@ final class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
+    @Published var showSuccessAnimation = false
+    @Published var hasNotification = false
     
     @Published var selectedSource: CalendarSource? = nil
     
@@ -106,9 +110,11 @@ final class HomeViewModel: ObservableObject {
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
     private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
+    private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let displaySettingsRepo: EventDisplaySettingsRepository
+    private let notificationRepository: NotificationRepository
     var cancellables = Set<AnyCancellable>()
     private var todayDataCancellable: AnyCancellable?
     private var completionFetchCancellable: AnyCancellable?
@@ -127,9 +133,11 @@ final class HomeViewModel: ObservableObject {
         fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
         deleteDozyEventUseCase: DeleteDozyEventUseCase,
         deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
+        createDozyEventUseCase: CreateDozyEventUseCase,
         updateDozyEventUseCase: UpdateDozyEventUseCase,
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
-        displaySettingsRepo: EventDisplaySettingsRepository
+        displaySettingsRepo: EventDisplaySettingsRepository,
+        notificationRepository: NotificationRepository
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
@@ -142,9 +150,11 @@ final class HomeViewModel: ObservableObject {
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
         self.deleteDozyEventUseCase = deleteDozyEventUseCase
         self.deleteCalendarEventUseCase = deleteCalendarEventUseCase
+        self.createDozyEventUseCase = createDozyEventUseCase
         self.updateDozyEventUseCase = updateDozyEventUseCase
         self.updateCalendarEventUseCase = updateCalendarEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
+        self.notificationRepository = notificationRepository
         
         googleSignInService.$isSignedIn
             .removeDuplicates()
@@ -187,10 +197,19 @@ final class HomeViewModel: ObservableObject {
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
             deleteDozyEventUseCase: container.deleteDozyEventUseCase,
             deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
+            createDozyEventUseCase: container.createDozyEventUseCase,
             updateDozyEventUseCase: container.updateDozyEventUseCase,
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
-            displaySettingsRepo: container.eventDisplaySettingsRepository
+            displaySettingsRepo: container.eventDisplaySettingsRepository,
+            notificationRepository: container.notificationRepository
         )
+    }
+
+    func refreshNotificationBadge() {
+        notificationRepository.hasUnread()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.hasNotification = $0 }
+            .store(in: &cancellables)
     }
 
     // MARK: - 데이터 로드
@@ -449,10 +468,15 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Event Detail Actions
 
     func saveDozyEvent(_ event: DozyEvent) {
-        updateDozyEventUseCase.execute(event)
+        let isNew = dozyEventsByID[event.id] == nil
+        let publisher = isNew
+            ? createDozyEventUseCase.execute(event)
+            : updateDozyEventUseCase.execute(event)
+        publisher
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.loadTodayData()
+                if isNew { self?.showSuccessAnimation = true }
             })
             .store(in: &cancellables)
     }
@@ -520,7 +544,13 @@ final class HomeViewModel: ObservableObject {
             guard let dozy = dozyEventsByID[event.id] else { return }
             dozy.priority = priority
             dozy.isPinned = isPinned
-            if let category { dozy.category = category }
+            if let category {
+                dozy.category = category
+                if let ctx = dozy.modelContext,
+                   let cat = try? ctx.fetch(FetchDescriptor<UserCategory>()).first(where: { $0.name == category }) {
+                    dozy.colorHex = cat.colorHex
+                }
+            }
             updateDozyEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in

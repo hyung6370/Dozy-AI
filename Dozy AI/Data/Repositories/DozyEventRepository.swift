@@ -112,7 +112,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             priority: event.priority,
             isPinned: event.isPinned,
             category: event.category,
-            excludedDates: event.excludedDates,
+            sharedCalendarID: event.sharedCalendarID,
             createdAt: event.createdAt,
             updatedAt: event.updatedAt
         )
@@ -162,7 +162,7 @@ private struct DozyEventRow: Codable {
     let priority: Int
     let isPinned: Bool
     let category: String
-    let excludedDates: [Date]
+    let sharedCalendarID: String?
     let createdAt: Date
     let updatedAt: Date
 
@@ -183,7 +183,7 @@ private struct DozyEventRow: Codable {
         case priority
         case isPinned = "is_pinned"
         case category
-        case excludedDates = "excluded_dates"
+        case sharedCalendarID = "shared_calendar_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }

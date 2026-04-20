@@ -32,7 +32,13 @@ struct EventRow: View {
                     Text(event.timeRangeString)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    
+
+                    if event.isShared {
+                        Label("공유", systemImage: "person.2.fill")
+                            .font(.caption2)
+                            .foregroundStyle(Color(hex: event.calendarColorHex) ?? .blue)
+                    }
+
                     if let location = event.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
                             .font(.caption)

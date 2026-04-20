@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftUI
 
+@MainActor
 final class EventEditViewModel: ObservableObject {
     
     @Published var title: String
@@ -24,16 +25,19 @@ final class EventEditViewModel: ObservableObject {
     @Published var priority: Int
     @Published var isPinned: Bool
     @Published var category: String
-    
+    @Published var sharedCalendarID: String?
+    let sharedCalendars: [SharedCalendar]
+
     let isEditing: Bool
     private let eventToEdit: DozyEvent?
     private let onSave: (DozyEvent) -> Void
-    
-    init(eventToEdit: DozyEvent?, selectedDate: Date, onSave: @escaping (DozyEvent) -> Void) {
+
+    init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [], onSave: @escaping (DozyEvent) -> Void) {
         self.eventToEdit = eventToEdit
         self.onSave = onSave
         self.isEditing = eventToEdit != nil
-        
+        self.sharedCalendars = sharedCalendars
+
         if let e = eventToEdit {
             title = e.title
             isAllDay = e.isAllDay
@@ -48,6 +52,7 @@ final class EventEditViewModel: ObservableObject {
             priority = e.priority
             isPinned = e.isPinned
             category = e.category
+            sharedCalendarID = e.sharedCalendarID
         } else {
             let calendar = Calendar.current
             let defaultEnd = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
@@ -87,6 +92,7 @@ final class EventEditViewModel: ObservableObject {
             event.priority = priority
             event.isPinned = isPinned
             event.category = category
+            event.sharedCalendarID = sharedCalendarID
             onSave(event)
         } else {
             onSave(DozyEvent(
@@ -102,7 +108,8 @@ final class EventEditViewModel: ObservableObject {
                 notificationMinutesBefore: notificationMinutesBefore,
                 priority: priority,
                 isPinned: isPinned,
-                category: category
+                category: category,
+                sharedCalendarID: sharedCalendarID
             ))
         }
     }

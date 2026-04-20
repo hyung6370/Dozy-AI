@@ -25,6 +25,9 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     let priority: Int
     let isPinned: Bool
     let category: String
+    let sharedCalendarID: String?
+
+    var isShared: Bool { sharedCalendarID != nil }
 
     // Swift가 자동으로 memberwise init을 생성합니다.
     // init(id:title:startDate:endDate:location:notes:isAllDay:calendarName:calendarColorHex:)
@@ -67,6 +70,7 @@ extension CalendarEvent {
         priority = try c.decodeIfPresent(Int.self, forKey: .priority) ?? 0
         isPinned = try c.decodeIfPresent(Bool.self, forKey: .isPinned) ?? false
         category = try c.decodeIfPresent(String.self, forKey: .category) ?? "일반"
+        sharedCalendarID = try c.decodeIfPresent(String.self, forKey: .sharedCalendarID)
     }
 }
 
@@ -81,7 +85,8 @@ extension CalendarEvent {
             source: source,
             priority: settings.priority,
             isPinned: settings.isPinned,
-            category: settings.category == UserCategory.defaultName ? category : settings.category
+            category: settings.category == UserCategory.defaultName ? category : settings.category,
+            sharedCalendarID: sharedCalendarID
         )
     }
 }
