@@ -11,6 +11,7 @@ struct SharedCalendarDetailView: View {
     @ObservedObject var viewModel: SharedCalendarViewModel
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var showLeaveAlert = false
     @State private var copied = false
@@ -56,6 +57,11 @@ struct SharedCalendarDetailView: View {
                  : "공유 일정은 유지되지만 더 이상 함께 관리할 수 없어요.")
         }
         .onAppear { viewModel.loadMembers(calendarID: calendar.id) }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .inactive || newPhase == .background {
+                showLeaveAlert = false
+            }
+        }
         .onReceive(viewModel.$calendars) { updated in
             if let fresh = updated.first(where: { $0.id == calendar.id }),
                let code = fresh.inviteCode {

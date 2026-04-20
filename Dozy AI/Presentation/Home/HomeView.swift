@@ -107,6 +107,10 @@ struct HomeView: View {
                     selectedEvent = nil
                     showEditMemoAlert = false
                     showDeleteMemoAlert = false
+                    dozyEventToEdit = nil
+                    calendarEventToEdit = nil
+                    showCreateFromEmptyAlert = false
+                    showNewEventSheet = false
                 }
             }
             .onAppear {

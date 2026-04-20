@@ -11,6 +11,7 @@ struct SearchView: View {
 
     let container: DependencyContainer
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @FocusState private var isSearchFocused: Bool
 
     @State private var query: String = ""
@@ -61,6 +62,14 @@ struct SearchView: View {
             .onAppear {
                 isSearchFocused = true
                 loadExternalEvents()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    selectedEvent = nil
+                    dozyEventToEdit = nil
+                    calendarEventToEdit = nil
+                    pendingMemoDelete = nil
+                }
             }
             .sheet(item: $selectedEvent) { ev in
                 EventDetailView(

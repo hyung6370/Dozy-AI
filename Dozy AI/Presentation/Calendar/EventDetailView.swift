@@ -22,6 +22,7 @@ struct EventDetailView: View {
     let onUpdateDisplaySettings: ((CalendarEvent, Int, Bool, String?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
     @Query private var allDisplaySettings: [EventDisplaySettings]
     @State private var showCalendarDeleteConfirm = false
@@ -79,6 +80,15 @@ struct EventDetailView: View {
                 originalCategory = displayCategory
             }
             .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    showEditMemoAlert = false
+                    showDeleteMemoAlert = false
+                    showRecurringEditConfirm = false
+                    showDozyDeleteConfirm = false
+                    showCalendarDeleteConfirm = false
+                }
+            }
             .toolbar {
                 if hasChanges {
                     ToolbarItem(placement: .topBarTrailing) {

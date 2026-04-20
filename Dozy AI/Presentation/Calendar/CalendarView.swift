@@ -198,9 +198,13 @@ struct CalendarView: View {
                     showLegend = false
                     showMonthPicker = false
                     showDatePicker = false
+                    showLongPressAlert = false
                     viewModel.showEventDetail = false
                     viewModel.showEventEdit = false
                     viewModel.showCalendarEventEdit = false
+                    viewModel.showDeleteAlert = false
+                    viewModel.showDeleteSuccess = false
+                    viewModel.deleteErrorMessage = nil
                 }
             }
             } // ScrollViewReader

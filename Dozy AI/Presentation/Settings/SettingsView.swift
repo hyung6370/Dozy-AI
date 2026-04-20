@@ -13,6 +13,7 @@ struct SettingsView: View {
     
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
 
     private func settingIcon(_ lightName: String, _ darkName: String) -> some View {
         Image(colorScheme == .dark ? darkName : lightName)
@@ -77,6 +78,13 @@ struct SettingsView: View {
                 Button("취소", role: .cancel) { }
             } message: {
                 Text("모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.")
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    showSignOutAlert = false
+                    showDeleteAccountAlert = false
+                    authViewModel.errorMessage = nil
+                }
             }
         }
     }

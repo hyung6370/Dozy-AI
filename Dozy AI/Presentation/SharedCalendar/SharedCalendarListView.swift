@@ -9,6 +9,7 @@ struct SharedCalendarListView: View {
 
     @StateObject private var viewModel: SharedCalendarViewModel
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showCreateSheet = false
     @State private var showJoinSheet = false
 
@@ -68,6 +69,13 @@ struct SharedCalendarListView: View {
             Text(viewModel.errorMessage ?? "")
         }
         .onAppear { viewModel.loadCalendars() }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .inactive || newPhase == .background {
+                showCreateSheet = false
+                showJoinSheet = false
+                viewModel.errorMessage = nil
+            }
+        }
     }
 
     // MARK: - Empty State
