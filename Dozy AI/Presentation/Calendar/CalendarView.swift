@@ -24,6 +24,7 @@ struct CalendarView: View {
     @State private var showDatePicker = false
     @State private var pickerDate = Date()
     @State private var triggerScrollToList = false
+    @State private var isShowingEventList = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
 
@@ -35,6 +36,7 @@ struct CalendarView: View {
             ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
+                    Color.clear.frame(height: 0).id("calendarTop")
                     viewModePicker
                     monthHeader
                     if viewModel.viewMode != .week {
@@ -55,6 +57,11 @@ struct CalendarView: View {
                     }
                 }
             }
+            .overlay(alignment: .bottom) {
+                if viewModel.viewMode != .day {
+                    floatingScrollButton(proxy: proxy)
+                }
+            }
             .refreshable {
                 viewModel.refreshData()
             }
@@ -63,8 +70,12 @@ struct CalendarView: View {
                     withAnimation(.easeInOut(duration: 0.4)) {
                         proxy.scrollTo("eventList", anchor: .top)
                     }
+                    isShowingEventList = true
                     triggerScrollToList = false
                 }
+            }
+            .onChange(of: viewModel.viewMode) { _, _ in
+                isShowingEventList = false
             }
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
@@ -541,6 +552,35 @@ struct CalendarView: View {
             Button("중간 🟡") { viewModel.updateDisplaySettings(for: event, priority: 2, isPinned: event.isPinned) }
             Button("낮음 🔵") { viewModel.updateDisplaySettings(for: event, priority: 3, isPinned: event.isPinned) }
         }
+    }
+
+    @ViewBuilder
+    private func floatingScrollButton(proxy: ScrollViewProxy) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.4)) {
+                if isShowingEventList {
+                    proxy.scrollTo("calendarTop", anchor: .top)
+                    isShowingEventList = false
+                } else {
+                    proxy.scrollTo("eventList", anchor: .top)
+                    isShowingEventList = true
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isShowingEventList ? "calendar" : "list.bullet")
+                    .font(.subheadline)
+                Text(isShowingEventList ? "캘린더 보기" : "일정 목록 보기")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.regularMaterial, in: Capsule())
+            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+        }
+        .buttonStyle(.plain)
+        .padding(.bottom, 20)
     }
 
     @ViewBuilder
