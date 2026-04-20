@@ -10,6 +10,7 @@ struct SharedCalendarListView: View {
     @StateObject private var viewModel: SharedCalendarViewModel
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showCreateSheet = false
     @State private var showJoinSheet = false
 
@@ -50,7 +51,10 @@ struct SharedCalendarListView: View {
                         Label("초대 코드로 참여", systemImage: "person.badge.plus")
                     }
                 } label: {
-                    Image(systemName: "plus")
+                    Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
                 }
             }
         }

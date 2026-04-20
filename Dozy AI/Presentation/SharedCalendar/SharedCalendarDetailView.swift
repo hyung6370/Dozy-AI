@@ -12,6 +12,7 @@ struct SharedCalendarDetailView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var showLeaveAlert = false
     @State private var copied = false
@@ -176,10 +177,18 @@ struct SharedCalendarDetailView: View {
             Button(role: .destructive) {
                 showLeaveAlert = true
             } label: {
-                Label(
-                    isOwner ? "공유 캘린더 삭제" : "공유 캘린더 나가기",
-                    systemImage: isOwner ? "trash" : "rectangle.portrait.and.arrow.right"
-                )
+                Label {
+                    Text(isOwner ? "공유 캘린더 삭제" : "공유 캘린더 나가기")
+                } icon: {
+                    if isOwner {
+                        Image(systemName: "trash")
+                    } else {
+                        Image(colorScheme == .dark ? "Dark-Exit" : "Light-Exit")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 22, height: 22)
+                    }
+                }
             }
         }
     }
