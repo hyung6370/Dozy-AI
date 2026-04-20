@@ -15,6 +15,9 @@ struct SharedCalendarDetailView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var showLeaveAlert = false
+    @State private var showNicknameAlert = false
+    @State private var showEditSheet = false
+    @State private var nicknameText = ""
     @State private var copied = false
     @State private var currentCode: String
 
@@ -40,8 +43,33 @@ struct SharedCalendarDetailView: View {
             }
             leaveSection
         }
+        .refreshable {
+            viewModel.loadMembers(calendarID: calendar.id)
+        }
         .navigationTitle(calendar.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showEditSheet = true
+                } label: {
+                    Image(colorScheme == .dark ? "Dark-Peoples" : "Light-Peoples")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                }
+            }
+        }
+        .sheet(isPresented: $showEditSheet, onDismiss: {
+            viewModel.loadMembers(calendarID: calendar.id)
+        }) {
+            SharedCalendarEditView(
+                calendar: calendar,
+                isOwner: isOwner,
+                currentUserID: currentUserID,
+                viewModel: viewModel
+            )
+        }
         .alert(
             isOwner ? "캘린더를 삭제할까요?" : "공유 캘린더에서 나갈까요?",
             isPresented: $showLeaveAlert
@@ -57,10 +85,27 @@ struct SharedCalendarDetailView: View {
                  ? "캘린더와 모든 공유 일정이 파트너에게도 삭제됩니다."
                  : "공유 일정은 유지되지만 더 이상 함께 관리할 수 없어요.")
         }
+        .alert("닉네임 설정", isPresented: $showNicknameAlert) {
+            TextField("닉네임 (최대 20자)", text: $nicknameText)
+            Button("저장") {
+                let trimmed = nicknameText.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.isEmpty else { return }
+                viewModel.updateNickname(
+                    calendarID: calendar.id,
+                    nickname: String(trimmed.prefix(20)),
+                    currentUserID: currentUserID
+                ) { }
+            }
+            Button("취소", role: .cancel) { }
+        } message: {
+            Text("공유 캘린더에서 표시될 내 이름을 설정하세요.")
+        }
         .onAppear { viewModel.loadMembers(calendarID: calendar.id) }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .inactive || newPhase == .background {
                 showLeaveAlert = false
+                showNicknameAlert = false
+                showEditSheet = false
             }
         }
         .onReceive(viewModel.$calendars) { updated in
@@ -76,20 +121,7 @@ struct SharedCalendarDetailView: View {
     private var membersSection: some View {
         Section("멤버") {
             ForEach(members, id: \.userID) { member in
-                HStack {
-                    Image(systemName: member.role == .owner ? "crown.fill" : "person.fill")
-                        .foregroundStyle(member.role == .owner ? .yellow : .secondary)
-                        .frame(width: 24)
-                    Text(member.userID == currentUserID ? "나" : "파트너")
-                        .font(.subheadline)
-                    Spacer()
-                    Text(member.role == .owner ? "소유자" : "멤버")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(Color(.systemGray6), in: Capsule())
-                }
-                .padding(.vertical, 2)
+                memberRow(member)
             }
             if members.isEmpty {
                 Text("멤버 정보를 불러오는 중...")
@@ -97,6 +129,36 @@ struct SharedCalendarDetailView: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private func memberRow(_ member: SharedCalendarMember) -> some View {
+        let isMe = member.userID == currentUserID
+        let displayName = member.nickname ?? (isMe ? "나" : "파트너")
+        let roleLabel = member.role == .owner ? "소유자" : "멤버"
+        let icon = member.role == .owner ? "crown.fill" : "person.fill"
+        let iconColor: Color = member.role == .owner ? .yellow : .secondary
+
+        return HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundStyle(iconColor)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(displayName).font(.subheadline)
+                if member.nickname != nil {
+                    Text(isMe ? "나" : "파트너")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            Spacer()
+            Text(roleLabel)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Color(UIColor.systemGray6), in: Capsule())
+        }
+        .padding(.vertical, 2)
     }
 
     // MARK: - Invite Code Section

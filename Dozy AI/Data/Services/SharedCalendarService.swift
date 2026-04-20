@@ -177,6 +177,54 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
         .eraseToAnyPublisher()
     }
 
+    // MARK: - Update Calendar Name
+
+    func updateCalendarName(calendarID: String, name: String) -> AnyPublisher<Void, DozyError> {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            return Fail(error: DozyError.sharedCalendarInvalidName).eraseToAnyPublisher()
+        }
+        return Future { promise in
+            Task {
+                do {
+                    try await supabase
+                        .from("shared_calendars")
+                        .update(["name": trimmed])
+                        .eq("id", value: calendarID)
+                        .execute()
+                    promise(.success(()))
+                } catch {
+                    Logger.sharedCalendar.error("updateCalendarName 실패: \(error)")
+                    promise(.failure(.unknown(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    // MARK: - Update Nickname
+
+    func updateNickname(calendarID: String, nickname: String) -> AnyPublisher<Void, DozyError> {
+        return Future { promise in
+            Task {
+                do {
+                    let userID = try await supabase.auth.user().id.uuidString
+                    try await supabase
+                        .from("shared_calendar_members")
+                        .update(["nickname": nickname])
+                        .eq("shared_calendar_id", value: calendarID)
+                        .eq("user_id", value: userID)
+                        .execute()
+                    promise(.success(()))
+                } catch {
+                    Logger.sharedCalendar.error("updateNickname 실패: \(error)")
+                    promise(.failure(.unknown(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     // MARK: - Delete (owner only, CASCADE)
 
     func delete(calendarID: String) -> AnyPublisher<Void, DozyError> {
@@ -251,12 +299,14 @@ private struct SharedCalendarMemberRow: Decodable {
     let userID: String
     let role: String
     let joinedAt: Date
+    let nickname: String?
 
     enum CodingKeys: String, CodingKey {
         case sharedCalendarID = "shared_calendar_id"
         case userID = "user_id"
         case role
         case joinedAt = "joined_at"
+        case nickname
     }
 
     func toDomain() -> SharedCalendarMember {
@@ -264,7 +314,8 @@ private struct SharedCalendarMemberRow: Decodable {
             sharedCalendarID: sharedCalendarID,
             userID: userID,
             role: SharedCalendarRole(rawValue: role) ?? .member,
-            joinedAt: joinedAt
+            joinedAt: joinedAt,
+            nickname: nickname
         )
     }
 }

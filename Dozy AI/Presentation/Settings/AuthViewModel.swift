@@ -87,7 +87,7 @@ final class AuthViewModel: ObservableObject {
                     let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
                     let provider: AuthProvider = providerString == "google" ? .google : .apple
                     self.currentUser = AuthUser(
-                        id: session.user.id.uuidString,
+                        id: session.user.id.uuidString.lowercased(),
                         email: session.user.email,
                         displayName: KeychainService.load(forKey: Self.displayNameKey),
                         provider: provider
@@ -96,7 +96,7 @@ final class AuthViewModel: ObservableObject {
                     if self.isSyncThrottled {
                         Logger.auth.info("⏩ 1시간 이내 동기화 이력 있음 — 자동 동기화 건너뜀")
                     } else {
-                        self.syncAfterLogin(userID: session.user.id.uuidString)
+                        self.syncAfterLogin(userID: session.user.id.uuidString.lowercased())
                     }
 
                 case .tokenRefreshed:

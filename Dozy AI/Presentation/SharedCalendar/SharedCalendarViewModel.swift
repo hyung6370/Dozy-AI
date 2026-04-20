@@ -23,6 +23,7 @@ final class SharedCalendarViewModel: ObservableObject {
     private let joinUseCase: JoinSharedCalendarUseCase
     private let leaveUseCase: LeaveSharedCalendarUseCase
     private let regenerateUseCase: RegenerateSharedCalendarInviteCodeUseCase
+    private let updateNicknameUseCase: UpdateSharedCalendarNicknameUseCase
     private let service: SharedCalendarServiceProtocol
     private var cancellables = Set<AnyCancellable>()
 
@@ -31,12 +32,14 @@ final class SharedCalendarViewModel: ObservableObject {
         joinUseCase: JoinSharedCalendarUseCase,
         leaveUseCase: LeaveSharedCalendarUseCase,
         regenerateUseCase: RegenerateSharedCalendarInviteCodeUseCase,
+        updateNicknameUseCase: UpdateSharedCalendarNicknameUseCase,
         service: SharedCalendarServiceProtocol
     ) {
         self.createUseCase = createUseCase
         self.joinUseCase = joinUseCase
         self.leaveUseCase = leaveUseCase
         self.regenerateUseCase = regenerateUseCase
+        self.updateNicknameUseCase = updateNicknameUseCase
         self.service = service
     }
 
@@ -124,6 +127,53 @@ final class SharedCalendarViewModel: ObservableObject {
                 receiveValue: { [weak self] in
                     self?.calendars.removeAll { $0.id == calendar.id }
                     self?.membersMap.removeValue(forKey: calendar.id)
+                    completion()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Update Calendar Name
+
+    func updateCalendarName(calendarID: String, name: String, completion: @escaping () -> Void) {
+        service.updateCalendarName(calendarID: calendarID, name: name)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] in
+                    if let idx = self?.calendars.firstIndex(where: { $0.id == calendarID }) {
+                        let old = self!.calendars[idx]
+                        self?.calendars[idx] = SharedCalendar(
+                            id: old.id, name: name,
+                            inviteCode: old.inviteCode,
+                            inviteCodeExpiresAt: old.inviteCodeExpiresAt,
+                            createdBy: old.createdBy, createdAt: old.createdAt
+                        )
+                    }
+                    completion()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Update Nickname
+
+    func updateNickname(calendarID: String, nickname: String, currentUserID: String, completion: @escaping () -> Void) {
+        updateNicknameUseCase.execute(calendarID: calendarID, nickname: nickname)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] in
+                    // 로컬 membersMap 즉시 반영
+                    if var members = self?.membersMap[calendarID],
+                       let idx = members.firstIndex(where: { $0.userID == currentUserID }) {
+                        members[idx].nickname = nickname
+                        self?.membersMap[calendarID] = members
+                    }
                     completion()
                 }
             )

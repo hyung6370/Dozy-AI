@@ -27,4 +27,10 @@ protocol SharedCalendarServiceProtocol {
 
     /// 캘린더 삭제 (owner만, CASCADE)
     func delete(calendarID: String) -> AnyPublisher<Void, DozyError>
+
+    /// 내 닉네임 업데이트 (본인 row만 수정 가능)
+    func updateNickname(calendarID: String, nickname: String) -> AnyPublisher<Void, DozyError>
+
+    /// 캘린더 이름 업데이트 (owner만 가능, RLS 적용)
+    func updateCalendarName(calendarID: String, name: String) -> AnyPublisher<Void, DozyError>
 }

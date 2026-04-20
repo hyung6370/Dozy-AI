@@ -44,7 +44,7 @@ final class AuthService: NSObject {
                                 credentials: .init(provider: .apple, idToken: tokenString, nonce: nonce)
                             )
                             let user = AuthUser(
-                                id: session.user.id.uuidString,
+                                id: session.user.id.uuidString.lowercased(),
                                 email: session.user.email,
                                 displayName: credential.fullName?.givenName,
                                 provider: .apple
@@ -95,7 +95,7 @@ final class AuthService: NSObject {
                             credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken, nonce: nonce)
                         )
                         let user = AuthUser(
-                            id: session.user.id.uuidString,
+                            id: session.user.id.uuidString.lowercased(),
                             email: email ?? session.user.email,
                             displayName: displayName,
                             provider: .google
