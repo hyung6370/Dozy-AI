@@ -290,15 +290,15 @@ struct SettingsView: View {
                     settingIcon("Light-Integrate-Calendar", "Dark-Integrate-Calendar")
                 }
             }
-//            if authViewModel.isLoggedIn {
-//                NavigationLink {
-//                    SharedCalendarListView(container: container)
-//                } label: {
-//                    Label { Text("공유 캘린더") } icon: {
-//                        settingIcon("Light-Share-Calendar", "Dark-Share-Calendar")
-//                    }
-//                }
-//            }
+            if authViewModel.isLoggedIn {
+                NavigationLink {
+                    SharedCalendarListView(container: container)
+                } label: {
+                    Label { Text("공유 캘린더") } icon: {
+                        settingIcon("Light-Share-Calendar", "Dark-Share-Calendar")
+                    }
+                }
+            }
         } header: {
             Text("캘린더")
         }
