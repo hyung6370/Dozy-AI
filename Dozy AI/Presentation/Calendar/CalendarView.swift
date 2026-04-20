@@ -146,7 +146,7 @@ struct CalendarView: View {
                 EventEditView(
                     eventToEdit: viewModel.eventToEdit,
                     selectedDate: viewModel.selectedDate,
-                    sharedCalendars: viewModel.mySharedCalendars
+                    sharedCalendars: viewModel.sharedCalendarsForEditing()
                 ) { event in
                     viewModel.saveEvent(event)
                 }

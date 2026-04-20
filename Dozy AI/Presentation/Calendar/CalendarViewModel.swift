@@ -522,6 +522,15 @@ final class CalendarViewModel: ObservableObject {
         loadMySharedCalendars()
     }
 
+    /// 일정 생성/편집 시 Picker에 노출할 공유 캘린더 목록.
+    /// - 기본 공유 캘린더(활성)만 노출
+    /// - 비활성 캘린더에 속한 이벤트를 편집 중이라면 그 캘린더도 함께 노출 (선택 유지용)
+    func sharedCalendarsForEditing() -> [SharedCalendar] {
+        let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
+        let currentID = eventToEdit?.sharedCalendarID
+        return mySharedCalendars.filter { $0.id == activeID || $0.id == currentID }
+    }
+
     func loadMySharedCalendars() {
         sharedCalendarService?.fetchMyCalendars()
             .receive(on: DispatchQueue.main)
