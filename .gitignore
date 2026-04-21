@@ -28,6 +28,9 @@ xcuserdata/
 .build/
 .swiftpm/
 
+# Claude Code 로컬 세션 (워크트리 · tool-results 등)
+.claude/
+
 # CocoaPods
 Pods/
 Podfile.lock
