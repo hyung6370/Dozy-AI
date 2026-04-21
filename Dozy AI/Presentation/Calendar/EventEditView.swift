@@ -30,7 +30,7 @@ struct EventEditView: View {
                 Section("기본 정보") {
                     TextField("제목", text: $viewModel.title)
                     Toggle("종일", isOn: $viewModel.isAllDay)
-                    
+
                     if viewModel.isAllDay {
                         DatePicker("날짜", selection: $viewModel.startDate, displayedComponents: .date)
                             .environment(\.locale, Locale(identifier: "ko_KR"))
@@ -41,7 +41,20 @@ struct EventEditView: View {
                             .environment(\.locale, Locale(identifier: "ko_KR"))
                     }
                 }
-                
+
+                if !viewModel.sharedCalendars.isEmpty {
+                    Section("공유 캘린더") {
+                        Picker("공유", selection: $viewModel.sharedCalendarID) {
+                            Text("없음").tag(String?.none)
+                            ForEach(viewModel.sharedCalendars) { cal in
+                                Label(cal.name, systemImage: "person.2.fill")
+                                    .tag(Optional(cal.id))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                }
+
                 Section {
                     Picker("카테고리", selection: $viewModel.category) {
                         ForEach(categories) { cat in
@@ -65,13 +78,13 @@ struct EventEditView: View {
                 } footer: {
                     Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
                 }
-                
+
                 Section("추가 정보") {
                     TextField("장소 (선택)", text: $viewModel.location)
                     TextField("메모 (선택)", text: $viewModel.notes, axis: .vertical)
                         .lineLimit(3...6)
                 }
-                
+
                 Section("반복") {
                     Picker("반복", selection: $viewModel.recurrenceRule) {
                         Text("없음").tag("none")
@@ -80,7 +93,7 @@ struct EventEditView: View {
                         Text("매월").tag("monthly")
                         Text("매년").tag("yearly")
                     }
-                    
+
                     if viewModel.recurrenceRule != "none" {
                         DatePicker(
                             "반복 종료일",
@@ -90,7 +103,7 @@ struct EventEditView: View {
                         .environment(\.locale, Locale(identifier: "ko_KR"))
                     }
                 }
-                
+
                 Section("알림") {
                     Picker("알림", selection: $viewModel.notificationMinutesBefore) {
                         Text("없음").tag(-1)
@@ -100,19 +113,6 @@ struct EventEditView: View {
                         Text("15분 전").tag(15)
                         Text("30분 전").tag(30)
                         Text("1시간 전").tag(60)
-                    }
-                }
-
-                if !viewModel.sharedCalendars.isEmpty {
-                    Section("공유 캘린더") {
-                        Picker("공유", selection: $viewModel.sharedCalendarID) {
-                            Text("없음").tag(String?.none)
-                            ForEach(viewModel.sharedCalendars) { cal in
-                                Label(cal.name, systemImage: "person.2.fill")
-                                    .tag(Optional(cal.id))
-                            }
-                        }
-                        .pickerStyle(.menu)
                     }
                 }
             }

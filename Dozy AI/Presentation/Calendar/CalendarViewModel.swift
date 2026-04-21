@@ -137,6 +137,22 @@ final class CalendarViewModel: ObservableObject {
         self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
         self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
         self.displaySettingsRepo = displaySettingsRepo
+        subscribeToActiveSharedCalendarChanges()
+    }
+
+    /// 기본 공유 캘린더가 바뀌면 캐시를 비우고 재fetch한다.
+    private func subscribeToActiveSharedCalendarChanges() {
+        ActiveSharedCalendarStore.shared.$activeCalendarID
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.dozyEventsByID.removeAll()
+                self.eventsForSelectedDate.removeAll()
+                self.dozyEventsForSelectedDate.removeAll()
+                self.refreshData()
+            }
+            .store(in: &cancellables)
     }
 
     convenience init(container: DependencyContainer) {
@@ -506,12 +522,22 @@ final class CalendarViewModel: ObservableObject {
         loadMySharedCalendars()
     }
 
+    /// 일정 생성/편집 시 Picker에 노출할 공유 캘린더 목록.
+    /// 사용자가 어느 공유 캘린더에든 일정을 만들 수 있도록 항상 전체 목록을 반환.
+    /// (기본 캘린더 필터는 "표시" 단계에서만 적용 — 작성 단계는 유연하게)
+    func sharedCalendarsForEditing() -> [SharedCalendar] {
+        return mySharedCalendars
+    }
+
     func loadMySharedCalendars() {
         sharedCalendarService?.fetchMyCalendars()
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },
-                receiveValue: { [weak self] calendars in self?.mySharedCalendars = calendars }
+                receiveValue: { [weak self] calendars in
+                    self?.mySharedCalendars = calendars
+                    ActiveSharedCalendarStore.shared.reconcile(with: calendars)
+                }
             )
             .store(in: &cancellables)
     }
@@ -621,7 +647,8 @@ final class CalendarViewModel: ObservableObject {
                     calendarName: old.calendarName, calendarColorHex: old.calendarColorHex,
                     source: old.source,
                     priority: priority, isPinned: isPinned, category: finalCategory,
-                    sharedCalendarID: old.sharedCalendarID
+                    sharedCalendarID: old.sharedCalendarID,
+                    ownerID: old.ownerID
                 )
                 Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
             } else {

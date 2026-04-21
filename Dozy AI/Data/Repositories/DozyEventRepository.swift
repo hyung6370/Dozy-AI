@@ -24,13 +24,24 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 let context = modelContainer.mainContext
                 let start = startDate
                 let end = endDate
-                let predicate = #Predicate<DozyEvent> { $0.startDate < end && $0.endDate >= start }
+
+                let predicate = #Predicate<DozyEvent> {
+                    $0.startDate < end && $0.endDate >= start
+                }
                 let descriptor = FetchDescriptor<DozyEvent>(
                     predicate: predicate,
                     sortBy: [SortDescriptor(\.startDate)]
                 )
                 do {
-                    promise(.success(try context.fetch(descriptor)))
+                    let all = try context.fetch(descriptor)
+                    let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
+                    let filtered = all.filter { event in
+                        // 개인 이벤트는 항상 표시
+                        if event.sharedCalendarID == nil { return true }
+                        // 공유 이벤트는 활성 캘린더와 일치할 때만
+                        return event.sharedCalendarID == activeID
+                    }
+                    promise(.success(filtered))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
                 }
@@ -93,10 +104,12 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
     // MARK: - Supabase 즉시 동기화
 
     private static func upsertToSupabase(_ event: DozyEvent) async {
-        guard let userID = try? await supabase.auth.session.user.id.uuidString else { return }
+        guard let currentUserID = try? await supabase.auth.session.user.id.uuidString.lowercased() else { return }
+        // 파트너 이벤트를 편집(메모 등)할 때 원래 소유자(user_id) 보존.
+        // 이렇게 해야 Supabase 기록이 유지되고, 파트너 디바이스의 realtime UPDATE 가드를 통과한다.
         let row = DozyEventRow(
             id: event.id,
-            userID: userID,
+            userID: event.ownerID ?? currentUserID,
             title: event.title,
             startDate: event.startDate,
             endDate: event.endDate,
@@ -132,7 +145,13 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 let predicate = #Predicate<DozyEvent> { $0.recurrenceRule != "none" }
                 let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
                 do {
-                    promise(.success(try context.fetch(descriptor)))
+                    let all = try context.fetch(descriptor)
+                    let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
+                    let filtered = all.filter { event in
+                        if event.sharedCalendarID == nil { return true }
+                        return event.sharedCalendarID == activeID
+                    }
+                    promise(.success(filtered))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
                 }

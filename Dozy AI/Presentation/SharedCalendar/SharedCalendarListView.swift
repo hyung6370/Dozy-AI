@@ -4,10 +4,12 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct SharedCalendarListView: View {
 
     @StateObject private var viewModel: SharedCalendarViewModel
+    @ObservedObject private var activeStore = ActiveSharedCalendarStore.shared
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
@@ -20,6 +22,7 @@ struct SharedCalendarListView: View {
             joinUseCase: container.joinSharedCalendarUseCase,
             leaveUseCase: container.leaveSharedCalendarUseCase,
             regenerateUseCase: container.regenerateSharedCalendarInviteCodeUseCase,
+            updateNicknameUseCase: container.updateSharedCalendarNicknameUseCase,
             service: container.sharedCalendarService
         ))
     }
@@ -38,6 +41,11 @@ struct SharedCalendarListView: View {
         .navigationTitle("공유 캘린더")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if viewModel.calendars.count > 1 {
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
@@ -131,14 +139,19 @@ struct SharedCalendarListView: View {
     // MARK: - Calendar List
 
     private var calendarList: some View {
-        List(viewModel.calendars) { calendar in
-            NavigationLink {
-                SharedCalendarDetailView(
-                    calendar: calendar,
-                    viewModel: viewModel
-                )
-            } label: {
-                calendarRow(calendar)
+        List {
+            ForEach(viewModel.calendars) { calendar in
+                NavigationLink {
+                    SharedCalendarDetailView(
+                        calendar: calendar,
+                        viewModel: viewModel
+                    )
+                } label: {
+                    calendarRow(calendar)
+                }
+            }
+            .onMove { source, destination in
+                viewModel.moveCalendar(from: source, to: destination)
             }
         }
     }
@@ -151,13 +164,31 @@ struct SharedCalendarListView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.accentColor.opacity(0.15))
                     .frame(width: 44, height: 44)
-                Image(systemName: "calendar.badge.person.crop")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.accentColor)
+                if let url = calendar.publicImageURL {
+                    KFImage(url)
+                        .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 88, height: 88)))
+                        .cacheOriginalImage()
+                        .fade(duration: 0.15)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else {
+                    Image(systemName: "calendar.badge.person.crop")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.accentColor)
+                }
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(calendar.name)
-                    .font(.subheadline).fontWeight(.medium)
+                HStack(spacing: 6) {
+                    Text(calendar.name)
+                        .font(.subheadline).fontWeight(.medium)
+                    if activeStore.isActive(calendar.id) {
+                        Image(systemName: "star.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.yellow)
+                    }
+                }
                 Text("\(memberCount)명 참여 중")
                     .font(.caption)
                     .foregroundStyle(.secondary)

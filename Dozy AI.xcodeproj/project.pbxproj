@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02E9FEEA094D4B4898D64CCF /* ActiveSharedCalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */; };
 		2984E159921D4484ACDA83E9 /* SharedCalendarListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */; };
 		2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */; };
 		3C6B0B259D5341C0BD01E8CA /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52E9135FC4F4C559A927798 /* WeatherService.swift */; };
@@ -16,6 +17,7 @@
 		5B0F554A76C543C39CE91437 /* SharedCalendarDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */; };
 		5E394932A4FB4627A517D1CB /* SharedCalendarJoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */; };
 		60321A7CA4214E30AD5EA56A /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */; };
+		6166EBA612C54A2DA99E705D /* UpdateSharedCalendarNicknameUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B207C320B48349D3AF81CA62 /* UpdateSharedCalendarNicknameUseCase.swift */; };
 		65B047887D5346E8ABBD7B8B /* ForceUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D3974F44814EBCA970B11B /* ForceUpdateView.swift */; };
 		68281F28BBEE44519243499A /* SharedCalendarResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = E96E6A9C368B4064B7176A9A /* SharedCalendarResults.swift */; };
 		7AA956AF8C3141189744783D /* SharedCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9885C44E183149258A057270 /* SharedCalendarViewModel.swift */; };
@@ -28,6 +30,7 @@
 		AA1100020000000000000004 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000004 /* TestHelpers.swift */; };
 		AA1100020000000000000005 /* ViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000005 /* ViewModelTests.swift */; };
 		B15FEAA4777940E0899DD3CE /* SharedCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */; };
+		B983D6927F254284838DA052 /* SharedCalendarEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2389D509856F42CD9BB2A33D /* SharedCalendarEditView.swift */; };
 		C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		C9281237CC6E4AABA7AB5BA5 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
 		CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */; };
@@ -198,6 +201,7 @@
 		F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59982F739B470090DF3A /* RecentLogRow.swift */; };
 		F6CAFE022FA0000000000001 /* MonthYearPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE012FA0000000000001 /* MonthYearPickerView.swift */; };
 		F6CAFE042FA0000000000002 /* CalendarMonthPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */; };
+		F6EC8AA12F9705A300CFFF87 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F6EC8AA02F9705A300CFFF87 /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -220,7 +224,9 @@
 /* Begin PBXFileReference section */
 		138EDD04FB7644938FBB1BBD /* AppVersionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionService.swift; sourceTree = "<group>"; };
 		1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaveSharedCalendarUseCase.swift; sourceTree = "<group>"; };
+		2389D509856F42CD9BB2A33D /* SharedCalendarEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarEditView.swift; sourceTree = "<group>"; };
 		30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarServiceProtocol.swift; sourceTree = "<group>"; };
+		3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSharedCalendarStore.swift; sourceTree = "<group>"; };
 		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarListView.swift; sourceTree = "<group>"; };
 		4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinSharedCalendarUseCase.swift; sourceTree = "<group>"; };
@@ -238,6 +244,7 @@
 		AA1100010000000000000004 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		AA1100010000000000000005 /* ViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelTests.swift; sourceTree = "<group>"; };
 		AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegenerateSharedCalendarInviteCodeUseCase.swift; sourceTree = "<group>"; };
+		B207C320B48349D3AF81CA62 /* UpdateSharedCalendarNicknameUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateSharedCalendarNicknameUseCase.swift; sourceTree = "<group>"; };
 		C693465AD6A74CE3B35E2111 /* SharedCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendar.swift; sourceTree = "<group>"; };
 		D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarCreateView.swift; sourceTree = "<group>"; };
@@ -421,6 +428,7 @@
 				F63C68732F85E35F003464E8 /* Lottie in Frameworks */,
 				F60ADF082F7FAA01007B8D9F /* Supabase in Frameworks */,
 				F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */,
+				F6EC8AA12F9705A300CFFF87 /* Kingfisher in Frameworks */,
 				F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */,
 				F619D94D2F75113C00084C61 /* GoogleSignInSwift in Frameworks */,
 			);
@@ -459,6 +467,7 @@
 				D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */,
 				FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */,
 				F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */,
+				2389D509856F42CD9BB2A33D /* SharedCalendarEditView.swift */,
 			);
 			path = SharedCalendar;
 			sourceTree = "<group>";
@@ -688,6 +697,7 @@
 			children = (
 				F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */,
 				F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */,
+				3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */,
 				DD9F68EB2F6ACD36001952F6 /* Constants.swift */,
 				DD44DDD22F72C44100EEE463 /* DozyError.swift */,
 				DD9F68E92F6ACD2E001952F6 /* Logger.swift */,
@@ -705,6 +715,7 @@
 				4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */,
 				1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */,
 				AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */,
+				B207C320B48349D3AF81CA62 /* UpdateSharedCalendarNicknameUseCase.swift */,
 				DD9F68FC2F6ACE25001952F6 /* SaveWorkLogUseCase.swift */,
 				F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */,
 				F619D9722F7A36C600084C61 /* CreateDozyEventUseCase.swift */,
@@ -952,6 +963,7 @@
 				F60ADF052F7FAA01007B8D9F /* Storage */,
 				F60ADF072F7FAA01007B8D9F /* Supabase */,
 				F63C68722F85E35F003464E8 /* Lottie */,
+				F6EC8AA02F9705A300CFFF87 /* Kingfisher */,
 			);
 			productName = "Dozy AI";
 			productReference = DD808E842F694B2100F4956A /* Dozy AI.app */;
@@ -1030,6 +1042,7 @@
 				F616DCCD2F7A698800FA0476 /* XCRemoteSwiftPackageReference "naveridlogin-sdk-ios" */,
 				F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */,
+				F6EC8A9F2F9705A300CFFF87 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD808E852F694B2100F4956A /* Products */;
@@ -1085,6 +1098,7 @@
 				CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */,
 				5E394932A4FB4627A517D1CB /* SharedCalendarJoinView.swift in Sources */,
 				5B0F554A76C543C39CE91437 /* SharedCalendarDetailView.swift in Sources */,
+				B983D6927F254284838DA052 /* SharedCalendarEditView.swift in Sources */,
 				2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */,
 				807EED356A2F4E5095F4C7F4 /* SharedCalendar.swift in Sources */,
 				C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */,
@@ -1095,6 +1109,7 @@
 				E2B674ED2C774CC681FEAB8B /* JoinSharedCalendarUseCase.swift in Sources */,
 				A461CC4832C74438806A2785 /* LeaveSharedCalendarUseCase.swift in Sources */,
 				3F4A985290CA47AEB58A872A /* RegenerateSharedCalendarInviteCodeUseCase.swift in Sources */,
+				6166EBA612C54A2DA99E705D /* UpdateSharedCalendarNicknameUseCase.swift in Sources */,
 				DD9F69042F6ACE69001952F6 /* ReminderServiceProtocol.swift in Sources */,
 				DD9F68F42F6ACD80001952F6 /* DailySummary.swift in Sources */,
 				F619D9792F7A378F00084C61 /* DozyEventRepository.swift in Sources */,
@@ -1131,6 +1146,7 @@
 				F650682B2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift in Sources */,
 				DD9F69322F6AD0BF001952F6 /* WorkLogViewModel.swift in Sources */,
 				F6B0413B2F8F4CB500EEAC89 /* AppEnvironment.swift in Sources */,
+				02E9FEEA094D4B4898D64CCF /* ActiveSharedCalendarStore.swift in Sources */,
 				F619D97E2F7A3BF600084C61 /* MainTabView.swift in Sources */,
 				DD9F692E2F6AD0A1001952F6 /* WorkLogListView.swift in Sources */,
 				F619D96B2F7A344900084C61 /* DozyEvent.swift in Sources */,
@@ -1651,6 +1667,14 @@
 				minimumVersion = 4.6.0;
 			};
 		};
+		F6EC8A9F2F9705A300CFFF87 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.8.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1703,6 +1727,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
+		};
+		F6EC8AA02F9705A300CFFF87 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F6EC8A9F2F9705A300CFFF87 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

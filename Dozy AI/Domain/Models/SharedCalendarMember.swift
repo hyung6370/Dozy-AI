@@ -15,6 +15,7 @@ struct SharedCalendarMember: Identifiable, Codable, Hashable {
     let userID: String
     let role: SharedCalendarRole
     let joinedAt: Date
+    var nickname: String?
 
     var id: String { "\(sharedCalendarID)/\(userID)" }
 

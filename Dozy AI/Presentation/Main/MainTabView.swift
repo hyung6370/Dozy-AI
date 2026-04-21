@@ -52,6 +52,7 @@ struct MainTabView: View {
             joinUseCase: container.joinSharedCalendarUseCase,
             leaveUseCase: container.leaveSharedCalendarUseCase,
             regenerateUseCase: container.regenerateSharedCalendarInviteCodeUseCase,
+            updateNicknameUseCase: container.updateSharedCalendarNicknameUseCase,
             service: container.sharedCalendarService
         ))
     }

@@ -69,7 +69,8 @@ struct GoogleEventItem: Decodable {
             priority: 0,
             isPinned: false,
             category: "일반",
-            sharedCalendarID: nil
+            sharedCalendarID: nil,
+            ownerID: nil
         )
     }
 }

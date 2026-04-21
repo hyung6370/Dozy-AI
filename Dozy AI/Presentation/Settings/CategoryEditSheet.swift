@@ -26,12 +26,20 @@ struct CategoryEditSheet: View {
     private let originalName: String
     private let originalColorHex: String
 
+    // Apple 시스템 팔레트 기반 12색 — 시각적으로 서로 명확히 구분되도록 엄선
     private let presetColors: [Color] = [
-        .blue, .purple, .orange, .green, .teal, .pink,
-        .red, .indigo, .cyan, .yellow, .gray,
-        Color(hex: "#FF9500") ?? .orange,
-        Color(hex: "#34C759") ?? .green,
-        Color(hex: "#AF52DE") ?? .purple
+        Color(hex: "#FF3B30") ?? .red,      // Red
+        Color(hex: "#FF9500") ?? .orange,   // Orange
+        Color(hex: "#FFCC00") ?? .yellow,   // Yellow
+        Color(hex: "#34C759") ?? .green,    // Green
+        Color(hex: "#00C7BE") ?? .mint,     // Mint
+        Color(hex: "#30B0C7") ?? .teal,     // Teal
+        Color(hex: "#007AFF") ?? .blue,     // Blue
+        Color(hex: "#5856D6") ?? .indigo,   // Indigo
+        Color(hex: "#AF52DE") ?? .purple,   // Purple
+        Color(hex: "#FF2D55") ?? .pink,     // Pink
+        Color(hex: "#A2845E") ?? .brown,    // Brown
+        Color(hex: "#8E8E93") ?? .gray      // Gray
     ]
 
     init(category: UserCategory? = nil) {
@@ -66,7 +74,7 @@ struct CategoryEditSheet: View {
                 }
 
                 Section("색상") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 12) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
                         ForEach(presetColors.indices, id: \.self) { i in
                             let color = presetColors[i]
                             ZStack {

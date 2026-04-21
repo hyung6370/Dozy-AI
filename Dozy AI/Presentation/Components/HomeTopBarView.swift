@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeTopBarView: View {
 
     let hasNotification: Bool
+    let onSharedCalendarTap: () -> Void
     let onNotificationTap: () -> Void
     let onProfileTap: () -> Void
 
@@ -38,6 +39,13 @@ struct HomeTopBarView: View {
             Spacer()
 
             HStack(spacing: 16) {
+                Button { onSharedCalendarTap() } label: {
+                    Image(colorScheme == .dark ? "Dark-Home-Share-Calendar" : "Light-Home-Share-Calendar")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                }
+
                 Button { onNotificationTap() } label: {
                     Image(hasNotification
                         ? (colorScheme == .dark ? "Dark-Bell-on" : "Light-Bell-on")

@@ -49,10 +49,10 @@ extension BannerItem {
             iconName: "calendar.badge.plus"
         ),
         BannerItem(
-            title: "Dozy와 함께하는 하루",
-            subtitle: "오늘의 할 일을 지금 시작해보세요",
+            title: "공유 캘린더를 만들어보세요",
+            subtitle: "파트너와 일정을 함께 관리할 수 있어요",
             gradientColors: [.teal, .green],
-            iconName: "sparkles"
+            iconName: "calendar.badge.person.crop"
         ),
     ]
 }
