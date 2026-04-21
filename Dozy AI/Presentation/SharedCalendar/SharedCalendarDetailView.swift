@@ -159,13 +159,18 @@ struct SharedCalendarDetailView: View {
         let isMe = member.userID == currentUserID
         let displayName = member.nickname ?? (isMe ? "나" : "파트너")
         let roleLabel = member.role == .owner ? "소유자" : "멤버"
-        let icon = member.role == .owner ? "crown.fill" : "person.fill"
-        let iconColor: Color = member.role == .owner ? .yellow : .secondary
 
         return HStack(spacing: 12) {
-            Image(systemName: icon)
-                .foregroundStyle(iconColor)
-                .frame(width: 24)
+            if member.role == .owner {
+                Image(systemName: "crown.fill")
+                    .foregroundStyle(.yellow)
+                    .frame(width: 24)
+            } else {
+                Image(colorScheme == .dark ? "Dark-User" : "Light-User")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22, height: 22)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayName).font(.subheadline)
                 if member.nickname != nil {
@@ -211,12 +216,23 @@ struct SharedCalendarDetailView: View {
                         copied = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { copied = false }
                     } label: {
-                        Label(copied ? "복사됨" : "복사", systemImage: copied ? "checkmark" : "doc.on.doc")
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
-                            .foregroundStyle(copied ? .green : .primary)
+                        Label {
+                            Text(copied ? "복사됨" : "복사")
+                        } icon: {
+                            if copied {
+                                Image(systemName: "checkmark")
+                            } else {
+                                Image(colorScheme == .dark ? "Dark-Copy" : "Light-Copy")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
+                            }
+                        }
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+                        .foregroundStyle(copied ? .green : .primary)
                     }
                     .buttonStyle(.plain)
                     .animation(.easeInOut(duration: 0.2), value: copied)
@@ -225,12 +241,19 @@ struct SharedCalendarDetailView: View {
                         item: shareText,
                         subject: Text("Dozy AI 공유 캘린더 초대")
                     ) {
-                        Label("공유", systemImage: "square.and.arrow.up")
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-                            .foregroundStyle(Color.accentColor)
+                        Label {
+                            Text("공유")
+                        } icon: {
+                            Image(colorScheme == .dark ? "Dark-Share" : "Light-Share")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 18, height: 18)
+                        }
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                        .foregroundStyle(Color.accentColor)
                     }
                     .buttonStyle(.plain)
                 }
@@ -243,8 +266,15 @@ struct SharedCalendarDetailView: View {
                         currentCode = newCode
                     }
                 } label: {
-                    Label("새 코드 발급", systemImage: "arrow.clockwise")
-                        .foregroundStyle(.primary)
+                    Label {
+                        Text("새 코드 발급")
+                    } icon: {
+                        Image(colorScheme == .dark ? "Dark-Refresh" : "Light-Refresh")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20, height: 20)
+                    }
+                    .foregroundStyle(.primary)
                 }
             }
         } header: {
@@ -267,7 +297,10 @@ struct SharedCalendarDetailView: View {
                     Text(isOwner ? "공유 캘린더 삭제" : "공유 캘린더 나가기")
                 } icon: {
                     if isOwner {
-                        Image(systemName: "trash")
+                        Image(colorScheme == .dark ? "Dark-Trash" : "Light-Trash")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 22, height: 22)
                     } else {
                         Image(colorScheme == .dark ? "Dark-Exit" : "Light-Exit")
                             .resizable()
