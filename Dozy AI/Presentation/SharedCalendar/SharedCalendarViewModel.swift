@@ -5,6 +5,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class SharedCalendarViewModel: ObservableObject {
@@ -26,6 +27,8 @@ final class SharedCalendarViewModel: ObservableObject {
     private let updateNicknameUseCase: UpdateSharedCalendarNicknameUseCase
     private let service: SharedCalendarServiceProtocol
     private var cancellables = Set<AnyCancellable>()
+
+    private let orderKey = "shared_calendar_order"
 
     init(
         createUseCase: CreateSharedCalendarUseCase,
@@ -55,9 +58,11 @@ final class SharedCalendarViewModel: ObservableObject {
                     if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
                 },
                 receiveValue: { [weak self] calendars in
-                    self?.calendars = calendars
-                    for cal in calendars { self?.loadMembers(calendarID: cal.id) }
-                    ActiveSharedCalendarStore.shared.reconcile(with: calendars)
+                    guard let self else { return }
+                    let sorted = self.applyPersistedOrder(calendars)
+                    self.calendars = sorted
+                    for cal in sorted { self.loadMembers(calendarID: cal.id) }
+                    ActiveSharedCalendarStore.shared.reconcile(with: sorted)
                 }
             )
             .store(in: &cancellables)
@@ -181,6 +186,33 @@ final class SharedCalendarViewModel: ObservableObject {
                 }
             )
             .store(in: &cancellables)
+    }
+
+    // MARK: - Reorder (local per-user)
+
+    func moveCalendar(from source: IndexSet, to destination: Int) {
+        var reordered = calendars
+        reordered.move(fromOffsets: source, toOffset: destination)
+        calendars = reordered
+        persistOrder(reordered)
+    }
+
+    private func applyPersistedOrder(_ calendars: [SharedCalendar]) -> [SharedCalendar] {
+        let stored = UserDefaults.standard.stringArray(forKey: orderKey) ?? []
+        let byID = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0) })
+        var ordered: [SharedCalendar] = []
+        for id in stored {
+            if let cal = byID[id] { ordered.append(cal) }
+        }
+        let known = Set(ordered.map { $0.id })
+        for cal in calendars where !known.contains(cal.id) {
+            ordered.append(cal)
+        }
+        return ordered
+    }
+
+    private func persistOrder(_ calendars: [SharedCalendar]) {
+        UserDefaults.standard.set(calendars.map { $0.id }, forKey: orderKey)
     }
 
     // MARK: - Calendar Image

@@ -41,6 +41,11 @@ struct SharedCalendarListView: View {
         .navigationTitle("공유 캘린더")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if viewModel.calendars.count > 1 {
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
@@ -134,14 +139,19 @@ struct SharedCalendarListView: View {
     // MARK: - Calendar List
 
     private var calendarList: some View {
-        List(viewModel.calendars) { calendar in
-            NavigationLink {
-                SharedCalendarDetailView(
-                    calendar: calendar,
-                    viewModel: viewModel
-                )
-            } label: {
-                calendarRow(calendar)
+        List {
+            ForEach(viewModel.calendars) { calendar in
+                NavigationLink {
+                    SharedCalendarDetailView(
+                        calendar: calendar,
+                        viewModel: viewModel
+                    )
+                } label: {
+                    calendarRow(calendar)
+                }
+            }
+            .onMove { source, destination in
+                viewModel.moveCalendar(from: source, to: destination)
             }
         }
     }
