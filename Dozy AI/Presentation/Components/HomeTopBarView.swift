@@ -40,7 +40,7 @@ struct HomeTopBarView: View {
 
             HStack(spacing: 16) {
                 Button { onSharedCalendarTap() } label: {
-                    Image(colorScheme == .dark ? "Dark-Share-Calendar" : "Light-Share-Calendar")
+                    Image(colorScheme == .dark ? "Dark-Home-Share-Calendar" : "Light-Home-Share-Calendar")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
