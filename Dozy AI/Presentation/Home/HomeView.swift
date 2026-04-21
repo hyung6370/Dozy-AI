@@ -29,7 +29,8 @@ struct HomeView: View {
     @State private var calendarEventToEdit: CalendarEvent? = nil
     @State private var showCreateFromEmptyAlert = false
     @State private var showNewEventSheet = false
-    
+    @State private var showSharedCalendar = false
+
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
 
@@ -85,6 +86,13 @@ struct HomeView: View {
             .safeAreaInset(edge: .top, spacing: 0) {
                 HomeTopBarView(
                     hasNotification: viewModel.hasNotification,
+                    onSharedCalendarTap: {
+                        if authViewModel.isLoggedIn {
+                            showSharedCalendar = true
+                        } else {
+                            selectedTab = 3
+                        }
+                    },
                     onNotificationTap: { showNotificationSheet = true },
                     onProfileTap: { selectedTab = 3 }
                 )
@@ -151,6 +159,9 @@ struct HomeView: View {
         }
         .navigationDestination(isPresented: $showNotificationSheet) {
             NotificationListView(repository: container.notificationRepository)
+        }
+        .navigationDestination(isPresented: $showSharedCalendar) {
+            SharedCalendarListView(container: container)
         }
         .onChange(of: showNotificationSheet) { _, isShowing in
             guard !isShowing else { return }

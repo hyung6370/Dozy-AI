@@ -21,6 +21,7 @@ final class ActiveSharedCalendarStore: ObservableObject {
     @Published private(set) var partnerNicknameByCalendarID: [String: String] = [:]
 
     private let key = "active_shared_calendar_id"
+    private let userInteractedKey = "active_shared_calendar_user_interacted"
 
     private init() {
         self.activeCalendarID = UserDefaults.standard.string(forKey: key)
@@ -37,7 +38,13 @@ final class ActiveSharedCalendarStore: ObservableObject {
         partnerNicknameByCalendarID[calendarID] ?? "파트너"
     }
 
+    /// 사용자가 직접 토글(ON/OFF)한 경우 호출. 이후 reconcile이 자동 재지정하지 않도록 플래그 기록.
     func setActive(_ id: String?) {
+        UserDefaults.standard.set(true, forKey: userInteractedKey)
+        applyActive(id)
+    }
+
+    private func applyActive(_ id: String?) {
         if let id, !id.isEmpty {
             UserDefaults.standard.set(id, forKey: key)
             activeCalendarID = id
@@ -51,22 +58,25 @@ final class ActiveSharedCalendarStore: ObservableObject {
         activeCalendarID == id
     }
 
-    /// 해당 캘린더가 더 이상 존재하지 않는 경우 (탈퇴/삭제) 기본값 해제
+    /// 해당 캘린더가 더 이상 존재하지 않는 경우 (탈퇴/삭제) 기본값 해제.
+    /// orphan 정리이므로 user-interacted 플래그는 건드리지 않음.
     func clearIfMatches(_ id: String) {
         if activeCalendarID == id {
-            setActive(nil)
+            applyActive(nil)
         }
     }
 
     /// 로드된 공유 캘린더 목록을 기준으로 활성 ID를 자동 정리.
     /// - 탈퇴/삭제로 orphan이 된 활성 ID는 제거
-    /// - 활성 미지정 상태이고 목록에 캘린더가 있으면 첫 번째를 자동 지정 (대부분의 사용자는 1개만 사용)
+    /// - 사용자가 아직 한번도 토글한 적이 없으면(최초 캘린더 생성 UX) 첫 번째를 자동 지정
+    /// - 한번이라도 직접 토글한 뒤엔 OFF 상태가 유지됨
     func reconcile(with calendars: [SharedCalendar]) {
         if let activeID = activeCalendarID, !calendars.contains(where: { $0.id == activeID }) {
-            setActive(nil)
+            applyActive(nil)
         }
-        if activeCalendarID == nil, let first = calendars.first {
-            setActive(first.id)
+        let userInteracted = UserDefaults.standard.bool(forKey: userInteractedKey)
+        if !userInteracted, activeCalendarID == nil, let first = calendars.first {
+            applyActive(first.id)
         }
     }
 }
