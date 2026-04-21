@@ -329,9 +329,13 @@ struct SearchView: View {
                 || (e.notes ?? "").lowercased().contains(trimmed)
         }
 
-        // Dozy가 Apple/Google 쪽에 중복으로 들어올 수 있으므로 id로 중복 제거
+        // Dozy가 Apple/Google 쪽에 중복으로 들어올 수 있으므로 id로 중복 제거하되,
+        // 반복 이벤트의 여러 occurrence(동일 eventIdentifier, 상이한 startDate)는 보존하기 위해
+        // id + startDate 조합을 키로 사용.
         var seen = Set<String>()
-        let combined = (dozyEvents + externalMatched).filter { seen.insert($0.id).inserted }
+        let combined = (dozyEvents + externalMatched).filter {
+            seen.insert("\($0.id)_\($0.startDate.timeIntervalSince1970)").inserted
+        }
         return combined.sorted(by: { $0.startDate > $1.startDate })
     }
 
@@ -395,8 +399,9 @@ struct SearchView: View {
         guard externalEvents.isEmpty, !isLoadingExternal else { return }
         isLoadingExternal = true
         let cal = Calendar.current
-        let end = cal.date(byAdding: .day, value: 60, to: Date()) ?? Date()
-        let start = cal.date(byAdding: .day, value: -180, to: Date()) ?? Date()
+        // 오래된 기록 검색 지원 — 과거 10년 / 미래 2년 범위까지 확장
+        let end = cal.date(byAdding: .year, value: 2, to: Date()) ?? Date()
+        let start = cal.date(byAdding: .year, value: -10, to: Date()) ?? Date()
         externalCancellable = container.fetchCalendarEventsForPeriodUseCase
             .execute(from: start, to: end)
             .receive(on: DispatchQueue.main)

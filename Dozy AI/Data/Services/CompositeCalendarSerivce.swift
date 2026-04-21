@@ -70,9 +70,9 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
                     if event.source == .dozy {
                         deduped.append(event)
                     } else {
-                        let cal = Calendar.current
-                        let day = cal.startOfDay(for: event.startDate)
-                        let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
+                        // 정확한 시작 시각 기준 dedupe — Apple↔Google 동기화 된 이벤트만 합치고
+                        // 같은 날 다른 시간대의 서로 다른 이벤트는 유지됨
+                        let key = "\(event.title.lowercased())_\(event.startDate.timeIntervalSince1970)"
                         if seen.insert(key).inserted {
                             deduped.append(event)
                         }
@@ -119,9 +119,9 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
                     if event.source == .dozy {
                         deduped.append(event)
                     } else {
-                        let cal = Calendar.current
-                        let day = cal.startOfDay(for: event.startDate)
-                        let key = "\(event.title.lowercased())_\(day.timeIntervalSince1970)"
+                        // 정확한 시작 시각 기준 dedupe — Apple↔Google 동기화 된 이벤트만 합치고
+                        // 같은 날 다른 시간대의 서로 다른 이벤트는 유지됨
+                        let key = "\(event.title.lowercased())_\(event.startDate.timeIntervalSince1970)"
                         if seen.insert(key).inserted {
                             deduped.append(event)
                         }

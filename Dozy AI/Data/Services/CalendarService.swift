@@ -79,12 +79,34 @@ final class CalendarService: CalendarServiceProtocol {
                     let calendars = excludeSubscriptions
                         ? eventStore.calendars(for: .event).filter { $0.type != .subscription }
                         : nil
-                    let predicate = eventStore.predicateForEvents(
-                        withStart: start,
-                        end: end,
-                        calendars: calendars
-                    )
-                    let events = eventStore.events(matching: predicate)
+
+                    // EventKit의 predicateForEvents는 ~4년 범위를 넘기면 결과가 잘리는
+                    // 문서화된 제약이 있음 → 1년 단위 chunked fetch로 오래된 이벤트까지 보장.
+                    var collected: [EKEvent] = []
+                    var chunkStart = start
+                    let cal = Calendar.current
+                    while chunkStart < end {
+                        let chunkEnd = min(
+                            cal.date(byAdding: .year, value: 1, to: chunkStart) ?? end,
+                            end
+                        )
+                        let predicate = eventStore.predicateForEvents(
+                            withStart: chunkStart, end: chunkEnd, calendars: calendars
+                        )
+                        collected.append(contentsOf: eventStore.events(matching: predicate))
+                        chunkStart = chunkEnd
+                    }
+
+                    // 경계(연말-연초)에 걸친 이벤트 중복 제거 — 반복 이벤트 occurrence는 각각
+                    // 고유한 startDate를 가지므로 eventIdentifier + startDate 조합 키 사용.
+                    var seen = Set<String>()
+                    let deduped = collected.filter {
+                        let id = $0.eventIdentifier ?? ""
+                        let key = "\(id)_\($0.startDate.timeIntervalSince1970)"
+                        return seen.insert(key).inserted
+                    }
+
+                    let events = deduped
                         .map { $0.toCalendarEvent() }
                         .sorted { $0.startDate < $1.startDate }
                     promise(.success(events))
