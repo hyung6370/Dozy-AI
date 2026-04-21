@@ -146,7 +146,8 @@ final class DozyEvent {
             priority: priority,
             isPinned: isPinned,
             category: category,
-            sharedCalendarID: sharedCalendarID
+            sharedCalendarID: sharedCalendarID,
+            ownerID: ownerID
         )
     }
 
@@ -166,7 +167,8 @@ final class DozyEvent {
             priority: priority,
             isPinned: isPinned,
             category: category,
-            sharedCalendarID: sharedCalendarID
+            sharedCalendarID: sharedCalendarID,
+            ownerID: ownerID
         )
     }
 }

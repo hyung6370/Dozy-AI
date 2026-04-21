@@ -26,6 +26,7 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     let isPinned: Bool
     let category: String
     let sharedCalendarID: String?
+    let ownerID: String?    // Dozy 이벤트 전용. Apple/Google 이벤트는 nil
 
     var isShared: Bool { sharedCalendarID != nil }
 
@@ -71,6 +72,7 @@ extension CalendarEvent {
         isPinned = try c.decodeIfPresent(Bool.self, forKey: .isPinned) ?? false
         category = try c.decodeIfPresent(String.self, forKey: .category) ?? "일반"
         sharedCalendarID = try c.decodeIfPresent(String.self, forKey: .sharedCalendarID)
+        ownerID = try c.decodeIfPresent(String.self, forKey: .ownerID)
     }
 }
 
@@ -86,7 +88,8 @@ extension CalendarEvent {
             priority: settings.priority,
             isPinned: settings.isPinned,
             category: settings.category == UserCategory.defaultName ? category : settings.category,
-            sharedCalendarID: sharedCalendarID
+            sharedCalendarID: sharedCalendarID,
+            ownerID: ownerID
         )
     }
 }

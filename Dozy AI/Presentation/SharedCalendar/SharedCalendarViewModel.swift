@@ -57,6 +57,7 @@ final class SharedCalendarViewModel: ObservableObject {
                 receiveValue: { [weak self] calendars in
                     self?.calendars = calendars
                     for cal in calendars { self?.loadMembers(calendarID: cal.id) }
+                    ActiveSharedCalendarStore.shared.reconcile(with: calendars)
                 }
             )
             .store(in: &cancellables)

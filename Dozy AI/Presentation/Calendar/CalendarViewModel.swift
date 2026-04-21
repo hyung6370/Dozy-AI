@@ -523,12 +523,10 @@ final class CalendarViewModel: ObservableObject {
     }
 
     /// 일정 생성/편집 시 Picker에 노출할 공유 캘린더 목록.
-    /// - 기본 공유 캘린더(활성)만 노출
-    /// - 비활성 캘린더에 속한 이벤트를 편집 중이라면 그 캘린더도 함께 노출 (선택 유지용)
+    /// 사용자가 어느 공유 캘린더에든 일정을 만들 수 있도록 항상 전체 목록을 반환.
+    /// (기본 캘린더 필터는 "표시" 단계에서만 적용 — 작성 단계는 유연하게)
     func sharedCalendarsForEditing() -> [SharedCalendar] {
-        let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
-        let currentID = eventToEdit?.sharedCalendarID
-        return mySharedCalendars.filter { $0.id == activeID || $0.id == currentID }
+        return mySharedCalendars
     }
 
     func loadMySharedCalendars() {
@@ -536,7 +534,10 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },
-                receiveValue: { [weak self] calendars in self?.mySharedCalendars = calendars }
+                receiveValue: { [weak self] calendars in
+                    self?.mySharedCalendars = calendars
+                    ActiveSharedCalendarStore.shared.reconcile(with: calendars)
+                }
             )
             .store(in: &cancellables)
     }
@@ -646,7 +647,8 @@ final class CalendarViewModel: ObservableObject {
                     calendarName: old.calendarName, calendarColorHex: old.calendarColorHex,
                     source: old.source,
                     priority: priority, isPinned: isPinned, category: finalCategory,
-                    sharedCalendarID: old.sharedCalendarID
+                    sharedCalendarID: old.sharedCalendarID,
+                    ownerID: old.ownerID
                 )
                 Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
             } else {

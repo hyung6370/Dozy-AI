@@ -27,6 +27,7 @@ struct CalendarView: View {
     @State private var isShowingEventList = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var authViewModel: AuthViewModel
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -513,16 +514,27 @@ struct CalendarView: View {
         .padding(.bottom, 40)
     }
     
+    /// 파트너가 생성한 공유 캘린더 이벤트인지 판단.
+    /// 개인 이벤트, 내가 만든 공유 이벤트, 레거시(ownerID nil) 이벤트는 편집 가능.
+    private func isEventEditable(_ dozyEvent: DozyEvent) -> Bool {
+        if dozyEvent.sharedCalendarID == nil { return true }
+        guard let ownerID = dozyEvent.ownerID else { return true }
+        return ownerID == (authViewModel.currentUser?.id ?? "")
+    }
+
     @ViewBuilder
     private func eventContextMenu(for event: CalendarEvent) -> some View {
         if let dozyEvent = viewModel.dozyEvent(for: event) {
-            Button { viewModel.startEditingEvent(dozyEvent) } label: {
-                Label("수정", systemImage: "pencil")
-            }
-            Button(role: .destructive) {
-                viewModel.requestDelete(event)
-            } label: {
-                Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
+            let canEdit = isEventEditable(dozyEvent)
+            if canEdit {
+                Button { viewModel.startEditingEvent(dozyEvent) } label: {
+                    Label("수정", systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    viewModel.requestDelete(event)
+                } label: {
+                    Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
+                }
             }
         } else if event.source == .apple || event.source == .google {
             Button { viewModel.startEditingCalendarEvent(event) } label: {

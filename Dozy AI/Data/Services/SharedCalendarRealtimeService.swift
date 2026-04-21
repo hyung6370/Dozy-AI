@@ -39,6 +39,11 @@ final class SharedCalendarRealtimeService: ObservableObject {
 
         channelTasks[calendarID] = Task { [weak self] in
             guard let self else { return }
+            // 1) 기존 이벤트 초기 fetch (파트너가 이미 만들어둔 일정 동기화)
+            await self.fetchAndSyncExistingEvents(calendarID: calendarID)
+            // 2) 파트너 닉네임 캐시 갱신
+            await self.fetchAndCachePartnerNickname(calendarID: calendarID)
+            // 3) 실시간 변경 구독
             await self.runChannel(channel, calendarID: calendarID)
         }
     }
@@ -123,6 +128,67 @@ final class SharedCalendarRealtimeService: ObservableObject {
         modelContext.delete(event)
         try? modelContext.save()
         Logger.realtime.info("🗑 공유 이벤트 DELETE: \(deletedID)")
+    }
+
+    // MARK: - Initial Fetch (구독 시작 시 기존 이벤트 동기화)
+
+    private func fetchAndSyncExistingEvents(calendarID: String) async {
+        do {
+            let rows: [DozyEventDownloadRow] = try await supabase
+                .from("dozy_events")
+                .select()
+                .eq("shared_calendar_id", value: calendarID)
+                .execute()
+                .value
+
+            Logger.realtime.info("📥 \(calendarID) 초기 fetch: \(rows.count)개")
+
+            for row in rows {
+                let sharedRow = SharedEventRow(
+                    id: row.id, userID: row.userID, title: row.title,
+                    startDate: row.startDate, endDate: row.endDate,
+                    isAllDay: row.isAllDay, location: row.location, notes: row.notes,
+                    colorHex: row.colorHex, recurrenceRule: row.recurrenceRule,
+                    recurrenceEndDate: row.recurrenceEndDate,
+                    notificationMinutesBefore: row.notificationMinutesBefore,
+                    memos: row.memos, isCompleted: row.isCompleted,
+                    priority: row.priority, isPinned: row.isPinned,
+                    category: row.category, sharedCalendarID: row.sharedCalendarID
+                )
+                await upsertEvent(row: sharedRow, isUpdate: true)
+            }
+        } catch {
+            Logger.realtime.error("⚠️ 초기 fetch 실패 (\(calendarID)): \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Partner Nickname Cache
+
+    private func fetchAndCachePartnerNickname(calendarID: String) async {
+        struct MemberRow: Decodable {
+            let userID: String
+            let nickname: String?
+            enum CodingKeys: String, CodingKey {
+                case userID = "user_id"
+                case nickname
+            }
+        }
+
+        do {
+            let rows: [MemberRow] = try await supabase
+                .from("shared_calendar_members")
+                .select("user_id, nickname")
+                .eq("shared_calendar_id", value: calendarID)
+                .execute()
+                .value
+
+            let userID = try await supabase.auth.session.user.id.uuidString.lowercased()
+            let partner = rows.first { $0.userID.lowercased() != userID }
+            ActiveSharedCalendarStore.shared.updatePartnerNickname(partner?.nickname, for: calendarID)
+            Logger.realtime.info("👤 파트너 닉네임 캐시 갱신: \(calendarID) → \(partner?.nickname ?? "nil")")
+        } catch {
+            Logger.realtime.error("⚠️ 파트너 닉네임 fetch 실패: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Shared upsert logic
@@ -291,6 +357,48 @@ private struct SharedEventRow {
     let isPinned: Bool
     let category: String
     let sharedCalendarID: String?
+}
+
+/// 초기 fetch용 DTO — Supabase에서 dozy_events 테이블을 select할 때 사용.
+private struct DozyEventDownloadRow: Decodable {
+    let id: String
+    let userID: String
+    let title: String
+    let startDate: Date
+    let endDate: Date
+    let isAllDay: Bool
+    let location: String?
+    let notes: String?
+    let colorHex: String
+    let recurrenceRule: String
+    let recurrenceEndDate: Date?
+    let notificationMinutesBefore: Int
+    let memos: [String]
+    let isCompleted: Bool
+    let priority: Int
+    let isPinned: Bool
+    let category: String
+    let sharedCalendarID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userID = "user_id"
+        case title
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case isAllDay = "is_all_day"
+        case location, notes
+        case colorHex = "color_hex"
+        case recurrenceRule = "recurrence_rule"
+        case recurrenceEndDate = "recurrence_end_date"
+        case notificationMinutesBefore = "notification_minutes_before"
+        case memos
+        case isCompleted = "is_completed"
+        case priority
+        case isPinned = "is_pinned"
+        case category
+        case sharedCalendarID = "shared_calendar_id"
+    }
 }
 
 private extension Logger {
