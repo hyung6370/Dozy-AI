@@ -151,7 +151,8 @@ final class SharedCalendarViewModel: ObservableObject {
                             id: old.id, name: name,
                             inviteCode: old.inviteCode,
                             inviteCodeExpiresAt: old.inviteCodeExpiresAt,
-                            createdBy: old.createdBy, createdAt: old.createdAt
+                            createdBy: old.createdBy, createdAt: old.createdAt,
+                            imagePath: old.imagePath
                         )
                     }
                     completion()
@@ -182,6 +183,64 @@ final class SharedCalendarViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    // MARK: - Calendar Image
+
+    func updateCalendarImage(calendarID: String, jpegData: Data, completion: @escaping (Bool) -> Void) {
+        let previousPath = calendars.first(where: { $0.id == calendarID })?.imagePath
+        isLoading = true
+        service.uploadCalendarImage(calendarID: calendarID, jpegData: jpegData, previousPath: previousPath)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    }
+                },
+                receiveValue: { [weak self] newPath in
+                    self?.applyImagePath(calendarID: calendarID, path: newPath)
+                    completion(true)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func removeCalendarImage(calendarID: String, completion: @escaping (Bool) -> Void) {
+        guard let path = calendars.first(where: { $0.id == calendarID })?.imagePath, !path.isEmpty else {
+            completion(true); return
+        }
+        isLoading = true
+        service.removeCalendarImage(calendarID: calendarID, path: path)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    }
+                },
+                receiveValue: { [weak self] in
+                    self?.applyImagePath(calendarID: calendarID, path: nil)
+                    completion(true)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    private func applyImagePath(calendarID: String, path: String?) {
+        guard let idx = calendars.firstIndex(where: { $0.id == calendarID }) else { return }
+        let old = calendars[idx]
+        calendars[idx] = SharedCalendar(
+            id: old.id, name: old.name,
+            inviteCode: old.inviteCode,
+            inviteCodeExpiresAt: old.inviteCodeExpiresAt,
+            createdBy: old.createdBy, createdAt: old.createdAt,
+            imagePath: path
+        )
+    }
+
     // MARK: - Regenerate Invite Code
 
     func regenerateCode(calendarID: String, completion: @escaping (String) -> Void) {
@@ -199,7 +258,8 @@ final class SharedCalendarViewModel: ObservableObject {
                             id: old.id, name: old.name,
                             inviteCode: result.inviteCode,
                             inviteCodeExpiresAt: result.inviteCodeExpiresAt,
-                            createdBy: old.createdBy, createdAt: old.createdAt
+                            createdBy: old.createdBy, createdAt: old.createdAt,
+                            imagePath: old.imagePath
                         )
                     }
                     completion(result.inviteCode)

@@ -12,6 +12,7 @@ struct SharedCalendar: Identifiable, Codable, Hashable {
     let inviteCodeExpiresAt: Date?
     let createdBy: String
     let createdAt: Date
+    let imagePath: String?
 
     var isInviteCodeExpired: Bool {
         guard let inviteCodeExpiresAt else { return false }

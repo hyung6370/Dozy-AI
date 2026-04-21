@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct SharedCalendarListView: View {
 
@@ -153,9 +154,20 @@ struct SharedCalendarListView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.accentColor.opacity(0.15))
                     .frame(width: 44, height: 44)
-                Image(systemName: "calendar.badge.person.crop")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.accentColor)
+                if let url = calendar.publicImageURL {
+                    KFImage(url)
+                        .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 88, height: 88)))
+                        .cacheOriginalImage()
+                        .fade(duration: 0.15)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else {
+                    Image(systemName: "calendar.badge.person.crop")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.accentColor)
+                }
             }
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {

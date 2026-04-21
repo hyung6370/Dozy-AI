@@ -4,6 +4,11 @@
 //
 
 import SwiftUI
+import PhotosUI
+import Kingfisher
+import OSLog
+
+private let editLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Dozy", category: "SharedCalendarEdit")
 
 struct SharedCalendarEditView: View {
 
@@ -16,6 +21,14 @@ struct SharedCalendarEditView: View {
     @State private var calendarName: String
     @State private var myNickname: String
     @State private var originalNickname: String
+    @State private var photoItem: PhotosPickerItem?
+    @State private var isUploadingImage = false
+    @State private var imageErrorMessage: String?
+    @State private var imageChanged = false
+
+    private var currentCalendar: SharedCalendar {
+        viewModel.calendars.first(where: { $0.id == calendar.id }) ?? calendar
+    }
 
     private var members: [SharedCalendarMember] {
         viewModel.membersMap[calendar.id] ?? []
@@ -27,7 +40,7 @@ struct SharedCalendarEditView: View {
     private var hasChanges: Bool {
         let nameChanged = isOwner && calendarName.trimmingCharacters(in: .whitespaces) != calendar.name
         let nickChanged = myNickname.trimmingCharacters(in: .whitespaces) != originalNickname
-        return nameChanged || nickChanged
+        return nameChanged || nickChanged || imageChanged
     }
 
     init(
@@ -51,6 +64,7 @@ struct SharedCalendarEditView: View {
     var body: some View {
         NavigationStack {
             Form {
+                imageSection
                 calendarNameSection
                 nicknameSection
             }
@@ -66,6 +80,80 @@ struct SharedCalendarEditView: View {
                         .disabled(!hasChanges)
                 }
             }
+            .onChange(of: photoItem) { _, newItem in
+                onPhotoPicked(newItem)
+            }
+            .alert("이미지 업로드 실패", isPresented: Binding(
+                get: { imageErrorMessage != nil },
+                set: { if !$0 { imageErrorMessage = nil } }
+            )) {
+                Button("확인", role: .cancel) { imageErrorMessage = nil }
+            } message: {
+                Text(imageErrorMessage ?? "")
+            }
+        }
+    }
+
+    // MARK: - 캘린더 이미지
+
+    private var imageSection: some View {
+        Section {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.accentColor.opacity(0.15))
+                        .frame(width: 72, height: 72)
+                    if let url = currentCalendar.publicImageURL {
+                        KFImage(url)
+                            .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 144, height: 144)))
+                            .cacheOriginalImage()
+                            .fade(duration: 0.15)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 72, height: 72)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    } else {
+                        Image(systemName: "calendar.badge.person.crop")
+                            .font(.system(size: 28))
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    if isUploadingImage {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black.opacity(0.35))
+                            .frame(width: 72, height: 72)
+                        ProgressView().tint(.white)
+                    }
+                }
+
+                Spacer()
+
+                if isOwner {
+                    HStack(spacing: 16) {
+                        PhotosPicker(selection: $photoItem, matching: .images) {
+                            Text(currentCalendar.imagePath == nil ? "추가" : "변경")
+                                .font(.subheadline).fontWeight(.medium)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isUploadingImage)
+
+                        if currentCalendar.imagePath != nil {
+                            Button(role: .destructive) { removeImage() } label: {
+                                Text("삭제")
+                                    .font(.subheadline).fontWeight(.medium)
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(isUploadingImage)
+                        }
+                    }
+                } else {
+                    Text("소유자만 수정 가능")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .padding(.vertical, 4)
+        } header: {
+            Text("캘린더 이미지")
         }
     }
 
@@ -147,5 +235,84 @@ struct SharedCalendarEditView: View {
         }
 
         group.notify(queue: .main) { dismiss() }
+    }
+
+    // MARK: - 이미지 업로드 / 삭제
+
+    private func onPhotoPicked(_ item: PhotosPickerItem?) {
+        guard let item else { return }
+        editLogger.debug("photo picked, loading Data…")
+        Task { @MainActor in
+            isUploadingImage = true
+            defer { isUploadingImage = false; photoItem = nil }
+
+            let data: Data
+            do {
+                guard let loaded = try await item.loadTransferable(type: Data.self) else {
+                    editLogger.error("loadTransferable returned nil")
+                    imageErrorMessage = "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요."
+                    return
+                }
+                data = loaded
+                editLogger.debug("loaded \(data.count) bytes")
+            } catch {
+                editLogger.error("loadTransferable error: \(error)")
+                imageErrorMessage = "사진 로딩 실패: \(error.localizedDescription)"
+                return
+            }
+
+            guard let jpegData = Self.resizedJPEGData(from: data) else {
+                editLogger.error("resize/JPEG encoding failed")
+                imageErrorMessage = "이 사진은 처리할 수 없습니다. (포맷 문제)"
+                return
+            }
+            editLogger.debug("resized JPEG \(jpegData.count) bytes, uploading…")
+
+            let oldURL = currentCalendar.publicImageURL
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                viewModel.updateCalendarImage(calendarID: calendar.id, jpegData: jpegData) { success in
+                    editLogger.debug("upload completion success=\(success)")
+                    if !success {
+                        imageErrorMessage = viewModel.errorMessage ?? "업로드에 실패했습니다."
+                    } else {
+                        if let oldURL {
+                            KingfisherManager.shared.cache.removeImage(forKey: oldURL.absoluteString)
+                        }
+                        imageChanged = true
+                    }
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func removeImage() {
+        let oldURL = currentCalendar.publicImageURL
+        isUploadingImage = true
+        viewModel.removeCalendarImage(calendarID: calendar.id) { success in
+            isUploadingImage = false
+            if success {
+                if let oldURL {
+                    KingfisherManager.shared.cache.removeImage(forKey: oldURL.absoluteString)
+                }
+                imageChanged = true
+            }
+        }
+    }
+
+    private static func resizedJPEGData(from data: Data, maxDimension: CGFloat = 512, quality: CGFloat = 0.8) -> Data? {
+        guard let image = UIImage(data: data) else { return nil }
+        let size = image.size
+        guard size.width > 0, size.height > 0 else { return nil }
+        let scale = min(maxDimension / size.width, maxDimension / size.height, 1.0)
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        let resized = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        return resized.jpegData(compressionQuality: quality)
     }
 }

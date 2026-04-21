@@ -10,6 +10,9 @@ import OSLog
 
 final class SharedCalendarService: SharedCalendarServiceProtocol {
 
+    static let imageBucket = "shared-calendar-images"
+
+
     // MARK: - Create
 
     func create(name: String) -> AnyPublisher<SharedCalendarCreationResult, DozyError> {
@@ -225,6 +228,69 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
         .eraseToAnyPublisher()
     }
 
+    // MARK: - Upload / Remove Calendar Image
+
+    func uploadCalendarImage(calendarID: String, jpegData: Data, previousPath: String?) -> AnyPublisher<String, DozyError> {
+        return Future { promise in
+            Task {
+                do {
+                    let filename = "\(UUID().uuidString).jpg"
+                    let path = "\(calendarID)/\(filename)"
+                    let bucket = supabase.storage.from(Self.imageBucket)
+
+                    Logger.sharedCalendar.debug("uploadCalendarImage start path=\(path) size=\(jpegData.count)")
+                    _ = try await bucket.upload(
+                        path,
+                        data: jpegData,
+                        options: FileOptions(contentType: "image/jpeg", upsert: false)
+                    )
+                    Logger.sharedCalendar.debug("storage upload OK, updating image_path in DB")
+
+                    try await supabase
+                        .from("shared_calendars")
+                        .update(["image_path": path])
+                        .eq("id", value: calendarID)
+                        .execute()
+                    Logger.sharedCalendar.debug("DB image_path update OK")
+
+                    if let previousPath, !previousPath.isEmpty, previousPath != path {
+                        _ = try? await bucket.remove(paths: [previousPath])
+                    }
+
+                    promise(.success(path))
+                } catch {
+                    Logger.sharedCalendar.error("uploadCalendarImage 실패: \(error)")
+                    promise(.failure(.unknown(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func removeCalendarImage(calendarID: String, path: String) -> AnyPublisher<Void, DozyError> {
+        return Future { promise in
+            Task {
+                do {
+                    try await supabase
+                        .from("shared_calendars")
+                        .update(["image_path": nil as String?])
+                        .eq("id", value: calendarID)
+                        .execute()
+
+                    _ = try? await supabase.storage
+                        .from(Self.imageBucket)
+                        .remove(paths: [path])
+
+                    promise(.success(()))
+                } catch {
+                    Logger.sharedCalendar.error("removeCalendarImage 실패: \(error)")
+                    promise(.failure(.unknown(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     // MARK: - Delete (owner only, CASCADE)
 
     func delete(calendarID: String) -> AnyPublisher<Void, DozyError> {
@@ -244,6 +310,18 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
             }
         }
         .eraseToAnyPublisher()
+    }
+}
+
+// MARK: - Public Image URL Helper
+
+extension SharedCalendar {
+    /// Storage public URL 조합. imagePath가 nil/empty면 nil 반환.
+    var publicImageURL: URL? {
+        guard let imagePath, !imagePath.isEmpty else { return nil }
+        return try? supabase.storage
+            .from(SharedCalendarService.imageBucket)
+            .getPublicURL(path: imagePath)
     }
 }
 
@@ -275,6 +353,7 @@ private struct SharedCalendarRow: Decodable {
     let inviteCodeExpiresAt: Date
     let createdBy: String
     let createdAt: Date
+    let imagePath: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name
@@ -282,6 +361,7 @@ private struct SharedCalendarRow: Decodable {
         case inviteCodeExpiresAt = "invite_code_expires_at"
         case createdBy = "created_by"
         case createdAt = "created_at"
+        case imagePath = "image_path"
     }
 
     func toDomain() -> SharedCalendar {
@@ -289,7 +369,8 @@ private struct SharedCalendarRow: Decodable {
             id: id, name: name,
             inviteCode: inviteCode,
             inviteCodeExpiresAt: inviteCodeExpiresAt,
-            createdBy: createdBy, createdAt: createdAt
+            createdBy: createdBy, createdAt: createdAt,
+            imagePath: imagePath
         )
     }
 }
