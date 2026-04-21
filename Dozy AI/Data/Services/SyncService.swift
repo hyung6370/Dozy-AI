@@ -103,6 +103,10 @@ final class SyncService {
                             isPinned: event.isPinned,
                             category: event.category,
                             sharedCalendarID: event.sharedCalendarID,
+                            externalSource: event.externalSource,
+                            externalEventID: event.externalEventID,
+                            externalLastSyncedAt: event.externalLastSyncedAt,
+                            externalDeleted: event.externalDeleted,
                             createdAt: event.createdAt,
                             updatedAt: event.updatedAt
                         )
@@ -283,7 +287,11 @@ final class SyncService {
                                 isPinned: row.isPinned,
                                 category: row.category,
                                 sharedCalendarID: row.sharedCalendarID,
-                                ownerID: row.userID
+                                ownerID: row.userID,
+                                externalSource: row.externalSource,
+                                externalEventID: row.externalEventID,
+                                externalLastSyncedAt: row.externalLastSyncedAt,
+                                externalDeleted: row.externalDeleted
                             )
                             event.memos = row.memos
                             event.isCompleted = row.isCompleted
@@ -515,6 +523,10 @@ private struct DozyEventRow: Codable {
     let isPinned: Bool
     let category: String
     let sharedCalendarID: String?
+    let externalSource: String?
+    let externalEventID: String?
+    let externalLastSyncedAt: Date?
+    let externalDeleted: Bool
     let createdAt: Date
     let updatedAt: Date
 
@@ -536,8 +548,78 @@ private struct DozyEventRow: Codable {
         case isPinned = "is_pinned"
         case category
         case sharedCalendarID = "shared_calendar_id"
+        case externalSource = "external_source"
+        case externalEventID = "external_event_id"
+        case externalLastSyncedAt = "external_last_synced_at"
+        case externalDeleted = "external_deleted"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+    }
+
+    init(
+        id: String, userID: String, title: String,
+        startDate: Date, endDate: Date, isAllDay: Bool,
+        location: String?, notes: String?, colorHex: String,
+        recurrenceRule: String, recurrenceEndDate: Date?,
+        notificationMinutesBefore: Int, memos: [String], isCompleted: Bool,
+        priority: Int, isPinned: Bool, category: String,
+        sharedCalendarID: String?,
+        externalSource: String? = nil, externalEventID: String? = nil,
+        externalLastSyncedAt: Date? = nil, externalDeleted: Bool = false,
+        createdAt: Date, updatedAt: Date
+    ) {
+        self.id = id
+        self.userID = userID
+        self.title = title
+        self.startDate = startDate
+        self.endDate = endDate
+        self.isAllDay = isAllDay
+        self.location = location
+        self.notes = notes
+        self.colorHex = colorHex
+        self.recurrenceRule = recurrenceRule
+        self.recurrenceEndDate = recurrenceEndDate
+        self.notificationMinutesBefore = notificationMinutesBefore
+        self.memos = memos
+        self.isCompleted = isCompleted
+        self.priority = priority
+        self.isPinned = isPinned
+        self.category = category
+        self.sharedCalendarID = sharedCalendarID
+        self.externalSource = externalSource
+        self.externalEventID = externalEventID
+        self.externalLastSyncedAt = externalLastSyncedAt
+        self.externalDeleted = externalDeleted
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        userID = try c.decode(String.self, forKey: .userID)
+        title = try c.decode(String.self, forKey: .title)
+        startDate = try c.decode(Date.self, forKey: .startDate)
+        endDate = try c.decode(Date.self, forKey: .endDate)
+        isAllDay = try c.decode(Bool.self, forKey: .isAllDay)
+        location = try c.decodeIfPresent(String.self, forKey: .location)
+        notes = try c.decodeIfPresent(String.self, forKey: .notes)
+        colorHex = try c.decode(String.self, forKey: .colorHex)
+        recurrenceRule = try c.decode(String.self, forKey: .recurrenceRule)
+        recurrenceEndDate = try c.decodeIfPresent(Date.self, forKey: .recurrenceEndDate)
+        notificationMinutesBefore = try c.decode(Int.self, forKey: .notificationMinutesBefore)
+        memos = try c.decodeIfPresent([String].self, forKey: .memos) ?? []
+        isCompleted = try c.decode(Bool.self, forKey: .isCompleted)
+        priority = try c.decode(Int.self, forKey: .priority)
+        isPinned = try c.decode(Bool.self, forKey: .isPinned)
+        category = try c.decode(String.self, forKey: .category)
+        sharedCalendarID = try c.decodeIfPresent(String.self, forKey: .sharedCalendarID)
+        externalSource = try c.decodeIfPresent(String.self, forKey: .externalSource)
+        externalEventID = try c.decodeIfPresent(String.self, forKey: .externalEventID)
+        externalLastSyncedAt = try c.decodeIfPresent(Date.self, forKey: .externalLastSyncedAt)
+        externalDeleted = try c.decodeIfPresent(Bool.self, forKey: .externalDeleted) ?? false
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        updatedAt = try c.decode(Date.self, forKey: .updatedAt)
     }
 }
 

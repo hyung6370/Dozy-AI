@@ -76,6 +76,11 @@ final class CalendarViewModel: ObservableObject {
     @Published var showSuccessAnimation = false
     @Published var displaySettingsByID: [String: EventDisplaySettings] = [:]
     @Published var mySharedCalendars: [SharedCalendar] = []
+    /// 외부(Apple/Google) 이벤트를 공유 캘린더로 미러링할 때, 공유 대상 캘린더가 여러 개면
+    /// 이 값을 세팅해서 선택 다이얼로그를 띄운다.
+    @Published var shareCandidateEvent: CalendarEvent? = nil
+    @Published var shareErrorMessage: String? = nil
+    @Published var showShareSuccess = false
     private var allEventsInMonth: [String: CalendarEvent] = [:]
     private var loadedMonthKeys = Set<Date>()
     
@@ -94,6 +99,7 @@ final class CalendarViewModel: ObservableObject {
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
     private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
+    private let mirrorExternalEventUseCase: MirrorExternalEventUseCase
     private weak var calendarService: CompositeCalendarSerivce?
     private var sharedCalendarService: SharedCalendarServiceProtocol?
     private var cancellables = Set<AnyCancellable>()
@@ -120,6 +126,7 @@ final class CalendarViewModel: ObservableObject {
         fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
         fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase,
         fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase,
+        mirrorExternalEventUseCase: MirrorExternalEventUseCase,
         displaySettingsRepo: EventDisplaySettingsRepository
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
@@ -136,6 +143,7 @@ final class CalendarViewModel: ObservableObject {
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
         self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
         self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
+        self.mirrorExternalEventUseCase = mirrorExternalEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
         subscribeToActiveSharedCalendarChanges()
     }
@@ -171,6 +179,7 @@ final class CalendarViewModel: ObservableObject {
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
             fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase,
             fetchCalendarEventsForPeriodUseCase: container.fetchCalendarEventsForPeriodUseCase,
+            mirrorExternalEventUseCase: container.mirrorExternalEventUseCase,
             displaySettingsRepo: container.eventDisplaySettingsRepository
         )
         self.calendarService = container.calendarService
@@ -529,6 +538,41 @@ final class CalendarViewModel: ObservableObject {
         return mySharedCalendars
     }
 
+    // MARK: - 외부 이벤트 공유 (Apple/Google → Dozy 공유 캘린더 미러링)
+
+    /// 공유 캘린더가 1개면 즉시 미러링, 2개 이상이면 선택 다이얼로그를 띄운다.
+    /// 0개면 에러 메시지 세팅.
+    func shareExternalEvent(_ event: CalendarEvent) {
+        guard event.source == .apple || event.source == .google else { return }
+        switch mySharedCalendars.count {
+        case 0:
+            shareErrorMessage = "공유할 수 있는 공유 캘린더가 없습니다. 먼저 공유 캘린더를 만들거나 참여해주세요."
+        case 1:
+            performShare(event, to: mySharedCalendars[0])
+        default:
+            shareCandidateEvent = event
+        }
+    }
+
+    func performShare(_ event: CalendarEvent, to calendar: SharedCalendar) {
+        shareCandidateEvent = nil
+        mirrorExternalEventUseCase.execute(event, to: calendar.id)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        Logger.calendar.error("❌ 외부 이벤트 공유 실패: \(error.localizedDescription)")
+                        self?.shareErrorMessage = "공유에 실패했습니다. 잠시 후 다시 시도해주세요."
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    self?.showShareSuccess = true
+                    self?.refreshData()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
     func loadMySharedCalendars() {
         sharedCalendarService?.fetchMyCalendars()
             .receive(on: DispatchQueue.main)
@@ -648,7 +692,10 @@ final class CalendarViewModel: ObservableObject {
                     source: old.source,
                     priority: priority, isPinned: isPinned, category: finalCategory,
                     sharedCalendarID: old.sharedCalendarID,
-                    ownerID: old.ownerID
+                    ownerID: old.ownerID,
+                    externalSource: old.externalSource,
+                    externalEventID: old.externalEventID,
+                    externalDeleted: old.externalDeleted
                 )
                 Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
             } else {

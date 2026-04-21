@@ -153,7 +153,11 @@ final class SharedCalendarRealtimeService: ObservableObject {
                     notificationMinutesBefore: row.notificationMinutesBefore,
                     memos: row.memos, isCompleted: row.isCompleted,
                     priority: row.priority, isPinned: row.isPinned,
-                    category: row.category, sharedCalendarID: row.sharedCalendarID
+                    category: row.category, sharedCalendarID: row.sharedCalendarID,
+                    externalSource: row.externalSource,
+                    externalEventID: row.externalEventID,
+                    externalLastSyncedAt: row.externalLastSyncedAt,
+                    externalDeleted: row.externalDeleted
                 )
                 await upsertEvent(row: sharedRow, isUpdate: true)
             }
@@ -215,6 +219,10 @@ final class SharedCalendarRealtimeService: ObservableObject {
             event.priority = row.priority
             event.isPinned = row.isPinned
             event.category = row.category
+            event.externalSource = row.externalSource
+            event.externalEventID = row.externalEventID
+            event.externalLastSyncedAt = row.externalLastSyncedAt
+            event.externalDeleted = row.externalDeleted
             try? modelContext.save()
             Logger.realtime.info("✏️ 공유 이벤트 UPDATE: \(row.title)")
         } else {
@@ -226,7 +234,11 @@ final class SharedCalendarRealtimeService: ObservableObject {
                 recurrenceEndDate: row.recurrenceEndDate,
                 notificationMinutesBefore: row.notificationMinutesBefore,
                 priority: row.priority, isPinned: row.isPinned, category: row.category,
-                sharedCalendarID: row.sharedCalendarID, ownerID: row.userID
+                sharedCalendarID: row.sharedCalendarID, ownerID: row.userID,
+                externalSource: row.externalSource,
+                externalEventID: row.externalEventID,
+                externalLastSyncedAt: row.externalLastSyncedAt,
+                externalDeleted: row.externalDeleted
             )
             event.memos = row.memos
             event.isCompleted = row.isCompleted
@@ -303,6 +315,22 @@ final class SharedCalendarRealtimeService: ObservableObject {
             if case .string(let v) = record["shared_calendar_id"] { return v }
             return nil
         }()
+        let externalSource: String? = {
+            if case .string(let v) = record["external_source"] { return v }
+            return nil
+        }()
+        let externalEventID: String? = {
+            if case .string(let v) = record["external_event_id"] { return v }
+            return nil
+        }()
+        let externalLastSyncedAt: Date? = {
+            if case .string(let v) = record["external_last_synced_at"] { return parseDate(v) }
+            return nil
+        }()
+        let externalDeleted: Bool = {
+            if case .bool(let v) = record["external_deleted"] { return v }
+            return false
+        }()
 
         return SharedEventRow(
             id: id, userID: userID, title: title,
@@ -311,7 +339,11 @@ final class SharedCalendarRealtimeService: ObservableObject {
             recurrenceRule: recurrenceRule, recurrenceEndDate: recurrenceEndDate,
             notificationMinutesBefore: notificationMinutesBefore, memos: memos,
             isCompleted: isCompleted, priority: priority, isPinned: isPinned,
-            category: category, sharedCalendarID: sharedCalendarID
+            category: category, sharedCalendarID: sharedCalendarID,
+            externalSource: externalSource,
+            externalEventID: externalEventID,
+            externalLastSyncedAt: externalLastSyncedAt,
+            externalDeleted: externalDeleted
         )
     }
 
@@ -357,6 +389,10 @@ private struct SharedEventRow {
     let isPinned: Bool
     let category: String
     let sharedCalendarID: String?
+    let externalSource: String?
+    let externalEventID: String?
+    let externalLastSyncedAt: Date?
+    let externalDeleted: Bool
 }
 
 /// 초기 fetch용 DTO — Supabase에서 dozy_events 테이블을 select할 때 사용.
@@ -379,6 +415,10 @@ private struct DozyEventDownloadRow: Decodable {
     let isPinned: Bool
     let category: String
     let sharedCalendarID: String?
+    let externalSource: String?
+    let externalEventID: String?
+    let externalLastSyncedAt: Date?
+    let externalDeleted: Bool
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -398,6 +438,36 @@ private struct DozyEventDownloadRow: Decodable {
         case isPinned = "is_pinned"
         case category
         case sharedCalendarID = "shared_calendar_id"
+        case externalSource = "external_source"
+        case externalEventID = "external_event_id"
+        case externalLastSyncedAt = "external_last_synced_at"
+        case externalDeleted = "external_deleted"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        userID = try c.decode(String.self, forKey: .userID)
+        title = try c.decode(String.self, forKey: .title)
+        startDate = try c.decode(Date.self, forKey: .startDate)
+        endDate = try c.decode(Date.self, forKey: .endDate)
+        isAllDay = try c.decode(Bool.self, forKey: .isAllDay)
+        location = try c.decodeIfPresent(String.self, forKey: .location)
+        notes = try c.decodeIfPresent(String.self, forKey: .notes)
+        colorHex = try c.decode(String.self, forKey: .colorHex)
+        recurrenceRule = try c.decode(String.self, forKey: .recurrenceRule)
+        recurrenceEndDate = try c.decodeIfPresent(Date.self, forKey: .recurrenceEndDate)
+        notificationMinutesBefore = try c.decode(Int.self, forKey: .notificationMinutesBefore)
+        memos = try c.decodeIfPresent([String].self, forKey: .memos) ?? []
+        isCompleted = try c.decode(Bool.self, forKey: .isCompleted)
+        priority = try c.decode(Int.self, forKey: .priority)
+        isPinned = try c.decode(Bool.self, forKey: .isPinned)
+        category = try c.decode(String.self, forKey: .category)
+        sharedCalendarID = try c.decodeIfPresent(String.self, forKey: .sharedCalendarID)
+        externalSource = try c.decodeIfPresent(String.self, forKey: .externalSource)
+        externalEventID = try c.decodeIfPresent(String.self, forKey: .externalEventID)
+        externalLastSyncedAt = try c.decodeIfPresent(Date.self, forKey: .externalLastSyncedAt)
+        externalDeleted = try c.decodeIfPresent(Bool.self, forKey: .externalDeleted) ?? false
     }
 }
 

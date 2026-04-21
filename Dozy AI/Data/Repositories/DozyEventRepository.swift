@@ -83,6 +83,76 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
         .eraseToAnyPublisher()
     }
 
+    func mirrorExternalEvent(
+        _ origin: CalendarEvent,
+        to sharedCalendarID: String
+    ) -> AnyPublisher<DozyEvent, DozyError> {
+        Future { [modelContainer] promise in
+            Task { @MainActor in
+                guard let ownerID = try? await supabase.auth.session.user.id.uuidString.lowercased() else {
+                    promise(.failure(.dataNotFound))
+                    return
+                }
+                let context = modelContainer.mainContext
+                let originSourceRaw = origin.source.rawValue
+                let originID = origin.id
+
+                // 같은 원본 + 소유자 조합의 스냅샷이 이미 있으면 공유 대상만 갱신.
+                let predicate = #Predicate<DozyEvent> {
+                    $0.ownerID == ownerID
+                        && $0.externalSource == originSourceRaw
+                        && $0.externalEventID == originID
+                }
+                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+                let existing = (try? context.fetch(descriptor))?.first
+
+                let now = Date()
+                let event: DozyEvent
+                if let existing {
+                    existing.sharedCalendarID = sharedCalendarID
+                    existing.title = origin.title
+                    existing.startDate = origin.startDate
+                    existing.endDate = origin.endDate
+                    existing.isAllDay = origin.isAllDay
+                    existing.location = origin.location
+                    existing.notes = origin.notes
+                    existing.colorHex = origin.calendarColorHex
+                    existing.externalDeleted = false
+                    existing.externalLastSyncedAt = now
+                    existing.updatedAt = now
+                    event = existing
+                } else {
+                    let snapshot = DozyEvent(
+                        title: origin.title,
+                        startDate: origin.startDate,
+                        endDate: origin.endDate,
+                        isAllDay: origin.isAllDay,
+                        location: origin.location,
+                        notes: origin.notes,
+                        colorHex: origin.calendarColorHex,
+                        sharedCalendarID: sharedCalendarID,
+                        ownerID: ownerID,
+                        externalSource: origin.source.rawValue,
+                        externalEventID: origin.id,
+                        externalLastSyncedAt: now,
+                        externalDeleted: false
+                    )
+                    context.insert(snapshot)
+                    event = snapshot
+                }
+
+                do {
+                    try context.save()
+                    Task { await Self.upsertToSupabase(event) }
+                    promise(.success(event))
+                } catch {
+                    promise(.failure(.saveFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
         Future { [modelContainer] promise in
             Task { @MainActor in
@@ -126,6 +196,10 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             isPinned: event.isPinned,
             category: event.category,
             sharedCalendarID: event.sharedCalendarID,
+            externalSource: event.externalSource,
+            externalEventID: event.externalEventID,
+            externalLastSyncedAt: event.externalLastSyncedAt,
+            externalDeleted: event.externalDeleted,
             createdAt: event.createdAt,
             updatedAt: event.updatedAt
         )
@@ -182,6 +256,10 @@ private struct DozyEventRow: Codable {
     let isPinned: Bool
     let category: String
     let sharedCalendarID: String?
+    let externalSource: String?
+    let externalEventID: String?
+    let externalLastSyncedAt: Date?
+    let externalDeleted: Bool
     let createdAt: Date
     let updatedAt: Date
 
@@ -203,6 +281,10 @@ private struct DozyEventRow: Codable {
         case isPinned = "is_pinned"
         case category
         case sharedCalendarID = "shared_calendar_id"
+        case externalSource = "external_source"
+        case externalEventID = "external_event_id"
+        case externalLastSyncedAt = "external_last_synced_at"
+        case externalDeleted = "external_deleted"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
