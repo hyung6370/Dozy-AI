@@ -153,6 +153,85 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
         .eraseToAnyPublisher()
     }
 
+    func fetchMyExternalMirrors() -> AnyPublisher<[DozyEvent], DozyError> {
+        Future { [modelContainer] promise in
+            Task { @MainActor in
+                guard let ownerID = try? await supabase.auth.session.user.id.uuidString.lowercased() else {
+                    promise(.success([]))
+                    return
+                }
+                let context = modelContainer.mainContext
+                let predicate = #Predicate<DozyEvent> {
+                    $0.ownerID == ownerID && $0.externalSource != nil
+                }
+                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+                do {
+                    let results = try context.fetch(descriptor)
+                    promise(.success(results))
+                } catch {
+                    promise(.failure(.saveFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func applyExternalMirrorReconcile(
+        updates: [ExternalMirrorUpdate],
+        deletedIDs: [String]
+    ) -> AnyPublisher<Void, DozyError> {
+        Future { [modelContainer] promise in
+            Task { @MainActor in
+                let context = modelContainer.mainContext
+                let touchedIDs = Set(updates.map(\.id)).union(deletedIDs)
+                guard !touchedIDs.isEmpty else { promise(.success(())); return }
+                let idArray = Array(touchedIDs)
+                let predicate = #Predicate<DozyEvent> { idArray.contains($0.id) }
+                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+                let events = (try? context.fetch(descriptor)) ?? []
+                let byID = Dictionary(uniqueKeysWithValues: events.map { ($0.id, $0) })
+                let now = Date()
+                var touched: [DozyEvent] = []
+
+                for update in updates {
+                    guard let event = byID[update.id] else { continue }
+                    event.title = update.title
+                    event.startDate = update.startDate
+                    event.endDate = update.endDate
+                    event.isAllDay = update.isAllDay
+                    event.location = update.location
+                    event.notes = update.notes
+                    event.colorHex = update.colorHex
+                    event.externalDeleted = false
+                    event.externalLastSyncedAt = now
+                    event.updatedAt = now
+                    touched.append(event)
+                }
+                for id in deletedIDs {
+                    guard let event = byID[id], !event.externalDeleted else { continue }
+                    event.externalDeleted = true
+                    event.externalLastSyncedAt = now
+                    event.updatedAt = now
+                    touched.append(event)
+                }
+
+                guard !touched.isEmpty else { promise(.success(())); return }
+                do {
+                    try context.save()
+                    Task {
+                        for event in touched {
+                            await Self.upsertToSupabase(event)
+                        }
+                    }
+                    promise(.success(()))
+                } catch {
+                    promise(.failure(.saveFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
         Future { [modelContainer] promise in
             Task { @MainActor in

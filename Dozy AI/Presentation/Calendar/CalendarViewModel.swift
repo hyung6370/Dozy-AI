@@ -101,6 +101,7 @@ final class CalendarViewModel: ObservableObject {
     private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
     private let mirrorExternalEventUseCase: MirrorExternalEventUseCase
     private weak var calendarService: CompositeCalendarSerivce?
+    private var externalMirrorSyncService: ExternalMirrorSyncService?
     private var sharedCalendarService: SharedCalendarServiceProtocol?
     private var cancellables = Set<AnyCancellable>()
     // 날짜별 이벤트 fetch 전용 — 새 날짜 선택 시 이전 fetch를 자동 취소하기 위해 Set이 아닌 단일 변수 사용
@@ -184,6 +185,7 @@ final class CalendarViewModel: ObservableObject {
         )
         self.calendarService = container.calendarService
         self.sharedCalendarService = container.sharedCalendarService
+        self.externalMirrorSyncService = container.externalMirrorSyncService
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -529,6 +531,19 @@ final class CalendarViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         loadMySharedCalendars()
+        reconcileExternalMirrors()
+    }
+
+    /// Phase D: 외부(Apple/Google) 원본과 Dozy 미러 스냅샷을 단방향 동기화.
+    /// 완료 후 현재 날짜/월 이벤트를 refresh해 UI에 즉시 반영.
+    func reconcileExternalMirrors() {
+        externalMirrorSyncService?.reconcile { [weak self] in
+            guard let self else { return }
+            Task { @MainActor in
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
+            }
+        }
     }
 
     /// 일정 생성/편집 시 Picker에 노출할 공유 캘린더 목록.

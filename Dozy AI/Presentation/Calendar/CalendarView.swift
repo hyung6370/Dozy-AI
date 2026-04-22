@@ -157,7 +157,13 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
-                    CalendarEventEditView(event: event) { edit in
+                    CalendarEventEditView(
+                        event: event,
+                        sharedCalendars: viewModel.mySharedCalendars,
+                        onShareToSharedCalendar: { edited, calendar in
+                            viewModel.performShare(edited, to: calendar)
+                        }
+                    ) { edit in
                         viewModel.saveCalendarEvent(event, edit: edit)
                     }
                 }
@@ -218,6 +224,9 @@ struct CalendarView: View {
                     viewModel.showDeleteAlert = false
                     viewModel.showDeleteSuccess = false
                     viewModel.deleteErrorMessage = nil
+                } else {
+                    // 앱 복귀 시 외부 원본과 미러 스냅샷을 재동기화
+                    viewModel.reconcileExternalMirrors()
                 }
             }
             } // ScrollViewReader

@@ -44,6 +44,12 @@ final class DependencyContainer: ObservableObject {
     private lazy var appleCalendarService = CalendarService()
     private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
     private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
+    lazy var externalMirrorSyncService = ExternalMirrorSyncService(
+        repository: dozyEventRepository,
+        appleService: appleCalendarService,
+        googleService: googleCalendarService,
+        sourceManager: calendarSourceManager
+    )
 
     // MARK: - Repository (Data Layer)
 

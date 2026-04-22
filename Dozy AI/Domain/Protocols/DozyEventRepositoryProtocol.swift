@@ -21,4 +21,28 @@ protocol DozyEventRepositoryProtocol {
         _ origin: CalendarEvent,
         to sharedCalendarID: String
     ) -> AnyPublisher<DozyEvent, DozyError>
+
+    /// 현재 사용자가 소유한 외부 미러 스냅샷 전체를 반환.
+    func fetchMyExternalMirrors() -> AnyPublisher<[DozyEvent], DozyError>
+
+    /// 외부 원본과 대조 결과를 반영:
+    /// - `updates`: 원본과 필드 차이가 있거나 복원된 스냅샷 (externalDeleted=false로 복원)
+    /// - `deletedIDs`: 원본이 사라진 스냅샷 id 목록 (externalDeleted=true로 마킹)
+    /// 모든 대상에 대해 externalLastSyncedAt을 now로 업데이트.
+    func applyExternalMirrorReconcile(
+        updates: [ExternalMirrorUpdate],
+        deletedIDs: [String]
+    ) -> AnyPublisher<Void, DozyError>
+}
+
+/// Phase D reconcile 시 원본과 달라진 필드들을 전달하는 값 타입.
+struct ExternalMirrorUpdate {
+    let id: String
+    let title: String
+    let startDate: Date
+    let endDate: Date
+    let isAllDay: Bool
+    let location: String?
+    let notes: String?
+    let colorHex: String
 }

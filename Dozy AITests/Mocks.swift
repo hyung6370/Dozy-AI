@@ -113,6 +113,17 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
         )
         return Just(event).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
+
+    func fetchMyExternalMirrors() -> AnyPublisher<[DozyEvent], DozyError> {
+        Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func applyExternalMirrorReconcile(
+        updates: [ExternalMirrorUpdate],
+        deletedIDs: [String]
+    ) -> AnyPublisher<Void, DozyError> {
+        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
 }
 
 // MARK: - MockAIService

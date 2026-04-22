@@ -132,6 +132,7 @@
 		F619D9582F75219200084C61 /* GoogleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9572F75219200084C61 /* GoogleCalendarService.swift */; };
 		F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */; };
 		F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
+		ACCF2D28491B43E9A58E424B /* ExternalMirrorSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */; };
 		F619D95F2F7528C600084C61 /* CalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */; };
 		F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */; };
 		F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */; };
@@ -343,6 +344,7 @@
 		F619D9572F75219200084C61 /* GoogleCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleCalendarService.swift; sourceTree = "<group>"; };
 		F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSourceManager.swift; sourceTree = "<group>"; };
 		F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeCalendarSerivce.swift; sourceTree = "<group>"; };
+		BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalMirrorSyncService.swift; sourceTree = "<group>"; };
 		F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsView.swift; sourceTree = "<group>"; };
 		F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+TopVC.swift"; sourceTree = "<group>"; };
@@ -784,6 +786,7 @@
 				DD9F690F2F6ACF04001952F6 /* CalendarService.swift */,
 				F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */,
 				F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */,
+				BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */,
 				F619D97A2F7A3A6000084C61 /* DozyCalendarService.swift */,
 				F619D9572F75219200084C61 /* GoogleCalendarService.swift */,
 				F619D9552F751F7D00084C61 /* GoogleSignInService.swift */,
@@ -1162,6 +1165,7 @@
 				F63C68692F84F481003464E8 /* NotificationRecord.swift in Sources */,
 				DD9F68E42F6ACD08001952F6 /* Date+Extensions.swift in Sources */,
 				F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */,
+				ACCF2D28491B43E9A58E424B /* ExternalMirrorSyncService.swift in Sources */,
 				F616DCF22F7CBA0100FA0476 /* EventDetailView.swift in Sources */,
 				DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */,
 				F619D9872F7A4A1400084C61 /* EventEditViewModel.swift in Sources */,
