@@ -21,35 +21,43 @@ final class DependencyContainer: ObservableObject {
     let modelContainer: ModelContainer
 
     // MARK: - Services (Data Layer)
+    //
+    // iOS 전용 서비스는 Google/Naver OAuth SDK에 의존하거나 CompositeCalendarSerivce
+    // 처럼 Google 경로를 엮어 쓴다. macOS 버전에서는 이 묶음을 `#if os(iOS)` 블록으로
+    // 격리하고, 공통 서비스(Apple EventKit 기반 CalendarService, DozyCalendarService
+    // 등)만 공유한다. macOS Presentation은 M4 이후 여기에 플랫폼별 조립을 추가한다.
 
+    lazy var reminderService: ReminderServiceProtocol = ReminderService()
+    lazy var notificationService: NotificationServiceProtocol = NotificationService()
+    lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
+    lazy var aiService: AIServiceProtocol = AIService()
+    lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
+    lazy var authService = AuthService()
+    lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(modelContext: modelContainer.mainContext)
+    lazy var calendarSourceManager = CalendarSourceManager()
+    lazy var patternAnalysisService = PatternAnalysisService()
+
+    private lazy var appleCalendarService = CalendarService()
+    private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
+
+    #if os(iOS)
     lazy var calendarService: CompositeCalendarSerivce = CompositeCalendarSerivce(
         appleService: appleCalendarService,
         googleService: googleCalendarService,
         dozyService: dozyCalendarService,
         sourceManager: calendarSourceManager
     )
-    lazy var reminderService: ReminderServiceProtocol = ReminderService()
-    lazy var notificationService: NotificationServiceProtocol = NotificationService()
     lazy var scheduleNotificationUseCase = ScheduleNotificationUseCase(service: notificationService, notificationRepository: notificationRepository)
-    lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
-    lazy var aiService: AIServiceProtocol = AIService()
-    lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
-    lazy var authService = AuthService()
-    lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(modelContext: modelContainer.mainContext)
     lazy var googleSignInService = GoogleSignInService()
     lazy var naverSignInService = NaverSignInService()
-    lazy var calendarSourceManager = CalendarSourceManager()
-    lazy var patternAnalysisService = PatternAnalysisService()
-    
-    private lazy var appleCalendarService = CalendarService()
     private lazy var googleCalendarService = GoogleCalendarService(signInService: googleSignInService)
-    private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
     lazy var externalMirrorSyncService = ExternalMirrorSyncService(
         repository: dozyEventRepository,
         appleService: appleCalendarService,
         googleService: googleCalendarService,
         sourceManager: calendarSourceManager
     )
+    #endif
 
     // MARK: - Repository (Data Layer)
 
@@ -61,29 +69,34 @@ final class DependencyContainer: ObservableObject {
 
     // MARK: - UseCases (Domain Layer)
 
-    lazy var fetchTodayDataUseCase = FetchTodayDataUseCase(calendarService: calendarService, reminderService: reminderService)
     lazy var saveWorkLogUseCase = SaveWorkLogUseCase(repository: workLogRepository)
     lazy var generateDailySummaryUseCase = GenerateDailySummaryUseCase(aiService: aiService, repository: workLogRepository)
     lazy var fetchRecentLogsUseCase = FetchRecentLogsUseCase(repository: workLogRepository)
-    lazy var fetchCalendarEventUseCase = FetchCalendarEventUseCase(calendarService: calendarService)
     lazy var fetchDozyEventsUseCase = FetchDozyEventsUseCase(repository: dozyEventRepository)
     lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
     lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)
     lazy var deleteDozyEventUseCase = DeleteDozyEventUseCase(repository: dozyEventRepository)
     lazy var toggleDozyEventCompletionUseCase = ToggleDozyEventCompletionUseCase(repository: dozyEventRepository)
     lazy var mirrorExternalEventUseCase = MirrorExternalEventUseCase(repository: dozyEventRepository)
-    lazy var updateCalendarEventUseCase = UpdateCalendarEventUseCase(service: calendarService)
-    lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
     lazy var toggleCalendarEventCompletionUseCase = ToggleCalendarEventCompletionUseCase(repository: eventCompletionRepository)
     lazy var fetchEventCompletionsUseCase = FetchEventCompletionsUseCase(repository: eventCompletionRepository)
     lazy var fetchDozyEventsForPeriodUseCase = FetchDozyEventsForPeriodUseCase(repository: dozyEventRepository)
     lazy var fetchEventCompletionsForPeriodUseCase = FetchEventCompletionsForPeriodUseCase(repository: eventCompletionRepository)
-    lazy var fetchCalendarEventsForPeriodUseCase = FetchCalendarEventsForPeriodUseCase(calendarService: calendarService)
     lazy var createSharedCalendarUseCase = CreateSharedCalendarUseCase(service: sharedCalendarService)
     lazy var joinSharedCalendarUseCase = JoinSharedCalendarUseCase(service: sharedCalendarService)
     lazy var leaveSharedCalendarUseCase = LeaveSharedCalendarUseCase(service: sharedCalendarService)
     lazy var regenerateSharedCalendarInviteCodeUseCase = RegenerateSharedCalendarInviteCodeUseCase(service: sharedCalendarService)
     lazy var updateSharedCalendarNicknameUseCase = UpdateSharedCalendarNicknameUseCase(service: sharedCalendarService)
+
+    #if os(iOS)
+    // calendarService (Composite) 의존 UseCase — Google/Naver OAuth 경로가 엮여
+    // macOS에서는 M4 이후에 플랫폼별 조립으로 재정의한다.
+    lazy var fetchTodayDataUseCase = FetchTodayDataUseCase(calendarService: calendarService, reminderService: reminderService)
+    lazy var fetchCalendarEventUseCase = FetchCalendarEventUseCase(calendarService: calendarService)
+    lazy var updateCalendarEventUseCase = UpdateCalendarEventUseCase(service: calendarService)
+    lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
+    lazy var fetchCalendarEventsForPeriodUseCase = FetchCalendarEventsForPeriodUseCase(calendarService: calendarService)
+    #endif
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()

@@ -184,6 +184,7 @@
 		E0E685B8FBA9D0465C372CC7 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */; };
 		E2B674ED2C774CC681FEAB8B /* JoinSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */; };
 		E2D59D8FB4222EC81FE9E82B /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF012F7FAA01007B8D9F /* PostgREST */; };
+		E4571C8B9C92069B411F031C /* DependencyContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E12F6ACCF4001952F6 /* DependencyContainer.swift */; };
 		E4DD460FD7EECCBE7C5A1A68 /* NotificationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */; };
 		E5FAF054B59D083A0F0F43E2 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF032F7FAA01007B8D9F /* Realtime */; };
 		E64E8D7DEE2904F2AF41AA37 /* SharedCalendarRealtimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */; };
@@ -1681,6 +1682,7 @@
 				D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */,
 				966230045F58049E702E2323 /* WorkLogRepository.swift in Sources */,
 				CD962B22ED55A5E31E4EB388 /* AuthService.swift in Sources */,
+				E4571C8B9C92069B411F031C /* DependencyContainer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
