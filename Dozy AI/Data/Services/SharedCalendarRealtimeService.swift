@@ -61,8 +61,25 @@ final class SharedCalendarRealtimeService: ObservableObject {
         for key in channelTasks.keys { stopWatching(calendarID: key) }
     }
 
+    /// 앱이 포그라운드로 복귀했을 때 호출. 현재 감시 중인 모든 공유 캘린더에 대해
+    /// 원격 상태와 로컬을 재동기화한다. `REPLICA IDENTITY DEFAULT`로 인해 더이상
+    /// Realtime으로 오지 않는 DELETE 이벤트와 파트너 탈퇴를 이 경로로 커버한다.
+    func resyncAllActive() {
+        let calendarIDs = Array(channelTasks.keys)
+        for calendarID in calendarIDs {
+            Task { [weak self] in
+                await self?.fetchAndSyncExistingEvents(calendarID: calendarID)
+                await self?.checkPartnerMembership(calendarID: calendarID)
+                await self?.fetchAndCachePartnerNickname(calendarID: calendarID)
+            }
+        }
+    }
+
     // MARK: - 채널 실행
 
+    /// INSERT/UPDATE 이벤트만 실시간 구독. DELETE는 `REPLICA IDENTITY DEFAULT` 상태에선
+    /// Realtime으로 오지 않으므로, `fetchAndSyncExistingEvents`의 resync 경로에서 처리한다.
+    /// 파트너 탈퇴 감지도 동일 — 포그라운드 복귀 시 `fetchMembers`로 확인한다.
     private func runChannel(_ channel: RealtimeChannelV2, calendarID: String) async {
         let eventsFilter = "shared_calendar_id=eq.\(calendarID)"
 
@@ -70,11 +87,6 @@ final class SharedCalendarRealtimeService: ObservableObject {
             InsertAction.self, schema: "public", table: "dozy_events", filter: eventsFilter)
         let updates = channel.postgresChange(
             UpdateAction.self, schema: "public", table: "dozy_events", filter: eventsFilter)
-        let deletions = channel.postgresChange(
-            DeleteAction.self, schema: "public", table: "dozy_events", filter: eventsFilter)
-        let memberDeletions = channel.postgresChange(
-            DeleteAction.self, schema: "public", table: "shared_calendar_members",
-            filter: "shared_calendar_id=eq.\(calendarID)")
 
         await channel.subscribe()
         Logger.realtime.info("✅ 채널 구독 완료: \(calendarID)")
@@ -88,17 +100,6 @@ final class SharedCalendarRealtimeService: ObservableObject {
             group.addTask { [weak self] in
                 for await action in updates {
                     await self?.handleUpdate(action)
-                }
-            }
-            group.addTask { [weak self] in
-                for await action in deletions {
-                    await self?.handleDelete(action)
-                }
-            }
-            group.addTask { [weak self] in
-                for await _ in memberDeletions {
-                    await MainActor.run { self?.partnerLeft = calendarID }
-                    Logger.realtime.info("👋 파트너 탈퇴 감지: \(calendarID)")
                 }
             }
         }
@@ -118,20 +119,11 @@ final class SharedCalendarRealtimeService: ObservableObject {
         await upsertEvent(row: row, isUpdate: true)
     }
 
-    // MARK: - DELETE
+    // MARK: - Initial / Foreground Resync
 
-    private func handleDelete(_ action: DeleteAction) async {
-        guard case .string(let deletedID) = action.oldRecord["id"] else { return }
-        let results = try? modelContext.fetch(
-            FetchDescriptor<DozyEvent>(predicate: #Predicate { $0.id == deletedID }))
-        guard let event = results?.first else { return }
-        modelContext.delete(event)
-        try? modelContext.save()
-        Logger.realtime.info("🗑 공유 이벤트 DELETE: \(deletedID)")
-    }
-
-    // MARK: - Initial Fetch (구독 시작 시 기존 이벤트 동기화)
-
+    /// 원격 공유 이벤트 전체를 가져와 로컬과 맞춘다.
+    /// 1) 원격에 있는 row는 upsert
+    /// 2) 로컬에 있으나 원격에 없는 row는 삭제 (Realtime DELETE를 대체)
     private func fetchAndSyncExistingEvents(calendarID: String) async {
         do {
             let rows: [DozyEventDownloadRow] = try await supabase
@@ -143,6 +135,23 @@ final class SharedCalendarRealtimeService: ObservableObject {
 
             Logger.realtime.info("📥 \(calendarID) 초기 fetch: \(rows.count)개")
 
+            let remoteIDs = Set(rows.map { $0.id })
+
+            // (2) 로컬에만 있는 row 삭제 — 파트너가 공유 해제/자동 삭제한 row 정리.
+            let calID = calendarID
+            let localStale: [DozyEvent] = {
+                let predicate = #Predicate<DozyEvent> { $0.sharedCalendarID == calID }
+                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+                let local = (try? modelContext.fetch(descriptor)) ?? []
+                return local.filter { !remoteIDs.contains($0.id) }
+            }()
+            if !localStale.isEmpty {
+                for event in localStale { modelContext.delete(event) }
+                try? modelContext.save()
+                Logger.realtime.info("🗑 \(calendarID) 로컬 고아 삭제: \(localStale.count)개")
+            }
+
+            // (1) 원격 row upsert
             for row in rows {
                 let sharedRow = SharedEventRow(
                     id: row.id, userID: row.userID, title: row.title,
@@ -163,6 +172,30 @@ final class SharedCalendarRealtimeService: ObservableObject {
             }
         } catch {
             Logger.realtime.error("⚠️ 초기 fetch 실패 (\(calendarID)): \(error.localizedDescription)")
+        }
+    }
+
+    /// 파트너 탈퇴 감지. 멤버가 나 혼자만 남으면 partnerLeft 이벤트 발행.
+    private func checkPartnerMembership(calendarID: String) async {
+        struct Row: Decodable {
+            let userID: String
+            enum CodingKeys: String, CodingKey { case userID = "user_id" }
+        }
+        do {
+            let rows: [Row] = try await supabase
+                .from("shared_calendar_members")
+                .select("user_id")
+                .eq("shared_calendar_id", value: calendarID)
+                .execute()
+                .value
+            if rows.count <= 1 {
+                await MainActor.run { [weak self] in
+                    self?.partnerLeft = calendarID
+                }
+                Logger.realtime.info("👋 파트너 탈퇴 감지(폴링): \(calendarID)")
+            }
+        } catch {
+            Logger.realtime.error("⚠️ 멤버 체크 실패 (\(calendarID)): \(error.localizedDescription)")
         }
     }
 

@@ -227,6 +227,9 @@ struct CalendarView: View {
                 } else {
                     // 앱 복귀 시 외부 원본과 미러 스냅샷을 재동기화
                     viewModel.reconcileExternalMirrors()
+                    // Realtime DELETE가 REPLICA IDENTITY DEFAULT로 인해 오지 않으므로,
+                    // 공유 이벤트 삭제/파트너 탈퇴를 포그라운드 복귀 시 resync로 커버한다.
+                    container.sharedCalendarRealtimeService.resyncAllActive()
                 }
             }
             } // ScrollViewReader
