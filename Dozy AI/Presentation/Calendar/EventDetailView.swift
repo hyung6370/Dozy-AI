@@ -386,6 +386,10 @@ struct EventDetailView: View {
         VStack(spacing: 12) {
             Divider().padding(.top, 16)
 
+            if event.isExternalMirror && event.externalDeleted {
+                externalDeletedBanner
+            }
+
             // 표시 설정 — 내 이벤트는 편집 가능, 파트너 이벤트는 읽기 전용
             if canEditEvent {
                 editableDisplaySettings
@@ -398,61 +402,82 @@ struct EventDetailView: View {
             }
 
             if canEditEvent {
-                Button {
-                    if dozyEvent.recurrenceRule != "none" {
-                        showRecurringEditConfirm = true
-                    } else {
-                        dismiss()
-                        onEdit?(dozyEvent)
+                if event.isExternalMirror {
+                    // 외부 미러는 수정 버튼 없음(원본은 Apple/Google 앱에서 편집).
+                    // 공유 자체만 해제 가능.
+                    Button(role: .destructive) {
+                        showDozyDeleteConfirm = true
+                    } label: {
+                        Label("공유 해제", systemImage: "person.2.slash")
+                            .frame(maxWidth: .infinity)
                     }
-                } label: {
-                    Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .padding(.horizontal)
-                .confirmationDialog("반복 일정 수정", isPresented: $showRecurringEditConfirm, titleVisibility: .visible) {
-                    Button("모든 반복 일정 수정") {
-                        dismiss()
-                        onEdit?(dozyEvent)
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+                    .confirmationDialog("공유 해제", isPresented: $showDozyDeleteConfirm, titleVisibility: .visible) {
+                        Button("공유 해제", role: .destructive) {
+                            onDelete?(dozyEvent)
+                        }
+                    } message: {
+                        Text("이 일정의 공유만 해제됩니다. 원본 Apple · Google 일정은 그대로 유지됩니다.")
                     }
-                } message: {
-                    Text("반복 일정의 모든 항목이 수정됩니다.")
-                }
+                } else {
+                    Button {
+                        if dozyEvent.recurrenceRule != "none" {
+                            showRecurringEditConfirm = true
+                        } else {
+                            dismiss()
+                            onEdit?(dozyEvent)
+                        }
+                    } label: {
+                        Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal)
+                    .confirmationDialog("반복 일정 수정", isPresented: $showRecurringEditConfirm, titleVisibility: .visible) {
+                        Button("모든 반복 일정 수정") {
+                            dismiss()
+                            onEdit?(dozyEvent)
+                        }
+                    } message: {
+                        Text("반복 일정의 모든 항목이 수정됩니다.")
+                    }
 
-                Button(role: .destructive) {
-                    showDozyDeleteConfirm = true
-                } label: {
-                    Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .padding(.horizontal)
-                .padding(.bottom, 24)
-                .confirmationDialog(
-                    dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
-                    isPresented: $showDozyDeleteConfirm,
-                    titleVisibility: .visible
-                ) {
-                    if dozyEvent.recurrenceRule != "none" {
-                        Button("이 일정만 삭제", role: .destructive) {
-                            onDeleteThisOnly?(dozyEvent, event.startDate)
-                            dismiss()
-                        }
-                        Button("이후 모든 일정 삭제", role: .destructive) {
-                            onDeleteFutureEvents?(dozyEvent, event.startDate)
-                            dismiss()
-                        }
-                        Button("모든 반복 일정 삭제", role: .destructive) {
-                            onDelete?(dozyEvent)
-                        }
-                    } else {
-                        Button("삭제", role: .destructive) {
-                            onDelete?(dozyEvent)
-                        }
+                    Button(role: .destructive) {
+                        showDozyDeleteConfirm = true
+                    } label: {
+                        Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
                     }
-                } message: {
-                    Text(dozyEvent.recurrenceRule != "none"
-                         ? "삭제할 범위를 선택해주세요."
-                         : "정말로 삭제하시겠습니까?")
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+                    .confirmationDialog(
+                        dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
+                        isPresented: $showDozyDeleteConfirm,
+                        titleVisibility: .visible
+                    ) {
+                        if dozyEvent.recurrenceRule != "none" {
+                            Button("이 일정만 삭제", role: .destructive) {
+                                onDeleteThisOnly?(dozyEvent, event.startDate)
+                                dismiss()
+                            }
+                            Button("이후 모든 일정 삭제", role: .destructive) {
+                                onDeleteFutureEvents?(dozyEvent, event.startDate)
+                                dismiss()
+                            }
+                            Button("모든 반복 일정 삭제", role: .destructive) {
+                                onDelete?(dozyEvent)
+                            }
+                        } else {
+                            Button("삭제", role: .destructive) {
+                                onDelete?(dozyEvent)
+                            }
+                        }
+                    } message: {
+                        Text(dozyEvent.recurrenceRule != "none"
+                             ? "삭제할 범위를 선택해주세요."
+                             : "정말로 삭제하시겠습니까?")
+                    }
                 }
             } else {
                 Label("파트너가 만든 일정은 수정 · 삭제할 수 없습니다.", systemImage: "lock")
@@ -464,6 +489,22 @@ struct EventDetailView: View {
                     .padding(.bottom, 24)
             }
         }
+    }
+
+    /// 외부 원본이 삭제된 미러 스냅샷에 대한 경고 배너. 소유자·파트너 모두에게 표시.
+    private var externalDeletedBanner: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("원본이 삭제되었습니다", systemImage: "exclamationmark.triangle.fill")
+                .font(.subheadline)
+                .foregroundStyle(.orange)
+            Text("원본 Apple · Google 일정이 더이상 존재하지 않습니다. 공유 캘린더에서는 계속 표시되며, 소유자가 공유를 해제할 수 있습니다.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal)
     }
 
     // MARK: - Action (Apple / Google)

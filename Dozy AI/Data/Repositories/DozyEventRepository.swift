@@ -232,6 +232,35 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
         .eraseToAnyPublisher()
     }
 
+    func deleteExternalMirrors(ids: [String]) -> AnyPublisher<Void, DozyError> {
+        Future { [modelContainer] promise in
+            Task { @MainActor in
+                guard !ids.isEmpty else { promise(.success(())); return }
+                let context = modelContainer.mainContext
+                let idSet = Set(ids)
+                let predicate = #Predicate<DozyEvent> { idSet.contains($0.id) }
+                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+                let events = (try? context.fetch(descriptor)) ?? []
+                let deletedIDs = events.map(\.id)
+                for event in events { context.delete(event) }
+                do {
+                    try context.save()
+                    Task {
+                        // Supabase 배치 delete — Realtime DELETE가 파트너 기기로 전파됨.
+                        try? await supabase.from("dozy_events")
+                            .delete()
+                            .in("id", values: deletedIDs)
+                            .execute()
+                    }
+                    promise(.success(()))
+                } catch {
+                    promise(.failure(.saveFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
         Future { [modelContainer] promise in
             Task { @MainActor in

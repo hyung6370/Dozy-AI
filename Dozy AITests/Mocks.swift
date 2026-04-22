@@ -124,6 +124,10 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
     ) -> AnyPublisher<Void, DozyError> {
         Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
+
+    func deleteExternalMirrors(ids: [String]) -> AnyPublisher<Void, DozyError> {
+        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
 }
 
 // MARK: - MockAIService

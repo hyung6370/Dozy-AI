@@ -33,6 +33,10 @@ protocol DozyEventRepositoryProtocol {
         updates: [ExternalMirrorUpdate],
         deletedIDs: [String]
     ) -> AnyPublisher<Void, DozyError>
+
+    /// 유예 기간이 지난 미러 스냅샷을 실제로 삭제. 로컬 + Supabase 모두.
+    /// Supabase DELETE는 Realtime으로 파트너 기기에 전파된다.
+    func deleteExternalMirrors(ids: [String]) -> AnyPublisher<Void, DozyError>
 }
 
 /// Phase D reconcile 시 원본과 달라진 필드들을 전달하는 값 타입.
