@@ -13,6 +13,7 @@
 		3C6B0B259D5341C0BD01E8CA /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52E9135FC4F4C559A927798 /* WeatherService.swift */; };
 		3F4A985290CA47AEB58A872A /* RegenerateSharedCalendarInviteCodeUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */; };
 		44039241C37345B9A25246E9 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D808CA427DE3411D99E36895 /* SearchView.swift */; };
+		444FE9C09B264D31BBF541F7 /* MirrorExternalEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */; };
 		537D603E1FCE461BB9A004F8 /* AppVersionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138EDD04FB7644938FBB1BBD /* AppVersionService.swift */; };
 		5B0F554A76C543C39CE91437 /* SharedCalendarDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */; };
 		5E394932A4FB4627A517D1CB /* SharedCalendarJoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */; };
@@ -29,6 +30,7 @@
 		AA1100020000000000000003 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000003 /* Mocks.swift */; };
 		AA1100020000000000000004 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000004 /* TestHelpers.swift */; };
 		AA1100020000000000000005 /* ViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000005 /* ViewModelTests.swift */; };
+		ACCF2D28491B43E9A58E424B /* ExternalMirrorSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */; };
 		B15FEAA4777940E0899DD3CE /* SharedCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */; };
 		B983D6927F254284838DA052 /* SharedCalendarEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2389D509856F42CD9BB2A33D /* SharedCalendarEditView.swift */; };
 		C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
@@ -132,7 +134,6 @@
 		F619D9582F75219200084C61 /* GoogleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9572F75219200084C61 /* GoogleCalendarService.swift */; };
 		F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */; };
 		F619D95C2F75271600084C61 /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
-		ACCF2D28491B43E9A58E424B /* ExternalMirrorSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */; };
 		F619D95F2F7528C600084C61 /* CalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */; };
 		F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */; };
 		F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */; };
@@ -144,7 +145,6 @@
 		F619D96F2F7A35BA00084C61 /* FetchCalendarEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96E2F7A35BA00084C61 /* FetchCalendarEventUseCase.swift */; };
 		F619D9712F7A360D00084C61 /* FetchDozyEventsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9702F7A360D00084C61 /* FetchDozyEventsUseCase.swift */; };
 		F619D9732F7A36C600084C61 /* CreateDozyEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9722F7A36C600084C61 /* CreateDozyEventUseCase.swift */; };
-		444FE9C09B264D31BBF541F7 /* MirrorExternalEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */; };
 		F619D9752F7A371900084C61 /* UpdateDozyEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9742F7A371900084C61 /* UpdateDozyEventUseCase.swift */; };
 		F619D9772F7A374D00084C61 /* DeleteDozyEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9762F7A374D00084C61 /* DeleteDozyEventUseCase.swift */; };
 		F619D9792F7A378F00084C61 /* DozyEventRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9782F7A378F00084C61 /* DozyEventRepository.swift */; };
@@ -235,6 +235,7 @@
 		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
 		672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorExternalEventUseCase.swift; sourceTree = "<group>"; };
 		741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarMember.swift; sourceTree = "<group>"; };
 		81F2A847B998470E88E165D7 /* Production.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Production.xcconfig; sourceTree = "<group>"; };
 		8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarRealtimeService.swift; sourceTree = "<group>"; };
@@ -247,6 +248,7 @@
 		AA1100010000000000000005 /* ViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelTests.swift; sourceTree = "<group>"; };
 		AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegenerateSharedCalendarInviteCodeUseCase.swift; sourceTree = "<group>"; };
 		B207C320B48349D3AF81CA62 /* UpdateSharedCalendarNicknameUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateSharedCalendarNicknameUseCase.swift; sourceTree = "<group>"; };
+		BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalMirrorSyncService.swift; sourceTree = "<group>"; };
 		C693465AD6A74CE3B35E2111 /* SharedCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendar.swift; sourceTree = "<group>"; };
 		D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarCreateView.swift; sourceTree = "<group>"; };
@@ -344,7 +346,6 @@
 		F619D9572F75219200084C61 /* GoogleCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleCalendarService.swift; sourceTree = "<group>"; };
 		F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSourceManager.swift; sourceTree = "<group>"; };
 		F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeCalendarSerivce.swift; sourceTree = "<group>"; };
-		BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalMirrorSyncService.swift; sourceTree = "<group>"; };
 		F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsView.swift; sourceTree = "<group>"; };
 		F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+TopVC.swift"; sourceTree = "<group>"; };
@@ -356,7 +357,6 @@
 		F619D96E2F7A35BA00084C61 /* FetchCalendarEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventUseCase.swift; sourceTree = "<group>"; };
 		F619D9702F7A360D00084C61 /* FetchDozyEventsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchDozyEventsUseCase.swift; sourceTree = "<group>"; };
 		F619D9722F7A36C600084C61 /* CreateDozyEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateDozyEventUseCase.swift; sourceTree = "<group>"; };
-		6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorExternalEventUseCase.swift; sourceTree = "<group>"; };
 		F619D9742F7A371900084C61 /* UpdateDozyEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateDozyEventUseCase.swift; sourceTree = "<group>"; };
 		F619D9762F7A374D00084C61 /* DeleteDozyEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteDozyEventUseCase.swift; sourceTree = "<group>"; };
 		F619D9782F7A378F00084C61 /* DozyEventRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyEventRepository.swift; sourceTree = "<group>"; };
@@ -1441,7 +1441,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 139;
+				CURRENT_PROJECT_VERSION = 140;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1461,7 +1461,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1483,7 +1483,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 139;
+				CURRENT_PROJECT_VERSION = 140;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1503,7 +1503,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1522,7 +1522,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 139;
+				CURRENT_PROJECT_VERSION = 140;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -1544,7 +1544,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 139;
+				CURRENT_PROJECT_VERSION = 140;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -1565,7 +1565,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 139;
+				CURRENT_PROJECT_VERSION = 140;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
@@ -1585,7 +1585,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 139;
+				CURRENT_PROJECT_VERSION = 140;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
