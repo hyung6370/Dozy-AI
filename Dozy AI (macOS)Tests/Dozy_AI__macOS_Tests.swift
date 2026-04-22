@@ -2,35 +2,17 @@
 //  Dozy_AI__macOS_Tests.swift
 //  Dozy AI (macOS)Tests
 //
-//  Created by Hyungjun KIM on 4/22/26.
+//  macOS 테스트 번들 placeholder.
+//  실제 공유 테스트(Domain/UseCase)는 Dozy AITests의 파일들이 이 타겟에도 멤버로
+//  들어가 있고, 그쪽에서 다 돌기 때문에 여기에는 별도 스위트가 없다.
 //
 
 import XCTest
-@testable import Dozy_AI__macOS_
+@testable import Dozy_AI
 
-final class Dozy_AI__macOS_Tests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+final class Dozy_AI_macOS_Tests: XCTestCase {
+    func test_macOSTargetModuleResolvesAsDozy_AI() {
+        // PRODUCT_MODULE_NAME = Dozy_AI 로 통일되어 있는지 한 줄 확인
+        XCTAssertTrue(true)
     }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
 }
