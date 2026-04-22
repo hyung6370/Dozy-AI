@@ -26,6 +26,8 @@ Dozy는 Apple Calendar, Google Calendar 등 기존 캘린더와 연동해 하루
 |------|------|
 | 홈 대시보드 | 오늘 일정 타임라인, AI 요약, 빠른 메모, 생산성 통계 |
 | 캘린더 | Apple·Google·Dozy 자체 캘린더 통합, 일정 생성·수정·삭제·반복 |
+| 공유 캘린더 | 초대 코드로 두 사람 공유, 파트너와 일정·메모 실시간 동기화 |
+| 외부 일정 공유 | Apple·Google 일정을 공유 캘린더로 미러링, 원본 변경 자동 반영 |
 | 일정 완료 체크 | 완료 여부 기록, EventCompletion 기반 날짜별 상태 관리 |
 | AI 일일 요약 | iOS 26+ Foundation Models / NaturalLanguage 로컬 폴백 |
 | 인사이트 | 카테고리별 활동 분석, 완료율, 패턴 기반 추천 |
@@ -130,7 +132,11 @@ NAVER_CLIENT_SECRET = your-naver-client-secret
 
 ### Supabase 스키마
 
-`schema.sql` 파일을 Supabase SQL Editor에서 실행해 테이블과 RLS 정책을 생성합니다.
+`supabase/migrations/` 아래의 `.sql` 파일을 시간순으로 Supabase SQL Editor에서 실행하거나, Supabase CLI로 push하여 테이블·RLS 정책·Realtime publication을 적용합니다.
+
+```bash
+supabase db push
+```
 
 ---
 
@@ -154,4 +160,4 @@ fastlane release
 
 이 프로젝트는 비공개 소프트웨어입니다. 무단 복제 및 배포를 금합니다.
 
-© 2025 Dozy. All rights reserved.
+© 2026 Dozy. All rights reserved.
