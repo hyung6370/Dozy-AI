@@ -63,26 +63,11 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
                         return !(event.calendarId?.contains("#holiday@group.v.calendar.google.com") ?? false)
                     }
                 }
-                var seen = Set<String>()
-                var deduped: [CalendarEvent] = []
-                // Dozy 이벤트는 항상 유지, Apple/Google 이벤트끼리만 중복 제거
-                for event in all {
-                    if event.source == .dozy {
-                        deduped.append(event)
-                    } else {
-                        // 정확한 시작 시각 기준 dedupe — Apple↔Google 동기화 된 이벤트만 합치고
-                        // 같은 날 다른 시간대의 서로 다른 이벤트는 유지됨
-                        let key = "\(event.title.lowercased())_\(event.startDate.timeIntervalSince1970)"
-                        if seen.insert(key).inserted {
-                            deduped.append(event)
-                        }
-                    }
-                }
-                return deduped.sorted { $0.startDate < $1.startDate }
+                return Self.dedupe(all)
             }
             .eraseToAnyPublisher()
     }
-    
+
     // MARK: - 날짜 범위 조회 (인사이트용)
 
     func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
@@ -113,23 +98,41 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
                         return !(event.calendarId?.contains("#holiday@group.v.calendar.google.com") ?? false)
                     }
                 }
-                var seen = Set<String>()
-                var deduped: [CalendarEvent] = []
-                for event in all {
-                    if event.source == .dozy {
-                        deduped.append(event)
-                    } else {
-                        // 정확한 시작 시각 기준 dedupe — Apple↔Google 동기화 된 이벤트만 합치고
-                        // 같은 날 다른 시간대의 서로 다른 이벤트는 유지됨
-                        let key = "\(event.title.lowercased())_\(event.startDate.timeIntervalSince1970)"
-                        if seen.insert(key).inserted {
-                            deduped.append(event)
-                        }
-                    }
-                }
-                return deduped.sorted { $0.startDate < $1.startDate }
+                return Self.dedupe(all)
             }
             .eraseToAnyPublisher()
+    }
+
+    // MARK: - Dedupe
+
+    /// - Apple↔Google 간 동일 시각·제목 중복 제거 (동기화된 동일 이벤트)
+    /// - 내 기기에 Apple/Google 원본이 있으면 동일 (externalSource, externalEventID)를 가진
+    ///   Dozy 미러 스냅샷은 제거 → 원본 편집권을 유지하고 리스트 중복도 방지.
+    ///   파트너 기기에서는 원본이 없으니 스냅샷만 그대로 표시된다.
+    private static func dedupe(_ events: [CalendarEvent]) -> [CalendarEvent] {
+        var localOrigins: Set<String> = []
+        for event in events where event.source == .apple || event.source == .google {
+            localOrigins.insert("\(event.source.rawValue)_\(event.id)")
+        }
+
+        var seen = Set<String>()
+        var deduped: [CalendarEvent] = []
+        for event in events {
+            if event.source == .dozy {
+                if let src = event.externalSource?.rawValue,
+                   let extID = event.externalEventID,
+                   localOrigins.contains("\(src)_\(extID)") {
+                    continue
+                }
+                deduped.append(event)
+            } else {
+                let key = "\(event.title.lowercased())_\(event.startDate.timeIntervalSince1970)"
+                if seen.insert(key).inserted {
+                    deduped.append(event)
+                }
+            }
+        }
+        return deduped.sorted { $0.startDate < $1.startDate }
     }
 
     // MARK: - CalendarWriteServiceProtocol

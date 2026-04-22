@@ -98,6 +98,36 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
     func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
         Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
+
+    func mirrorExternalEvent(
+        _ origin: CalendarEvent,
+        to sharedCalendarID: String
+    ) -> AnyPublisher<DozyEvent, DozyError> {
+        let event = DozyEvent(
+            title: origin.title,
+            startDate: origin.startDate,
+            endDate: origin.endDate,
+            sharedCalendarID: sharedCalendarID,
+            externalSource: origin.source.rawValue,
+            externalEventID: origin.id
+        )
+        return Just(event).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func fetchMyExternalMirrors() -> AnyPublisher<[DozyEvent], DozyError> {
+        Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func applyExternalMirrorReconcile(
+        updates: [ExternalMirrorUpdate],
+        deletedIDs: [String]
+    ) -> AnyPublisher<Void, DozyError> {
+        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func deleteExternalMirrors(ids: [String]) -> AnyPublisher<Void, DozyError> {
+        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
 }
 
 // MARK: - MockAIService

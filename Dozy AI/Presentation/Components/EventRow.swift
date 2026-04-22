@@ -52,6 +52,12 @@ struct EventRow: View {
                             .foregroundStyle(Color(hex: event.calendarColorHex) ?? .blue)
                     }
 
+                    if event.isExternalMirror && event.externalDeleted {
+                        Label("원본 삭제됨", systemImage: "exclamationmark.triangle.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+
                     if let location = event.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
                             .font(.caption)

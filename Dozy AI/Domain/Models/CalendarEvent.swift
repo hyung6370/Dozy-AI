@@ -28,7 +28,51 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     let sharedCalendarID: String?
     let ownerID: String?    // Dozy 이벤트 전용. Apple/Google 이벤트는 nil
 
+    /// Apple/Google 원본 이벤트를 Dozy 공유 캘린더로 미러링했을 때만 세팅됨.
+    /// - source == .dozy && externalSource != nil → 미러 스냅샷
+    /// - source == .apple/.google → 외부 원본 (externalSource는 nil)
+    let externalSource: CalendarSource?
+    let externalEventID: String?
+    /// 원본 기기에서 원본이 더이상 조회되지 않을 때 true (파트너 UI의 "원본 삭제됨" 배지용).
+    let externalDeleted: Bool
+
+    // 기본값 — 기존 호출부가 새 필드를 몰라도 컴파일되도록.
+    init(
+        id: String, calendarId: String?, title: String,
+        startDate: Date, endDate: Date,
+        location: String?, notes: String?, isAllDay: Bool,
+        calendarName: String, calendarColorHex: String,
+        source: CalendarSource, priority: Int, isPinned: Bool, category: String,
+        sharedCalendarID: String? = nil, ownerID: String? = nil,
+        externalSource: CalendarSource? = nil,
+        externalEventID: String? = nil,
+        externalDeleted: Bool = false
+    ) {
+        self.id = id
+        self.calendarId = calendarId
+        self.title = title
+        self.startDate = startDate
+        self.endDate = endDate
+        self.location = location
+        self.notes = notes
+        self.isAllDay = isAllDay
+        self.calendarName = calendarName
+        self.calendarColorHex = calendarColorHex
+        self.source = source
+        self.priority = priority
+        self.isPinned = isPinned
+        self.category = category
+        self.sharedCalendarID = sharedCalendarID
+        self.ownerID = ownerID
+        self.externalSource = externalSource
+        self.externalEventID = externalEventID
+        self.externalDeleted = externalDeleted
+    }
+
     var isShared: Bool { sharedCalendarID != nil }
+
+    /// Apple/Google 원본을 Dozy에 복제한 스냅샷인지 여부.
+    var isExternalMirror: Bool { externalSource != nil && externalEventID != nil }
 
     // Swift가 자동으로 memberwise init을 생성합니다.
     // init(id:title:startDate:endDate:location:notes:isAllDay:calendarName:calendarColorHex:)
@@ -73,6 +117,9 @@ extension CalendarEvent {
         category = try c.decodeIfPresent(String.self, forKey: .category) ?? "일반"
         sharedCalendarID = try c.decodeIfPresent(String.self, forKey: .sharedCalendarID)
         ownerID = try c.decodeIfPresent(String.self, forKey: .ownerID)
+        externalSource = try c.decodeIfPresent(CalendarSource.self, forKey: .externalSource)
+        externalEventID = try c.decodeIfPresent(String.self, forKey: .externalEventID)
+        externalDeleted = try c.decodeIfPresent(Bool.self, forKey: .externalDeleted) ?? false
     }
 }
 
@@ -89,7 +136,10 @@ extension CalendarEvent {
             isPinned: settings.isPinned,
             category: settings.category == UserCategory.defaultName ? category : settings.category,
             sharedCalendarID: sharedCalendarID,
-            ownerID: ownerID
+            ownerID: ownerID,
+            externalSource: externalSource,
+            externalEventID: externalEventID,
+            externalDeleted: externalDeleted
         )
     }
 }

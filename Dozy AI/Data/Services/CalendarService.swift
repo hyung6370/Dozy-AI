@@ -180,7 +180,10 @@ private extension EKEvent {
             isPinned: false,
             category: "일반",
             sharedCalendarID: nil,
-            ownerID: nil
+            ownerID: nil,
+            externalSource: nil,
+            externalEventID: nil,
+            externalDeleted: false
         )
     }
 }

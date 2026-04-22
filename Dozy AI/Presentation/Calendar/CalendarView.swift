@@ -157,7 +157,13 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
-                    CalendarEventEditView(event: event) { edit in
+                    CalendarEventEditView(
+                        event: event,
+                        sharedCalendars: viewModel.mySharedCalendars,
+                        onShareToSharedCalendar: { edited, calendar in
+                            viewModel.performShare(edited, to: calendar)
+                        }
+                    ) { edit in
                         viewModel.saveCalendarEvent(event, edit: edit)
                     }
                 }
@@ -205,6 +211,7 @@ struct CalendarView: View {
                 Text(viewModel.deleteErrorMessage ?? "")
             }
             .alert("일정 생성", isPresented: $showLongPressAlert, actions: longPressAlertActions, message: longPressAlertMessage)
+            .modifier(ShareExternalEventOverlay(viewModel: viewModel))
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase != .active {
                     showLegend = false
@@ -217,6 +224,12 @@ struct CalendarView: View {
                     viewModel.showDeleteAlert = false
                     viewModel.showDeleteSuccess = false
                     viewModel.deleteErrorMessage = nil
+                } else {
+                    // 앱 복귀 시 외부 원본과 미러 스냅샷을 재동기화
+                    viewModel.reconcileExternalMirrors()
+                    // Realtime DELETE가 REPLICA IDENTITY DEFAULT로 인해 오지 않으므로,
+                    // 공유 이벤트 삭제/파트너 탈퇴를 포그라운드 복귀 시 resync로 커버한다.
+                    container.sharedCalendarRealtimeService.resyncAllActive()
                 }
             }
             } // ScrollViewReader
@@ -545,6 +558,13 @@ struct CalendarView: View {
             } label: {
                 Label("삭제", systemImage: "trash")
             }
+            if !viewModel.mySharedCalendars.isEmpty {
+                Button {
+                    viewModel.shareExternalEvent(event)
+                } label: {
+                    Label("공유 캘린더로 공유", systemImage: "person.2.badge.plus")
+                }
+            }
         }
 
         Divider()
@@ -672,5 +692,46 @@ private struct DatePickerSheetView: View {
             }
         }
         .presentationDetents([.height(430)])
+    }
+}
+
+// MARK: - 외부 이벤트 공유 오버레이
+
+/// CalendarView body의 type-check 부담을 줄이기 위해 공유 관련 modifier를 별도로 뽑아낸다.
+private struct ShareExternalEventOverlay: ViewModifier {
+    @ObservedObject var viewModel: CalendarViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .confirmationDialog(
+                "공유할 캘린더를 선택하세요",
+                isPresented: Binding(
+                    get: { viewModel.shareCandidateEvent != nil },
+                    set: { if !$0 { viewModel.shareCandidateEvent = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                ForEach(viewModel.mySharedCalendars) { cal in
+                    Button(cal.name) {
+                        if let event = viewModel.shareCandidateEvent {
+                            viewModel.performShare(event, to: cal)
+                        }
+                    }
+                }
+                Button("취소", role: .cancel) { viewModel.shareCandidateEvent = nil }
+            }
+            .alert("공유 완료", isPresented: $viewModel.showShareSuccess) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text("공유 캘린더에 일정을 추가했습니다.")
+            }
+            .alert("공유 실패", isPresented: Binding(
+                get: { viewModel.shareErrorMessage != nil },
+                set: { if !$0 { viewModel.shareErrorMessage = nil } }
+            )) {
+                Button("확인", role: .cancel) { viewModel.shareErrorMessage = nil }
+            } message: {
+                Text(viewModel.shareErrorMessage ?? "")
+            }
     }
 }
