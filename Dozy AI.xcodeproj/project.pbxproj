@@ -113,6 +113,7 @@
 		C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		C9281237CC6E4AABA7AB5BA5 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
 		CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */; };
+		CD962B22ED55A5E31E4EB388 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */; };
 		CEEBF7E3E8D2D65697104350 /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
 		D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138EDD04FB7644938FBB1BBD /* AppVersionService.swift */; };
 		D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068302F7D115300F9C124 /* EventCompletionRepository.swift */; };
@@ -1679,6 +1680,7 @@
 				7C64594B0B062758DAB886B5 /* SchemaV1.swift in Sources */,
 				D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */,
 				966230045F58049E702E2323 /* WorkLogRepository.swift in Sources */,
+				CD962B22ED55A5E31E4EB388 /* AuthService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

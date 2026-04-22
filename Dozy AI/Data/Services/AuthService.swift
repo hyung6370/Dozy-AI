@@ -9,7 +9,12 @@ import Foundation
 import Combine
 import Supabase
 import AuthenticationServices
+#if os(iOS)
+import UIKit
 import GoogleSignIn
+#elseif os(macOS)
+import AppKit
+#endif
 import CryptoKit
 
 final class AuthService: NSObject {
@@ -67,6 +72,7 @@ final class AuthService: NSObject {
 
     // MARK: - Google 로그인
 
+    #if os(iOS)
     func signInWithGoogle() -> AnyPublisher<AuthUser, DozyError> {
         Future { [weak self] promise in
             guard let self else { return }
@@ -109,6 +115,7 @@ final class AuthService: NSObject {
         }
         .eraseToAnyPublisher()
     }
+    #endif
 
     // MARK: - 로그아웃
 
@@ -194,8 +201,12 @@ final class AppleSignInDelegate: NSObject,
     }
 
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        UIApplication.shared.connectedScenes
+        #if os(iOS)
+        return UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first?.windows.first ?? UIWindow()
+        #elseif os(macOS)
+        return NSApplication.shared.keyWindow ?? NSApplication.shared.windows.first ?? NSWindow()
+        #endif
     }
 }
