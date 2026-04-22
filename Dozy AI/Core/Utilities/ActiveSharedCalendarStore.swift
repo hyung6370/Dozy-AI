@@ -70,12 +70,17 @@ final class ActiveSharedCalendarStore: ObservableObject {
     /// - 탈퇴/삭제로 orphan이 된 활성 ID는 제거
     /// - 사용자가 아직 한번도 토글한 적이 없으면(최초 캘린더 생성 UX) 첫 번째를 자동 지정
     /// - 한번이라도 직접 토글한 뒤엔 OFF 상태가 유지됨
+    ///
+    /// 호출부가 어떤 순서로 calendars를 넘기든 동일한 "첫 번째"가 선택되도록
+    /// createdAt 오름차순으로 방어적 재정렬한다.
     func reconcile(with calendars: [SharedCalendar]) {
-        if let activeID = activeCalendarID, !calendars.contains(where: { $0.id == activeID }) {
+        let sorted = calendars.sorted { $0.createdAt < $1.createdAt }
+
+        if let activeID = activeCalendarID, !sorted.contains(where: { $0.id == activeID }) {
             applyActive(nil)
         }
         let userInteracted = UserDefaults.standard.bool(forKey: userInteractedKey)
-        if !userInteracted, activeCalendarID == nil, let first = calendars.first {
+        if !userInteracted, activeCalendarID == nil, let first = sorted.first {
             applyActive(first.id)
         }
     }

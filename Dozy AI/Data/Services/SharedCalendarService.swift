@@ -120,9 +120,12 @@ final class SharedCalendarService: SharedCalendarServiceProtocol {
         return Future { promise in
             Task {
                 do {
+                    // created_at 오름차순으로 안정 정렬 — ActiveSharedCalendarStore가
+                    // "첫 번째 캘린더 자동 지정" 시 결정적 결과를 얻도록 보장.
                     let rows: [SharedCalendarRow] = try await supabase
                         .from("shared_calendars")
                         .select()
+                        .order("created_at", ascending: true)
                         .execute()
                         .value
                     promise(.success(rows.map { $0.toDomain() }))
