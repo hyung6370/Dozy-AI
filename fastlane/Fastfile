@@ -46,3 +46,15 @@ platform :ios do
   end
 
 end
+
+# ─── macOS ─────────────────────────────────────────────────────────────────
+# Phase M1 단계에선 로컬 빌드 검증만. 실제 TestFlight/MAS 업로드 lane은 M7에서.
+
+platform :mac do
+
+  desc "macOS 로컬 컴파일 검증 (archive·서명 없이 build만)"
+  lane :build do
+    sh %Q(xcodebuild -project "../Dozy AI.xcodeproj" -scheme "Dozy AI (macOS)" -destination "platform=macOS" -configuration Debug build | xcbeautify || true)
+  end
+
+end

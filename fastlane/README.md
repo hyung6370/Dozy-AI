@@ -33,6 +33,19 @@ App Store에 릴리즈 빌드 배포
 
 ----
 
+
+## Mac
+
+### mac build
+
+```sh
+[bundle exec] fastlane mac build
+```
+
+macOS 로컬 컴파일 검증 (archive·서명 없이 build만)
+
+----
+
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).

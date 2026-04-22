@@ -6,7 +6,11 @@
 //
 
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 extension Color {
     init(hex: String) {
@@ -18,12 +22,18 @@ extension Color {
         let b = Double(int & 0xFF) / 255.0
         self.init(red: r, green: g, blue: b)
     }
-    
+
+    /// sRGB 기준으로 정규화된 hex 문자열을 반환. P3/extended 컬러스페이스 안전.
     func toHex() -> String? {
-        // cgColor.components는 P3/extended 컬러스페이스에서 잘못된 값을 반환할 수 있음
-        // getRed(_:green:blue:alpha:)는 항상 sRGB로 변환하여 정확한 hex를 반환
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        #if canImport(UIKit)
         guard UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a) else { return nil }
+        #elseif canImport(AppKit)
+        guard let ns = NSColor(self).usingColorSpace(.sRGB) else { return nil }
+        ns.getRed(&r, green: &g, blue: &b, alpha: &a)
+        #else
+        return nil
+        #endif
         return String(format: "#%02X%02X%02X",
                       Int(lroundf(Float(r) * 255)),
                       Int(lroundf(Float(g) * 255)),
