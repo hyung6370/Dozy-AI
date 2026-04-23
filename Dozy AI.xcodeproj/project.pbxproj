@@ -307,9 +307,12 @@
 		F6EC8AE22F9896E000CFFF87 /* Dozy_AI__macOS_UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8ADF2F9896E000CFFF87 /* Dozy_AI__macOS_UITests.swift */; };
 		F6EC8AE32F9896E000CFFF87 /* Dozy_AI__macOS_UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AE02F9896E000CFFF87 /* Dozy_AI__macOS_UITestsLaunchTests.swift */; };
 		F6EC8AE62F9896E000CFFF87 /* Dozy_AI__macOS_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AE42F9896E000CFFF87 /* Dozy_AI__macOS_Tests.swift */; };
-		F6EC8AEB2F9896E000CFFF87 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AE82F9896E000CFFF87 /* ContentView.swift */; };
 		F6EC8AEC2F9896E000CFFF87 /* Dozy_AI__macOS_App.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AE92F9896E000CFFF87 /* Dozy_AI__macOS_App.swift */; };
 		F6EC8AED2F9896E000CFFF87 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F6EC8AE72F9896E000CFFF87 /* Assets.xcassets */; };
+		F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AF22F99959C00CFFF87 /* MacAppRootView.swift */; };
+		F6EC8AF72F9995BF00CFFF87 /* MacLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AF62F9995BF00CFFF87 /* MacLoginView.swift */; };
+		F6EC8AF92F9995C900CFFF87 /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AF82F9995C900CFFF87 /* MacRootView.swift */; };
+		F6EC8AFB2F9995D700CFFF87 /* MacAuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
@@ -355,6 +358,7 @@
 		3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSharedCalendarStore.swift; sourceTree = "<group>"; };
 		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarListView.swift; sourceTree = "<group>"; };
+		4A7C52AE1E278D52E6C7B6FB /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
 		672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSharedCalendarUseCase.swift; sourceTree = "<group>"; };
@@ -547,9 +551,12 @@
 		F6EC8AE02F9896E000CFFF87 /* Dozy_AI__macOS_UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AI__macOS_UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		F6EC8AE42F9896E000CFFF87 /* Dozy_AI__macOS_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AI__macOS_Tests.swift; sourceTree = "<group>"; };
 		F6EC8AE72F9896E000CFFF87 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		F6EC8AE82F9896E000CFFF87 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F6EC8AE92F9896E000CFFF87 /* Dozy_AI__macOS_App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AI__macOS_App.swift; sourceTree = "<group>"; };
 		F6EC8AEE2F98980B00CFFF87 /* Dozy AI (macOS)Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI (macOS)Release.entitlements"; sourceTree = "<group>"; };
+		F6EC8AF22F99959C00CFFF87 /* MacAppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppRootView.swift; sourceTree = "<group>"; };
+		F6EC8AF62F9995BF00CFFF87 /* MacLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLoginView.swift; sourceTree = "<group>"; };
+		F6EC8AF82F9995C900CFFF87 /* MacRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRootView.swift; sourceTree = "<group>"; };
+		F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAuthViewModel.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1132,12 +1139,56 @@
 		F6EC8AEA2F9896E000CFFF87 /* Dozy AI (macOS) */ = {
 			isa = PBXGroup;
 			children = (
+				F6EC8AE92F9896E000CFFF87 /* Dozy_AI__macOS_App.swift */,
+				F6EC8AEF2F99956500CFFF87 /* App */,
+				F6EC8AF02F99956C00CFFF87 /* Views */,
+				F6EC8AF12F99957200CFFF87 /* ViewModels */,
 				F6EC8AEE2F98980B00CFFF87 /* Dozy AI (macOS)Release.entitlements */,
 				F6EC8AE72F9896E000CFFF87 /* Assets.xcassets */,
-				F6EC8AE82F9896E000CFFF87 /* ContentView.swift */,
-				F6EC8AE92F9896E000CFFF87 /* Dozy_AI__macOS_App.swift */,
+				4A7C52AE1E278D52E6C7B6FB /* Info.plist */,
 			);
 			path = "Dozy AI (macOS)";
+			sourceTree = "<group>";
+		};
+		F6EC8AEF2F99956500CFFF87 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8AF22F99959C00CFFF87 /* MacAppRootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		F6EC8AF02F99956C00CFFF87 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8AF42F9995A200CFFF87 /* Login */,
+				F6EC8AF52F9995A700CFFF87 /* Root */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F6EC8AF12F99957200CFFF87 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		F6EC8AF42F9995A200CFFF87 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8AF62F9995BF00CFFF87 /* MacLoginView.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		F6EC8AF52F9995A700CFFF87 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8AF82F9995C900CFFF87 /* MacRootView.swift */,
+			);
+			path = Root;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1596,7 +1647,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F6EC8AEB2F9896E000CFFF87 /* ContentView.swift in Sources */,
 				F6EC8AEC2F9896E000CFFF87 /* Dozy_AI__macOS_App.swift in Sources */,
 				6F40AB13E92ED6471627908F /* SharedCalendar.swift in Sources */,
 				F0358D60D97649A39C84BD8B /* SharedCalendarMember.swift in Sources */,
@@ -1653,6 +1703,8 @@
 				AB28BF823121CA6AE8E5D851 /* SharedCalendarService.swift in Sources */,
 				ABF24F81257EC3FBB1E27F57 /* DozyEventRepository.swift in Sources */,
 				6E91B9AE4FA13E9B1E20D143 /* EventDisplaySettingsRepository.swift in Sources */,
+				F6EC8AF92F9995C900CFFF87 /* MacRootView.swift in Sources */,
+				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,
 				118E4E22922D2F814603C4CC /* String+Extensions.swift in Sources */,
@@ -1666,6 +1718,7 @@
 				9B076DE9625C6E9E584D4664 /* AIPromptBuilder.swift in Sources */,
 				8D90C92C9BDAC78D208FDC0E /* AuthError.swift in Sources */,
 				39A4996D001E00D247983089 /* KeychainService.swift in Sources */,
+				F6EC8AF72F9995BF00CFFF87 /* MacLoginView.swift in Sources */,
 				21266466DFC04FD2BB5E0CFB /* NetworkMonitor.swift in Sources */,
 				50EC191D983750D6731F17D8 /* Color+Hex.swift in Sources */,
 				BEDBAC0D5C430ABDFB0A57C6 /* SupabaseClient.swift in Sources */,
@@ -1688,6 +1741,7 @@
 				966230045F58049E702E2323 /* WorkLogRepository.swift in Sources */,
 				CD962B22ED55A5E31E4EB388 /* AuthService.swift in Sources */,
 				E4571C8B9C92069B411F031C /* DependencyContainer.swift in Sources */,
+				F6EC8AFB2F9995D700CFFF87 /* MacAuthViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2038,6 +2092,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Dozy AI (macOS)/Dozy AI (macOS)Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -2046,16 +2101,15 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Dozy AI (macOS)/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.emptyhead.Dozy-AI--macOS-";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS";
 				PRODUCT_MODULE_NAME = Dozy_AI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -2094,16 +2148,15 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Dozy AI (macOS)/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.emptyhead.Dozy-AI--macOS-";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS";
 				PRODUCT_MODULE_NAME = Dozy_AI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -2127,7 +2180,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.emptyhead.Dozy-AI--macOS-Tests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS.Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -2149,7 +2202,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.emptyhead.Dozy-AI--macOS-Tests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS.Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -2170,7 +2223,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.emptyhead.Dozy-AI--macOS-UITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS.UITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -2191,7 +2244,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.emptyhead.Dozy-AI--macOS-UITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS.UITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;

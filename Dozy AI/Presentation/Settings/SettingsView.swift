@@ -23,7 +23,12 @@ struct SettingsView: View {
     }
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
+    @State private var loginEmail: String = ""
+    @State private var loginPassword: String = ""
+    @State private var emailLoginMode: EmailLoginMode = .signIn
     private let container: DependencyContainer
+
+    enum EmailLoginMode { case signIn, signUp }
 
     private var privacyPolicyURL: URL? {
         guard
@@ -182,11 +187,76 @@ struct SettingsView: View {
                     .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
+
+                emailPasswordLoginBlock
             }
         }
         .padding(.vertical, 8)
     }
-    
+
+    private var emailPasswordLoginBlock: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 8) {
+                Rectangle().fill(Color(.systemGray4)).frame(height: 1)
+                Text("또는")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Rectangle().fill(Color(.systemGray4)).frame(height: 1)
+            }
+            .padding(.top, 4)
+
+            Picker("", selection: $emailLoginMode) {
+                Text("로그인").tag(EmailLoginMode.signIn)
+                Text("회원가입").tag(EmailLoginMode.signUp)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            TextField("이메일", text: $loginEmail)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.emailAddress)
+                .disableAutocorrection(true)
+                .textFieldStyle(.roundedBorder)
+                .submitLabel(.next)
+                .onSubmit { submitEmailLogin() }
+
+            SecureField("비밀번호 (6자 이상)", text: $loginPassword)
+                .textFieldStyle(.roundedBorder)
+                .submitLabel(emailLoginMode == .signIn ? .go : .join)
+                .onSubmit { submitEmailLogin() }
+
+            Button {
+                submitEmailLogin()
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: 14, weight: .medium))
+                    Text(emailLoginMode == .signIn ? "이메일로 로그인" : "이메일로 가입")
+                        .font(.subheadline).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.primary, in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(Color(uiColor: .systemBackground))
+            }
+            .buttonStyle(.plain)
+            .disabled(loginEmail.isEmpty || loginPassword.isEmpty)
+        }
+    }
+
+    private func submitEmailLogin() {
+        guard !authViewModel.isLoading,
+              !loginEmail.isEmpty,
+              !loginPassword.isEmpty else { return }
+        authViewModel.errorMessage = nil
+        switch emailLoginMode {
+        case .signIn:
+            authViewModel.signInWithEmail(email: loginEmail, password: loginPassword)
+        case .signUp:
+            authViewModel.signUpWithEmail(email: loginEmail, password: loginPassword)
+        }
+    }
+
     @ViewBuilder
     private func providerIcon(for provider: AuthProvider?) -> some View {
         switch provider {
@@ -205,6 +275,11 @@ struct SettingsView: View {
                     .scaledToFit()
                     .frame(width: 20, height: 20)
             }
+        case .email:
+            Image(systemName: "envelope.fill")
+                .font(.title2)
+                .foregroundStyle(.primary)
+                .frame(width: 34)
         case nil:
             Color.clear.frame(width: 34)
         }

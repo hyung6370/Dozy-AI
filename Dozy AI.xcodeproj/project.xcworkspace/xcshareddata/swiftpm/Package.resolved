@@ -1,5 +1,5 @@
 {
-  "originHash" : "2f3a15caaf911f6d9dc7eab66ebaa4de9d3d13ef1c625ff33cea194f9b44ac7b",
+  "originHash" : "18794401baa32dd9657fe57d3ba3ccf501f6eb541bc1cd622554bea16e024459",
   "pins" : [
     {
       "identity" : "app-check",
@@ -96,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/supabase/supabase-swift",
       "state" : {
-        "revision" : "17261e93c60aa721e3c17312bfeb2ae6de3d6f8a",
-        "version" : "2.43.1"
+        "revision" : "e0b16631d2920484fe535190d0509988f33fdd61",
+        "version" : "2.44.0"
       }
     },
     {
@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-asn1.git",
       "state" : {
-        "revision" : "9f542610331815e29cc3821d3b6f488db8715517",
-        "version" : "1.6.0"
+        "revision" : "eb50cbd14606a9161cbc5d452f18797c90ef0bab",
+        "version" : "1.7.0"
       }
     },
     {
@@ -132,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-crypto.git",
       "state" : {
-        "revision" : "bb4ba815dab96d4edc1e0b86d7b9acf9ff973a84",
-        "version" : "4.3.1"
+        "revision" : "476538ccb827f2dd18efc5de754cc87d77127a47",
+        "version" : "4.4.0"
       }
     },
     {

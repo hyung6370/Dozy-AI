@@ -7,11 +7,12 @@
 
 import Foundation
 import Combine
+import OSLog
 import Supabase
 import AuthenticationServices
+import GoogleSignIn
 #if os(iOS)
 import UIKit
-import GoogleSignIn
 #elseif os(macOS)
 import AppKit
 #endif
@@ -72,18 +73,16 @@ final class AuthService: NSObject {
 
     // MARK: - Google 로그인
 
-    #if os(iOS)
+    /// iOS 는 topViewController, macOS 는 keyWindow 를 presenting anchor 로 넘겨
+    /// GoogleSignIn SDK 의 네이티브 ID Token 플로우를 사용한다. redirect_uri 방식이 아니므로
+    /// Web 타입 OAuth 클라이언트 / Supabase "Client ID (for OAuth)" 설정은 불필요.
     func signInWithGoogle() -> AnyPublisher<AuthUser, DozyError> {
         Future { [weak self] promise in
             guard let self else { return }
-            guard let topVC = UIApplication.shared.topViewController else {
-                promise(.failure(.unknown(underlying: NSError(domain: "AuthService", code: -1))))
-                return
-            }
             let nonce = self.randomNonceString()
             let hashedNonce = self.sha256(nonce)
 
-            GIDSignIn.sharedInstance.signIn(withPresenting: topVC, hint: nil, additionalScopes: nil, nonce: hashedNonce) { result, error in
+            let completion: (GIDSignInResult?, Error?) -> Void = { result, error in
                 if let error {
                     promise(.failure(.googleSignInFailed(underlying: error)))
                     return
@@ -112,10 +111,139 @@ final class AuthService: NSObject {
                     }
                 }
             }
+
+            #if os(iOS)
+            guard let topVC = UIApplication.shared.topViewController else {
+                promise(.failure(.unknown(underlying: NSError(domain: "AuthService", code: -1))))
+                return
+            }
+            GIDSignIn.sharedInstance.signIn(
+                withPresenting: topVC,
+                hint: nil,
+                additionalScopes: nil,
+                nonce: hashedNonce,
+                completion: completion
+            )
+            #elseif os(macOS)
+            guard let window = NSApplication.shared.keyWindow ?? NSApplication.shared.windows.first else {
+                promise(.failure(.unknown(underlying: NSError(domain: "AuthService", code: -1))))
+                return
+            }
+            GIDSignIn.sharedInstance.signIn(
+                withPresenting: window,
+                hint: nil,
+                additionalScopes: nil,
+                nonce: hashedNonce,
+                completion: completion
+            )
+            #endif
         }
         .eraseToAnyPublisher()
     }
-    #endif
+
+    // MARK: - Email / Password 로그인
+
+    /// 이메일/비밀번호로 로그인. 계정이 없으면 .emailAuthFailed 로 실패하므로
+    /// 호출자는 필요 시 signUpWithEmail 를 이어 호출할 수 있다.
+    func signInWithEmail(email: String, password: String) -> AnyPublisher<AuthUser, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            #if DEBUG
+            let pwTrim = password.trimmingCharacters(in: .whitespacesAndNewlines)
+            Logger.auth.debug("📧 signIn attempt email='\(normalizedEmail)' pwLen=\(password.count) pwTrimmedLen=\(pwTrim.count) env=\(AppEnvironment.current.displayName)")
+            #endif
+            if let validationError = Self.validate(email: normalizedEmail, password: password) {
+                promise(.failure(validationError))
+                return
+            }
+            Task {
+                do {
+                    let session = try await supabase.auth.signIn(email: normalizedEmail, password: password)
+                    let user = AuthUser(
+                        id: session.user.id.uuidString.lowercased(),
+                        email: session.user.email,
+                        displayName: nil,
+                        provider: .email
+                    )
+                    promise(.success(user))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 signIn failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(Self.mapSignInError(error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// 이메일/비밀번호로 신규 가입. Supabase 프로젝트에서 이메일 확인이 꺼져 있으면
+    /// 즉시 세션이 반환되고, 켜져 있으면 session 이 nil 인 상태에서 확인 메일 링크 클릭을 기다린다.
+    func signUpWithEmail(email: String, password: String) -> AnyPublisher<AuthUser, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            #if DEBUG
+            Logger.auth.debug("📧 signUp attempt email='\(normalizedEmail)' pwLen=\(password.count) env=\(AppEnvironment.current.displayName)")
+            #endif
+            if let validationError = Self.validate(email: normalizedEmail, password: password) {
+                promise(.failure(validationError))
+                return
+            }
+            Task {
+                do {
+                    let response = try await supabase.auth.signUp(email: normalizedEmail, password: password)
+                    let authUser = response.user
+                    // Confirm-email OFF 이고 이미 가입된 이메일일 때 Supabase 는 에러 없이
+                    // identities 가 비어 있는 obfuscated user 를 돌려주기도 하므로 방어 처리.
+                    if (authUser.identities ?? []).isEmpty {
+                        promise(.failure(.emailAlreadyRegistered))
+                        return
+                    }
+                    let user = AuthUser(
+                        id: authUser.id.uuidString.lowercased(),
+                        email: authUser.email,
+                        displayName: nil,
+                        provider: .email
+                    )
+                    promise(.success(user))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 signUp failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(Self.mapSignUpError(error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    private static func mapSignInError(_ error: Error) -> DozyError {
+        let msg = error.localizedDescription.lowercased()
+        if msg.contains("invalid login credentials") || msg.contains("invalid_credentials") {
+            return .emailInvalidCredentials
+        }
+        return .emailAuthFailed(underlying: error)
+    }
+
+    private static func mapSignUpError(_ error: Error) -> DozyError {
+        let msg = error.localizedDescription.lowercased()
+        if msg.contains("already registered") || msg.contains("user already") || msg.contains("user_already_exists") {
+            return .emailAlreadyRegistered
+        }
+        return .emailAuthFailed(underlying: error)
+    }
+
+    private static func validate(email: String, password: String) -> DozyError? {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let emailRegex = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        if trimmed.range(of: emailRegex, options: .regularExpression) == nil {
+            return .emailInvalid
+        }
+        if password.count < 6 {
+            return .passwordTooShort
+        }
+        return nil
+    }
 
     // MARK: - 로그아웃
 
@@ -210,3 +338,4 @@ final class AppleSignInDelegate: NSObject,
         #endif
     }
 }
+
