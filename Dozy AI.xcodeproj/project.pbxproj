@@ -311,8 +311,8 @@
 		F6EC8AED2F9896E000CFFF87 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F6EC8AE72F9896E000CFFF87 /* Assets.xcassets */; };
 		F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AF22F99959C00CFFF87 /* MacAppRootView.swift */; };
 		F6EC8AF72F9995BF00CFFF87 /* MacLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AF62F9995BF00CFFF87 /* MacLoginView.swift */; };
-		F6EC8AF92F9995C900CFFF87 /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AF82F9995C900CFFF87 /* MacRootView.swift */; };
 		F6EC8AFB2F9995D700CFFF87 /* MacAuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */; };
+		F6EC8AFE2F9995F000CFFF87 /* MacMainShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AFD2F9995F000CFFF87 /* MacMainShellView.swift */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
@@ -555,8 +555,8 @@
 		F6EC8AEE2F98980B00CFFF87 /* Dozy AI (macOS)Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AI (macOS)Release.entitlements"; sourceTree = "<group>"; };
 		F6EC8AF22F99959C00CFFF87 /* MacAppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppRootView.swift; sourceTree = "<group>"; };
 		F6EC8AF62F9995BF00CFFF87 /* MacLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLoginView.swift; sourceTree = "<group>"; };
-		F6EC8AF82F9995C900CFFF87 /* MacRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRootView.swift; sourceTree = "<group>"; };
 		F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAuthViewModel.swift; sourceTree = "<group>"; };
+		F6EC8AFD2F9995F000CFFF87 /* MacMainShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMainShellView.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1162,7 +1162,7 @@
 			isa = PBXGroup;
 			children = (
 				F6EC8AF42F9995A200CFFF87 /* Login */,
-				F6EC8AF52F9995A700CFFF87 /* Root */,
+				F6EC8AFC2F9995F000CFFF87 /* Shell */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1183,12 +1183,12 @@
 			path = Login;
 			sourceTree = "<group>";
 		};
-		F6EC8AF52F9995A700CFFF87 /* Root */ = {
+		F6EC8AFC2F9995F000CFFF87 /* Shell */ = {
 			isa = PBXGroup;
 			children = (
-				F6EC8AF82F9995C900CFFF87 /* MacRootView.swift */,
+				F6EC8AFD2F9995F000CFFF87 /* MacMainShellView.swift */,
 			);
-			path = Root;
+			path = Shell;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1703,7 +1703,7 @@
 				AB28BF823121CA6AE8E5D851 /* SharedCalendarService.swift in Sources */,
 				ABF24F81257EC3FBB1E27F57 /* DozyEventRepository.swift in Sources */,
 				6E91B9AE4FA13E9B1E20D143 /* EventDisplaySettingsRepository.swift in Sources */,
-				F6EC8AF92F9995C900CFFF87 /* MacRootView.swift in Sources */,
+				F6EC8AFE2F9995F000CFFF87 /* MacMainShellView.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,

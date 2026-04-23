@@ -21,7 +21,7 @@ struct MacAppRootView: View {
                 MacLoginView()
                 
             case .signedIn:
-                MacRootView()
+                MacMainShellView()
             }
         }
         .task {
