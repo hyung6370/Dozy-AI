@@ -18,7 +18,10 @@ final class MacHomeViewModel: ObservableObject {
     @Published var todayEvents: [CalendarEvent] = []
     @Published var dozyEventsByID: [String: DozyEvent] = [:]
     @Published var completionsByEventID: [String: Bool] = [:]
+    @Published var todayLog: WorkLog?
+    @Published var dailySummary: DailySummary?
     @Published var isLoading = false
+    @Published var isSummarizing = false
     @Published var errorMessage: String?
     @Published var showSuccessAnimation = false
 
@@ -29,6 +32,8 @@ final class MacHomeViewModel: ObservableObject {
     private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
+    private let saveWorkLogUseCase: SaveWorkLogUseCase
+    private let generateDailySummaryUseCase: GenerateDailySummaryUseCase
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed
@@ -66,6 +71,19 @@ final class MacHomeViewModel: ObservableObject {
         return todayEvents.first { $0.startDate > now }
     }
 
+    var hasData: Bool {
+        !todayEvents.isEmpty || !(todayLog?.memos ?? []).isEmpty
+    }
+
+    var hasSummary: Bool {
+        dailySummary != nil || !(todayLog?.aiSummary.isEmpty ?? true)
+    }
+
+    var scorePercentage: Int {
+        guard let score = dailySummary?.productivityScore else { return 0 }
+        return Int(score * 100)
+    }
+
     // MARK: - Init
 
     init(container: DependencyContainer) {
@@ -74,6 +92,8 @@ final class MacHomeViewModel: ObservableObject {
         self.createDozyEventUseCase = container.createDozyEventUseCase
         self.updateDozyEventUseCase = container.updateDozyEventUseCase
         self.deleteDozyEventUseCase = container.deleteDozyEventUseCase
+        self.saveWorkLogUseCase = container.saveWorkLogUseCase
+        self.generateDailySummaryUseCase = container.generateDailySummaryUseCase
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -108,6 +128,7 @@ final class MacHomeViewModel: ObservableObject {
                         .sorted { $0.startDate < $1.startDate }
                     self.todayEvents = events
                     self.loadCompletions(for: events.map(\.id), on: today)
+                    self.persistTodayLog(events: events)
                 }
             )
             .store(in: &cancellables)
@@ -153,7 +174,91 @@ final class MacHomeViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    // MARK: - Memo
+
+    func addMemo(_ text: String) {
+        guard let log = todayLog else { return }
+        saveWorkLogUseCase.addMemo(text, to: log)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    func updateMemo(at index: Int, text: String) {
+        guard let log = todayLog else { return }
+        saveWorkLogUseCase.updateMemo(at: index, text: text, in: log)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    func deleteMemo(at index: Int) {
+        guard let log = todayLog else { return }
+        saveWorkLogUseCase.deleteMemo(at: index, in: log)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    // MARK: - AI 요약
+
+    func generateAISummary() {
+        guard hasData else {
+            errorMessage = "요약할 데이터가 부족합니다."
+            return
+        }
+
+        isSummarizing = true
+        errorMessage = nil
+
+        generateDailySummaryUseCase.execute(
+            events: todayEvents,
+            completedTasks: [],
+            pendingTasks: [],
+            memos: todayLog?.memos ?? [],
+            completedEventCount: completedCount
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { [weak self] completion in
+                self?.isSummarizing = false
+                if case .failure(let error) = completion {
+                    self?.errorMessage = error.errorDescription
+                }
+            },
+            receiveValue: { [weak self] summary in
+                self?.dailySummary = summary
+            }
+        )
+        .store(in: &cancellables)
+    }
+
     // MARK: - Private
+
+    private func persistTodayLog(events: [CalendarEvent]) {
+        saveWorkLogUseCase.execute(events: events, tasks: [])
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] log in
+                    guard let self else { return }
+                    self.todayLog = log
+                    if !log.aiSummary.isEmpty {
+                        self.dailySummary = DailySummary(
+                            date: log.date,
+                            summaryText: log.aiSummary,
+                            highlights: log.highlights,
+                            nextActions: log.nextActions,
+                            detectedCategory: log.category,
+                            productivityScore: log.productivityScore ?? 0,
+                            totalEventMinutes: 0,
+                            completedTaskCount: 0
+                        )
+                    }
+                }
+            )
+            .store(in: &cancellables)
+    }
 
     private func loadCompletions(for ids: [String], on date: Date) {
         guard !ids.isEmpty else {

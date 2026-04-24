@@ -16,6 +16,13 @@ struct MacTodayView: View {
     @State private var pendingEdit: DozyEvent? = nil
     @State private var showNewEventSheet = false
 
+    @State private var memoText: String = ""
+    @State private var editingMemoIndex: Int? = nil
+    @State private var editingMemoText: String = ""
+    @State private var showEditMemoAlert = false
+    @State private var deletingMemoIndex: Int? = nil
+    @State private var showDeleteMemoAlert = false
+
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: MacHomeViewModel(container: container))
     }
@@ -30,8 +37,17 @@ struct MacTodayView: View {
                 if viewModel.isLoading {
                     ProgressView()
                         .padding(.top, 40)
-                } else if !viewModel.todayEvents.isEmpty {
-                    eventListSection
+                } else {
+                    if let summary = viewModel.dailySummary {
+                        aiSummaryPreview(summary)
+                    }
+                    if !viewModel.todayEvents.isEmpty {
+                        eventListSection
+                    }
+                    memoSection
+                    if !viewModel.hasSummary {
+                        aiGenerateButton
+                    }
                 }
             }
             .padding(.horizontal, 24)
@@ -95,6 +111,27 @@ struct MacTodayView: View {
                     viewModel.saveDozyEvent(saved)
                 }
             )
+        }
+        .alert("메모 수정", isPresented: $showEditMemoAlert) {
+            TextField("메모", text: $editingMemoText)
+            Button("저장") {
+                if let index = editingMemoIndex {
+                    viewModel.updateMemo(at: index, text: editingMemoText)
+                }
+                editingMemoIndex = nil
+            }
+            Button("취소", role: .cancel) { editingMemoIndex = nil }
+        }
+        .alert("메모 삭제", isPresented: $showDeleteMemoAlert) {
+            Button("삭제", role: .destructive) {
+                if let index = deletingMemoIndex {
+                    viewModel.deleteMemo(at: index)
+                }
+                deletingMemoIndex = nil
+            }
+            Button("취소", role: .cancel) { deletingMemoIndex = nil }
+        } message: {
+            Text("정말로 삭제하시겠습니까?")
         }
     }
 
@@ -248,6 +285,180 @@ struct MacTodayView: View {
                 }
             }
         }
+    }
+
+    // MARK: - AI Summary Preview
+
+    private func aiSummaryPreview(_ summary: DailySummary) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Dozy 요약", systemImage: "sparkles")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.indigo)
+                Spacer()
+                Text("\(viewModel.scorePercentage)점")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(scoreColor(summary.productivityScore).opacity(0.12))
+                    .foregroundStyle(scoreColor(summary.productivityScore))
+                    .clipShape(Capsule())
+            }
+
+            Text(summary.summaryText)
+                .font(.caption)
+                .foregroundStyle(.primary)
+                .lineLimit(3)
+
+            if !summary.highlights.isEmpty {
+                ForEach(Array(summary.highlights.prefix(3).enumerated()), id: \.offset) { _, h in
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 8))
+                            .foregroundStyle(.orange)
+                            .padding(.top, 4)
+                        Text(h)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+
+            if !summary.nextActions.isEmpty {
+                Divider().padding(.vertical, 2)
+                ForEach(Array(summary.nextActions.prefix(3).enumerated()), id: \.offset) { _, action in
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "arrow.right.circle")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.blue)
+                            .padding(.top, 3)
+                        Text(action)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.indigo.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.indigo.opacity(0.12), lineWidth: 1))
+    }
+
+    private func scoreColor(_ score: Double) -> Color {
+        switch score {
+        case 0.8...1.0: return .green
+        case 0.6..<0.8: return .blue
+        case 0.4..<0.6: return .orange
+        default:        return .red
+        }
+    }
+
+    // MARK: - Memo Section
+
+    private var memoSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("메모")
+                .font(.footnote)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                .padding(.leading, 2)
+
+            if let log = viewModel.todayLog {
+                ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("📝").font(.subheadline)
+                        Text(memo)
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+                    .padding(10)
+                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+                    .contextMenu {
+                        Button {
+                            editingMemoIndex = index
+                            editingMemoText = memo
+                            showEditMemoAlert = true
+                        } label: {
+                            Label("수정", systemImage: "pencil")
+                        }
+                        Button(role: .destructive) {
+                            deletingMemoIndex = index
+                            showDeleteMemoAlert = true
+                        } label: {
+                            Label("삭제", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+
+            HStack(alignment: .bottom, spacing: 10) {
+                TextField("메모를 남겨보세요", text: $memoText, axis: .vertical)
+                    .textFieldStyle(.roundedBorder)
+                    .lineLimit(1...4)
+                    .onSubmit { submitMemo() }
+
+                Button {
+                    submitMemo()
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.blue)
+                }
+                .buttonStyle(.plain)
+                .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+    }
+
+    private func submitMemo() {
+        let trimmed = memoText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        viewModel.addMemo(trimmed)
+        memoText = ""
+    }
+
+    // MARK: - AI Generate Button
+
+    private var aiGenerateButton: some View {
+        Button {
+            viewModel.generateAISummary()
+        } label: {
+            HStack(spacing: 12) {
+                if viewModel.isSummarizing {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Image(systemName: "sparkles")
+                        .font(.subheadline)
+                        .foregroundStyle(.indigo)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Dozy 요약 생성")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                    Text(viewModel.isSummarizing
+                         ? "Dozy가 분석 중입니다..."
+                         : "오늘 하루를 AI가 분석합니다")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .disabled(!viewModel.hasData || viewModel.isSummarizing)
+        .opacity(viewModel.hasData ? 1.0 : 0.5)
     }
 }
 
