@@ -108,17 +108,18 @@ private struct EventBarView: View {
     var body: some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
         HStack(spacing: 0) {
+            Rectangle().fill(color).frame(width: 3)
             Text(event.title)
                 .font(.caption2)
                 .fontWeight(.medium)
-                .foregroundStyle(.white)
+                .foregroundStyle(color)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, 5)
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(color.opacity(0.78), in: RoundedRectangle(cornerRadius: 7))
+        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 7))
         .contentShape(Rectangle())
     }
 }

@@ -17,6 +17,7 @@ struct MacCalendarView: View {
     @State private var eventToEdit: DozyEvent? = nil
     @State private var pendingEdit: DozyEvent? = nil
     @State private var showNewEventSheet = false
+    @State private var newEventTimeHint: Date? = nil
     @State private var showMonthPicker = false
     @State private var pickerYear = Calendar.current.component(.year, from: Date())
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
@@ -31,17 +32,83 @@ struct MacCalendarView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
 
-            weekdayHeader
-
-            Divider()
-
-            pagingMonthArea
+            if viewModel.viewMode == .month {
+                weekdayHeader
+                Divider()
+                pagingMonthArea
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Divider()
+                eventListSection
+                    .frame(height: 180)
+            } else if viewModel.viewMode == .week {
+                Divider()
+                MacCalendarWeekView(
+                    weekDates: weekDates(),
+                    selectedDate: viewModel.selectedDate,
+                    eventsByDate: viewModel.eventsByDate,
+                    onSelectDate: { viewModel.selectDate($0) },
+                    onSelectEvent: { selectedEvent = $0 },
+                    onCreateEvent: { date in
+                        viewModel.selectDate(date)
+                        newEventTimeHint = nil
+                        showNewEventSheet = true
+                    },
+                    onCreateEventAt: { dateTime in
+                        viewModel.selectDate(dateTime)
+                        newEventTimeHint = dateTime
+                        showNewEventSheet = true
+                    }
+                )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            Divider()
-
-            eventListSection
-                .frame(height: 180)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear { swipeState.viewWidth = geo.size.width }
+                            .onChange(of: geo.size.width) { _, w in swipeState.viewWidth = w }
+                    }
+                )
+                .id(MacCalendarViewModel.startOfWeek(for: viewModel.currentMonth))
+                .transition(weekDayTransition)
+                .onContinuousHover { phase in
+                    switch phase {
+                    case .active: swipeState.isHovering = true
+                    case .ended:  swipeState.isHovering = false
+                    }
+                }
+            } else { // .day
+                Divider()
+                MacCalendarDayView(
+                    date: viewModel.currentMonth,
+                    eventsByDate: viewModel.eventsByDate,
+                    onSelectEvent: { selectedEvent = $0 },
+                    onCreateEvent: { date in
+                        viewModel.selectDate(date)
+                        newEventTimeHint = nil
+                        showNewEventSheet = true
+                    },
+                    onCreateEventAt: { dateTime in
+                        viewModel.selectDate(dateTime)
+                        newEventTimeHint = dateTime
+                        showNewEventSheet = true
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear { swipeState.viewWidth = geo.size.width }
+                            .onChange(of: geo.size.width) { _, w in swipeState.viewWidth = w }
+                    }
+                )
+                .id(Calendar.current.startOfDay(for: viewModel.currentMonth))
+                .transition(weekDayTransition)
+                .onContinuousHover { phase in
+                    switch phase {
+                    case .active: swipeState.isHovering = true
+                    case .ended:  swipeState.isHovering = false
+                    }
+                }
+            }
         }
         .navigationTitle("캘린더")
         .toolbar {
@@ -89,10 +156,11 @@ struct MacCalendarView: View {
                 }
             )
         }
-        .sheet(isPresented: $showNewEventSheet) {
+        .sheet(isPresented: $showNewEventSheet, onDismiss: { newEventTimeHint = nil }) {
             MacEventEditView(
                 eventToEdit: nil,
-                selectedDate: viewModel.selectedDate,
+                selectedDate: newEventTimeHint ?? viewModel.selectedDate,
+                useTimeHint: newEventTimeHint != nil,
                 onSave: { saved in
                     viewModel.saveDozyEvent(saved)
                 }
@@ -151,11 +219,39 @@ struct MacCalendarView: View {
 
             Spacer()
 
+            Picker("보기", selection: Binding(
+                get: { viewModel.viewMode },
+                set: { viewModel.setViewMode($0) }
+            )) {
+                ForEach(MacCalendarViewMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 140)
+
             Button("오늘") {
                 viewModel.goToToday()
             }
             .buttonStyle(.bordered)
         }
+    }
+
+    // 주 뷰용 7일 배열 (일요일 시작)
+    private func weekDates() -> [Date] {
+        let cal = Calendar.current
+        let start = MacCalendarViewModel.startOfWeek(for: viewModel.currentMonth)
+        return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: start) }
+    }
+
+    /// 주/일 뷰의 .id 바뀔 때 적용할 슬라이드 트랜지션
+    private var weekDayTransition: AnyTransition {
+        let isForward = viewModel.monthTransitionDirection >= 0
+        return .asymmetric(
+            insertion: .move(edge: isForward ? .trailing : .leading),
+            removal:   .move(edge: isForward ? .leading : .trailing)
+        )
     }
 
     // MARK: - Month / Year Picker
@@ -428,40 +524,52 @@ struct MacCalendarView: View {
         }
     }
 
-    /// liveOffset 임계값에 따라 스냅. 애니메이션 완료 시점에 정확히 commit.
+    /// liveOffset 임계값에 따라 스냅. 월 뷰는 live preview + completion 콜백 기반,
+    /// 주/일 뷰는 단순 threshold 감지 + .id() 트랜지션으로 애니메이션.
     private func commitSwipe(state: MonthSwipeState, vm: MacCalendarViewModel) {
         let width = state.viewWidth
         guard width > 0 else { return }
-        let threshold = width * 0.12
         let anim: Animation = .spring(response: 0.28, dampingFraction: 0.92)
 
-        if state.liveOffset > threshold {
-            // 이전 월로
-            withAnimation(anim) {
-                state.liveOffset = width
-            } completion: {
-                var txn = Transaction()
-                txn.disablesAnimations = true
-                withTransaction(txn) {
-                    vm.goToPreviousMonth()
-                    state.liveOffset = 0
+        if vm.viewMode == .month {
+            let threshold = width * 0.12
+            if state.liveOffset > threshold {
+                withAnimation(anim) {
+                    state.liveOffset = width
+                } completion: {
+                    var txn = Transaction()
+                    txn.disablesAnimations = true
+                    withTransaction(txn) {
+                        vm.goToPreviousMonth()
+                        state.liveOffset = 0
+                    }
                 }
-            }
-        } else if state.liveOffset < -threshold {
-            // 다음 월로
-            withAnimation(anim) {
-                state.liveOffset = -width
-            } completion: {
-                var txn = Transaction()
-                txn.disablesAnimations = true
-                withTransaction(txn) {
-                    vm.goToNextMonth()
+            } else if state.liveOffset < -threshold {
+                withAnimation(anim) {
+                    state.liveOffset = -width
+                } completion: {
+                    var txn = Transaction()
+                    txn.disablesAnimations = true
+                    withTransaction(txn) {
+                        vm.goToNextMonth()
+                        state.liveOffset = 0
+                    }
+                }
+            } else {
+                withAnimation(anim) {
                     state.liveOffset = 0
                 }
             }
         } else {
-            // 임계값 미달 → 원위치로 복귀
-            withAnimation(anim) {
+            // 주/일 뷰: live preview 없이 단순 threshold + 트랜지션
+            let threshold: CGFloat = 50
+            if state.liveOffset > threshold {
+                withAnimation(anim) { vm.goToPreviousMonth() }
+                state.liveOffset = 0
+            } else if state.liveOffset < -threshold {
+                withAnimation(anim) { vm.goToNextMonth() }
+                state.liveOffset = 0
+            } else {
                 state.liveOffset = 0
             }
         }

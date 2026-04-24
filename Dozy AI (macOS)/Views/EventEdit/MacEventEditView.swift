@@ -15,11 +15,17 @@ struct MacEventEditView: View {
     @StateObject private var viewModel: EventEditViewModel
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
 
-    init(eventToEdit: DozyEvent?, selectedDate: Date, onSave: @escaping (DozyEvent) -> Void) {
+    init(
+        eventToEdit: DozyEvent?,
+        selectedDate: Date,
+        useTimeHint: Bool = false,
+        onSave: @escaping (DozyEvent) -> Void
+    ) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: eventToEdit,
             selectedDate: selectedDate,
             sharedCalendars: [],
+            useTimeHint: useTimeHint,
             onSave: onSave
         ))
     }

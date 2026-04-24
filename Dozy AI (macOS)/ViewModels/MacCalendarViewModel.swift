@@ -16,8 +16,9 @@ final class MacCalendarViewModel: ObservableObject {
 
     // MARK: - Published
 
-    @Published var currentMonth: Date = Date()
+    @Published var currentMonth: Date = Date()   // 앵커 날짜 (뷰 모드에 따라 의미 달라짐)
     @Published var selectedDate: Date = Date()
+    @Published var viewMode: MacCalendarViewMode = .month
     /// 월 이동 방향 — 1: 다음(오른쪽), -1: 이전(왼쪽), 0: 초기/무방향. 슬라이드 애니메이션용.
     @Published var monthTransitionDirection: Int = 0
     @Published var eventsByDate: [Date: [CalendarEvent]] = [:]
@@ -44,7 +45,17 @@ final class MacCalendarViewModel: ObservableObject {
     var monthTitle: String {
         let f = DateFormatter()
         f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "yyyy년 M월"
+        switch viewMode {
+        case .month: f.dateFormat = "yyyy년 M월"
+        case .week:
+            // "2026년 4월 3주차" 또는 "Apr 20 - Apr 26, 2026" 스타일. 심플하게 시작일 기반.
+            let weekStart = Self.startOfWeek(for: currentMonth)
+            let weekEnd = Calendar.current.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
+            f.dateFormat = "M월 d일"
+            return "\(f.string(from: weekStart)) - \(f.string(from: weekEnd))"
+        case .day:
+            f.dateFormat = "yyyy년 M월 d일 EEEE"
+        }
         return f.string(from: currentMonth)
     }
 
@@ -72,9 +83,18 @@ final class MacCalendarViewModel: ObservableObject {
 
     // MARK: - Month Navigation
 
+    // MARK: - Navigation (view mode 에 따라 동작 변경)
+
     func goToPreviousMonth() {
         let cal = Calendar.current
-        if let prev = cal.date(byAdding: .month, value: -1, to: currentMonth) {
+        let delta: Calendar.Component
+        let value: Int
+        switch viewMode {
+        case .month: delta = .month; value = -1
+        case .week:  delta = .weekOfYear; value = -1
+        case .day:   delta = .day; value = -1
+        }
+        if let prev = cal.date(byAdding: delta, value: value, to: currentMonth) {
             monthTransitionDirection = -1
             currentMonth = prev
             loadEventsForCurrentMonth()
@@ -83,7 +103,14 @@ final class MacCalendarViewModel: ObservableObject {
 
     func goToNextMonth() {
         let cal = Calendar.current
-        if let next = cal.date(byAdding: .month, value: 1, to: currentMonth) {
+        let delta: Calendar.Component
+        let value: Int
+        switch viewMode {
+        case .month: delta = .month; value = 1
+        case .week:  delta = .weekOfYear; value = 1
+        case .day:   delta = .day; value = 1
+        }
+        if let next = cal.date(byAdding: delta, value: value, to: currentMonth) {
             monthTransitionDirection = 1
             currentMonth = next
             loadEventsForCurrentMonth()
@@ -92,13 +119,44 @@ final class MacCalendarViewModel: ObservableObject {
 
     func goToToday() {
         let today = Date()
-        let cal = Calendar.current
-        let currentStart = cal.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
-        let todayStart   = cal.dateInterval(of: .month, for: today)?.start ?? today
-        monthTransitionDirection = todayStart > currentStart ? 1 : (todayStart < currentStart ? -1 : 0)
+        monthTransitionDirection = today > currentMonth ? 1 : (today < currentMonth ? -1 : 0)
         currentMonth = today
         selectedDate = today
         loadEventsForCurrentMonth()
+    }
+
+    func setViewMode(_ mode: MacCalendarViewMode) {
+        guard viewMode != mode else { return }
+        viewMode = mode
+        loadEventsForCurrentMonth()
+    }
+
+    // MARK: - Visible range helpers
+
+    static func startOfWeek(for date: Date) -> Date {
+        let cal = Calendar.current
+        let weekday = cal.component(.weekday, from: date)   // 1 = Sun
+        let startOfDay = cal.startOfDay(for: date)
+        return cal.date(byAdding: .day, value: -(weekday - 1), to: startOfDay) ?? startOfDay
+    }
+
+    /// 현재 뷰 모드에 따라 보여지는 날짜 범위.
+    /// end 는 마지막 표시일의 다음날 시작(= exclusive upper bound) 을 사용해야
+    /// DozyEventRepository 의 predicate `startDate < end` 가 마지막날 이벤트까지 포함한다.
+    func currentVisibleRange() -> (Date, Date) {
+        let cal = Calendar.current
+        switch viewMode {
+        case .month:
+            return visibleRangeMonth(for: currentMonth)
+        case .week:
+            let start = Self.startOfWeek(for: currentMonth)
+            let end   = cal.date(byAdding: .day, value: 7, to: start) ?? start
+            return (start, end)
+        case .day:
+            let start = cal.startOfDay(for: currentMonth)
+            let end   = cal.date(byAdding: .day, value: 1, to: start) ?? start
+            return (start, end)
+        }
     }
 
     func selectDate(_ date: Date) {
@@ -108,7 +166,7 @@ final class MacCalendarViewModel: ObservableObject {
     // MARK: - Data
 
     func loadEventsForCurrentMonth() {
-        let (start, end) = visibleRange(for: currentMonth)
+        let (start, end) = currentVisibleRange()
         isLoading = true
         errorMessage = nil
 
@@ -191,12 +249,13 @@ final class MacCalendarViewModel: ObservableObject {
 
     /// 달력 그리드에서 보이는 날짜 범위 (6주 = 42일).
     /// 해당 월 1일이 속한 주의 일요일부터 42일간.
-    private func visibleRange(for month: Date) -> (Date, Date) {
+    /// end 는 Day 42 시작(= exclusive) 으로, predicate `startDate < end` 가 Day 41 이벤트까지 포함.
+    private func visibleRangeMonth(for month: Date) -> (Date, Date) {
         let cal = Calendar.current
         let startOfMonth = cal.dateInterval(of: .month, for: month)?.start ?? month
         let weekday = cal.component(.weekday, from: startOfMonth) // 1 = Sunday
         let startOfGrid = cal.date(byAdding: .day, value: -(weekday - 1), to: startOfMonth) ?? startOfMonth
-        let endOfGrid = cal.date(byAdding: .day, value: 41, to: startOfGrid) ?? startOfMonth
+        let endOfGrid = cal.date(byAdding: .day, value: 42, to: startOfGrid) ?? startOfMonth
         return (startOfGrid, endOfGrid)
     }
 
@@ -212,7 +271,7 @@ final class MacCalendarViewModel: ObservableObject {
         var result: [Date: [CalendarEvent]] = [:]
         var cursor = cal.startOfDay(for: start)
         let limit = cal.startOfDay(for: end)
-        while cursor <= limit {
+        while cursor < limit {   // end 는 exclusive (다음날 시작)
             var list: [CalendarEvent] = []
             for event in dozyEvents {
                 if event.recurrenceRule == "none" {
