@@ -316,6 +316,9 @@
 		F6EC8B012F99A00000CFFF87 /* MacHomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B002F99A00000CFFF87 /* MacHomeViewModel.swift */; };
 		F6EC8B032F99A00000CFFF87 /* MacTodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B022F99A00000CFFF87 /* MacTodayView.swift */; };
 		F6EC8B052F99A00000CFFF87 /* MacEventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */; };
+		F6EC8B082F99B00000CFFF87 /* MacEventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B072F99B00000CFFF87 /* MacEventEditView.swift */; };
+		F6EC8B0A2F99B00000CFFF87 /* MacEventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B092F99B00000CFFF87 /* MacEventDetailView.swift */; };
+		F6EC8B0C2F99B00000CFFF87 /* EventEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
@@ -563,6 +566,8 @@
 		F6EC8B002F99A00000CFFF87 /* MacHomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacHomeViewModel.swift; sourceTree = "<group>"; };
 		F6EC8B022F99A00000CFFF87 /* MacTodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTodayView.swift; sourceTree = "<group>"; };
 		F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventRow.swift; sourceTree = "<group>"; };
+		F6EC8B072F99B00000CFFF87 /* MacEventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventEditView.swift; sourceTree = "<group>"; };
+		F6EC8B092F99B00000CFFF87 /* MacEventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventDetailView.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1170,6 +1175,7 @@
 				F6EC8AF42F9995A200CFFF87 /* Login */,
 				F6EC8AFC2F9995F000CFFF87 /* Shell */,
 				F6EC8B062F99A00000CFFF87 /* Today */,
+				F6EC8B0B2F99B00000CFFF87 /* EventEdit */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1206,6 +1212,15 @@
 				F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */,
 			);
 			path = Today;
+			sourceTree = "<group>";
+		};
+		F6EC8B0B2F99B00000CFFF87 /* EventEdit */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8B072F99B00000CFFF87 /* MacEventEditView.swift */,
+				F6EC8B092F99B00000CFFF87 /* MacEventDetailView.swift */,
+			);
+			path = EventEdit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1724,6 +1739,9 @@
 				F6EC8B012F99A00000CFFF87 /* MacHomeViewModel.swift in Sources */,
 				F6EC8B032F99A00000CFFF87 /* MacTodayView.swift in Sources */,
 				F6EC8B052F99A00000CFFF87 /* MacEventRow.swift in Sources */,
+				F6EC8B082F99B00000CFFF87 /* MacEventEditView.swift in Sources */,
+				F6EC8B0A2F99B00000CFFF87 /* MacEventDetailView.swift in Sources */,
+				F6EC8B0C2F99B00000CFFF87 /* EventEditViewModel.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,

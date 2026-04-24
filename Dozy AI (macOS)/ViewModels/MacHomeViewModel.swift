@@ -16,14 +16,19 @@ final class MacHomeViewModel: ObservableObject {
     // MARK: - Published
 
     @Published var todayEvents: [CalendarEvent] = []
+    @Published var dozyEventsByID: [String: DozyEvent] = [:]
     @Published var completionsByEventID: [String: Bool] = [:]
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var showSuccessAnimation = false
 
     // MARK: - Deps
 
     private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+    private let createDozyEventUseCase: CreateDozyEventUseCase
+    private let updateDozyEventUseCase: UpdateDozyEventUseCase
+    private let deleteDozyEventUseCase: DeleteDozyEventUseCase
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed
@@ -66,6 +71,9 @@ final class MacHomeViewModel: ObservableObject {
     init(container: DependencyContainer) {
         self.fetchDozyEventsUseCase = container.fetchDozyEventsUseCase
         self.fetchEventCompletionsUseCase = container.fetchEventCompletionsUseCase
+        self.createDozyEventUseCase = container.createDozyEventUseCase
+        self.updateDozyEventUseCase = container.updateDozyEventUseCase
+        self.deleteDozyEventUseCase = container.deleteDozyEventUseCase
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -91,6 +99,10 @@ final class MacHomeViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] dozyEvents in
                     guard let self else { return }
+                    var byID: [String: DozyEvent] = [:]
+                    for d in dozyEvents { byID[d.id] = d }
+                    self.dozyEventsByID = byID
+
                     let events = dozyEvents
                         .map { $0.toCalendarEvent(for: today) }
                         .sorted { $0.startDate < $1.startDate }
@@ -100,6 +112,48 @@ final class MacHomeViewModel: ObservableObject {
             )
             .store(in: &cancellables)
     }
+
+    // MARK: - Event CRUD
+
+    /// 새 일정이면 create, 기존이면 update. Supabase 동기화 후 로컬 Today 재로드.
+    func saveDozyEvent(_ event: DozyEvent) {
+        let isNew = dozyEventsByID[event.id] == nil
+        let publisher = isNew
+            ? createDozyEventUseCase.execute(event)
+            : updateDozyEventUseCase.execute(event)
+        publisher
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] in
+                    self?.loadTodayData()
+                    if isNew { self?.showSuccessAnimation = true }
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func deleteDozyEvent(_ event: DozyEvent) {
+        deleteDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] in
+                    self?.loadTodayData()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Private
 
     private func loadCompletions(for ids: [String], on date: Date) {
         guard !ids.isEmpty else {

@@ -11,6 +11,10 @@ import SwiftUI
 
 struct MacTodayView: View {
     @StateObject private var viewModel: MacHomeViewModel
+    @State private var selectedEvent: CalendarEvent? = nil
+    @State private var eventToEdit: DozyEvent? = nil
+    @State private var pendingEdit: DozyEvent? = nil
+    @State private var showNewEventSheet = false
 
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: MacHomeViewModel(container: container))
@@ -36,11 +40,61 @@ struct MacTodayView: View {
             .frame(maxWidth: .infinity, alignment: .top)
         }
         .navigationTitle("오늘")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showNewEventSheet = true
+                } label: {
+                    Label("새 일정", systemImage: "plus")
+                }
+                .help("새 일정 추가")
+            }
+        }
         .onAppear {
             viewModel.loadTodayData()
         }
         .refreshable {
             viewModel.loadTodayData()
+        }
+        // Detail sheet — 편집 선택 시 dismiss 후 pendingEdit 을 통해 edit 시트로 전환
+        .sheet(item: $selectedEvent, onDismiss: {
+            if let pending = pendingEdit {
+                eventToEdit = pending
+                pendingEdit = nil
+            }
+        }) { event in
+            MacEventDetailView(
+                event: event,
+                dozyEvent: viewModel.dozyEventsByID[event.id],
+                onEdit: { dozy in
+                    pendingEdit = dozy
+                    selectedEvent = nil
+                },
+                onDelete: { dozy in
+                    viewModel.deleteDozyEvent(dozy)
+                    selectedEvent = nil
+                }
+            )
+        }
+        // Edit sheet — 기존 이벤트 수정
+        .sheet(item: $eventToEdit) { dozy in
+            MacEventEditView(
+                eventToEdit: dozy,
+                selectedDate: dozy.startDate,
+                onSave: { saved in
+                    viewModel.saveDozyEvent(saved)
+                }
+            )
+        }
+        // New sheet — 새 일정 생성
+        .sheet(isPresented: $showNewEventSheet) {
+            MacEventEditView(
+                eventToEdit: nil,
+                selectedDate: Date(),
+                onSave: { saved in
+                    viewModel.saveDozyEvent(saved)
+                }
+            )
         }
     }
 
@@ -118,14 +172,19 @@ struct MacTodayView: View {
                         .background(timeUntilColor(event).opacity(0.1), in: Capsule())
                 }
             } else {
-                HStack(spacing: 10) {
-                    Image(systemName: "calendar.badge.minus")
-                        .font(.title3)
-                        .foregroundStyle(Color.secondary)
-                    Text("오늘 일정이 없습니다.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                Button {
+                    showNewEventSheet = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "calendar.badge.plus")
+                            .font(.title3)
+                            .foregroundStyle(Color.secondary)
+                        Text("오늘 일정이 없습니다. 새로 추가해볼까요?")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .buttonStyle(.plain)
             }
         }
         .padding(16)
@@ -183,6 +242,10 @@ struct MacTodayView: View {
                     event: event,
                     isCompleted: viewModel.completionsByEventID[event.id] == true
                 )
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    selectedEvent = event
+                }
             }
         }
     }
