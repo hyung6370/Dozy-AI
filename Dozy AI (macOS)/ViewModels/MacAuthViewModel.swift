@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftData
 import Supabase
+import OSLog
 
 @MainActor
 final class MacAuthViewModel: ObservableObject {
@@ -25,16 +26,43 @@ final class MacAuthViewModel: ObservableObject {
     
     private let authService: AuthService
     private let modelContainer: ModelContainer
+    private let syncService: SyncService
     private var cancellables = Set<AnyCancellable>()
-    
+
     var currentUser: AuthUser? {
         if case .signedIn(let user) = state { return user }
         return nil
     }
-    
+
     init(authService: AuthService, modelContainer: ModelContainer) {
         self.authService = authService
         self.modelContainer = modelContainer
+        self.syncService = SyncService(modelContext: modelContainer.mainContext)
+    }
+
+    // MARK: - Sign-in success + sync
+
+    /// 로그인/세션 복원 성공 시 공통 처리 — 상태 전환 후 Supabase 동기화 트리거.
+    private func completeSignIn(_ user: AuthUser) {
+        state = .signedIn(user)
+        syncAfterLogin(userID: user.id)
+    }
+
+    private func syncAfterLogin(userID: String) {
+        syncService.syncAll(userID: userID)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Logger.sync.error("❌ syncAll 실패: \(error.localizedDescription)")
+                    }
+                },
+                receiveValue: { _ in
+                    Logger.sync.info("✅ syncAll 완료 → dozyDataSyncCompleted")
+                    NotificationCenter.default.post(name: .dozyDataSyncCompleted, object: nil)
+                }
+            )
+            .store(in: &cancellables)
     }
     
     // MARK: - Session
@@ -56,7 +84,7 @@ final class MacAuthViewModel: ObservableObject {
                 displayName: nil,
                 provider: provider
             )
-            state = .signedIn(user)
+            completeSignIn(user)
         } catch {
             state = .signedOut
         }
@@ -101,7 +129,7 @@ final class MacAuthViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] user in
-                    self?.state = .signedIn(user)
+                    self?.completeSignIn(user)
                 }
             )
             .store(in: &cancellables)
@@ -124,7 +152,7 @@ final class MacAuthViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] user in
-                    self?.state = .signedIn(user)
+                    self?.completeSignIn(user)
                 }
             )
             .store(in: &cancellables)
@@ -145,7 +173,7 @@ final class MacAuthViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] user in
-                    self?.state = .signedIn(user)
+                    self?.completeSignIn(user)
                 }
             )
             .store(in: &cancellables)

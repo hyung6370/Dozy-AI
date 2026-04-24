@@ -34,13 +34,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 )
                 do {
                     let all = try context.fetch(descriptor)
-                    let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
-                    let filtered = all.filter { event in
-                        // 개인 이벤트는 항상 표시
-                        if event.sharedCalendarID == nil { return true }
-                        // 공유 이벤트는 활성 캘린더와 일치할 때만
-                        return event.sharedCalendarID == activeID
-                    }
+                    let filtered = await Self.filterByCurrentAccount(all)
                     promise(.success(filtered))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -328,11 +322,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
                 do {
                     let all = try context.fetch(descriptor)
-                    let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
-                    let filtered = all.filter { event in
-                        if event.sharedCalendarID == nil { return true }
-                        return event.sharedCalendarID == activeID
-                    }
+                    let filtered = await Self.filterByCurrentAccount(all)
                     promise(.success(filtered))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -340,6 +330,26 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             }
         }
         .eraseToAnyPublisher()
+    }
+
+    /// 현재 로그인 계정 기준으로 이벤트 필터링.
+    /// - 개인 이벤트(sharedCalendarID == nil): ownerID 가 현재 userID 와 일치하거나
+    ///   nil(아직 서버 업로드 전)일 때만 노출. 다른 계정으로 로그인했을 때
+    ///   이전 계정의 SwiftData 잔여 데이터를 차단한다.
+    /// - 공유 이벤트(sharedCalendarID != nil): 활성 공유 캘린더와 일치할 때만.
+    @MainActor
+    private static func filterByCurrentAccount(_ events: [DozyEvent]) async -> [DozyEvent] {
+        let userID = try? await supabase.auth.session.user.id.uuidString.lowercased()
+        let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
+        return events.filter { event in
+            if event.sharedCalendarID == nil {
+                if let uid = userID, let oid = event.ownerID, oid != uid {
+                    return false
+                }
+                return true
+            }
+            return event.sharedCalendarID == activeID
+        }
     }
 }
 
