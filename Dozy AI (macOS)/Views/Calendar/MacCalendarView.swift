@@ -216,10 +216,10 @@ struct MacCalendarView: View {
     private func animatedGoToPreviousMonth() {
         let width = swipeState.viewWidth
         guard width > 0 else { viewModel.goToPreviousMonth(); return }
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.88)) {
+        let anim: Animation = .spring(response: 0.28, dampingFraction: 0.92)
+        withAnimation(anim) {
             swipeState.liveOffset = width
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.37) {
+        } completion: {
             var txn = Transaction()
             txn.disablesAnimations = true
             withTransaction(txn) {
@@ -232,10 +232,10 @@ struct MacCalendarView: View {
     private func animatedGoToNextMonth() {
         let width = swipeState.viewWidth
         guard width > 0 else { viewModel.goToNextMonth(); return }
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.88)) {
+        let anim: Animation = .spring(response: 0.28, dampingFraction: 0.92)
+        withAnimation(anim) {
             swipeState.liveOffset = -width
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.37) {
+        } completion: {
             var txn = Transaction()
             txn.disablesAnimations = true
             withTransaction(txn) {
@@ -384,7 +384,7 @@ struct MacCalendarView: View {
     // MARK: - Magic Mouse Horizontal Scroll (월 전환)
 
     /// Magic Mouse / 트랙패드의 가로 스크롤을 실시간 offset 으로 변환.
-    /// 150ms 동안 이벤트가 없으면 snap (임계값 초과 → 이전/다음 월, 아니면 복귀).
+    /// 가능하면 event.phase 로 즉시 commit, 아니면 짧은 inactivity 후 fallback.
     private func installScrollSwipeMonitor() {
         guard swipeState.monitor == nil else { return }
         let vm = viewModel
@@ -409,31 +409,37 @@ struct MacCalendarView: View {
                 state.liveOffset = max(-state.viewWidth, min(state.viewWidth, state.liveOffset + dx))
             }
 
-            // 이벤트 멈춤 감지 → snap
-            state.commitWork?.cancel()
-            let work = DispatchWorkItem {
+            // phase 로 정확한 종료 감지. 트랙패드/Magic Mouse 는 .ended/.cancelled 보냄.
+            // phase 정보가 없는 구형 이벤트면 짧은 inactivity 후 fallback commit.
+            if event.phase.contains(.ended) || event.phase.contains(.cancelled) {
+                state.commitWork?.cancel()
+                state.commitWork = nil
                 commitSwipe(state: state, vm: vm)
+            } else {
+                state.commitWork?.cancel()
+                let work = DispatchWorkItem {
+                    commitSwipe(state: state, vm: vm)
+                }
+                state.commitWork = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.07, execute: work)
             }
-            state.commitWork = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: work)
 
             return nil
         }
     }
 
-    /// liveOffset 임계값에 따라 스냅. 애니메이션 완료 후 currentMonth 업데이트 + offset 리셋.
+    /// liveOffset 임계값에 따라 스냅. 애니메이션 완료 시점에 정확히 commit.
     private func commitSwipe(state: MonthSwipeState, vm: MacCalendarViewModel) {
         let width = state.viewWidth
         guard width > 0 else { return }
         let threshold = width * 0.12
-        let springDuration: TimeInterval = 0.32
+        let anim: Animation = .spring(response: 0.28, dampingFraction: 0.92)
 
         if state.liveOffset > threshold {
             // 이전 월로
-            withAnimation(.spring(response: springDuration, dampingFraction: 0.88)) {
+            withAnimation(anim) {
                 state.liveOffset = width
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + springDuration + 0.02) {
+            } completion: {
                 var txn = Transaction()
                 txn.disablesAnimations = true
                 withTransaction(txn) {
@@ -443,10 +449,9 @@ struct MacCalendarView: View {
             }
         } else if state.liveOffset < -threshold {
             // 다음 월로
-            withAnimation(.spring(response: springDuration, dampingFraction: 0.88)) {
+            withAnimation(anim) {
                 state.liveOffset = -width
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + springDuration + 0.02) {
+            } completion: {
                 var txn = Transaction()
                 txn.disablesAnimations = true
                 withTransaction(txn) {
@@ -456,7 +461,7 @@ struct MacCalendarView: View {
             }
         } else {
             // 임계값 미달 → 원위치로 복귀
-            withAnimation(.spring(response: springDuration, dampingFraction: 0.88)) {
+            withAnimation(anim) {
                 state.liveOffset = 0
             }
         }
