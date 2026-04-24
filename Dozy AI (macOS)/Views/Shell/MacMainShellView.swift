@@ -61,7 +61,7 @@ struct MacMainShellView: View {
                 case .calendar:
                     MacCalendarView(container: container)
                 case .insights:
-                    MacInsightsPlaceholderView()
+                    MacInsightDashboardView(container: container)
                 case .settings:
                     MacSettingsView()
                 case nil:
@@ -80,12 +80,6 @@ struct MacMainShellView: View {
 }
 
 // MARK: - Placeholder Detail Views
-
-private struct MacInsightsPlaceholderView: View {
-    var body: some View {
-        PlaceholderDetail(title: "인사이트", note: "M4.8 에서 인사이트 뷰 구현 예정")
-    }
-}
 
 private struct PlaceholderDetail: View {
     let title: String
