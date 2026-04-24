@@ -55,6 +55,9 @@ struct MacInsightDashboardView: View {
         .onAppear { viewModel.loadData() }
         .onChange(of: viewModel.selectedPeriod) { _, _ in viewModel.loadData() }
         .refreshable { viewModel.loadData() }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestRefresh)) { _ in
+            viewModel.loadData()
+        }
     }
 
     // MARK: - Empty

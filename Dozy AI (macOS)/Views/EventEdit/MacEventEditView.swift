@@ -8,10 +8,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MacEventEditView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: EventEditViewModel
+    @Query(sort: \UserCategory.order) private var categories: [UserCategory]
 
     init(eventToEdit: DozyEvent?, selectedDate: Date, onSave: @escaping (DozyEvent) -> Void) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
@@ -49,6 +51,20 @@ struct MacEventEditView: View {
                             displayedComponents: [.date, .hourAndMinute]
                         )
                         .environment(\.locale, Locale(identifier: "ko_KR"))
+                    }
+                }
+                
+                Section("카테고리") {
+                    Picker("카테고리", selection: $viewModel.category) {
+                        ForEach(categories) { cat in
+                            Text("\(cat.emoji) \(cat.name)").tag(cat.name)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: viewModel.category) { _, newName in
+                        if let cat = categories.first(where: { $0.name == newName }) {
+                            viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
+                        }
                     }
                 }
 
@@ -95,6 +111,11 @@ struct MacEventEditView: View {
             }
             .formStyle(.grouped)
             .navigationTitle(viewModel.isEditing ? "일정 수정" : "새 일정")
+            .onAppear {
+                if let cat = categories.first(where: { $0.name == viewModel.category }) {
+                    viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }

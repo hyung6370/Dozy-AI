@@ -133,6 +133,12 @@ struct MacTodayView: View {
         } message: {
             Text("정말로 삭제하시겠습니까?")
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestRefresh)) { _ in
+            viewModel.loadTodayData()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestNewEvent)) { _ in
+            showNewEventSheet = true
+        }
     }
 
     // MARK: - Header

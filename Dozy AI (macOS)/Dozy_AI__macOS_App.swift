@@ -43,6 +43,43 @@ struct Dozy_AI__macOS_App: App {
             }
         }
         .windowResizability(.contentMinSize)
+        .commands {
+            // File 메뉴의 "New..." 를 "새 일정" 으로 대체
+            CommandGroup(replacing: .newItem) {
+                Button("새 일정") {
+                    NotificationCenter.default.post(name: .dozyRequestNewEvent, object: nil)
+                }
+                .keyboardShortcut("n", modifiers: [.command])
+            }
+            
+            // File 메뉴 "새 일정" 아래에 추가 항목
+            CommandGroup(after: .newItem) {
+                Divider()
+                Button("새로고침") {
+                    NotificationCenter.default.post(name: .dozyRequestRefresh, object: nil)
+                }
+                .keyboardShortcut("r", modifiers: [.command])
+                
+                if coordinator.authViewModel != nil {
+                    Divider()
+                    Button("로그아웃") {
+                        coordinator.authViewModel?.signOut()
+                    }
+                }
+            }
+            
+            // View 메뉴의 Sidebar 아래에 섹션 전환 단축키
+            CommandGroup(after: .sidebar) {
+                Button("오늘") { coordinator.selectedSection = .today }
+                    .keyboardShortcut("1", modifiers: [.command])
+                Button("캘린더") { coordinator.selectedSection = .calendar }
+                    .keyboardShortcut("2", modifiers: [.command])
+                Button("인사이트") { coordinator.selectedSection = .insights }
+                    .keyboardShortcut("3", modifiers: [.command])
+                Button("설정") { coordinator.selectedSection = .settings }
+                    .keyboardShortcut("4", modifiers: [.command])
+            }
+        }
 
         MenuBarExtra {
             if let container = coordinator.container,
@@ -74,6 +111,7 @@ struct Dozy_AI__macOS_App: App {
         MacAppRootView()
             .environmentObject(container)
             .environmentObject(authViewModel)
+            .environmentObject(coordinator)
             .modelContainer(container.modelContainer)
     }
 }
@@ -85,6 +123,7 @@ struct Dozy_AI__macOS_App: App {
 /// Release: init() 에서 즉시 setup() 호출
 final class MacAppCoordinator: ObservableObject {
     @Published private(set) var isReady = false
+    @Published var selectedSection: MacSection? = .today
     private(set) var container: DependencyContainer?
     private(set) var authViewModel: MacAuthViewModel?
     private(set) var menuBarViewModel: MacMenuBarViewModel?

@@ -42,11 +42,17 @@ enum MacSection: String, CaseIterable, Hashable, Identifiable {
 struct MacMainShellView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @EnvironmentObject private var container: DependencyContainer
-    @State private var selection: MacSection? = .today
+    @EnvironmentObject private var coordinator: MacAppCoordinator
 
     var body: some View {
         NavigationSplitView {
-            List(MacSection.allCases, selection: $selection) { section in
+            List(
+                MacSection.allCases,
+                selection: Binding(
+                    get: { coordinator.selectedSection },
+                    set: { coordinator.selectedSection = $0 }
+                )
+            ) { section in
                 Label(section.displayName, systemImage: section.iconName)
                     .tag(section)
             }
@@ -55,15 +61,11 @@ struct MacMainShellView: View {
             .navigationTitle("Dozy")
         } detail: {
             Group {
-                switch selection {
-                case .today:
-                    MacTodayView(container: container)
-                case .calendar:
-                    MacCalendarView(container: container)
-                case .insights:
-                    MacInsightDashboardView(container: container)
-                case .settings:
-                    MacSettingsView()
+                switch coordinator.selectedSection {
+                case .today:     MacTodayView(container: container)
+                case .calendar:  MacCalendarView(container: container)
+                case .insights:  MacInsightDashboardView(container: container)
+                case .settings:  MacSettingsView()
                 case nil:
                     VStack(spacing: 8) {
                         Image(systemName: "sidebar.left")

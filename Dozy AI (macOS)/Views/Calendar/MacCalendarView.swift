@@ -88,6 +88,12 @@ struct MacCalendarView: View {
                 }
             )
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestRefresh)) { _ in
+            viewModel.loadEventsForCurrentMonth()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestNewEvent)) { _ in
+            showNewEventSheet = true
+        }
     }
 
     // MARK: - Month Header
