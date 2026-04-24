@@ -15,12 +15,14 @@ struct MacSettingsView: View {
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showCategoryManagement = false
+    @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 accountSection
                 categorySection
+                menuBarSection
                 sharedCalendarSection
                 appInfoSection
                 dangerZoneSection
@@ -127,6 +129,22 @@ struct MacSettingsView: View {
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
+        }
+    }
+
+    // MARK: - Menu Bar
+
+    private var menuBarSection: some View {
+        SettingsSection(title: "메뉴바") {
+            Toggle(isOn: $menuBarShowBadge) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("남은 일정 개수 배지", systemImage: "circle.badge")
+                    Text("메뉴바 아이콘 옆에 오늘 남은 일정 수를 표시합니다.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .toggleStyle(.switch)
         }
     }
 

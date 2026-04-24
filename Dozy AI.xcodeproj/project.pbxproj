@@ -329,6 +329,10 @@
 		F6EC8B1D2F99E00000CFFF87 /* PatternAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */; };
 		F6EC8B1F2F99E00000CFFF87 /* MacInsightViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */; };
 		F6EC8B212F99E00000CFFF87 /* MacInsightDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B202F99E00000CFFF87 /* MacInsightDashboardView.swift */; };
+		F6EC8B242F99F00000CFFF87 /* MacMenuBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B232F99F00000CFFF87 /* MacMenuBarViewModel.swift */; };
+		F6EC8B262F99F00000CFFF87 /* MacMenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B252F99F00000CFFF87 /* MacMenuBarView.swift */; };
+		F6EC8B292F9A000000CFFF87 /* MacMenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B282F9A000000CFFF87 /* MacMenuBarIcon.swift */; };
+		F6EC8B2B2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B2A2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
@@ -587,6 +591,10 @@
 		F6EC8B1A2F99D00000CFFF87 /* MacCategorySupabaseSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategorySupabaseSync.swift; sourceTree = "<group>"; };
 		F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacInsightViewModel.swift; sourceTree = "<group>"; };
 		F6EC8B202F99E00000CFFF87 /* MacInsightDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacInsightDashboardView.swift; sourceTree = "<group>"; };
+		F6EC8B232F99F00000CFFF87 /* MacMenuBarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarViewModel.swift; sourceTree = "<group>"; };
+		F6EC8B252F99F00000CFFF87 /* MacMenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarView.swift; sourceTree = "<group>"; };
+		F6EC8B282F9A000000CFFF87 /* MacMenuBarIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarIcon.swift; sourceTree = "<group>"; };
+		F6EC8B2A2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarQuickAddView.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1198,6 +1206,7 @@
 				F6EC8B132F99C00000CFFF87 /* Calendar */,
 				F6EC8B1C2F99D00000CFFF87 /* Settings */,
 				F6EC8B222F99E00000CFFF87 /* Insights */,
+				F6EC8B272F99F00000CFFF87 /* MenuBar */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1209,6 +1218,7 @@
 				F6EC8B002F99A00000CFFF87 /* MacHomeViewModel.swift */,
 				F6EC8B0D2F99C00000CFFF87 /* MacCalendarViewModel.swift */,
 				F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */,
+				F6EC8B232F99F00000CFFF87 /* MacMenuBarViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -1273,6 +1283,16 @@
 				F6EC8B202F99E00000CFFF87 /* MacInsightDashboardView.swift */,
 			);
 			path = Insights;
+			sourceTree = "<group>";
+		};
+		F6EC8B272F99F00000CFFF87 /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8B252F99F00000CFFF87 /* MacMenuBarView.swift */,
+				F6EC8B282F9A000000CFFF87 /* MacMenuBarIcon.swift */,
+				F6EC8B2A2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift */,
+			);
+			path = MenuBar;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1804,6 +1824,10 @@
 				F6EC8B1D2F99E00000CFFF87 /* PatternAnalysisService.swift in Sources */,
 				F6EC8B1F2F99E00000CFFF87 /* MacInsightViewModel.swift in Sources */,
 				F6EC8B212F99E00000CFFF87 /* MacInsightDashboardView.swift in Sources */,
+				F6EC8B242F99F00000CFFF87 /* MacMenuBarViewModel.swift in Sources */,
+				F6EC8B262F99F00000CFFF87 /* MacMenuBarView.swift in Sources */,
+				F6EC8B292F9A000000CFFF87 /* MacMenuBarIcon.swift in Sources */,
+				F6EC8B2B2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,

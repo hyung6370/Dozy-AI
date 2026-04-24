@@ -14,7 +14,7 @@ struct Dozy_AI__macOS_App: App {
     @StateObject private var coordinator = MacAppCoordinator()
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             Group {
                 #if DEBUG
                 if coordinator.isReady,
@@ -43,6 +43,30 @@ struct Dozy_AI__macOS_App: App {
             }
         }
         .windowResizability(.contentMinSize)
+
+        MenuBarExtra {
+            if let container = coordinator.container,
+               let menuBarViewModel = coordinator.menuBarViewModel {
+                MacMenuBarView(container: container, viewModel: menuBarViewModel)
+            } else {
+                VStack(spacing: 8) {
+                    Image(systemName: "calendar")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                    Text("Dozy 준비 중...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(width: 200, height: 80)
+            }
+        } label: {
+            if let vm = coordinator.menuBarViewModel {
+                MacMenuBarIcon(viewModel: vm)
+            } else {
+                Image(systemName: "calendar")
+            }
+        }
+        .menuBarExtraStyle(.window)
     }
 
     @ViewBuilder
@@ -63,6 +87,7 @@ final class MacAppCoordinator: ObservableObject {
     @Published private(set) var isReady = false
     private(set) var container: DependencyContainer?
     private(set) var authViewModel: MacAuthViewModel?
+    private(set) var menuBarViewModel: MacMenuBarViewModel?
 
     init() {
         #if !DEBUG
@@ -79,6 +104,9 @@ final class MacAppCoordinator: ObservableObject {
             authService: c.authService,
             modelContainer: c.modelContainer
         )
+        let mb = MacMenuBarViewModel(container: c)
+        mb.loadTodayData()
+        menuBarViewModel = mb
         container = c
         isReady = true
     }
