@@ -333,6 +333,11 @@
 		F6EC8B262F99F00000CFFF87 /* MacMenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B252F99F00000CFFF87 /* MacMenuBarView.swift */; };
 		F6EC8B292F9A000000CFFF87 /* MacMenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B282F9A000000CFFF87 /* MacMenuBarIcon.swift */; };
 		F6EC8B2B2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B2A2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift */; };
+		F6EC8B2D2F9A100000CFFF87 /* MacSharedCalendarListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B2C2F9A100000CFFF87 /* MacSharedCalendarListView.swift */; };
+		F6EC8B2F2F9A100000CFFF87 /* MacSharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B2E2F9A100000CFFF87 /* MacSharedCalendarCreateView.swift */; };
+		F6EC8B312F9A100000CFFF87 /* MacSharedCalendarJoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B302F9A100000CFFF87 /* MacSharedCalendarJoinView.swift */; };
+		F6EC8B332F9A100000CFFF87 /* MacSharedCalendarDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B322F9A100000CFFF87 /* MacSharedCalendarDetailView.swift */; };
+		F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9885C44E183149258A057270 /* SharedCalendarViewModel.swift */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
@@ -595,6 +600,10 @@
 		F6EC8B252F99F00000CFFF87 /* MacMenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarView.swift; sourceTree = "<group>"; };
 		F6EC8B282F9A000000CFFF87 /* MacMenuBarIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarIcon.swift; sourceTree = "<group>"; };
 		F6EC8B2A2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarQuickAddView.swift; sourceTree = "<group>"; };
+		F6EC8B2C2F9A100000CFFF87 /* MacSharedCalendarListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSharedCalendarListView.swift; sourceTree = "<group>"; };
+		F6EC8B2E2F9A100000CFFF87 /* MacSharedCalendarCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSharedCalendarCreateView.swift; sourceTree = "<group>"; };
+		F6EC8B302F9A100000CFFF87 /* MacSharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSharedCalendarJoinView.swift; sourceTree = "<group>"; };
+		F6EC8B322F9A100000CFFF87 /* MacSharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1207,6 +1216,7 @@
 				F6EC8B1C2F99D00000CFFF87 /* Settings */,
 				F6EC8B222F99E00000CFFF87 /* Insights */,
 				F6EC8B272F99F00000CFFF87 /* MenuBar */,
+				F6EC8B342F9A100000CFFF87 /* SharedCalendar */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1293,6 +1303,17 @@
 				F6EC8B2A2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift */,
 			);
 			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		F6EC8B342F9A100000CFFF87 /* SharedCalendar */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8B2C2F9A100000CFFF87 /* MacSharedCalendarListView.swift */,
+				F6EC8B2E2F9A100000CFFF87 /* MacSharedCalendarCreateView.swift */,
+				F6EC8B302F9A100000CFFF87 /* MacSharedCalendarJoinView.swift */,
+				F6EC8B322F9A100000CFFF87 /* MacSharedCalendarDetailView.swift */,
+			);
+			path = SharedCalendar;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1828,6 +1849,11 @@
 				F6EC8B262F99F00000CFFF87 /* MacMenuBarView.swift in Sources */,
 				F6EC8B292F9A000000CFFF87 /* MacMenuBarIcon.swift in Sources */,
 				F6EC8B2B2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift in Sources */,
+				F6EC8B2D2F9A100000CFFF87 /* MacSharedCalendarListView.swift in Sources */,
+				F6EC8B2F2F9A100000CFFF87 /* MacSharedCalendarCreateView.swift in Sources */,
+				F6EC8B312F9A100000CFFF87 /* MacSharedCalendarJoinView.swift in Sources */,
+				F6EC8B332F9A100000CFFF87 /* MacSharedCalendarDetailView.swift in Sources */,
+				F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,

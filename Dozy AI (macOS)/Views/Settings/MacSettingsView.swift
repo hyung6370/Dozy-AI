@@ -12,9 +12,11 @@ import SwiftData
 struct MacSettingsView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
 
+    @EnvironmentObject private var container: DependencyContainer
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showCategoryManagement = false
+    @State private var showSharedCalendarManagement = false
     @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
 
     var body: some View {
@@ -58,6 +60,10 @@ struct MacSettingsView: View {
         }
         .sheet(isPresented: $showCategoryManagement) {
             MacCategoryManagementView()
+        }
+        .sheet(isPresented: $showSharedCalendarManagement) {
+            MacSharedCalendarListView(container: container)
+                .environmentObject(authViewModel)
         }
     }
 
@@ -148,18 +154,23 @@ struct MacSettingsView: View {
         }
     }
 
-    // MARK: - Shared Calendar (준비중)
+    // MARK: - Shared Calendar
 
     private var sharedCalendarSection: some View {
         SettingsSection(title: "공유 캘린더") {
-            HStack {
-                Label("파트너와 공유", systemImage: "person.2.fill")
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("준비 중")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            Button {
+                showSharedCalendarManagement = true
+            } label: {
+                HStack {
+                    Label("파트너와 공유", systemImage: "person.2.fill")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
             }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
         }
     }
 
