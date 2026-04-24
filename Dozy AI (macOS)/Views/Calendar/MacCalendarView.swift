@@ -310,7 +310,8 @@ struct MacCalendarView: View {
                     onCreateEvent: { date in
                         viewModel.selectDate(date)
                         showNewEventSheet = true
-                    }
+                    },
+                    onGoToToday: { viewModel.goToToday() }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 

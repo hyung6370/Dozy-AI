@@ -16,7 +16,8 @@ struct MacCalendarWeekRow: View {
     let eventsByDate: [Date: [CalendarEvent]]
     let onSelectDate: (Date) -> Void
     let onSelectEvent: (CalendarEvent) -> Void
-    let onCreateEvent: (Date) -> Void  // 더블 클릭으로 새 이벤트
+    let onCreateEvent: (Date) -> Void  // 더블 클릭 / 우클릭으로 새 이벤트
+    let onGoToToday: () -> Void
 
     // 레이아웃 상수
     private let barHeight: CGFloat = 18
@@ -50,6 +51,21 @@ struct MacCalendarWeekRow: View {
                             TapGesture(count: 1)
                                 .onEnded { onSelectDate(date) }
                         )
+                        .contextMenu {
+                            Button {
+                                onCreateEvent(date)
+                            } label: {
+                                Label("새 일정", systemImage: "plus.circle")
+                            }
+                            if !Calendar.current.isDateInToday(date) {
+                                Divider()
+                                Button {
+                                    onGoToToday()
+                                } label: {
+                                    Label("오늘로 이동", systemImage: "calendar.circle")
+                                }
+                            }
+                        }
 
                         if col < 6 {
                             Divider()
