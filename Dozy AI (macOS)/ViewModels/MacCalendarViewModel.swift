@@ -219,7 +219,8 @@ final class MacCalendarViewModel: ObservableObject {
                     let s = cal.startOfDay(for: event.startDate)
                     let e = cal.startOfDay(for: event.endDate)
                     if cursor >= s && cursor <= e {
-                        list.append(event.toCalendarEvent(for: cursor))
+                        // 비반복 멀티데이 이벤트는 원본 날짜 유지 (diff shift 하면 바 span 밀림)
+                        list.append(event.toCalendarEvent())
                     }
                 } else if event.occursOn(cursor) {
                     list.append(event.toCalendarEvent(for: cursor))

@@ -46,7 +46,10 @@ struct MacCalendarWeekRow: View {
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .onTapGesture(count: 2) { onCreateEvent(date) }
-                        .onTapGesture(count: 1) { onSelectDate(date) }
+                        .simultaneousGesture(
+                            TapGesture(count: 1)
+                                .onEnded { onSelectDate(date) }
+                        )
 
                         if col < 6 {
                             Divider()
