@@ -11,6 +11,7 @@ import SwiftUI
 
 struct MacTodayView: View {
     @StateObject private var viewModel: MacHomeViewModel
+    @EnvironmentObject private var authViewModel: MacAuthViewModel
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var eventToEdit: DozyEvent? = nil
     @State private var pendingEdit: DozyEvent? = nil
@@ -82,6 +83,8 @@ struct MacTodayView: View {
             MacEventDetailView(
                 event: event,
                 dozyEvent: viewModel.dozyEventsByID[event.id],
+                currentUserID: authViewModel.currentUser?.id ?? "",
+                partnerDisplayName: nil,
                 onEdit: { dozy in
                     pendingEdit = dozy
                     selectedEvent = nil
@@ -89,6 +92,20 @@ struct MacTodayView: View {
                 onDelete: { dozy in
                     viewModel.deleteDozyEvent(dozy)
                     selectedEvent = nil
+                },
+                onDeleteThisOnly: { dozy, date in
+                    viewModel.deleteThisOccurrence(dozy, date: date)
+                    selectedEvent = nil
+                },
+                onDeleteFutureOccurrences: { dozy, date in
+                    viewModel.deleteFutureOccurrences(dozy, from: date)
+                    selectedEvent = nil
+                },
+                onSaveMemos: { dozy in
+                    viewModel.saveMemos(for: dozy)
+                },
+                onUpdateDisplaySettings: { ev, priority, isPinned, category in
+                    viewModel.updateDisplaySettings(for: ev, priority: priority, isPinned: isPinned, category: category)
                 }
             )
         }

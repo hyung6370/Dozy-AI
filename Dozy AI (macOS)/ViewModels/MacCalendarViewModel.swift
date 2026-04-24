@@ -245,6 +245,61 @@ final class MacCalendarViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    /// 반복 일정의 특정 인스턴스만 제외
+    func deleteThisOccurrence(_ event: DozyEvent, date: Date) {
+        let occStart = event.occurrenceStart(for: date) ?? Calendar.current.startOfDay(for: date)
+        event.excludedDates.append(occStart)
+        event.updatedAt = Date()
+        updateDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadEventsForCurrentMonth()
+            })
+            .store(in: &cancellables)
+    }
+
+    /// 반복 일정의 특정 날짜 이후 모두 삭제 (recurrenceEndDate 를 전날로 단축)
+    func deleteFutureOccurrences(_ event: DozyEvent, from date: Date) {
+        let cal = Calendar.current
+        event.recurrenceEndDate = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: date))
+        event.updatedAt = Date()
+        updateDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadEventsForCurrentMonth()
+            })
+            .store(in: &cancellables)
+    }
+
+    /// 메모 저장 (DozyEvent.memos 를 외부에서 이미 변경하고 이 함수로 sync)
+    func saveMemos(for event: DozyEvent) {
+        updateDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    /// 표시 설정 (고정 / 우선순위 / 카테고리) 업데이트. 카테고리 변경 시 색상도 동기화.
+    func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String?) {
+        guard let dozy = dozyEventsByID[event.id] else { return }
+        dozy.priority = priority
+        dozy.isPinned = isPinned
+        if let category {
+            dozy.category = category
+            if let ctx = dozy.modelContext,
+               let cat = try? ctx.fetch(FetchDescriptor<UserCategory>()).first(where: { $0.name == category }) {
+                dozy.colorHex = cat.colorHex
+            }
+        }
+        dozy.updatedAt = Date()
+        updateDozyEventUseCase.execute(dozy)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadEventsForCurrentMonth()
+            })
+            .store(in: &cancellables)
+    }
+
     // MARK: - Helpers
 
     /// 달력 그리드에서 보이는 날짜 범위 (6주 = 42일).
@@ -286,7 +341,10 @@ final class MacCalendarViewModel: ObservableObject {
                 }
             }
             if !list.isEmpty {
-                result[cursor] = list.sorted { $0.startDate < $1.startDate }
+                result[cursor] = list.sorted { a, b in
+                    if a.isPinned != b.isPinned { return a.isPinned }
+                    return a.startDate < b.startDate
+                }
             }
             cursor = cal.date(byAdding: .day, value: 1, to: cursor) ?? limit
         }

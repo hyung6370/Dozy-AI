@@ -125,7 +125,10 @@ final class MacHomeViewModel: ObservableObject {
 
                     let events = dozyEvents
                         .map { $0.toCalendarEvent(for: today) }
-                        .sorted { $0.startDate < $1.startDate }
+                        .sorted { a, b in
+                            if a.isPinned != b.isPinned { return a.isPinned }
+                            return a.startDate < b.startDate
+                        }
                     self.todayEvents = events
                     self.loadCompletions(for: events.map(\.id), on: today)
                     self.persistTodayLog(events: events)
@@ -171,6 +174,57 @@ final class MacHomeViewModel: ObservableObject {
                     self?.loadTodayData()
                 }
             )
+            .store(in: &cancellables)
+    }
+
+    func deleteThisOccurrence(_ event: DozyEvent, date: Date) {
+        let occStart = event.occurrenceStart(for: date) ?? Calendar.current.startOfDay(for: date)
+        event.excludedDates.append(occStart)
+        event.updatedAt = Date()
+        updateDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func deleteFutureOccurrences(_ event: DozyEvent, from date: Date) {
+        let cal = Calendar.current
+        event.recurrenceEndDate = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: date))
+        event.updatedAt = Date()
+        updateDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
+            .store(in: &cancellables)
+    }
+
+    func saveMemos(for event: DozyEvent) {
+        updateDozyEventUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .store(in: &cancellables)
+    }
+
+    func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String?) {
+        guard let dozy = dozyEventsByID[event.id] else { return }
+        dozy.priority = priority
+        dozy.isPinned = isPinned
+        if let category {
+            dozy.category = category
+            if let ctx = dozy.modelContext,
+               let cat = try? ctx.fetch(FetchDescriptor<UserCategory>()).first(where: { $0.name == category }) {
+                dozy.colorHex = cat.colorHex
+            }
+        }
+        dozy.updatedAt = Date()
+        updateDozyEventUseCase.execute(dozy)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.loadTodayData()
+            })
             .store(in: &cancellables)
     }
 

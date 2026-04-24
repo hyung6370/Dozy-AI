@@ -21,11 +21,18 @@ struct MacEventRow: View {
                 .frame(width: 4, height: 40)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .strikethrough(isCompleted, color: .secondary)
-                    .foregroundStyle(isCompleted ? .secondary : .primary)
+                HStack(spacing: 4) {
+                    if event.isPinned {
+                        Image(systemName: "pin.fill")
+                            .font(.caption2)
+                            .foregroundStyle(Color(hex: event.calendarColorHex) ?? .blue)
+                    }
+                    Text(event.title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .strikethrough(isCompleted, color: .secondary)
+                        .foregroundStyle(isCompleted ? .secondary : .primary)
+                }
 
                 HStack(spacing: 8) {
                     Text(event.timeRangeString)

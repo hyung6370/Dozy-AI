@@ -78,10 +78,11 @@ enum MacCalendarBarLayoutEngine {
             spans.append((event, startCol, endCol))
         }
 
-        // 3) 정렬: 시작 col 빠른 순, 같으면 기간 긴 순 (긴 이벤트가 낮은 row 차지)
-        spans.sort {
-            if $0.startCol != $1.startCol { return $0.startCol < $1.startCol }
-            return ($0.endCol - $0.startCol) > ($1.endCol - $1.startCol)
+        // 3) 정렬: 핀 이벤트 우선 → 시작 col 빠른 순 → 기간 긴 순
+        spans.sort { a, b in
+            if a.event.isPinned != b.event.isPinned { return a.event.isPinned }
+            if a.startCol != b.startCol { return a.startCol < b.startCol }
+            return (a.endCol - a.startCol) > (b.endCol - b.startCol)
         }
 
         // 4) 스택 행 할당 (겹치지 않는 가장 위 row)

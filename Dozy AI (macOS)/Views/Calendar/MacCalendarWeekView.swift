@@ -18,6 +18,8 @@ struct MacCalendarWeekView: View {
     let onSelectEvent: (CalendarEvent) -> Void
     let onCreateEvent: (Date) -> Void            // 종일 슬롯용 (시간 정보 없음)
     let onCreateEventAt: (Date) -> Void          // 타임라인 슬롯용 (시각 포함)
+    var onEditEvent: ((CalendarEvent) -> Void)? = nil
+    var onDeleteEvent: ((CalendarEvent) -> Void)? = nil
 
     private let hourHeight: CGFloat = 44
     private let leftLabelWidth: CGFloat = 50
@@ -148,19 +150,38 @@ struct MacCalendarWeekView: View {
         let y = 6 + CGFloat(bar.stackRow) * 20
         let color = Color(hex: bar.event.calendarColorHex) ?? .blue
 
-        return HStack(spacing: 0) {
+        return HStack(spacing: 3) {
+            if bar.event.isPinned {
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(color)
+                    .padding(.leading, 6)
+            }
             Text(bar.event.title)
                 .font(.caption2)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
-                .padding(.horizontal, 6)
+                .padding(.leading, bar.event.isPinned ? 0 : 6)
+                .padding(.trailing, 6)
             Spacer(minLength: 0)
         }
         .frame(width: max(0, width), height: 16)
         .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
         .position(x: xCenter, y: y + 8)
         .onTapGesture { onSelectEvent(bar.event) }
+        .contextMenu {
+            Button {
+                onEditEvent?(bar.event)
+            } label: {
+                Label("수정", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                onDeleteEvent?(bar.event)
+            } label: {
+                Label("삭제", systemImage: "trash")
+            }
+        }
     }
 
     // MARK: - Timeline Scroll
@@ -295,6 +316,7 @@ struct MacCalendarWeekView: View {
     private func assignSubColumns(_ blocks: [TimedBlock]) -> [TimedBlock] {
         guard !blocks.isEmpty else { return [] }
         let sorted = blocks.sorted { a, b in
+            if a.event.isPinned != b.event.isPinned { return a.event.isPinned }
             if a.startMinute != b.startMinute { return a.startMinute < b.startMinute }
             return a.durationMinutes > b.durationMinutes
         }
@@ -344,17 +366,23 @@ struct MacCalendarWeekView: View {
         let width = max(0, subColumnWidth - 3)
 
         return HStack(spacing: 0) {
-            // 좌측 색상 스트립 (saturated) — 파스텔 배경 위에서도 색상 식별 용이
             Rectangle()
                 .fill(color)
                 .frame(width: 3)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(block.event.title)
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(color)
-                    .lineLimit(2)
+                HStack(spacing: 3) {
+                    if block.event.isPinned {
+                        Image(systemName: "pin.fill")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(color)
+                    }
+                    Text(block.event.title)
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(color)
+                        .lineLimit(2)
+                }
                 if height >= 36 && block.totalSubCols <= 2 {
                     Text(block.event.timeRangeString)
                         .font(.system(size: 9))
@@ -371,5 +399,17 @@ struct MacCalendarWeekView: View {
         .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
         .offset(x: xLeft, y: y)
         .onTapGesture { onSelectEvent(block.event) }
+        .contextMenu {
+            Button {
+                onEditEvent?(block.event)
+            } label: {
+                Label("수정", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                onDeleteEvent?(block.event)
+            } label: {
+                Label("삭제", systemImage: "trash")
+            }
+        }
     }
 }

@@ -13,17 +13,30 @@ import Combine
 struct MacCalendarView: View {
     @StateObject private var viewModel: MacCalendarViewModel
     @StateObject private var swipeState = MonthSwipeState()
+    @EnvironmentObject private var authViewModel: MacAuthViewModel
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var eventToEdit: DozyEvent? = nil
     @State private var pendingEdit: DozyEvent? = nil
     @State private var showNewEventSheet = false
     @State private var newEventTimeHint: Date? = nil
+    @State private var eventPendingDelete: CalendarEvent? = nil
     @State private var showMonthPicker = false
     @State private var pickerYear = Calendar.current.component(.year, from: Date())
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
 
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: MacCalendarViewModel(container: container))
+    }
+
+    // MARK: - Context menu handlers
+
+    private func handleEditEvent(_ event: CalendarEvent) {
+        guard let dozy = viewModel.dozyEventsByID[event.id] else { return }
+        eventToEdit = dozy
+    }
+
+    private func handleDeleteEvent(_ event: CalendarEvent) {
+        eventPendingDelete = event
     }
 
     var body: some View {
@@ -57,7 +70,9 @@ struct MacCalendarView: View {
                         viewModel.selectDate(dateTime)
                         newEventTimeHint = dateTime
                         showNewEventSheet = true
-                    }
+                    },
+                    onEditEvent: handleEditEvent,
+                    onDeleteEvent: handleDeleteEvent
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(
@@ -90,7 +105,9 @@ struct MacCalendarView: View {
                         viewModel.selectDate(dateTime)
                         newEventTimeHint = dateTime
                         showNewEventSheet = true
-                    }
+                    },
+                    onEditEvent: handleEditEvent,
+                    onDeleteEvent: handleDeleteEvent
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(
@@ -137,6 +154,8 @@ struct MacCalendarView: View {
             MacEventDetailView(
                 event: event,
                 dozyEvent: viewModel.dozyEventsByID[event.id],
+                currentUserID: authViewModel.currentUser?.id ?? "",
+                partnerDisplayName: nil,
                 onEdit: { dozy in
                     pendingEdit = dozy
                     selectedEvent = nil
@@ -144,6 +163,20 @@ struct MacCalendarView: View {
                 onDelete: { dozy in
                     viewModel.deleteDozyEvent(dozy)
                     selectedEvent = nil
+                },
+                onDeleteThisOnly: { dozy, date in
+                    viewModel.deleteThisOccurrence(dozy, date: date)
+                    selectedEvent = nil
+                },
+                onDeleteFutureOccurrences: { dozy, date in
+                    viewModel.deleteFutureOccurrences(dozy, from: date)
+                    selectedEvent = nil
+                },
+                onSaveMemos: { dozy in
+                    viewModel.saveMemos(for: dozy)
+                },
+                onUpdateDisplaySettings: { ev, priority, isPinned, category in
+                    viewModel.updateDisplaySettings(for: ev, priority: priority, isPinned: isPinned, category: category)
                 }
             )
         }
@@ -172,6 +205,52 @@ struct MacCalendarView: View {
         .onReceive(NotificationCenter.default.publisher(for: .dozyRequestNewEvent)) { _ in
             showNewEventSheet = true
         }
+        .confirmationDialog(
+            deleteDialogTitle,
+            isPresented: Binding(
+                get: { eventPendingDelete != nil },
+                set: { if !$0 { eventPendingDelete = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: eventPendingDelete
+        ) { event in
+            if let dozy = viewModel.dozyEventsByID[event.id], dozy.recurrenceRule != "none" {
+                Button("이 일정만 삭제", role: .destructive) {
+                    viewModel.deleteThisOccurrence(dozy, date: event.startDate)
+                    eventPendingDelete = nil
+                }
+                Button("이후 모든 일정 삭제", role: .destructive) {
+                    viewModel.deleteFutureOccurrences(dozy, from: event.startDate)
+                    eventPendingDelete = nil
+                }
+                Button("모든 반복 일정 삭제", role: .destructive) {
+                    viewModel.deleteDozyEvent(dozy)
+                    eventPendingDelete = nil
+                }
+                Button("취소", role: .cancel) { eventPendingDelete = nil }
+            } else {
+                Button("삭제", role: .destructive) {
+                    if let dozy = viewModel.dozyEventsByID[event.id] {
+                        viewModel.deleteDozyEvent(dozy)
+                    }
+                    eventPendingDelete = nil
+                }
+                Button("취소", role: .cancel) { eventPendingDelete = nil }
+            }
+        } message: { event in
+            if let dozy = viewModel.dozyEventsByID[event.id], dozy.recurrenceRule != "none" {
+                Text("삭제할 범위를 선택해주세요.")
+            } else {
+                Text("정말로 삭제하시겠습니까?")
+            }
+        }
+    }
+
+    private var deleteDialogTitle: String {
+        guard let event = eventPendingDelete,
+              let dozy = viewModel.dozyEventsByID[event.id]
+        else { return "일정 삭제" }
+        return dozy.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제"
     }
 
     // MARK: - Month Header
@@ -407,7 +486,9 @@ struct MacCalendarView: View {
                         viewModel.selectDate(date)
                         showNewEventSheet = true
                     },
-                    onGoToToday: { viewModel.goToToday() }
+                    onGoToToday: { viewModel.goToToday() },
+                    onEditEvent: handleEditEvent,
+                    onDeleteEvent: handleDeleteEvent
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 

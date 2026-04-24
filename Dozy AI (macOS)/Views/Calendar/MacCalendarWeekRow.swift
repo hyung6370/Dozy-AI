@@ -18,6 +18,8 @@ struct MacCalendarWeekRow: View {
     let onSelectEvent: (CalendarEvent) -> Void
     let onCreateEvent: (Date) -> Void  // 더블 클릭 / 우클릭으로 새 이벤트
     let onGoToToday: () -> Void
+    var onEditEvent: ((CalendarEvent) -> Void)? = nil
+    var onDeleteEvent: ((CalendarEvent) -> Void)? = nil
 
     // 레이아웃 상수
     private let barHeight: CGFloat = 18
@@ -91,6 +93,18 @@ struct MacCalendarWeekRow: View {
             .frame(width: max(0, width), height: barHeight)
             .position(x: xCenter, y: y)
             .onTapGesture { onSelectEvent(bar.event) }
+            .contextMenu {
+                Button {
+                    onEditEvent?(bar.event)
+                } label: {
+                    Label("수정", systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    onDeleteEvent?(bar.event)
+                } label: {
+                    Label("삭제", systemImage: "trash")
+                }
+            }
     }
 
     private func isInMonth(_ date: Date) -> Bool {
@@ -107,15 +121,22 @@ private struct EventBarView: View {
 
     var body: some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
-        HStack(spacing: 0) {
+        HStack(spacing: 3) {
             Rectangle().fill(color).frame(width: 3)
+            if event.isPinned {
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 7, weight: .bold))
+                    .foregroundStyle(color)
+                    .padding(.leading, 3)
+            }
             Text(event.title)
                 .font(.caption2)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .padding(.horizontal, 5)
+                .padding(.leading, event.isPinned ? 0 : 5)
+                .padding(.trailing, 5)
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

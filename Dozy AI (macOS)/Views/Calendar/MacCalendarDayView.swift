@@ -13,6 +13,8 @@ struct MacCalendarDayView: View {
     let onSelectEvent: (CalendarEvent) -> Void
     let onCreateEvent: (Date) -> Void
     let onCreateEventAt: (Date) -> Void
+    var onEditEvent: ((CalendarEvent) -> Void)? = nil
+    var onDeleteEvent: ((CalendarEvent) -> Void)? = nil
 
     private let hourHeight: CGFloat = 56
     private let leftLabelWidth: CGFloat = 60
@@ -88,14 +90,21 @@ struct MacCalendarDayView: View {
 
     private func allDayBar(event: CalendarEvent) -> some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
-        return HStack(spacing: 0) {
+        return HStack(spacing: 4) {
             Rectangle().fill(color).frame(width: 3)
+            if event.isPinned {
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(color)
+                    .padding(.leading, 6)
+            }
             Text(event.title)
                 .font(.caption)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
-                .padding(.horizontal, 8)
+                .padding(.leading, event.isPinned ? 0 : 8)
+                .padding(.trailing, 8)
             Spacer(minLength: 0)
         }
         .frame(height: 22)
@@ -104,6 +113,18 @@ struct MacCalendarDayView: View {
         .padding(.trailing, 20)
         .contentShape(Rectangle())
         .onTapGesture { onSelectEvent(event) }
+        .contextMenu {
+            Button {
+                onEditEvent?(event)
+            } label: {
+                Label("수정", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                onDeleteEvent?(event)
+            } label: {
+                Label("삭제", systemImage: "trash")
+            }
+        }
     }
 
     // MARK: - Timeline
@@ -198,6 +219,7 @@ struct MacCalendarDayView: View {
     private func assignSubColumns(_ blocks: [TimedBlock]) -> [TimedBlock] {
         guard !blocks.isEmpty else { return [] }
         let sorted = blocks.sorted { a, b in
+            if a.event.isPinned != b.event.isPinned { return a.event.isPinned }
             if a.startMinute != b.startMinute { return a.startMinute < b.startMinute }
             return a.durationMinutes > b.durationMinutes
         }
@@ -245,11 +267,18 @@ struct MacCalendarDayView: View {
         return HStack(spacing: 0) {
             Rectangle().fill(color).frame(width: 3)
             VStack(alignment: .leading, spacing: 4) {
-                Text(block.event.title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(color)
-                    .lineLimit(2)
+                HStack(spacing: 4) {
+                    if block.event.isPinned {
+                        Image(systemName: "pin.fill")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(color)
+                    }
+                    Text(block.event.title)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(color)
+                        .lineLimit(2)
+                }
                 if height >= 50 && block.totalSubCols <= 2 {
                     Text(block.event.timeRangeString)
                         .font(.caption2)
@@ -271,5 +300,17 @@ struct MacCalendarDayView: View {
         .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
         .offset(x: xLeft, y: y)
         .onTapGesture { onSelectEvent(block.event) }
+        .contextMenu {
+            Button {
+                onEditEvent?(block.event)
+            } label: {
+                Label("수정", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                onDeleteEvent?(block.event)
+            } label: {
+                Label("삭제", systemImage: "trash")
+            }
+        }
     }
 }
