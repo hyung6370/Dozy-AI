@@ -41,6 +41,7 @@ enum MacSection: String, CaseIterable, Hashable, Identifiable {
 
 struct MacMainShellView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @EnvironmentObject private var container: DependencyContainer
     @State private var selection: MacSection? = .today
 
     var body: some View {
@@ -56,7 +57,7 @@ struct MacMainShellView: View {
             Group {
                 switch selection {
                 case .today:
-                    MacTodayPlaceholderView()
+                    MacTodayView(container: container)
                 case .calendar:
                     MacCalendarPlaceholderView()
                 case .insights:
@@ -79,12 +80,6 @@ struct MacMainShellView: View {
 }
 
 // MARK: - Placeholder Detail Views
-
-private struct MacTodayPlaceholderView: View {
-    var body: some View {
-        PlaceholderDetail(title: "오늘", note: "M4.4 에서 Today 뷰 구현 예정")
-    }
-}
 
 private struct MacCalendarPlaceholderView: View {
     var body: some View {

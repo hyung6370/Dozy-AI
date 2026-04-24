@@ -313,6 +313,9 @@
 		F6EC8AF72F9995BF00CFFF87 /* MacLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AF62F9995BF00CFFF87 /* MacLoginView.swift */; };
 		F6EC8AFB2F9995D700CFFF87 /* MacAuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */; };
 		F6EC8AFE2F9995F000CFFF87 /* MacMainShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AFD2F9995F000CFFF87 /* MacMainShellView.swift */; };
+		F6EC8B012F99A00000CFFF87 /* MacHomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B002F99A00000CFFF87 /* MacHomeViewModel.swift */; };
+		F6EC8B032F99A00000CFFF87 /* MacTodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B022F99A00000CFFF87 /* MacTodayView.swift */; };
+		F6EC8B052F99A00000CFFF87 /* MacEventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
@@ -557,6 +560,9 @@
 		F6EC8AF62F9995BF00CFFF87 /* MacLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLoginView.swift; sourceTree = "<group>"; };
 		F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAuthViewModel.swift; sourceTree = "<group>"; };
 		F6EC8AFD2F9995F000CFFF87 /* MacMainShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMainShellView.swift; sourceTree = "<group>"; };
+		F6EC8B002F99A00000CFFF87 /* MacHomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacHomeViewModel.swift; sourceTree = "<group>"; };
+		F6EC8B022F99A00000CFFF87 /* MacTodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTodayView.swift; sourceTree = "<group>"; };
+		F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventRow.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1163,6 +1169,7 @@
 			children = (
 				F6EC8AF42F9995A200CFFF87 /* Login */,
 				F6EC8AFC2F9995F000CFFF87 /* Shell */,
+				F6EC8B062F99A00000CFFF87 /* Today */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1171,6 +1178,7 @@
 			isa = PBXGroup;
 			children = (
 				F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */,
+				F6EC8B002F99A00000CFFF87 /* MacHomeViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -1189,6 +1197,15 @@
 				F6EC8AFD2F9995F000CFFF87 /* MacMainShellView.swift */,
 			);
 			path = Shell;
+			sourceTree = "<group>";
+		};
+		F6EC8B062F99A00000CFFF87 /* Today */ = {
+			isa = PBXGroup;
+			children = (
+				F6EC8B022F99A00000CFFF87 /* MacTodayView.swift */,
+				F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */,
+			);
+			path = Today;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1704,6 +1721,9 @@
 				ABF24F81257EC3FBB1E27F57 /* DozyEventRepository.swift in Sources */,
 				6E91B9AE4FA13E9B1E20D143 /* EventDisplaySettingsRepository.swift in Sources */,
 				F6EC8AFE2F9995F000CFFF87 /* MacMainShellView.swift in Sources */,
+				F6EC8B012F99A00000CFFF87 /* MacHomeViewModel.swift in Sources */,
+				F6EC8B032F99A00000CFFF87 /* MacTodayView.swift in Sources */,
+				F6EC8B052F99A00000CFFF87 /* MacEventRow.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,
