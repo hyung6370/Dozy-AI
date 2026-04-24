@@ -17,6 +17,9 @@ struct MacCalendarView: View {
     @State private var eventToEdit: DozyEvent? = nil
     @State private var pendingEdit: DozyEvent? = nil
     @State private var showNewEventSheet = false
+    @State private var showMonthPicker = false
+    @State private var pickerYear = Calendar.current.component(.year, from: Date())
+    @State private var pickerMonth = Calendar.current.component(.month, from: Date())
 
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: MacCalendarViewModel(container: container))
@@ -116,10 +119,26 @@ struct MacCalendarView: View {
             .buttonStyle(.borderless)
             .keyboardShortcut(.leftArrow, modifiers: .command)
 
-            Text(viewModel.monthTitle)
-                .font(.title2)
-                .fontWeight(.semibold)
+            Button {
+                pickerYear = Calendar.current.component(.year, from: viewModel.currentMonth)
+                pickerMonth = Calendar.current.component(.month, from: viewModel.currentMonth)
+                showMonthPicker.toggle()
+            } label: {
+                HStack(spacing: 4) {
+                    Text(viewModel.monthTitle)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 .frame(minWidth: 140, alignment: .center)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .popover(isPresented: $showMonthPicker, arrowEdge: .bottom) {
+                monthYearPicker
+            }
 
             Button {
                 animatedGoToNextMonth()
@@ -137,6 +156,60 @@ struct MacCalendarView: View {
             }
             .buttonStyle(.bordered)
         }
+    }
+
+    // MARK: - Month / Year Picker
+
+    private var monthYearPicker: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 8) {
+                Picker("", selection: $pickerYear) {
+                    ForEach(yearRange, id: \.self) { y in
+                        Text(String(format: "%d년", y)).tag(y)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 110)
+
+                Picker("", selection: $pickerMonth) {
+                    ForEach(1...12, id: \.self) { m in
+                        Text("\(m)월").tag(m)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 90)
+            }
+
+            HStack {
+                Button("취소") {
+                    showMonthPicker = false
+                }
+                Spacer()
+                Button("이동") {
+                    jumpToMonth(year: pickerYear, month: pickerMonth)
+                    showMonthPicker = false
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(16)
+        .frame(width: 260)
+    }
+
+    private var yearRange: [Int] {
+        let current = Calendar.current.component(.year, from: Date())
+        return Array((current - 10)...(current + 10))
+    }
+
+    private func jumpToMonth(year: Int, month: Int) {
+        var comps = DateComponents()
+        comps.year = year
+        comps.month = month
+        comps.day = 1
+        guard let newDate = Calendar.current.date(from: comps) else { return }
+        viewModel.currentMonth = newDate
+        viewModel.loadEventsForCurrentMonth()
     }
 
     /// 버튼/단축키로 월 이동 시 실시간 paging 애니메이션 재사용.
@@ -226,29 +299,19 @@ struct MacCalendarView: View {
         let dates = visibleDates(for: month)
         return VStack(spacing: 0) {
             ForEach(0..<6, id: \.self) { row in
-                HStack(spacing: 0) {
-                    ForEach(0..<7, id: \.self) { col in
-                        let idx = row * 7 + col
-                        let date = dates[idx]
-                        MacCalendarDayCell(
-                            date: date,
-                            isInCurrentMonth: isInMonth(date, month: month),
-                            isSelected: Calendar.current.isDate(date, inSameDayAs: viewModel.selectedDate),
-                            isToday: Calendar.current.isDateInToday(date),
-                            eventColors: viewModel.eventsByDate[Calendar.current.startOfDay(for: date)]?
-                                .prefix(4)
-                                .map { $0.calendarColorHex } ?? []
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .onTapGesture {
-                            viewModel.selectDate(date)
-                        }
-
-                        if col < 6 {
-                            Divider()
-                        }
+                let weekDates = Array(dates[(row * 7)..<(row * 7 + 7)])
+                MacCalendarWeekRow(
+                    weekDates: weekDates,
+                    currentMonth: month,
+                    selectedDate: viewModel.selectedDate,
+                    eventsByDate: viewModel.eventsByDate,
+                    onSelectDate: { viewModel.selectDate($0) },
+                    onSelectEvent: { selectedEvent = $0 },
+                    onCreateEvent: { date in
+                        viewModel.selectDate(date)
+                        showNewEventSheet = true
                     }
-                }
+                )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if row < 5 {
