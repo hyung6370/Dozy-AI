@@ -13,8 +13,6 @@ struct MacTodayView: View {
     @StateObject private var viewModel: MacHomeViewModel
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @State private var selectedEvent: CalendarEvent? = nil
-    @State private var eventToEdit: DozyEvent? = nil
-    @State private var pendingEdit: DozyEvent? = nil
     @State private var showNewEventSheet = false
 
     @State private var memoText: String = ""
@@ -73,22 +71,13 @@ struct MacTodayView: View {
         .refreshable {
             viewModel.loadTodayData()
         }
-        // Detail sheet — 편집 선택 시 dismiss 후 pendingEdit 을 통해 edit 시트로 전환
-        .sheet(item: $selectedEvent, onDismiss: {
-            if let pending = pendingEdit {
-                eventToEdit = pending
-                pendingEdit = nil
-            }
-        }) { event in
+        // Detail sheet — 모든 편집이 인라인으로 이루어짐
+        .sheet(item: $selectedEvent) { event in
             MacEventDetailView(
                 event: event,
                 dozyEvent: viewModel.dozyEventsByID[event.id],
                 currentUserID: authViewModel.currentUser?.id ?? "",
                 partnerDisplayName: nil,
-                onEdit: { dozy in
-                    pendingEdit = dozy
-                    selectedEvent = nil
-                },
                 onDelete: { dozy in
                     viewModel.deleteDozyEvent(dozy)
                     selectedEvent = nil
@@ -104,17 +93,7 @@ struct MacTodayView: View {
                 onSaveMemos: { dozy in
                     viewModel.saveMemos(for: dozy)
                 },
-                onUpdateDisplaySettings: { ev, priority, isPinned, category in
-                    viewModel.updateDisplaySettings(for: ev, priority: priority, isPinned: isPinned, category: category)
-                }
-            )
-        }
-        // Edit sheet — 기존 이벤트 수정
-        .sheet(item: $eventToEdit) { dozy in
-            MacEventEditView(
-                eventToEdit: dozy,
-                selectedDate: dozy.startDate,
-                onSave: { saved in
+                onSaveEvent: { saved in
                     viewModel.saveDozyEvent(saved)
                 }
             )

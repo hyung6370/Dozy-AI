@@ -15,8 +15,6 @@ struct MacCalendarView: View {
     @StateObject private var swipeState = MonthSwipeState()
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @State private var selectedEvent: CalendarEvent? = nil
-    @State private var eventToEdit: DozyEvent? = nil
-    @State private var pendingEdit: DozyEvent? = nil
     @State private var showNewEventSheet = false
     @State private var newEventTimeHint: Date? = nil
     @State private var eventPendingDelete: CalendarEvent? = nil
@@ -31,8 +29,7 @@ struct MacCalendarView: View {
     // MARK: - Context menu handlers
 
     private func handleEditEvent(_ event: CalendarEvent) {
-        guard let dozy = viewModel.dozyEventsByID[event.id] else { return }
-        eventToEdit = dozy
+        selectedEvent = event
     }
 
     private func handleDeleteEvent(_ event: CalendarEvent) {
@@ -145,21 +142,12 @@ struct MacCalendarView: View {
         .onDisappear {
             removeScrollSwipeMonitor()
         }
-        .sheet(item: $selectedEvent, onDismiss: {
-            if let pending = pendingEdit {
-                eventToEdit = pending
-                pendingEdit = nil
-            }
-        }) { event in
+        .sheet(item: $selectedEvent) { event in
             MacEventDetailView(
                 event: event,
                 dozyEvent: viewModel.dozyEventsByID[event.id],
                 currentUserID: authViewModel.currentUser?.id ?? "",
                 partnerDisplayName: nil,
-                onEdit: { dozy in
-                    pendingEdit = dozy
-                    selectedEvent = nil
-                },
                 onDelete: { dozy in
                     viewModel.deleteDozyEvent(dozy)
                     selectedEvent = nil
@@ -175,16 +163,7 @@ struct MacCalendarView: View {
                 onSaveMemos: { dozy in
                     viewModel.saveMemos(for: dozy)
                 },
-                onUpdateDisplaySettings: { ev, priority, isPinned, category in
-                    viewModel.updateDisplaySettings(for: ev, priority: priority, isPinned: isPinned, category: category)
-                }
-            )
-        }
-        .sheet(item: $eventToEdit) { dozy in
-            MacEventEditView(
-                eventToEdit: dozy,
-                selectedDate: dozy.startDate,
-                onSave: { saved in
+                onSaveEvent: { saved in
                     viewModel.saveDozyEvent(saved)
                 }
             )
