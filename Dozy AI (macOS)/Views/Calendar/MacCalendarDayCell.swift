@@ -46,7 +46,7 @@ struct MacCalendarDayCell: View {
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
-            isSelected && !isToday
+            isSelected
                 ? Color.accentColor.opacity(0.12)
                 : Color.clear
         )
