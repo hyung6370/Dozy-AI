@@ -164,4 +164,22 @@ final class MacAuthViewModel: ObservableObject {
             )
             .store(in: &cancellables)
     }
+
+    // MARK: - 회원탈퇴
+
+    func deleteAccount() {
+        authService.deleteAccount()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    self?.state = .signedOut
+                }
+            )
+            .store(in: &cancellables)
+    }
 }

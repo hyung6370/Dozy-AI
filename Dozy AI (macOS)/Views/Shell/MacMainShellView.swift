@@ -63,7 +63,7 @@ struct MacMainShellView: View {
                 case .insights:
                     MacInsightsPlaceholderView()
                 case .settings:
-                    MacSettingsPlaceholderView()
+                    MacSettingsView()
                 case nil:
                     VStack(spacing: 8) {
                         Image(systemName: "sidebar.left")
@@ -84,39 +84,6 @@ struct MacMainShellView: View {
 private struct MacInsightsPlaceholderView: View {
     var body: some View {
         PlaceholderDetail(title: "인사이트", note: "M4.8 에서 인사이트 뷰 구현 예정")
-    }
-}
-
-private struct MacSettingsPlaceholderView: View {
-    @EnvironmentObject private var authViewModel: MacAuthViewModel
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "gearshape.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
-            Text("설정")
-                .font(.largeTitle).bold()
-
-            if let email = authViewModel.currentUser?.email {
-                Text(email)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Text("M4.8 에서 설정 섹션 확장 예정")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-
-            Button("로그아웃") {
-                authViewModel.signOut()
-            }
-            .buttonStyle(.bordered)
-            .padding(.top, 12)
-        }
-        .padding(40)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle("설정")
     }
 }
 

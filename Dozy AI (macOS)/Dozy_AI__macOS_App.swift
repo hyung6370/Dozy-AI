@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import Combine
 import GoogleSignIn
 import OSLog
@@ -49,6 +50,7 @@ struct Dozy_AI__macOS_App: App {
         MacAppRootView()
             .environmentObject(container)
             .environmentObject(authViewModel)
+            .modelContainer(container.modelContainer)
     }
 }
 
