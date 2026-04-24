@@ -18,6 +18,8 @@ final class MacCalendarViewModel: ObservableObject {
 
     @Published var currentMonth: Date = Date()
     @Published var selectedDate: Date = Date()
+    /// 월 이동 방향 — 1: 다음(오른쪽), -1: 이전(왼쪽), 0: 초기/무방향. 슬라이드 애니메이션용.
+    @Published var monthTransitionDirection: Int = 0
     @Published var eventsByDate: [Date: [CalendarEvent]] = [:]
     @Published var dozyEventsByID: [String: DozyEvent] = [:]
     @Published var completionsByID: [String: Bool] = [:]
@@ -73,6 +75,7 @@ final class MacCalendarViewModel: ObservableObject {
     func goToPreviousMonth() {
         let cal = Calendar.current
         if let prev = cal.date(byAdding: .month, value: -1, to: currentMonth) {
+            monthTransitionDirection = -1
             currentMonth = prev
             loadEventsForCurrentMonth()
         }
@@ -81,6 +84,7 @@ final class MacCalendarViewModel: ObservableObject {
     func goToNextMonth() {
         let cal = Calendar.current
         if let next = cal.date(byAdding: .month, value: 1, to: currentMonth) {
+            monthTransitionDirection = 1
             currentMonth = next
             loadEventsForCurrentMonth()
         }
@@ -88,6 +92,10 @@ final class MacCalendarViewModel: ObservableObject {
 
     func goToToday() {
         let today = Date()
+        let cal = Calendar.current
+        let currentStart = cal.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
+        let todayStart   = cal.dateInterval(of: .month, for: today)?.start ?? today
+        monthTransitionDirection = todayStart > currentStart ? 1 : (todayStart < currentStart ? -1 : 0)
         currentMonth = today
         selectedDate = today
         loadEventsForCurrentMonth()

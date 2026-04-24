@@ -19,10 +19,10 @@ struct MacCalendarDayCell: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("\(Calendar.current.component(.day, from: date))")
-                    .font(.subheadline)
-                    .fontWeight(isToday ? .bold : .regular)
+                    .font(.title3)
+                    .fontWeight(isToday ? .bold : .medium)
                     .foregroundStyle(isToday ? Color.white : dayColor)
-                    .frame(width: 24, height: 24)
+                    .frame(width: 34, height: 34)
                     .background(isToday ? Color.accentColor : Color.clear, in: Circle())
                 Spacer()
             }
