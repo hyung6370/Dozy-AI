@@ -12,6 +12,7 @@ enum CalendarSource: String, Codable, CaseIterable, Hashable {
     case google = "google"
     case naver = "naver"
     case dozy = "dozy"
+    case holiday = "holiday"
     
     var displayName: String {
         switch self {
@@ -19,6 +20,7 @@ enum CalendarSource: String, Codable, CaseIterable, Hashable {
         case .google: return "Google 캘린더"
         case .naver: return "네이버 캘린더"
         case .dozy: return "Dozy 캘린더"
+        case .holiday: return "공휴일"
         }
     }
     
@@ -28,6 +30,7 @@ enum CalendarSource: String, Codable, CaseIterable, Hashable {
         case .google: return "globe"
         case .naver: return "n.circle.fill"
         case .dozy: return "d.circle.fill"
+        case .holiday: return "flag.fill"
         }
     }
 }

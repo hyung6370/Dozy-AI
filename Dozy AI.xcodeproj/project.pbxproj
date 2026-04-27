@@ -299,6 +299,10 @@
 		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
 		F699C1442F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */; };
 		F699C1462F9F2251001FBF8F /* MacCalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */; };
+		F699C1482F9F5822001FBF8F /* holidays.json in Resources */ = {isa = PBXBuildFile; fileRef = F699C1472F9F5822001FBF8F /* holidays.json */; };
+		F699C1492F9F5822001FBF8F /* holidays.json in Resources */ = {isa = PBXBuildFile; fileRef = F699C1472F9F5822001FBF8F /* holidays.json */; };
+		F699C14B2F9F59F4001FBF8F /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C14A2F9F59F4001FBF8F /* HolidayService.swift */; };
+		F699C14C2F9F59F4001FBF8F /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C14A2F9F59F4001FBF8F /* HolidayService.swift */; };
 		F6B0413B2F8F4CB500EEAC89 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */; };
 		F6BC59912F7396450090DF3A /* StatBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* StatBadge.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
@@ -571,6 +575,8 @@
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
+		F699C1472F9F5822001FBF8F /* holidays.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = holidays.json; sourceTree = "<group>"; };
+		F699C14A2F9F59F4001FBF8F /* HolidayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayService.swift; sourceTree = "<group>"; };
 		F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		F6B041F52F90751A00EEAC89 /* Dozy AIRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AIRelease.entitlements"; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* StatBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBadge.swift; sourceTree = "<group>"; };
@@ -780,6 +786,7 @@
 		DD808EBD2F694BBB00F4956A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F699C1472F9F5822001FBF8F /* holidays.json */,
 				F63C68742F85E43F003464E8 /* LottieFiles */,
 				DD808EAE2F694B2A00F4956A /* Assets.xcassets */,
 				DD9F694D2F6AD2CF001952F6 /* Localizable.strings */,
@@ -1030,6 +1037,7 @@
 				F619D97A2F7A3A6000084C61 /* DozyCalendarService.swift */,
 				F619D9572F75219200084C61 /* GoogleCalendarService.swift */,
 				F619D9552F751F7D00084C61 /* GoogleSignInService.swift */,
+				F699C14A2F9F59F4001FBF8F /* HolidayService.swift */,
 				F616DCD02F7B448300FA0476 /* NaverSignInService.swift */,
 				F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */,
 				F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */,
@@ -1546,6 +1554,7 @@
 				F619D9512F75192800084C61 /* .gitignore in Resources */,
 				F63C687A2F85E54A003464E8 /* loading.json in Resources */,
 				DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */,
+				F699C1482F9F5822001FBF8F /* holidays.json in Resources */,
 				F63C68822F85EA71003464E8 /* success.json in Resources */,
 				F63C68882F85EBFE003464E8 /* congratulation.json in Resources */,
 				F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */,
@@ -1571,6 +1580,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F699C1492F9F5822001FBF8F /* holidays.json in Resources */,
 				F6EC8AED2F9896E000CFFF87 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1605,6 +1615,7 @@
 				2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */,
 				807EED356A2F4E5095F4C7F4 /* SharedCalendar.swift in Sources */,
 				C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */,
+				F699C14B2F9F59F4001FBF8F /* HolidayService.swift in Sources */,
 				68281F28BBEE44519243499A /* SharedCalendarResults.swift in Sources */,
 				C9281237CC6E4AABA7AB5BA5 /* SharedCalendarServiceProtocol.swift in Sources */,
 				B15FEAA4777940E0899DD3CE /* SharedCalendarService.swift in Sources */,
@@ -1917,6 +1928,7 @@
 				B252A21A86A34F3FB41F871A /* Publisher+Extensions.swift in Sources */,
 				729A5E7A764927CC0DBB213A /* GoogleCalendarDTO.swift in Sources */,
 				41711C2ECF8FD688F9018EA8 /* NotificationService.swift in Sources */,
+				F699C14C2F9F59F4001FBF8F /* HolidayService.swift in Sources */,
 				F603DC338A1489D8D11733E3 /* CalendarSourceManager.swift in Sources */,
 				7C64594B0B062758DAB886B5 /* SchemaV1.swift in Sources */,
 				D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */,
