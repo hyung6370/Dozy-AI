@@ -45,6 +45,8 @@ final class MacCalendarViewModel: ObservableObject {
     private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
+    private let toggleDozyEventCompletionUseCase: ToggleDozyEventCompletionUseCase
+    private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
     private let sharedCalendarService: SharedCalendarServiceProtocol
     private var cancellables = Set<AnyCancellable>()
 
@@ -86,6 +88,8 @@ final class MacCalendarViewModel: ObservableObject {
         self.createDozyEventUseCase = container.createDozyEventUseCase
         self.updateDozyEventUseCase = container.updateDozyEventUseCase
         self.deleteDozyEventUseCase = container.deleteDozyEventUseCase
+        self.toggleDozyEventCompletionUseCase = container.toggleDozyEventCompletionUseCase
+        self.toggleCalendarEventCompletionUseCase = container.toggleCalendarEventCompletionUseCase
         self.sharedCalendarService = container.sharedCalendarService
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
@@ -95,6 +99,26 @@ final class MacCalendarViewModel: ObservableObject {
                 self?.loadEventsForCurrentMonth(force: true)
             }
             .store(in: &cancellables)
+
+        // 일정 토글 같은 가벼운 변경은 캘린더 이벤트 자체는 안 바뀌고 completion 상태만 바뀜.
+        // → 전체 cache invalidate 대신 현재 보이는 범위의 completion 만 재조회.
+        // 자기-트리거는 무시 — optimistic 값을 race 로 덮어쓰는 현상 방지.
+        NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] note in
+                guard let self else { return }
+                if (note.object as AnyObject?) === self { return }
+                self.refreshCompletionsOnly()
+            }
+            .store(in: &cancellables)
+    }
+
+    /// 현재 보이는 범위의 EventCompletion 만 재조회. `.dozyEventChanged` 핸들러 — Apple/Dozy 이벤트
+    /// 자체는 EventKit / SwiftData 에서 다시 안 가져와서 비용 거의 0.
+    private func refreshCompletionsOnly() {
+        let (start, end) = currentVisibleRange()
+        let key = rangeKey(for: viewMode, anchor: currentMonth)
+        loadCompletions(for: start, to: end, key: key, isPrefetch: false)
     }
 
     // MARK: - Navigation
@@ -319,12 +343,23 @@ final class MacCalendarViewModel: ObservableObject {
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] completions in
                     guard let self else { return }
+                    // composite key (eventID_dayTimestamp) — 다일/반복 이벤트 occurrence 별 독립 완료.
                     var map: [String: Bool] = [:]
                     for c in completions where c.isCompleted {
-                        map[c.eventID] = true
+                        let k = EventCompletionRepository.completionKey(eventID: c.eventID, date: c.eventDate)
+                        map[k] = true
+                    }
+                    // 같은 range 의 이전 cached 키들을 먼저 제거 — 토글 OFF (DB 에서 isCompleted=false
+                    // 가 되어 map 에 포함 안 됨) 도 즉시 visual 반영. 다른 range 의 키는 보존.
+                    if let oldMap = self.cachedCompletions[key] {
+                        for oldKey in oldMap.keys {
+                            self.completionsByID.removeValue(forKey: oldKey)
+                        }
                     }
                     self.cachedCompletions[key] = map
-                    self.completionsByID.merge(map) { _, new in new }
+                    for (k, v) in map {
+                        self.completionsByID[k] = v
+                    }
 
                     if !isPrefetch {
                         let currentKey = self.rangeKey(for: self.viewMode, anchor: self.currentMonth)
@@ -333,6 +368,75 @@ final class MacCalendarViewModel: ObservableObject {
                 }
             )
             .store(in: &cancellables)
+    }
+
+    // MARK: - Completion (toggle / read)
+
+    /// occurrence 별 키 — Apple/Google 다일 이벤트나 반복 Dozy 이벤트도 정확히 구분.
+    private func completionKey(for event: CalendarEvent, on date: Date) -> String {
+        EventCompletionRepository.completionKey(eventID: event.id, date: date)
+    }
+
+    /// 화면에서 체크 표시 여부 판단. iOS 와 동일한 source 분기:
+    /// - Dozy 비반복 → DozyEvent.isCompleted
+    /// - Dozy 반복 → EventCompletion (occurrence 키)
+    /// - Apple/Google → EventCompletion (선택 날짜 키)
+    func isCompleted(for event: CalendarEvent, on date: Date) -> Bool {
+        if event.source == .dozy {
+            let dozy = dozyEventsByID[event.id]
+            if let dozy, dozy.recurrenceRule != "none" {
+                return completionsByID[completionKey(for: event, on: event.startDate)] ?? false
+            }
+            return dozy?.isCompleted ?? false
+        }
+        return completionsByID[completionKey(for: event, on: date)] ?? false
+    }
+
+    /// 일정 완료 토글. iOS 패턴 그대로 — Dozy 비반복은 DozyEvent.isCompleted 직접 토글,
+    /// Dozy 반복 / Apple / Google 은 EventCompletion 테이블에 (eventID, eventDate) 저장.
+    func toggleCompletion(for event: CalendarEvent, on date: Date) {
+        if event.source == .dozy {
+            guard let dozy = dozyEventsByID[event.id] else { return }
+            if dozy.recurrenceRule == "none" {
+                // UseCase 내부에서 toggle 하므로 호출부에서 또 뒤집으면 no-op. .execute 호출 직후
+                // dozy 인스턴스는 동기로 새 값 반영됨.
+                toggleDozyEventCompletionUseCase.execute(dozy)
+                    .receive(on: DispatchQueue.main)
+                    .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] _ in
+                        self?.broadcastCompletionChange()
+                    })
+                    .store(in: &cancellables)
+                dozyEventsByID[event.id] = dozy   // @Published 트리거 (isCompleted 새 값 반영용)
+                return
+            }
+            // 반복 일정 — EventCompletion 으로 occurrence 별 토글
+            let eventDate = event.startDate
+            toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: eventDate)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
+                    guard let self else { return }
+                    let key = EventCompletionRepository.completionKey(eventID: event.id, date: eventDate)
+                    self.completionsByID[key] = newValue
+                    self.broadcastCompletionChange()
+                })
+                .store(in: &cancellables)
+            return
+        }
+
+        // Apple/Google — 선택 날짜 기준으로 occurrence 별 독립 완료
+        toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: date)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
+                guard let self else { return }
+                let key = EventCompletionRepository.completionKey(eventID: event.id, date: date)
+                self.completionsByID[key] = newValue
+                self.broadcastCompletionChange()
+            })
+            .store(in: &cancellables)
+    }
+
+    private func broadcastCompletionChange() {
+        NotificationCenter.default.post(name: .dozyEventChanged, object: self)
     }
 
     // MARK: - Prefetch

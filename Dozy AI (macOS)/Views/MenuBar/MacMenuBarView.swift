@@ -157,11 +157,15 @@ struct MacMenuBarView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            if isCompleted {
-                Image(systemName: "checkmark.circle.fill")
+            Button {
+                viewModel.toggleCompletion(for: event)
+            } label: {
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.caption)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(isCompleted ? .green : .secondary.opacity(0.6))
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)

@@ -525,12 +525,12 @@ struct MacCalendarView: View {
                     ForEach(events) { event in
                         MacEventRow(
                             event: event,
-                            isCompleted: viewModel.completionsByID[event.id] == true
+                            isCompleted: viewModel.isCompleted(for: event, on: viewModel.selectedDate),
+                            onToggleCompletion: {
+                                viewModel.toggleCompletion(for: event, on: viewModel.selectedDate)
+                            },
+                            onSelect: { selectedEvent = event }
                         )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedEvent = event
-                        }
                     }
                 }
             }

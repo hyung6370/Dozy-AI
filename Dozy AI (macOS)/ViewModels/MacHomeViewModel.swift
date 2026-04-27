@@ -34,6 +34,8 @@ final class MacHomeViewModel: ObservableObject {
     private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
+    private let toggleDozyEventCompletionUseCase: ToggleDozyEventCompletionUseCase
+    private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
     private let saveWorkLogUseCase: SaveWorkLogUseCase
     private let generateDailySummaryUseCase: GenerateDailySummaryUseCase
     private let sharedCalendarService: SharedCalendarServiceProtocol
@@ -96,6 +98,8 @@ final class MacHomeViewModel: ObservableObject {
         self.createDozyEventUseCase = container.createDozyEventUseCase
         self.updateDozyEventUseCase = container.updateDozyEventUseCase
         self.deleteDozyEventUseCase = container.deleteDozyEventUseCase
+        self.toggleDozyEventCompletionUseCase = container.toggleDozyEventCompletionUseCase
+        self.toggleCalendarEventCompletionUseCase = container.toggleCalendarEventCompletionUseCase
         self.saveWorkLogUseCase = container.saveWorkLogUseCase
         self.generateDailySummaryUseCase = container.generateDailySummaryUseCase
         self.sharedCalendarService = container.sharedCalendarService
@@ -103,6 +107,18 @@ final class MacHomeViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.loadTodayData() }
+            .store(in: &cancellables)
+
+        // 다른 화면(Calendar / MenuBar)에서 일정 토글한 변경분만 가볍게 반영.
+        // 자기 자신이 post 한 알림(object === self)은 무시 — 이미 optimistic 으로 반영됐고
+        // 자기-트리거 reload 가 race 로 optimistic 값을 덮어쓰는 현상 방지.
+        NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] note in
+                guard let self else { return }
+                if (note.object as AnyObject?) === self { return }
+                self.loadCompletions(for: self.todayEvents.map(\.id), on: Date())
+            }
             .store(in: &cancellables)
     }
 
@@ -147,6 +163,53 @@ final class MacHomeViewModel: ObservableObject {
     }
 
     // MARK: - Event CRUD
+
+    /// 일정 완료 토글. iOS 패턴 — Dozy 비반복은 DozyEvent.isCompleted 직접 토글,
+    /// Dozy 반복 / Apple / Google 은 EventCompletion 테이블에 (eventID, today) 단위로 저장.
+    func toggleCompletion(for event: CalendarEvent) {
+        let today = Date()
+
+        if event.source == .dozy {
+            guard let dozy = dozyEventsByID[event.id] else { return }
+            if dozy.recurrenceRule == "none" {
+                // ToggleDozyEventCompletionUseCase 가 내부에서 dozy.isCompleted.toggle() 후 save —
+                // 호출부에서 따로 토글하면 두 번 뒤집어 no-op 이 된다. .execute 호출 직후 dozy 인스턴스는
+                // 이미 새 값으로 동기 변경된 상태이므로 그 값을 그대로 optimistic UI 에 반영.
+                toggleDozyEventCompletionUseCase.execute(dozy)
+                    .receive(on: DispatchQueue.main)
+                    .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                        self?.broadcastCompletionChange()
+                    })
+                    .store(in: &cancellables)
+                completionsByEventID[event.id] = dozy.isCompleted
+                dozyEventsByID[event.id] = dozy   // @Published 트리거
+                return
+            }
+        }
+
+        // Dozy 반복 / Apple / Google — 모두 EventCompletion 테이블 사용
+        toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: today)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] newValue in
+                    self?.completionsByEventID[event.id] = newValue
+                    self?.broadcastCompletionChange()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 토글 직후 — Insight VM / 다른 Today/MenuBar/Calendar 인스턴스가 듣는 가벼운 알림.
+    /// `.dozyDataSyncCompleted` 와 달리 캐시 invalidate 없이 completion 만 재조회시키는 용도.
+    /// object 에 self 를 실어서 자기 자신은 무시할 수 있게 한다 (optimistic 값 보호).
+    private func broadcastCompletionChange() {
+        NotificationCenter.default.post(name: .dozyEventChanged, object: self)
+    }
 
     /// 새 일정이면 create, 기존이면 update. Supabase 동기화 후 로컬 Today 재로드.
     func saveDozyEvent(_ event: DozyEvent) {
@@ -346,8 +409,26 @@ final class MacHomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },
-                receiveValue: { [weak self] map in
-                    self?.completionsByEventID = map
+                receiveValue: { [weak self] compositeMap in
+                    guard let self else { return }
+                    // EventCompletionRepository 는 composite key (`eventID_dayTimestamp`) 로
+                    // 반환. 화면은 simple eventID 로 조회하므로 같은 날짜 안에서 dayTimestamp
+                    // suffix 를 떼어내 simple eventID 로 재키잉.
+                    let dayStart = Calendar.current.startOfDay(for: date)
+                    let suffix = "_\(Int(dayStart.timeIntervalSince1970))"
+                    var simple: [String: Bool] = [:]
+                    for (key, isCompleted) in compositeMap where isCompleted {
+                        if key.hasSuffix(suffix) {
+                            let eventID = String(key.dropLast(suffix.count))
+                            simple[eventID] = true
+                        }
+                    }
+                    // Dozy 비반복 일정은 EventCompletion 테이블에 안 들어감 (DozyEvent.isCompleted 사용).
+                    // 토글 직후 재로드 시 사라지지 않도록 dozyEventsByID 에서 머지.
+                    for (id, dozy) in self.dozyEventsByID where dozy.recurrenceRule == "none" && dozy.isCompleted {
+                        simple[id] = true
+                    }
+                    self.completionsByEventID = simple
                 }
             )
             .store(in: &cancellables)

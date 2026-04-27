@@ -380,12 +380,10 @@ struct MacTodayView: View {
             ForEach(viewModel.todayEvents) { event in
                 MacEventRow(
                     event: event,
-                    isCompleted: viewModel.completionsByEventID[event.id] == true
+                    isCompleted: viewModel.completionsByEventID[event.id] == true,
+                    onToggleCompletion: { viewModel.toggleCompletion(for: event) },
+                    onSelect: { selectedEvent = event }
                 )
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    selectedEvent = event
-                }
             }
         }
     }

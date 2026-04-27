@@ -85,6 +85,17 @@ final class MacInsightViewModel: ObservableObject {
         self.fetchCompletionsUseCase = container.fetchEventCompletionsForPeriodUseCase
         self.fetchLogsUseCase = container.fetchRecentLogsUseCase
         self.patternService = container.patternAnalysisService
+
+        // 무거운 sync (Supabase pull / 캘린더 소스 토글) 와 가벼운 변경 (일정 체크 토글) 모두 listen.
+        NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadData() }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadData() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Load
