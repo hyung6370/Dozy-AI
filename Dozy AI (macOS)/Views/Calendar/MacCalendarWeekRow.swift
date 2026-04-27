@@ -28,13 +28,18 @@ struct MacCalendarWeekRow: View {
     private let barHorizontalInset: CGFloat = 3
 
     var body: some View {
-        let layout = MacCalendarBarLayoutEngine.compute(
-            weekDates: weekDates,
-            eventsByDate: eventsByDate
-        )
-
         return GeometryReader { geo in
             let cellWidth = geo.size.width / 7
+            // 셀 높이에 들어가는 만큼 동적으로 결정 — 창 크기 변하면 자동 조정.
+            // overflow 배지(+N) 영역 ~14px 도 함께 reserve. 0 (전부 오버플로우 배지) ~ 8 (상한) 범위.
+            let availableForBars = geo.size.height - barTopOffset - 14
+            let perBar = barHeight + barSpacing
+            let dynamicMaxRows = max(0, min(8, Int((availableForBars + barSpacing) / perBar)))
+            let layout = MacCalendarBarLayoutEngine.compute(
+                weekDates: weekDates,
+                eventsByDate: eventsByDate,
+                maxVisibleRows: dynamicMaxRows
+            )
 
             ZStack(alignment: .topLeading) {
                 // 베이스 셀
@@ -80,6 +85,9 @@ struct MacCalendarWeekRow: View {
                     eventBar(bar: bar, cellWidth: cellWidth)
                 }
             }
+            // 셀 높이를 넘는 바가 옆 행으로 leak 되지 않도록 강제 클리핑.
+            .frame(width: geo.size.width, height: geo.size.height)
+            .clipped()
         }
     }
 
