@@ -89,8 +89,15 @@ struct MacCalendarWeekRow: View {
         let xCenter = cellWidth * CGFloat(bar.startCol) + cellWidth * span / 2
         let y = barTopOffset + CGFloat(bar.stackRow) * (barHeight + barSpacing) + barHeight / 2
 
+        // 바가 걸친 컬럼 중 하나라도 현재 월에 속하면 풀 opacity, 아니면 dim.
+        let touchesCurrentMonth = (bar.startCol...bar.endCol).contains { col in
+            guard col < weekDates.count else { return false }
+            return isInMonth(weekDates[col])
+        }
+
         return EventBarView(event: bar.event)
             .frame(width: max(0, width), height: barHeight)
+            .opacity(touchesCurrentMonth ? 1.0 : 0.4)
             .position(x: xCenter, y: y)
             .onTapGesture { onSelectEvent(bar.event) }
             .contextMenu {
