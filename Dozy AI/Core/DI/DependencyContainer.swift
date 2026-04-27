@@ -40,13 +40,26 @@ final class DependencyContainer: ObservableObject {
     private lazy var appleCalendarService = CalendarService()
     private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
 
+    var appleCalendarServiceForSettings: CalendarService { appleCalendarService }
+    
+    lazy var calendarService: CompositeCalendarSerivce = {
+        #if os(iOS)
+        return CompositeCalendarSerivce(
+            appleService: appleCalendarService,
+            googleService: googleCalendarService,
+            dozyService: dozyCalendarService,
+            sourceManager: calendarSourceManager
+        )
+        #else
+        return CompositeCalendarSerivce(
+            appleService: appleCalendarService,
+            dozyService: dozyCalendarService,
+            sourceManager: calendarSourceManager
+        )
+        #endif
+    }()
+    
     #if os(iOS)
-    lazy var calendarService: CompositeCalendarSerivce = CompositeCalendarSerivce(
-        appleService: appleCalendarService,
-        googleService: googleCalendarService,
-        dozyService: dozyCalendarService,
-        sourceManager: calendarSourceManager
-    )
     lazy var scheduleNotificationUseCase = ScheduleNotificationUseCase(service: notificationService, notificationRepository: notificationRepository)
     lazy var googleSignInService = GoogleSignInService()
     lazy var naverSignInService = NaverSignInService()
@@ -89,14 +102,16 @@ final class DependencyContainer: ObservableObject {
     lazy var updateSharedCalendarNicknameUseCase = UpdateSharedCalendarNicknameUseCase(service: sharedCalendarService)
 
     #if os(iOS)
-    // calendarService (Composite) 의존 UseCase — Google/Naver OAuth 경로가 엮여
-    // macOS에서는 M4 이후에 플랫폼별 조립으로 재정의한다.
+    // FetchTodayDataUseCase 는 iOS 의 Today 화면 전용 — reminderService 까지 묶어 쓰는데
+    // macOS Today 는 MacHomeViewModel 에서 직접 calendarService 를 사용한다.
     lazy var fetchTodayDataUseCase = FetchTodayDataUseCase(calendarService: calendarService, reminderService: reminderService)
+    #endif
+
+    // 캘린더 이벤트 UseCase — calendarService(Composite) 만 의존하므로 iOS/macOS 공통.
     lazy var fetchCalendarEventUseCase = FetchCalendarEventUseCase(calendarService: calendarService)
     lazy var updateCalendarEventUseCase = UpdateCalendarEventUseCase(service: calendarService)
     lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
     lazy var fetchCalendarEventsForPeriodUseCase = FetchCalendarEventsForPeriodUseCase(calendarService: calendarService)
-    #endif
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()

@@ -31,6 +31,7 @@ struct MacSettingsView: View {
                 accountSection
                 categorySection
                 menuBarSection
+                calendarIntegrationSection
                 sharedCalendarSection
                 appInfoSection
                 dangerZoneSection
@@ -178,6 +179,14 @@ struct MacSettingsView: View {
                 }
             }
             .toggleStyle(.switch)
+        }
+    }
+    
+    // MARK: - Calendar Integration
+    
+    private var calendarIntegrationSection: some View {
+        SettingsSection(title: "캘린더 연동") {
+            MacCalendarSettingsView(container: container)
         }
     }
 

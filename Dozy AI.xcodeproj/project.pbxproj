@@ -295,6 +295,10 @@
 		F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */; };
 		F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7F88A300F9C124 /* InsightBannerView.swift */; };
 		F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
+		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
+		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
+		F699C1442F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */; };
+		F699C1462F9F2251001FBF8F /* MacCalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */; };
 		F6B0413B2F8F4CB500EEAC89 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */; };
 		F6BC59912F7396450090DF3A /* StatBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* StatBadge.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
@@ -565,6 +569,8 @@
 		F650683C2F7F88A300F9C124 /* InsightBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightBannerView.swift; sourceTree = "<group>"; };
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
+		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
+		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
 		F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		F6B041F52F90751A00EEAC89 /* Dozy AIRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AIRelease.entitlements"; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* StatBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBadge.swift; sourceTree = "<group>"; };
@@ -1237,6 +1243,7 @@
 				F6EC8AFA2F9995D700CFFF87 /* MacAuthViewModel.swift */,
 				F6EC8B002F99A00000CFFF87 /* MacHomeViewModel.swift */,
 				F6EC8B0D2F99C00000CFFF87 /* MacCalendarViewModel.swift */,
+				F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */,
 				F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */,
 				F6EC8B232F99F00000CFFF87 /* MacMenuBarViewModel.swift */,
 			);
@@ -1298,6 +1305,7 @@
 				F6EC8B162F99D00000CFFF87 /* MacCategoryManagementView.swift */,
 				F6EC8B182F99D00000CFFF87 /* MacCategoryEditSheet.swift */,
 				F6EC8B1A2F99D00000CFFF87 /* MacCategorySupabaseSync.swift */,
+				F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1796,12 +1804,14 @@
 				4817041814F3CAF5B88A863A /* JoinSharedCalendarUseCase.swift in Sources */,
 				AFEECEAA9D38344BFA06A40B /* LeaveSharedCalendarUseCase.swift in Sources */,
 				B8E86AB9FDFB743B45754B63 /* RegenerateSharedCalendarInviteCodeUseCase.swift in Sources */,
+				F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */,
 				B87AC7D575F27C509602F32F /* UpdateSharedCalendarNicknameUseCase.swift in Sources */,
 				DBFC5E192ECDB68070B57048 /* ReminderServiceProtocol.swift in Sources */,
 				510BD3FDCC7B48115B145337 /* DailySummary.swift in Sources */,
 				47DAA502B8FEC7D2AD0AC1C6 /* RecommendNextTaskUseCase.swift in Sources */,
 				8CDF673EBB3857CD4A95B98E /* TaskItem.swift in Sources */,
 				7CEBE979A989BF893A2600E1 /* DeleteDozyEventUseCase.swift in Sources */,
+				F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */,
 				BB3C0ADE6A973A81316010A9 /* FetchDozyEventsUseCase.swift in Sources */,
 				75C9AC6C79B8B44F8CC3CCB0 /* SpeechServiceProtocol.swift in Sources */,
 				4EDD2742975D5157B74941DA /* DeleteCalendarEventUseCase.swift in Sources */,
@@ -1810,6 +1820,7 @@
 				8AD7157770B4B2626139375B /* NotificationRecord.swift in Sources */,
 				2B94E64E6BD30C0964E0C01F /* CalendarServiceProtocol.swift in Sources */,
 				D9B0E271B7B1535650A4F04A /* UserCategory.swift in Sources */,
+				F699C1442F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift in Sources */,
 				8447B4678548A5AF00713808 /* CreateDozyEventUseCase.swift in Sources */,
 				79DF6792FC633E4317316B79 /* MirrorExternalEventUseCase.swift in Sources */,
 				07A250DEB5AFD50B518AA0C3 /* CalendarWriteServiceProtocol.swift in Sources */,
@@ -1896,6 +1907,7 @@
 				86D3ECAFA3730CF636CFFC13 /* AIService.swift in Sources */,
 				BF0B976768ED331A7479E90E /* SyncService.swift in Sources */,
 				A773E5459570D04F6BBB5C84 /* WeatherService.swift in Sources */,
+				F699C1462F9F2251001FBF8F /* MacCalendarSettingsView.swift in Sources */,
 				F4656376E2828E2826D19E21 /* UserPatternRepository.swift in Sources */,
 				25B21ACCD30EBFC76A1439AB /* CalendarService.swift in Sources */,
 				C56216131A337FABE51EB98E /* Constants.swift in Sources */,

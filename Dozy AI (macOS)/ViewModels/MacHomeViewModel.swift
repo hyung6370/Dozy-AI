@@ -29,6 +29,7 @@ final class MacHomeViewModel: ObservableObject {
     // MARK: - Deps
 
     private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
+    private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
@@ -90,6 +91,7 @@ final class MacHomeViewModel: ObservableObject {
 
     init(container: DependencyContainer) {
         self.fetchDozyEventsUseCase = container.fetchDozyEventsUseCase
+        self.fetchCalendarEventUseCase = container.fetchCalendarEventUseCase
         self.fetchEventCompletionsUseCase = container.fetchEventCompletionsUseCase
         self.createDozyEventUseCase = container.createDozyEventUseCase
         self.updateDozyEventUseCase = container.updateDozyEventUseCase
@@ -113,33 +115,35 @@ final class MacHomeViewModel: ObservableObject {
 
         loadMySharedCalendars()
 
-        fetchDozyEventsUseCase.execute(for: today)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
-                    if case .failure(let error) = completion {
-                        self?.errorMessage = error.errorDescription
-                    }
-                },
-                receiveValue: { [weak self] dozyEvents in
-                    guard let self else { return }
-                    var byID: [String: DozyEvent] = [:]
-                    for d in dozyEvents { byID[d.id] = d }
-                    self.dozyEventsByID = byID
-
-                    let events = dozyEvents
-                        .map { $0.toCalendarEvent(for: today) }
-                        .sorted { a, b in
-                            if a.isPinned != b.isPinned { return a.isPinned }
-                            return a.startDate < b.startDate
-                        }
-                    self.todayEvents = events
-                    self.loadCompletions(for: events.map(\.id), on: today)
-                    self.persistTodayLog(events: events)
+        // Apple/Dozy(/Google) 머지된 [CalendarEvent] 와 편집용 [DozyEvent] 를 병렬로 받음.
+        Publishers.Zip(
+            fetchCalendarEventUseCase.execute(for: today),
+            fetchDozyEventsUseCase.execute(for: today)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { [weak self] completion in
+                self?.isLoading = false
+                if case .failure(let error) = completion {
+                    self?.errorMessage = error.errorDescription
                 }
-            )
-            .store(in: &cancellables)
+            },
+            receiveValue: { [weak self] allEvents, dozyEvents in
+                guard let self else { return }
+                var byID: [String: DozyEvent] = [:]
+                for d in dozyEvents { byID[d.id] = d }
+                self.dozyEventsByID = byID
+
+                let events = allEvents.sorted { a, b in
+                    if a.isPinned != b.isPinned { return a.isPinned }
+                    return a.startDate < b.startDate
+                }
+                self.todayEvents = events
+                self.loadCompletions(for: events.map(\.id), on: today)
+                self.persistTodayLog(events: events)
+            }
+        )
+        .store(in: &cancellables)
     }
 
     // MARK: - Event CRUD

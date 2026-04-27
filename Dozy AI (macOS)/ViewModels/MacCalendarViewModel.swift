@@ -40,6 +40,7 @@ final class MacCalendarViewModel: ObservableObject {
     // MARK: - Deps
 
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
+    private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
     private let fetchEventCompletionsForPeriodUseCase: FetchEventCompletionsForPeriodUseCase
     private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
@@ -80,6 +81,7 @@ final class MacCalendarViewModel: ObservableObject {
 
     init(container: DependencyContainer) {
         self.fetchDozyEventsForPeriodUseCase = container.fetchDozyEventsForPeriodUseCase
+        self.fetchCalendarEventsForPeriodUseCase = container.fetchCalendarEventsForPeriodUseCase
         self.fetchEventCompletionsForPeriodUseCase = container.fetchEventCompletionsForPeriodUseCase
         self.createDozyEventUseCase = container.createDozyEventUseCase
         self.updateDozyEventUseCase = container.updateDozyEventUseCase
@@ -223,6 +225,8 @@ final class MacCalendarViewModel: ObservableObject {
     }
 
     /// 주어진 view mode + anchor 의 이벤트를 fetch → 캐시 저장 → eventsByDate 에 union merge.
+    /// CompositeCalendarSerivce 가 Apple/Dozy(/Google) 머지된 [CalendarEvent] 를 주고,
+    /// 별도로 [DozyEvent] 도 받아 dozyEventsByID 에 채워서 일정 편집(우선순위/고정 등) 가능하게.
     private func fetchRange(
         viewMode: MacCalendarViewMode,
         anchor: Date,
@@ -240,44 +244,67 @@ final class MacCalendarViewModel: ObservableObject {
             errorMessage = nil
         }
 
-        fetchDozyEventsForPeriodUseCase.execute(from: start, to: end)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    guard let self else { return }
-                    self.inflightRangeKeys.remove(key)
-                    if case .failure(let error) = completion {
-                        if !isPrefetch {
-                            self.isLoading = false
-                            self.errorMessage = error.errorDescription
-                        }
+        Publishers.Zip(
+            fetchCalendarEventsForPeriodUseCase.execute(from: start, to: end),
+            fetchDozyEventsForPeriodUseCase.execute(from: start, to: end)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { [weak self] completion in
+                guard let self else { return }
+                self.inflightRangeKeys.remove(key)
+                if case .failure(let error) = completion {
+                    if !isPrefetch {
+                        self.isLoading = false
+                        self.errorMessage = error.errorDescription
                     }
-                },
-                receiveValue: { [weak self] dozyEvents in
-                    guard let self else { return }
-
-                    var byID: [String: DozyEvent] = [:]
-                    for d in dozyEvents { byID[d.id] = d }
-                    let byDate = Self.buildEventsByDate(
-                        dozyEvents: dozyEvents,
-                        from: start,
-                        to: end
-                    )
-
-                    self.cachedEventsByDate[key] = byDate
-                    self.cachedDozyEventsByID[key] = byID
-                    self.loadedRangeKeys.insert(key)
-
-                    // 항상 published 에 union merge — 현재 범위든 prefetch 든.
-                    // 같은 key 데이터는 새 값으로 교체되지만, 다른 key 의 데이터는 보존됨.
-                    self.eventsByDate.merge(byDate)   { _, new in new }
-                    self.dozyEventsByID.merge(byID)   { _, new in new }
-
-                    self.loadCompletions(for: start, to: end, key: key, isPrefetch: isPrefetch)
-                    onComplete?()
                 }
-            )
-            .store(in: &cancellables)
+            },
+            receiveValue: { [weak self] allEvents, dozyEvents in
+                guard let self else { return }
+
+                // 편집 가능한 DozyEvent 인덱스 — priority / isPinned / category 변경 시 사용.
+                var byID: [String: DozyEvent] = [:]
+                for d in dozyEvents { byID[d.id] = d }
+
+                // Dozy 이벤트는 반복 / 멀티데이 해석을 위해 buildEventsByDate 로 처리.
+                // Apple/Google 등 외부 소스 이벤트는 시작~종료일 범위로 bucket 처리.
+                let dozyByDate = Self.buildEventsByDate(
+                    dozyEvents: dozyEvents,
+                    from: start,
+                    to: end
+                )
+                let externalByDate = Self.bucketByDate(
+                    events: allEvents.filter { $0.source != .dozy },
+                    from: start,
+                    to: end
+                )
+
+                var byDate = dozyByDate
+                for (day, list) in externalByDate {
+                    byDate[day, default: []].append(contentsOf: list)
+                }
+                for k in byDate.keys {
+                    byDate[k]?.sort { a, b in
+                        if a.isPinned != b.isPinned { return a.isPinned }
+                        return a.startDate < b.startDate
+                    }
+                }
+
+                self.cachedEventsByDate[key] = byDate
+                self.cachedDozyEventsByID[key] = byID
+                self.loadedRangeKeys.insert(key)
+
+                // 항상 published 에 union merge — 현재 범위든 prefetch 든.
+                // 같은 key 데이터는 새 값으로 교체되지만, 다른 key 의 데이터는 보존됨.
+                self.eventsByDate.merge(byDate)   { _, new in new }
+                self.dozyEventsByID.merge(byID)   { _, new in new }
+
+                self.loadCompletions(for: start, to: end, key: key, isPrefetch: isPrefetch)
+                onComplete?()
+            }
+        )
+        .store(in: &cancellables)
     }
 
     private func loadCompletions(
@@ -517,6 +544,35 @@ final class MacCalendarViewModel: ObservableObject {
             }
         }
 
+        return result
+    }
+
+    /// Apple/Google 등 외부 소스 이벤트를 날짜별 버킷으로. 멀티데이는 시작~종료일 범위 fill.
+    /// 정렬은 호출 측(fetchRange) 에서 dozy 와 머지 후 한 번에 수행한다.
+    private static func bucketByDate(
+        events: [CalendarEvent],
+        from start: Date,
+        to end: Date
+    ) -> [Date: [CalendarEvent]] {
+        let cal = Calendar.current
+        let rangeStart = cal.startOfDay(for: start)
+        let rangeEnd   = cal.startOfDay(for: end)
+        let lastIncluded = cal.date(byAdding: .day, value: -1, to: rangeEnd) ?? rangeEnd
+
+        var result: [Date: [CalendarEvent]] = [:]
+        for event in events {
+            let s = cal.startOfDay(for: event.startDate)
+            let e = cal.startOfDay(for: event.endDate)
+            let effStart = max(s, rangeStart)
+            let effEnd   = min(e, lastIncluded)
+            guard effStart <= effEnd else { continue }
+            var cursor = effStart
+            while cursor <= effEnd {
+                result[cursor, default: []].append(event)
+                guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
+                cursor = next
+            }
+        }
         return result
     }
 }

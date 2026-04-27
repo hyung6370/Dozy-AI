@@ -3,9 +3,9 @@
 //  Dozy AI (macOS)
 //
 //  M4.9 — 인사이트 대시보드 ViewModel. DozyEvent + EventCompletion + WorkLog 기반.
-//  iOS 는 네이티브 캘린더 이벤트(Apple/Google/Naver)까지 함께 분석하지만
-//  macOS 는 Supabase DozyEvent 만 취급하므로 패턴 분석 입력도 DozyEvent → CalendarEvent
-//  변환본 하나만 사용한다.
+//  Apple Calendar 연동 이후엔 CompositeCalendarSerivce 의 머지된 [CalendarEvent] 를
+//  hourly/weekday/peakHours 분석에 함께 사용. completionRate / streak / recurrence 처럼
+//  DozyEvent 자체가 필요한 분석은 그대로 fetchEventsUseCase(DozyEvent) 결과를 쓴다.
 //
 
 import Foundation
@@ -71,6 +71,7 @@ final class MacInsightViewModel: ObservableObject {
     // MARK: - Deps
 
     private let fetchEventsUseCase: FetchDozyEventsForPeriodUseCase
+    private let fetchCalendarEventsUseCase: FetchCalendarEventsForPeriodUseCase
     private let fetchCompletionsUseCase: FetchEventCompletionsForPeriodUseCase
     private let fetchLogsUseCase: FetchRecentLogsUseCase
     private let patternService: PatternAnalysisService
@@ -80,6 +81,7 @@ final class MacInsightViewModel: ObservableObject {
 
     init(container: DependencyContainer) {
         self.fetchEventsUseCase = container.fetchDozyEventsForPeriodUseCase
+        self.fetchCalendarEventsUseCase = container.fetchCalendarEventsForPeriodUseCase
         self.fetchCompletionsUseCase = container.fetchEventCompletionsForPeriodUseCase
         self.fetchLogsUseCase = container.fetchRecentLogsUseCase
         self.patternService = container.patternAnalysisService
@@ -95,36 +97,39 @@ final class MacInsightViewModel: ObservableObject {
         let start     = cal.date(byAdding: .day, value: -days, to: now)!
         let prevStart = cal.date(byAdding: .day, value: -days * 2, to: now)!
 
-        Publishers.Zip3(
-            Publishers.Zip(
-                fetchEventsUseCase.execute(from: start, to: now),
-                fetchEventsUseCase.execute(from: prevStart, to: start)
-            ),
-            Publishers.Zip(
-                fetchCompletionsUseCase.execute(from: start, to: now),
-                fetchCompletionsUseCase.execute(from: prevStart, to: start)
-            ),
+        // Combine 의 Zip 은 최대 4-tuple 까지 — Zip 두 개를 다시 Zip 으로 묶어 5+ 결과를 받음.
+        let dozyAndCalendar = Publishers.Zip3(
+            fetchEventsUseCase.execute(from: start, to: now),
+            fetchEventsUseCase.execute(from: prevStart, to: start),
+            fetchCalendarEventsUseCase.execute(from: start, to: now)
+        )
+        let completionsAndLogs = Publishers.Zip3(
+            fetchCompletionsUseCase.execute(from: start, to: now),
+            fetchCompletionsUseCase.execute(from: prevStart, to: start),
             fetchLogsUseCase.execute(days: days)
         )
-        .receive(on: DispatchQueue.main)
-        .sink(
-            receiveCompletion: { [weak self] _ in self?.isLoading = false },
-            receiveValue: { [weak self] dozyPair, completionPair, logs in
-                guard let self else { return }
-                let (current, previous) = dozyPair
-                let (currentCal, previousCal) = completionPair
-                self.isLoading = false
-                self.applyEvents(
-                    current: current,
-                    previous: previous,
-                    currentCompletions: currentCal,
-                    previousCompletions: previousCal,
-                    days: days
-                )
-                self.applyLogs(logs)
-            }
-        )
-        .store(in: &cancellables)
+
+        Publishers.Zip(dozyAndCalendar, completionsAndLogs)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] _ in self?.isLoading = false },
+                receiveValue: { [weak self] dozyTriple, completionTriple in
+                    guard let self else { return }
+                    let (current, previous, allEvents) = dozyTriple
+                    let (currentCal, previousCal, logs) = completionTriple
+                    self.isLoading = false
+                    self.applyEvents(
+                        current: current,
+                        previous: previous,
+                        allEvents: allEvents,
+                        currentCompletions: currentCal,
+                        previousCompletions: previousCal,
+                        days: days
+                    )
+                    self.applyLogs(logs)
+                }
+            )
+            .store(in: &cancellables)
     }
 
     // MARK: - Apply
@@ -132,14 +137,15 @@ final class MacInsightViewModel: ObservableObject {
     private func applyEvents(
         current: [DozyEvent],
         previous: [DozyEvent],
+        allEvents: [CalendarEvent],
         currentCompletions: [EventCompletion],
         previousCompletions: [EventCompletion],
         days: Int
     ) {
-        // macOS 는 네이티브 캘린더 이벤트가 없어서 DozyEvent 의 CalendarEvent 변환본을
-        // allCalendarEvents 자리에 그대로 사용.
-        let allEvents = current.map { $0.toCalendarEvent() }
-        hasDozyData = !current.isEmpty || !currentCompletions.isEmpty
+        // hourly/weekday/peakHours 패턴 분석엔 Composite 가 머지한 [CalendarEvent] 사용
+        // (Apple/Google 이벤트 시간대까지 함께 분석). DozyEvent 가 비었더라도 외부 캘린더
+        // 일정이 있으면 데이터 있는 걸로 간주.
+        hasDozyData = !current.isEmpty || !currentCompletions.isEmpty || !allEvents.isEmpty
 
         averageCompletionRate = patternService.averageCompletionRate(
             from: current, calendarCompletions: currentCompletions

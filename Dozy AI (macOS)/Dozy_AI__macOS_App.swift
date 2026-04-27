@@ -142,6 +142,8 @@ final class MacAppCoordinator: ObservableObject {
     private(set) var homeViewModel: MacHomeViewModel?
     private(set) var calendarViewModel: MacCalendarViewModel?
 
+    private var calendarAccessCancellables = Set<AnyCancellable>()
+
     init() {
         #if !DEBUG
         setup()
@@ -157,6 +159,16 @@ final class MacAppCoordinator: ObservableObject {
             authService: c.authService,
             modelContainer: c.modelContainer
         )
+
+        // Apple 캘린더 토글이 ON 인 경우 — 시스템 권한 다이얼로그를 미리 띄우거나
+        // 이미 허용된 권한 상태를 EKEventStore 에 워밍업. 토글 OFF 면 아무 것도 안 함.
+        if c.calendarSourceManager.isEnabled(.apple) {
+            c.appleCalendarServiceForSettings.requestAccess()
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+                .store(in: &calendarAccessCancellables)
+        }
+
         let mb = MacMenuBarViewModel(container: c)
         mb.loadTodayData()
         menuBarViewModel = mb

@@ -4,6 +4,11 @@
 //
 //  Created by Hyungjun KIM on 3/26/26.
 //
+//  Apple/Dozy(/Google) 캘린더 소스를 머지해서 단일 [CalendarEvent] 스트림으로 노출.
+//  Google 경로는 GoogleSignInService(iOS UIViewController 의존) 때문에 현재 iOS 전용.
+//  macOS Google 연동 단계에선 GoogleSignInService 를 cross-platform 화한 뒤
+//  이 파일의 `#if os(iOS)` 가드를 풀면 된다.
+//
 
 import Foundation
 import Combine
@@ -11,13 +16,16 @@ import Combine
 final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServiceProtocol {
 
     private let appleService: CalendarService
-    private let googleService: GoogleCalendarService
+    #if os(iOS)
+    private let googleService: GoogleCalendarService?
+    #endif
     private let dozyService: DozyCalendarService
     let sourceManager: CalendarSourceManager
 
+    #if os(iOS)
     init(
         appleService: CalendarService,
-        googleService: GoogleCalendarService,
+        googleService: GoogleCalendarService?,
         dozyService: DozyCalendarService,
         sourceManager: CalendarSourceManager
     ) {
@@ -26,30 +34,53 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         self.dozyService = dozyService
         self.sourceManager = sourceManager
     }
-    
+    #else
+    init(
+        appleService: CalendarService,
+        dozyService: DozyCalendarService,
+        sourceManager: CalendarSourceManager
+    ) {
+        self.appleService = appleService
+        self.dozyService = dozyService
+        self.sourceManager = sourceManager
+    }
+    #endif
+
     func requestAccess() -> AnyPublisher<Bool, DozyError> {
         appleService.requestAccess()
     }
 
     func invalidateGoogleCache() {
-        googleService.invalidateCache()
+        #if os(iOS)
+        googleService?.invalidateCache()
+        #endif
     }
-    
+
     func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
-        
+
         let appleEnabled = sourceManager.isEnabled(.apple)
-        let googleEnabled = sourceManager.isEnabled(.google)
+        #if os(iOS)
+        let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
+        #else
+        let googleEnabled = false
+        #endif
 
         if appleEnabled {
-            publishers.append(appleService.fetchEvents(for: date))
-        }
-        if googleEnabled {
+            // 권한 미허용 등 일시적 실패가 다른 소스(Dozy/Google)까지 무력화하지 않도록 차단.
             publishers.append(
-                googleService.fetchEvents(for: date)
+                appleService.fetchEvents(for: date)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }
+        #if os(iOS)
+        if googleEnabled, let google = googleService {
+            publishers.append(
+                google.fetchEvents(for: date)
+                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            )
+        }
+        #endif
         publishers.append(dozyService.fetchEvents(for: date))
 
         return Publishers.MergeMany(publishers)
@@ -74,17 +105,26 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
 
         let appleEnabled = sourceManager.isEnabled(.apple)
-        let googleEnabled = sourceManager.isEnabled(.google)
+        #if os(iOS)
+        let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
+        #else
+        let googleEnabled = false
+        #endif
 
         if appleEnabled {
-            publishers.append(appleService.fetchEvents(from: start, to: end))
-        }
-        if googleEnabled {
             publishers.append(
-                googleService.fetchEvents(from: start, to: end)
+                appleService.fetchEvents(from: start, to: end)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }
+        #if os(iOS)
+        if googleEnabled, let google = googleService {
+            publishers.append(
+                google.fetchEvents(from: start, to: end)
+                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            )
+        }
+        #endif
         publishers.append(dozyService.fetchEvents(from: start, to: end))
 
         return Publishers.MergeMany(publishers)
@@ -139,15 +179,31 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
         switch event.source {
         case .apple: return appleService.updateEvent(event, with: edit)
-        case .google: return googleService.updateEvent(event, with: edit)
+        case .google:
+            #if os(iOS)
+            guard let google = googleService else {
+                return Fail(error: .dataNotFound).eraseToAnyPublisher()
+            }
+            return google.updateEvent(event, with: edit)
+            #else
+            return Fail(error: .dataNotFound).eraseToAnyPublisher()
+            #endif
         default: return Fail(error: .dataNotFound).eraseToAnyPublisher()
         }
     }
-    
+
     func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
         switch event.source {
         case .apple:  return appleService.deleteEvent(event)
-        case .google: return googleService.deleteEvent(event)
+        case .google:
+            #if os(iOS)
+            guard let google = googleService else {
+                return Fail(error: .dataNotFound).eraseToAnyPublisher()
+            }
+            return google.deleteEvent(event)
+            #else
+            return Fail(error: .dataNotFound).eraseToAnyPublisher()
+            #endif
         default:      return Fail(error: .dataNotFound).eraseToAnyPublisher()
         }
     }

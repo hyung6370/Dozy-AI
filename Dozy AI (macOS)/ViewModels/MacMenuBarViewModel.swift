@@ -17,7 +17,7 @@ final class MacMenuBarViewModel: ObservableObject {
     @Published var completionsByID: [String: Bool] = [:]
     @Published var isLoading = false
 
-    private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
+    private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private var cancellables = Set<AnyCancellable>()
 
@@ -56,7 +56,7 @@ final class MacMenuBarViewModel: ObservableObject {
     // MARK: - Init
 
     init(container: DependencyContainer) {
-        self.fetchDozyEventsUseCase = container.fetchDozyEventsUseCase
+        self.fetchCalendarEventUseCase = container.fetchCalendarEventUseCase
         self.fetchEventCompletionsUseCase = container.fetchEventCompletionsUseCase
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
@@ -71,17 +71,16 @@ final class MacMenuBarViewModel: ObservableObject {
         isLoading = true
         let today = Date()
 
-        fetchDozyEventsUseCase.execute(for: today)
+        // CompositeCalendarSerivce 가 Apple/Dozy(/Google) 머지된 [CalendarEvent] 를 반환.
+        fetchCalendarEventUseCase.execute(for: today)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] _ in self?.isLoading = false },
-                receiveValue: { [weak self] dozyEvents in
+                receiveValue: { [weak self] events in
                     guard let self else { return }
-                    let events = dozyEvents
-                        .map { $0.toCalendarEvent(for: today) }
-                        .sorted { $0.startDate < $1.startDate }
-                    self.todayEvents = events
-                    self.loadCompletions(for: events.map(\.id), on: today)
+                    let sorted = events.sorted { $0.startDate < $1.startDate }
+                    self.todayEvents = sorted
+                    self.loadCompletions(for: sorted.map(\.id), on: today)
                 }
             )
             .store(in: &cancellables)
