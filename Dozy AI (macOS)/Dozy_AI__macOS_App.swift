@@ -170,6 +170,7 @@ final class MacAppCoordinator: ObservableObject {
         let cal = MacCalendarViewModel(container: c)
         cal.loadEventsForCurrentMonth()   // 현재 월 + prefetchAdjacent(±2) 발동
         cal.prewarmWideWindow()            // ±3 까지 추가 pre-warm
+        cal.loadMySharedCalendars()        // 공유 캘린더 목록
         calendarViewModel = cal
 
         container = c

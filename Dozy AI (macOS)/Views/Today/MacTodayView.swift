@@ -78,6 +78,7 @@ struct MacTodayView: View {
                 dozyEvent: viewModel.dozyEventsByID[event.id],
                 currentUserID: authViewModel.currentUser?.id ?? "",
                 partnerDisplayName: nil,
+                sharedCalendars: viewModel.mySharedCalendars,
                 onDelete: { dozy in
                     viewModel.deleteDozyEvent(dozy)
                     selectedEvent = nil
@@ -103,6 +104,7 @@ struct MacTodayView: View {
             MacEventEditView(
                 eventToEdit: nil,
                 selectedDate: Date(),
+                sharedCalendars: viewModel.mySharedCalendars,
                 onSave: { saved in
                     viewModel.saveDozyEvent(saved)
                 }

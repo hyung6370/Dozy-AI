@@ -15,6 +15,7 @@ struct MacEventDetailView: View {
     let dozyEvent: DozyEvent?
     let currentUserID: String
     let partnerDisplayName: String?
+    let sharedCalendars: [SharedCalendar]
     let onDelete: (DozyEvent) -> Void
     let onDeleteThisOnly: (DozyEvent, Date) -> Void
     let onDeleteFutureOccurrences: (DozyEvent, Date) -> Void
@@ -43,6 +44,7 @@ struct MacEventDetailView: View {
         dozyEvent: DozyEvent?,
         currentUserID: String,
         partnerDisplayName: String?,
+        sharedCalendars: [SharedCalendar] = [],
         onDelete: @escaping (DozyEvent) -> Void,
         onDeleteThisOnly: @escaping (DozyEvent, Date) -> Void,
         onDeleteFutureOccurrences: @escaping (DozyEvent, Date) -> Void,
@@ -53,6 +55,7 @@ struct MacEventDetailView: View {
         self.dozyEvent = dozyEvent
         self.currentUserID = currentUserID
         self.partnerDisplayName = partnerDisplayName
+        self.sharedCalendars = sharedCalendars
         self.onDelete = onDelete
         self.onDeleteThisOnly = onDeleteThisOnly
         self.onDeleteFutureOccurrences = onDeleteFutureOccurrences
@@ -61,7 +64,7 @@ struct MacEventDetailView: View {
         _editVM = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: dozyEvent,
             selectedDate: event.startDate,
-            sharedCalendars: [],
+            sharedCalendars: sharedCalendars,
             onSave: onSaveEvent
         ))
     }
@@ -416,6 +419,26 @@ struct MacEventDetailView: View {
     private var displaySettingsSection: some View {
         VStack(spacing: 12) {
             Divider().padding(.top, 16)
+
+            if !editVM.sharedCalendars.isEmpty {
+                VStack(spacing: 0) {
+                    settingsRow {
+                        Label("공유 캘린더", systemImage: "person.2.fill")
+                    } trailing: {
+                        Picker("", selection: $editVM.sharedCalendarID) {
+                            Text("없음").tag(String?.none)
+                            ForEach(editVM.sharedCalendars) { cal in
+                                Text(cal.name).tag(Optional(cal.id))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .frame(width: 160, alignment: .trailing)
+                    }
+                }
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 20)
+            }
 
             VStack(spacing: 0) {
                 settingsRow {

@@ -18,6 +18,7 @@ final class MacHomeViewModel: ObservableObject {
     @Published var todayEvents: [CalendarEvent] = []
     @Published var dozyEventsByID: [String: DozyEvent] = [:]
     @Published var completionsByEventID: [String: Bool] = [:]
+    @Published var mySharedCalendars: [SharedCalendar] = []
     @Published var todayLog: WorkLog?
     @Published var dailySummary: DailySummary?
     @Published var isLoading = false
@@ -34,6 +35,7 @@ final class MacHomeViewModel: ObservableObject {
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
     private let saveWorkLogUseCase: SaveWorkLogUseCase
     private let generateDailySummaryUseCase: GenerateDailySummaryUseCase
+    private let sharedCalendarService: SharedCalendarServiceProtocol
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed
@@ -94,6 +96,7 @@ final class MacHomeViewModel: ObservableObject {
         self.deleteDozyEventUseCase = container.deleteDozyEventUseCase
         self.saveWorkLogUseCase = container.saveWorkLogUseCase
         self.generateDailySummaryUseCase = container.generateDailySummaryUseCase
+        self.sharedCalendarService = container.sharedCalendarService
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -107,6 +110,8 @@ final class MacHomeViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         let today = Date()
+
+        loadMySharedCalendars()
 
         fetchDozyEventsUseCase.execute(for: today)
             .receive(on: DispatchQueue.main)
@@ -285,6 +290,20 @@ final class MacHomeViewModel: ObservableObject {
             }
         )
         .store(in: &cancellables)
+    }
+
+    // MARK: - Shared Calendars
+
+    private func loadMySharedCalendars() {
+        sharedCalendarService.fetchMyCalendars()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] calendars in
+                    self?.mySharedCalendars = calendars
+                }
+            )
+            .store(in: &cancellables)
     }
 
     // MARK: - Private

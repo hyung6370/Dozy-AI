@@ -18,13 +18,14 @@ struct MacEventEditView: View {
     init(
         eventToEdit: DozyEvent?,
         selectedDate: Date,
+        sharedCalendars: [SharedCalendar] = [],
         useTimeHint: Bool = false,
         onSave: @escaping (DozyEvent) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: eventToEdit,
             selectedDate: selectedDate,
-            sharedCalendars: [],
+            sharedCalendars: sharedCalendars,
             useTimeHint: useTimeHint,
             onSave: onSave
         ))
@@ -72,6 +73,19 @@ struct MacEventEditView: View {
                         if let cat = categories.first(where: { $0.name == newName }) {
                             viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
                         }
+                    }
+                }
+
+                if !viewModel.sharedCalendars.isEmpty {
+                    Section("공유 캘린더") {
+                        Picker("공유", selection: $viewModel.sharedCalendarID) {
+                            Text("없음").tag(String?.none)
+                            ForEach(viewModel.sharedCalendars) { cal in
+                                Label(cal.name, systemImage: "person.2.fill")
+                                    .tag(Optional(cal.id))
+                            }
+                        }
+                        .pickerStyle(.menu)
                     }
                 }
 

@@ -25,6 +25,7 @@ final class MacCalendarViewModel: ObservableObject {
     @Published var eventsByDate: [Date: [CalendarEvent]] = [:]
     @Published var dozyEventsByID: [String: DozyEvent] = [:]
     @Published var completionsByID: [String: Bool] = [:]
+    @Published var mySharedCalendars: [SharedCalendar] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -43,6 +44,7 @@ final class MacCalendarViewModel: ObservableObject {
     private let createDozyEventUseCase: CreateDozyEventUseCase
     private let updateDozyEventUseCase: UpdateDozyEventUseCase
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
+    private let sharedCalendarService: SharedCalendarServiceProtocol
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed
@@ -82,6 +84,7 @@ final class MacCalendarViewModel: ObservableObject {
         self.createDozyEventUseCase = container.createDozyEventUseCase
         self.updateDozyEventUseCase = container.updateDozyEventUseCase
         self.deleteDozyEventUseCase = container.deleteDozyEventUseCase
+        self.sharedCalendarService = container.sharedCalendarService
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -324,6 +327,20 @@ final class MacCalendarViewModel: ObservableObject {
             guard !loadedRangeKeys.contains(key), !inflightRangeKeys.contains(key) else { continue }
             fetchRange(viewMode: viewMode, anchor: anchor, isPrefetch: true)
         }
+    }
+
+    /// 사용자가 가입/생성한 공유 캘린더 목록 로드. 새 일정 / 일정 상세에서
+    /// "공유 캘린더" Picker 에 노출.
+    func loadMySharedCalendars() {
+        sharedCalendarService.fetchMyCalendars()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] calendars in
+                    self?.mySharedCalendars = calendars
+                }
+            )
+            .store(in: &cancellables)
     }
 
     /// 앱 런치 직후 coordinator 가 호출. 월 기준 ±3 까지 병렬로 미리 요청해서

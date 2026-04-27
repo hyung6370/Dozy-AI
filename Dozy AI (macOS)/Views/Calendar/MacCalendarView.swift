@@ -148,6 +148,7 @@ struct MacCalendarView: View {
                 dozyEvent: viewModel.dozyEventsByID[event.id],
                 currentUserID: authViewModel.currentUser?.id ?? "",
                 partnerDisplayName: nil,
+                sharedCalendars: viewModel.mySharedCalendars,
                 onDelete: { dozy in
                     viewModel.deleteDozyEvent(dozy)
                     selectedEvent = nil
@@ -172,6 +173,7 @@ struct MacCalendarView: View {
             MacEventEditView(
                 eventToEdit: nil,
                 selectedDate: newEventTimeHint ?? viewModel.selectedDate,
+                sharedCalendars: viewModel.mySharedCalendars,
                 useTimeHint: newEventTimeHint != nil,
                 onSave: { saved in
                     viewModel.saveDozyEvent(saved)
