@@ -2,9 +2,9 @@
 //  MacCalendarViewModel.swift
 //  Dozy AI (macOS)
 //
-//  M4.5 — 월별 캘린더 뷰 전용 ViewModel. 현재 월(및 앞뒤 여유)에 해당하는
-//  DozyEvent 를 Supabase 에서 받아와 날짜별로 그룹핑, 선택된 날짜의 일정 리스트를
-//  제공한다. iOS CalendarViewModel 의 기능 중 핵심만 추려 단순화.
+//  M4.5 — 월별 캘린더 뷰 전용 ViewModel.
+//  성능 최적화: 범위 캐시 + 인접 prefetch(±2) + wide prewarm(±3) +
+//  eventsByDate union merge + buildEventsByDate 최적화.
 //
 
 import Foundation
@@ -16,16 +16,25 @@ final class MacCalendarViewModel: ObservableObject {
 
     // MARK: - Published
 
-    @Published var currentMonth: Date = Date()   // 앵커 날짜 (뷰 모드에 따라 의미 달라짐)
+    @Published var currentMonth: Date = Date()
     @Published var selectedDate: Date = Date()
     @Published var viewMode: MacCalendarViewMode = .month
-    /// 월 이동 방향 — 1: 다음(오른쪽), -1: 이전(왼쪽), 0: 초기/무방향. 슬라이드 애니메이션용.
+    /// 월 이동 방향 — 1: 다음, -1: 이전, 0: 초기/무방향.
     @Published var monthTransitionDirection: Int = 0
+    /// 모든 로드된 범위의 union — 월 전환 시 사라졌다 나타나는 현상 방지.
     @Published var eventsByDate: [Date: [CalendarEvent]] = [:]
     @Published var dozyEventsByID: [String: DozyEvent] = [:]
     @Published var completionsByID: [String: Bool] = [:]
     @Published var isLoading = false
     @Published var errorMessage: String?
+
+    // MARK: - Cache (range key → fetched data)
+
+    private var cachedEventsByDate:   [String: [Date: [CalendarEvent]]] = [:]
+    private var cachedDozyEventsByID: [String: [String: DozyEvent]]     = [:]
+    private var cachedCompletions:    [String: [String: Bool]]          = [:]
+    private var loadedRangeKeys:      Set<String> = []
+    private var inflightRangeKeys:    Set<String> = []
 
     // MARK: - Deps
 
@@ -48,7 +57,6 @@ final class MacCalendarViewModel: ObservableObject {
         switch viewMode {
         case .month: f.dateFormat = "yyyy년 M월"
         case .week:
-            // "2026년 4월 3주차" 또는 "Apr 20 - Apr 26, 2026" 스타일. 심플하게 시작일 기반.
             let weekStart = Self.startOfWeek(for: currentMonth)
             let weekEnd = Calendar.current.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
             f.dateFormat = "M월 d일"
@@ -77,23 +85,24 @@ final class MacCalendarViewModel: ObservableObject {
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.loadEventsForCurrentMonth() }
+            .sink { [weak self] _ in
+                self?.invalidateCache()
+                self?.loadEventsForCurrentMonth(force: true)
+            }
             .store(in: &cancellables)
     }
 
-    // MARK: - Month Navigation
-
-    // MARK: - Navigation (view mode 에 따라 동작 변경)
+    // MARK: - Navigation
 
     func goToPreviousMonth() {
         let cal = Calendar.current
-        let delta: Calendar.Component
-        let value: Int
-        switch viewMode {
-        case .month: delta = .month; value = -1
-        case .week:  delta = .weekOfYear; value = -1
-        case .day:   delta = .day; value = -1
-        }
+        let (delta, value): (Calendar.Component, Int) = {
+            switch viewMode {
+            case .month: return (.month, -1)
+            case .week:  return (.weekOfYear, -1)
+            case .day:   return (.day, -1)
+            }
+        }()
         if let prev = cal.date(byAdding: delta, value: value, to: currentMonth) {
             monthTransitionDirection = -1
             currentMonth = prev
@@ -103,13 +112,13 @@ final class MacCalendarViewModel: ObservableObject {
 
     func goToNextMonth() {
         let cal = Calendar.current
-        let delta: Calendar.Component
-        let value: Int
-        switch viewMode {
-        case .month: delta = .month; value = 1
-        case .week:  delta = .weekOfYear; value = 1
-        case .day:   delta = .day; value = 1
-        }
+        let (delta, value): (Calendar.Component, Int) = {
+            switch viewMode {
+            case .month: return (.month, 1)
+            case .week:  return (.weekOfYear, 1)
+            case .day:   return (.day, 1)
+            }
+        }()
         if let next = cal.date(byAdding: delta, value: value, to: currentMonth) {
             monthTransitionDirection = 1
             currentMonth = next
@@ -140,75 +149,206 @@ final class MacCalendarViewModel: ObservableObject {
         return cal.date(byAdding: .day, value: -(weekday - 1), to: startOfDay) ?? startOfDay
     }
 
-    /// 현재 뷰 모드에 따라 보여지는 날짜 범위.
-    /// end 는 마지막 표시일의 다음날 시작(= exclusive upper bound) 을 사용해야
-    /// DozyEventRepository 의 predicate `startDate < end` 가 마지막날 이벤트까지 포함한다.
     func currentVisibleRange() -> (Date, Date) {
+        visibleRange(for: viewMode, anchor: currentMonth)
+    }
+
+    private func visibleRange(for mode: MacCalendarViewMode, anchor: Date) -> (Date, Date) {
         let cal = Calendar.current
-        switch viewMode {
+        switch mode {
         case .month:
-            return visibleRangeMonth(for: currentMonth)
+            return visibleRangeMonth(for: anchor)
         case .week:
-            let start = Self.startOfWeek(for: currentMonth)
+            let start = Self.startOfWeek(for: anchor)
             let end   = cal.date(byAdding: .day, value: 7, to: start) ?? start
             return (start, end)
         case .day:
-            let start = cal.startOfDay(for: currentMonth)
+            let start = cal.startOfDay(for: anchor)
             let end   = cal.date(byAdding: .day, value: 1, to: start) ?? start
             return (start, end)
         }
+    }
+
+    /// 6주 = 42일 그리드. end 는 exclusive.
+    private func visibleRangeMonth(for month: Date) -> (Date, Date) {
+        let cal = Calendar.current
+        let startOfMonth = cal.dateInterval(of: .month, for: month)?.start ?? month
+        let weekday = cal.component(.weekday, from: startOfMonth)
+        let startOfGrid = cal.date(byAdding: .day, value: -(weekday - 1), to: startOfMonth) ?? startOfMonth
+        let endOfGrid = cal.date(byAdding: .day, value: 42, to: startOfGrid) ?? startOfMonth
+        return (startOfGrid, endOfGrid)
     }
 
     func selectDate(_ date: Date) {
         selectedDate = date
     }
 
-    // MARK: - Data
+    // MARK: - Range key
 
-    func loadEventsForCurrentMonth() {
-        let (start, end) = currentVisibleRange()
-        isLoading = true
-        errorMessage = nil
+    private func rangeKey(for mode: MacCalendarViewMode, anchor: Date) -> String {
+        let cal = Calendar.current
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        switch mode {
+        case .month:
+            f.dateFormat = "yyyy-MM"
+            return "month_" + f.string(from: anchor)
+        case .week:
+            f.dateFormat = "yyyy-MM-dd"
+            return "week_" + f.string(from: Self.startOfWeek(for: anchor))
+        case .day:
+            f.dateFormat = "yyyy-MM-dd"
+            return "day_" + f.string(from: cal.startOfDay(for: anchor))
+        }
+    }
+
+    // MARK: - Load (캐시 우선)
+
+    func loadEventsForCurrentMonth(force: Bool = false) {
+        let key = rangeKey(for: viewMode, anchor: currentMonth)
+
+        if !force, loadedRangeKeys.contains(key) {
+            // 이미 캐시에 있고 eventsByDate 에 union 으로 머지되어 있음 → 즉시 반환.
+            isLoading = false
+            prefetchAdjacent()
+            return
+        }
+
+        fetchRange(viewMode: viewMode, anchor: currentMonth, isPrefetch: false) { [weak self] in
+            self?.prefetchAdjacent()
+        }
+    }
+
+    /// 주어진 view mode + anchor 의 이벤트를 fetch → 캐시 저장 → eventsByDate 에 union merge.
+    private func fetchRange(
+        viewMode: MacCalendarViewMode,
+        anchor: Date,
+        isPrefetch: Bool,
+        onComplete: (() -> Void)? = nil
+    ) {
+        let key = rangeKey(for: viewMode, anchor: anchor)
+        guard !inflightRangeKeys.contains(key) else { return }
+        inflightRangeKeys.insert(key)
+
+        let (start, end) = visibleRange(for: viewMode, anchor: anchor)
+
+        if !isPrefetch {
+            isLoading = true
+            errorMessage = nil
+        }
 
         fetchDozyEventsForPeriodUseCase.execute(from: start, to: end)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
+                    guard let self else { return }
+                    self.inflightRangeKeys.remove(key)
                     if case .failure(let error) = completion {
-                        self?.errorMessage = error.errorDescription
+                        if !isPrefetch {
+                            self.isLoading = false
+                            self.errorMessage = error.errorDescription
+                        }
                     }
                 },
                 receiveValue: { [weak self] dozyEvents in
                     guard let self else { return }
+
                     var byID: [String: DozyEvent] = [:]
                     for d in dozyEvents { byID[d.id] = d }
-                    self.dozyEventsByID = byID
-                    self.eventsByDate = Self.buildEventsByDate(
+                    let byDate = Self.buildEventsByDate(
                         dozyEvents: dozyEvents,
                         from: start,
                         to: end
                     )
-                    self.loadCompletions(for: start, to: end)
+
+                    self.cachedEventsByDate[key] = byDate
+                    self.cachedDozyEventsByID[key] = byID
+                    self.loadedRangeKeys.insert(key)
+
+                    // 항상 published 에 union merge — 현재 범위든 prefetch 든.
+                    // 같은 key 데이터는 새 값으로 교체되지만, 다른 key 의 데이터는 보존됨.
+                    self.eventsByDate.merge(byDate)   { _, new in new }
+                    self.dozyEventsByID.merge(byID)   { _, new in new }
+
+                    self.loadCompletions(for: start, to: end, key: key, isPrefetch: isPrefetch)
+                    onComplete?()
                 }
             )
             .store(in: &cancellables)
     }
 
-    private func loadCompletions(for start: Date, to end: Date) {
+    private func loadCompletions(
+        for start: Date,
+        to end: Date,
+        key: String,
+        isPrefetch: Bool
+    ) {
         fetchEventCompletionsForPeriodUseCase.execute(from: start, to: end)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] completions in
+                    guard let self else { return }
                     var map: [String: Bool] = [:]
                     for c in completions where c.isCompleted {
                         map[c.eventID] = true
                     }
-                    self?.completionsByID = map
+                    self.cachedCompletions[key] = map
+                    self.completionsByID.merge(map) { _, new in new }
+
+                    if !isPrefetch {
+                        let currentKey = self.rangeKey(for: self.viewMode, anchor: self.currentMonth)
+                        if key == currentKey { self.isLoading = false }
+                    }
                 }
             )
             .store(in: &cancellables)
+    }
+
+    // MARK: - Prefetch
+
+    /// 현재 범위의 ±2 칸을 백그라운드로 미리 로드. 빠른 연속 스와이프에도 항상 캐시 한 칸 앞서있게.
+    private func prefetchAdjacent() {
+        let cal = Calendar.current
+        let component: Calendar.Component = {
+            switch viewMode {
+            case .month: return .month
+            case .week:  return .weekOfYear
+            case .day:   return .day
+            }
+        }()
+        for offset in [-2, -1, 1, 2] {
+            guard let anchor = cal.date(byAdding: component, value: offset, to: currentMonth)
+            else { continue }
+            let key = rangeKey(for: viewMode, anchor: anchor)
+            guard !loadedRangeKeys.contains(key), !inflightRangeKeys.contains(key) else { continue }
+            fetchRange(viewMode: viewMode, anchor: anchor, isPrefetch: true)
+        }
+    }
+
+    /// 앱 런치 직후 coordinator 가 호출. 월 기준 ±3 까지 병렬로 미리 요청해서
+    /// 사용자가 캘린더 탭 누르기 전에 넓은 범위를 캐시에 적재.
+    func prewarmWideWindow() {
+        let cal = Calendar.current
+        for offset in [-3, -2, 2, 3] {   // ±1 은 prefetchAdjacent 가 잡으므로 생략.
+            guard let anchor = cal.date(byAdding: .month, value: offset, to: currentMonth)
+            else { continue }
+            let key = rangeKey(for: .month, anchor: anchor)
+            guard !loadedRangeKeys.contains(key), !inflightRangeKeys.contains(key) else { continue }
+            fetchRange(viewMode: .month, anchor: anchor, isPrefetch: true)
+        }
+    }
+
+    // MARK: - Cache invalidation
+
+    private func invalidateCache() {
+        cachedEventsByDate.removeAll()
+        cachedDozyEventsByID.removeAll()
+        cachedCompletions.removeAll()
+        loadedRangeKeys.removeAll()
+        eventsByDate.removeAll()
+        dozyEventsByID.removeAll()
+        completionsByID.removeAll()
     }
 
     // MARK: - CRUD
@@ -226,7 +366,10 @@ final class MacCalendarViewModel: ObservableObject {
                         self?.errorMessage = error.errorDescription
                     }
                 },
-                receiveValue: { [weak self] in self?.loadEventsForCurrentMonth() }
+                receiveValue: { [weak self] in
+                    self?.invalidateCache()
+                    self?.loadEventsForCurrentMonth(force: true)
+                }
             )
             .store(in: &cancellables)
     }
@@ -240,7 +383,10 @@ final class MacCalendarViewModel: ObservableObject {
                         self?.errorMessage = error.errorDescription
                     }
                 },
-                receiveValue: { [weak self] in self?.loadEventsForCurrentMonth() }
+                receiveValue: { [weak self] in
+                    self?.invalidateCache()
+                    self?.loadEventsForCurrentMonth(force: true)
+                }
             )
             .store(in: &cancellables)
     }
@@ -253,12 +399,13 @@ final class MacCalendarViewModel: ObservableObject {
         updateDozyEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadEventsForCurrentMonth()
+                self?.invalidateCache()
+                self?.loadEventsForCurrentMonth(force: true)
             })
             .store(in: &cancellables)
     }
 
-    /// 반복 일정의 특정 날짜 이후 모두 삭제 (recurrenceEndDate 를 전날로 단축)
+    /// 반복 일정의 특정 날짜 이후 모두 삭제
     func deleteFutureOccurrences(_ event: DozyEvent, from date: Date) {
         let cal = Calendar.current
         event.recurrenceEndDate = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: date))
@@ -266,7 +413,8 @@ final class MacCalendarViewModel: ObservableObject {
         updateDozyEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadEventsForCurrentMonth()
+                self?.invalidateCache()
+                self?.loadEventsForCurrentMonth(force: true)
             })
             .store(in: &cancellables)
     }
@@ -279,7 +427,7 @@ final class MacCalendarViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// 표시 설정 (고정 / 우선순위 / 카테고리) 업데이트. 카테고리 변경 시 색상도 동기화.
+    /// 표시 설정(고정 / 우선순위 / 카테고리) 업데이트.
     func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String?) {
         guard let dozy = dozyEventsByID[event.id] else { return }
         dozy.priority = priority
@@ -295,59 +443,63 @@ final class MacCalendarViewModel: ObservableObject {
         updateDozyEventUseCase.execute(dozy)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadEventsForCurrentMonth()
+                self?.invalidateCache()
+                self?.loadEventsForCurrentMonth(force: true)
             })
             .store(in: &cancellables)
     }
 
-    // MARK: - Helpers
+    // MARK: - buildEventsByDate (최적화)
 
-    /// 달력 그리드에서 보이는 날짜 범위 (6주 = 42일).
-    /// 해당 월 1일이 속한 주의 일요일부터 42일간.
-    /// end 는 Day 42 시작(= exclusive) 으로, predicate `startDate < end` 가 Day 41 이벤트까지 포함.
-    private func visibleRangeMonth(for month: Date) -> (Date, Date) {
-        let cal = Calendar.current
-        let startOfMonth = cal.dateInterval(of: .month, for: month)?.start ?? month
-        let weekday = cal.component(.weekday, from: startOfMonth) // 1 = Sunday
-        let startOfGrid = cal.date(byAdding: .day, value: -(weekday - 1), to: startOfMonth) ?? startOfMonth
-        let endOfGrid = cal.date(byAdding: .day, value: 42, to: startOfGrid) ?? startOfMonth
-        return (startOfGrid, endOfGrid)
-    }
-
-    /// 주어진 기간 내 각 날짜에 해당하는 DozyEvent 를 CalendarEvent 로 변환해 날짜별 맵 생성.
-    /// 반복(recurrenceRule != "none") 은 `occursOn(_:)` 으로 판정,
-    /// 비반복은 start~end 일자 범위로 판정 (다중일 이벤트 처리).
+    /// 비반복 멀티데이: 시작일~종료일 범위 직접 fill (O(N × avgDuration))
+    /// 반복: 날짜별 occursOn 체크
+    /// startOfDay 는 이벤트별 1회만 계산, 정렬은 날짜별 1회.
     private static func buildEventsByDate(
         dozyEvents: [DozyEvent],
         from start: Date,
         to end: Date
     ) -> [Date: [CalendarEvent]] {
         let cal = Calendar.current
+        let rangeStart = cal.startOfDay(for: start)
+        let rangeEnd   = cal.startOfDay(for: end)   // exclusive
+        let lastIncluded = cal.date(byAdding: .day, value: -1, to: rangeEnd) ?? rangeEnd
+
         var result: [Date: [CalendarEvent]] = [:]
-        var cursor = cal.startOfDay(for: start)
-        let limit = cal.startOfDay(for: end)
-        while cursor < limit {   // end 는 exclusive (다음날 시작)
-            var list: [CalendarEvent] = []
-            for event in dozyEvents {
-                if event.recurrenceRule == "none" {
-                    let s = cal.startOfDay(for: event.startDate)
-                    let e = cal.startOfDay(for: event.endDate)
-                    if cursor >= s && cursor <= e {
-                        // 비반복 멀티데이 이벤트는 원본 날짜 유지 (diff shift 하면 바 span 밀림)
-                        list.append(event.toCalendarEvent())
+
+        for event in dozyEvents {
+            if event.recurrenceRule == "none" {
+                let s = cal.startOfDay(for: event.startDate)
+                let e = cal.startOfDay(for: event.endDate)
+                let effStart = max(s, rangeStart)
+                let effEnd   = min(e, lastIncluded)
+                guard effStart <= effEnd else { continue }
+
+                let calEvent = event.toCalendarEvent()
+                var cursor = effStart
+                while cursor <= effEnd {
+                    result[cursor, default: []].append(calEvent)
+                    guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
+                    cursor = next
+                }
+            } else {
+                var cursor = rangeStart
+                while cursor < rangeEnd {
+                    if event.occursOn(cursor) {
+                        result[cursor, default: []].append(event.toCalendarEvent(for: cursor))
                     }
-                } else if event.occursOn(cursor) {
-                    list.append(event.toCalendarEvent(for: cursor))
+                    guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
+                    cursor = next
                 }
             }
-            if !list.isEmpty {
-                result[cursor] = list.sorted { a, b in
-                    if a.isPinned != b.isPinned { return a.isPinned }
-                    return a.startDate < b.startDate
-                }
-            }
-            cursor = cal.date(byAdding: .day, value: 1, to: cursor) ?? limit
         }
+
+        for key in result.keys {
+            result[key]?.sort { a, b in
+                if a.isPinned != b.isPinned { return a.isPinned }
+                return a.startDate < b.startDate
+            }
+        }
+
         return result
     }
 }

@@ -11,7 +11,7 @@ import AppKit
 import Combine
 
 struct MacCalendarView: View {
-    @StateObject private var viewModel: MacCalendarViewModel
+    @ObservedObject var viewModel: MacCalendarViewModel
     @StateObject private var swipeState = MonthSwipeState()
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @State private var selectedEvent: CalendarEvent? = nil
@@ -22,8 +22,8 @@ struct MacCalendarView: View {
     @State private var pickerYear = Calendar.current.component(.year, from: Date())
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
 
-    init(container: DependencyContainer) {
-        _viewModel = StateObject(wrappedValue: MacCalendarViewModel(container: container))
+    init(viewModel: MacCalendarViewModel) {
+        self.viewModel = viewModel
     }
 
     // MARK: - Context menu handlers

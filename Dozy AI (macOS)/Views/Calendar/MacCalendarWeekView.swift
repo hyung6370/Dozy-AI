@@ -153,12 +153,12 @@ struct MacCalendarWeekView: View {
         return HStack(spacing: 3) {
             if bar.event.isPinned {
                 Image(systemName: "pin.fill")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(color)
                     .padding(.leading, 6)
             }
             Text(bar.event.title)
-                .font(.caption2)
+                .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
@@ -166,7 +166,7 @@ struct MacCalendarWeekView: View {
                 .padding(.trailing, 6)
             Spacer(minLength: 0)
         }
-        .frame(width: max(0, width), height: 16)
+        .frame(width: max(0, width), height: 20)
         .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
         .position(x: xCenter, y: y + 8)
         .onTapGesture { onSelectEvent(bar.event) }
@@ -374,18 +374,18 @@ struct MacCalendarWeekView: View {
                 HStack(spacing: 3) {
                     if block.event.isPinned {
                         Image(systemName: "pin.fill")
-                            .font(.system(size: 8, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(color)
                     }
                     Text(block.event.title)
-                        .font(.caption2)
+                        .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(color)
                         .lineLimit(2)
                 }
                 if height >= 36 && block.totalSubCols <= 2 {
                     Text(block.event.timeRangeString)
-                        .font(.system(size: 9))
+                        .font(.caption)
                         .foregroundStyle(color.opacity(0.85))
                         .lineLimit(1)
                 }

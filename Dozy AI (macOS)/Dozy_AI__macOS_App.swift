@@ -127,6 +127,8 @@ final class MacAppCoordinator: ObservableObject {
     private(set) var container: DependencyContainer?
     private(set) var authViewModel: MacAuthViewModel?
     private(set) var menuBarViewModel: MacMenuBarViewModel?
+    private(set) var homeViewModel: MacHomeViewModel?
+    private(set) var calendarViewModel: MacCalendarViewModel?
 
     init() {
         #if !DEBUG
@@ -146,6 +148,18 @@ final class MacAppCoordinator: ObservableObject {
         let mb = MacMenuBarViewModel(container: c)
         mb.loadTodayData()
         menuBarViewModel = mb
+
+        // Home / Calendar VM 을 앱 런치 시점에 미리 만들고 데이터 프리-로드.
+        // 사용자가 탭 누를 때엔 이미 @Published 에 데이터가 차있어서 즉시 표시됨.
+        let home = MacHomeViewModel(container: c)
+        home.loadTodayData()
+        homeViewModel = home
+
+        let cal = MacCalendarViewModel(container: c)
+        cal.loadEventsForCurrentMonth()   // 현재 월 + prefetchAdjacent(±2) 발동
+        cal.prewarmWideWindow()            // ±3 까지 추가 pre-warm
+        calendarViewModel = cal
+
         container = c
         isReady = true
     }

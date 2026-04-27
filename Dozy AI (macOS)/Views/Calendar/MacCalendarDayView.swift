@@ -94,12 +94,12 @@ struct MacCalendarDayView: View {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
                 Image(systemName: "pin.fill")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(color)
                     .padding(.leading, 6)
             }
             Text(event.title)
-                .font(.caption)
+                .font(.body)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
@@ -107,7 +107,7 @@ struct MacCalendarDayView: View {
                 .padding(.trailing, 8)
             Spacer(minLength: 0)
         }
-        .frame(height: 22)
+        .frame(height: 30)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
         .padding(.trailing, 20)
@@ -270,23 +270,23 @@ struct MacCalendarDayView: View {
                 HStack(spacing: 4) {
                     if block.event.isPinned {
                         Image(systemName: "pin.fill")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(color)
                     }
                     Text(block.event.title)
-                        .font(.subheadline)
+                        .font(.title3)
                         .fontWeight(.semibold)
                         .foregroundStyle(color)
                         .lineLimit(2)
                 }
                 if height >= 50 && block.totalSubCols <= 2 {
                     Text(block.event.timeRangeString)
-                        .font(.caption2)
+                        .font(.subheadline)
                         .foregroundStyle(color.opacity(0.85))
                 }
                 if height >= 80, block.totalSubCols == 1, let location = block.event.location, !location.isEmpty {
                     Label(location, systemImage: "mappin")
-                        .font(.caption2)
+                        .font(.subheadline)
                         .foregroundStyle(color.opacity(0.85))
                         .lineLimit(1)
                 }

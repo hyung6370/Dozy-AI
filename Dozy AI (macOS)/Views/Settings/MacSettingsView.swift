@@ -13,11 +13,17 @@ struct MacSettingsView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
 
     @EnvironmentObject private var container: DependencyContainer
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showCategoryManagement = false
     @State private var showSharedCalendarManagement = false
     @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
+
+    /// iOS 와 공유하는 Setting/* 에셋 이름. light/dark 자동 분기.
+    private func settingsAsset(_ stem: String) -> String {
+        "\(colorScheme == .dark ? "Dark" : "Light")-\(stem)"
+    }
 
     var body: some View {
         ScrollView {
@@ -100,7 +106,10 @@ struct MacSettingsView: View {
             case .apple:
                 Image(systemName: "apple.logo").font(.title3)
             case .google:
-                Image(systemName: "g.circle").font(.title3).foregroundStyle(.blue)
+                Image("google")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
             case .email:
                 Image(systemName: "envelope.fill").font(.callout)
             case nil:
@@ -125,13 +134,10 @@ struct MacSettingsView: View {
             Button {
                 showCategoryManagement = true
             } label: {
-                HStack {
-                    Label("카테고리 관리", systemImage: "tag.fill")
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
+                settingsRow(
+                    asset: settingsAsset("Management-Category"),
+                    title: "카테고리 관리"
+                )
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
@@ -161,13 +167,10 @@ struct MacSettingsView: View {
             Button {
                 showSharedCalendarManagement = true
             } label: {
-                HStack {
-                    Label("파트너와 공유", systemImage: "person.2.fill")
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
+                settingsRow(
+                    asset: settingsAsset("Share-Calendar"),
+                    title: "파트너와 공유"
+                )
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
@@ -178,8 +181,12 @@ struct MacSettingsView: View {
 
     private var appInfoSection: some View {
         SettingsSection(title: "앱 정보") {
-            HStack {
-                Label("버전", systemImage: "info.circle.fill")
+            HStack(spacing: 10) {
+                Image(settingsAsset("Version"))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22, height: 22)
+                Text("버전")
                 Spacer()
                 Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
                     .foregroundStyle(.secondary)
@@ -194,8 +201,12 @@ struct MacSettingsView: View {
             Button {
                 showDeleteAccountAlert = true
             } label: {
-                HStack {
-                    Label("계정 탈퇴", systemImage: "trash.fill")
+                HStack(spacing: 10) {
+                    Image(settingsAsset("Delete-Account"))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22, height: 22)
+                    Text("계정 탈퇴")
                         .foregroundStyle(.red)
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -205,6 +216,21 @@ struct MacSettingsView: View {
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
+        }
+    }
+
+    /// 공통 설정 행 — 좌측 커스텀 에셋 아이콘 + 제목 + 우측 chevron.
+    private func settingsRow(asset: String, title: String) -> some View {
+        HStack(spacing: 10) {
+            Image(asset)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 22, height: 22)
+            Text(title)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
         }
     }
 }

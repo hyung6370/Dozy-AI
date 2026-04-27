@@ -22,7 +22,7 @@ struct MacCalendarWeekRow: View {
     var onDeleteEvent: ((CalendarEvent) -> Void)? = nil
 
     // 레이아웃 상수
-    private let barHeight: CGFloat = 18
+    private let barHeight: CGFloat = 22
     private let barSpacing: CGFloat = 2
     private let barTopOffset: CGFloat = 42   // 날짜 숫자 영역 아래부터 바 시작
     private let barHorizontalInset: CGFloat = 3
@@ -125,12 +125,12 @@ private struct EventBarView: View {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
                 Image(systemName: "pin.fill")
-                    .font(.system(size: 7, weight: .bold))
+                    .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(color)
                     .padding(.leading, 3)
             }
             Text(event.title)
-                .font(.caption2)
+                .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)

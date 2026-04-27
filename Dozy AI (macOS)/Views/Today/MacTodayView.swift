@@ -10,7 +10,7 @@
 import SwiftUI
 
 struct MacTodayView: View {
-    @StateObject private var viewModel: MacHomeViewModel
+    @ObservedObject var viewModel: MacHomeViewModel
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var showNewEventSheet = false
@@ -22,8 +22,8 @@ struct MacTodayView: View {
     @State private var deletingMemoIndex: Int? = nil
     @State private var showDeleteMemoAlert = false
 
-    init(container: DependencyContainer) {
-        _viewModel = StateObject(wrappedValue: MacHomeViewModel(container: container))
+    init(viewModel: MacHomeViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -140,7 +140,12 @@ struct MacTodayView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack {
+        HStack(spacing: 12) {
+            Image("Dozy-AI-40x40")
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 40, height: 40)
+                .clipShape(RoundedRectangle(cornerRadius: 9))
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.todayDateString)
                     .font(.caption)

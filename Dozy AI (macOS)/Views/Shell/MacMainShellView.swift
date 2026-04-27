@@ -27,13 +27,25 @@ enum MacSection: String, CaseIterable, Hashable, Identifiable {
         }
     }
 
-    var iconName: String {
+    /// iOS 와 공유하는 커스텀 에셋 이름. light/dark × default/selected 조합.
+    func assetName(isSelected: Bool, colorScheme: ColorScheme) -> String {
+        let prefix = colorScheme == .dark ? "Dark" : "Light"
+        let stem: String
         switch self {
-        case .today: return "sun.max.fill"
-        case .calendar: return "calendar"
-        case .insights: return "chart.bar.fill"
-        case .settings: return "gearshape.fill"
+        case .today:    stem = "House"
+        case .calendar: stem = "Calendar"
+        case .insights: stem = "Insight"
+        case .settings: stem = "Setting"
         }
+        // 일부 에셋의 selected variant 파일명에 오타가 있어서 분기.
+        let suffix: String = {
+            if isSelected {
+                if self == .insights && colorScheme == .dark { return "-selectd" }
+                return "-selected"
+            }
+            return ""
+        }()
+        return "\(prefix)-\(stem)\(suffix)"
     }
 }
 
@@ -43,6 +55,7 @@ struct MacMainShellView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @EnvironmentObject private var container: DependencyContainer
     @EnvironmentObject private var coordinator: MacAppCoordinator
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         NavigationSplitView {
@@ -53,8 +66,16 @@ struct MacMainShellView: View {
                     set: { coordinator.selectedSection = $0 }
                 )
             ) { section in
-                Label(section.displayName, systemImage: section.iconName)
-                    .tag(section)
+                let isSelected = coordinator.selectedSection == section
+                Label {
+                    Text(section.displayName)
+                } icon: {
+                    Image(section.assetName(isSelected: isSelected, colorScheme: colorScheme))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                }
+                .tag(section)
             }
             .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: 180, ideal: 220)
@@ -62,10 +83,18 @@ struct MacMainShellView: View {
         } detail: {
             Group {
                 switch coordinator.selectedSection {
-                case .today:     MacTodayView(container: container)
-                case .calendar:  MacCalendarView(container: container)
-                case .insights:  MacInsightDashboardView(container: container)
-                case .settings:  MacSettingsView()
+                case .today:
+                    if let vm = coordinator.homeViewModel {
+                        MacTodayView(viewModel: vm)
+                    }
+                case .calendar:
+                    if let vm = coordinator.calendarViewModel {
+                        MacCalendarView(viewModel: vm)
+                    }
+                case .insights:
+                    MacInsightDashboardView(container: container)
+                case .settings:
+                    MacSettingsView()
                 case nil:
                     VStack(spacing: 8) {
                         Image(systemName: "sidebar.left")

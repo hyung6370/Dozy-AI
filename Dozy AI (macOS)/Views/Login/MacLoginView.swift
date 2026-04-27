@@ -19,9 +19,11 @@ struct MacLoginView: View {
     var body: some View {
         VStack(spacing: 28) {
             VStack(spacing: 12) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 56, weight: .semibold))
-                    .foregroundStyle(.tint)
+                Image("Dozy-AI-60x60")
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: 72, height: 72)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 Text("Dozy on Mac")
                     .font(.largeTitle).bold()
                 Text("파트너와 함께 하루를 설계하세요")
@@ -56,8 +58,10 @@ struct MacLoginView: View {
                 authViewModel.signInWithGoogle()
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "globe")
-                        .font(.title3)
+                    Image("google")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
                     Text("Google로 로그인")
                         .fontWeight(.medium)
                 }
