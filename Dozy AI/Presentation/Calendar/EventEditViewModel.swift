@@ -31,6 +31,7 @@ final class EventEditViewModel: ObservableObject {
     let isEditing: Bool
     private let eventToEdit: DozyEvent?
     private let onSave: (DozyEvent) -> Void
+    private var cancellables = Set<AnyCancellable>()
 
     init(
         eventToEdit: DozyEvent?,
@@ -86,8 +87,24 @@ final class EventEditViewModel: ObservableObject {
             isPinned = false
             category = UserCategory.defaultName
         }
+
+        // 시작 시각이 바뀌면 종료가 그보다 앞이 되지 않도록 자동 보정.
+        // allDay 이면 동일일자, 아니면 시작 + 1시간 으로.
+        $startDate
+            .dropFirst()
+            .sink { [weak self] newStart in
+                guard let self else { return }
+                if self.endDate < newStart {
+                    if self.isAllDay {
+                        self.endDate = newStart
+                    } else {
+                        self.endDate = Calendar.current.date(byAdding: .hour, value: 1, to: newStart) ?? newStart
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
-    
+
     var isSavable: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
     
     func save() {

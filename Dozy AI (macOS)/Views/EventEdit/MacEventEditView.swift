@@ -43,20 +43,21 @@ struct MacEventEditView: View {
                             selection: $viewModel.startDate,
                             displayedComponents: .date
                         )
-                        .environment(\.locale, Locale(identifier: "ko_KR"))
+                        .environment(\.locale, .koreanForce24h)
                     } else {
                         DatePicker(
                             "시작",
                             selection: $viewModel.startDate,
                             displayedComponents: [.date, .hourAndMinute]
                         )
-                        .environment(\.locale, Locale(identifier: "ko_KR"))
+                        .environment(\.locale, .koreanForce24h)
                         DatePicker(
                             "종료",
                             selection: $viewModel.endDate,
+                            in: viewModel.startDate...,
                             displayedComponents: [.date, .hourAndMinute]
                         )
-                        .environment(\.locale, Locale(identifier: "ko_KR"))
+                        .environment(\.locale, .koreanForce24h)
                     }
                 }
                 
@@ -72,10 +73,6 @@ struct MacEventEditView: View {
                             viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
                         }
                     }
-                }
-
-                Section("색상") {
-                    ColorPicker("일정 색상", selection: $viewModel.selectedColor, supportsOpacity: false)
                 }
 
                 Section("추가 정보") {
@@ -99,7 +96,7 @@ struct MacEventEditView: View {
                             selection: $viewModel.recurrenceEndDate,
                             displayedComponents: .date
                         )
-                        .environment(\.locale, Locale(identifier: "ko_KR"))
+                        .environment(\.locale, .koreanForce24h)
                     }
                 }
 

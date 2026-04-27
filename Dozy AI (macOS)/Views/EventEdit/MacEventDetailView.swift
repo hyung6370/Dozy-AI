@@ -263,7 +263,7 @@ struct MacEventDetailView: View {
                 EditRow(icon: "calendar.badge.clock", label: "종료일") {
                     DatePicker("", selection: $editVM.recurrenceEndDate, displayedComponents: .date)
                         .labelsHidden()
-                        .environment(\.locale, Locale(identifier: "ko_KR"))
+                        .environment(\.locale, .koreanForce24h)
                 }
             }
 
@@ -294,18 +294,30 @@ struct MacEventDetailView: View {
                     .controlSize(.small)
             }
 
-            timeSubRow(label: "시작", date: $editVM.startDate, components: editVM.isAllDay ? .date : [.date, .hourAndMinute])
+            timeSubRow(
+                label: "시작",
+                date: $editVM.startDate,
+                components: editVM.isAllDay ? .date : [.date, .hourAndMinute],
+                lowerBound: nil
+            )
 
             if !editVM.isAllDay {
-                timeSubRow(label: "종료", date: $editVM.endDate, components: [.date, .hourAndMinute])
+                timeSubRow(
+                    label: "종료",
+                    date: $editVM.endDate,
+                    components: [.date, .hourAndMinute],
+                    lowerBound: editVM.startDate
+                )
             }
         }
     }
 
+    @ViewBuilder
     private func timeSubRow(
         label: String,
         date: Binding<Date>,
-        components: DatePickerComponents
+        components: DatePickerComponents,
+        lowerBound: Date?
     ) -> some View {
         HStack(spacing: 12) {
             Color.clear.frame(width: 22)
@@ -313,9 +325,15 @@ struct MacEventDetailView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(width: 54, alignment: .leading)
-            DatePicker("", selection: date, displayedComponents: components)
-                .labelsHidden()
-                .environment(\.locale, Locale(identifier: "ko_KR"))
+            if let lowerBound {
+                DatePicker("", selection: date, in: lowerBound..., displayedComponents: components)
+                    .labelsHidden()
+                    .environment(\.locale, .koreanForce24h)
+            } else {
+                DatePicker("", selection: date, displayedComponents: components)
+                    .labelsHidden()
+                    .environment(\.locale, .koreanForce24h)
+            }
             Spacer()
         }
         .padding(.horizontal, 20)
