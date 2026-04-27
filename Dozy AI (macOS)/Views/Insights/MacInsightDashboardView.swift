@@ -25,6 +25,7 @@ struct MacInsightDashboardView: View {
                 } else if !viewModel.hasDozyData && !viewModel.hasWorkLogData {
                     emptyState
                 } else {
+                    headlineCard
                     summaryRow
                     completionTrendCard
                     weekdayCard
@@ -76,6 +77,101 @@ struct MacInsightDashboardView: View {
         .padding(.top, 100)
     }
 
+    // MARK: - Headline (가장 의미 있는 한 줄을 자동 추출)
+
+    private var headlineCard: some View {
+        let (title, message, icon, color) = headlineMessage()
+        return HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title)
+                .foregroundStyle(color)
+                .frame(width: 52, height: 52)
+                .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 13))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                Text(message)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .lineLimit(2)
+            }
+            Spacer()
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(LinearGradient(
+                    colors: [color.opacity(0.10), color.opacity(0.02)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(color.opacity(0.18), lineWidth: 1)
+        )
+    }
+
+    /// (라벨, 본문, 아이콘, 색상) — VM 의 시그널 중 가장 강한 것 우선.
+    private func headlineMessage() -> (String, String, String, Color) {
+        let weekdayLabels = ["일", "월", "화", "수", "목", "금", "토"]
+
+        // 1. 연속 달성 — streak 가 3일 이상이면 우선
+        if viewModel.currentStreak >= 3 {
+            return (
+                "연속 달성 중",
+                "\(viewModel.currentStreak)일 연속 일정을 완료하고 있어요 🔥",
+                "flame.fill",
+                .orange
+            )
+        }
+
+        // 2. 평균 완료율 변화
+        let change = viewModel.completionRateChange
+        let pct = Int(viewModel.averageCompletionRate * 100)
+        if change > 0.05 {
+            return (
+                "이번 기간 한눈에",
+                "완료율이 \(Int(change * 100))% 개선됐어요. 평균 \(pct)% 달성!",
+                "arrow.up.right.circle.fill",
+                .green
+            )
+        } else if change < -0.05 {
+            return (
+                "이번 기간 한눈에",
+                "완료율이 \(Int(abs(change) * 100))% 떨어졌어요. 평균 \(pct)%",
+                "arrow.down.right.circle.fill",
+                .red
+            )
+        }
+
+        // 3. 가장 바쁜 요일
+        if let busiest = viewModel.weekdayAvgCounts.max(by: { $0.avg < $1.avg }),
+           busiest.avg > 0 {
+            let label = weekdayLabels[safe: busiest.weekday] ?? ""
+            return (
+                "패턴 분석",
+                "가장 바쁜 요일은 \(label)요일 (평균 \(String(format: "%.1f", busiest.avg))개)",
+                "calendar.badge.clock",
+                .blue
+            )
+        }
+
+        // 4. fallback — 기본 인사
+        return (
+            "이번 기간 한눈에",
+            "평균 완료율 \(pct)% — 꾸준히 잘 하고 있어요",
+            "chart.line.uptrend.xyaxis",
+            .indigo
+        )
+    }
+
     // MARK: - Summary
 
     private var summaryRow: some View {
@@ -112,27 +208,50 @@ struct MacInsightDashboardView: View {
     }
 
     private func summaryCard(value: String, label: String, change: Double?, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: icon)
-                .foregroundStyle(color)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.callout)
+                    .foregroundStyle(color)
+                    .frame(width: 32, height: 32)
+                    .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 9))
+                Spacer()
+                if let change {
+                    HStack(spacing: 2) {
+                        Image(systemName: trendIcon(for: change))
+                        Text(trendLabel(for: change))
+                    }
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(trendColor(for: change))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(trendColor(for: change).opacity(0.12), in: Capsule())
+                }
+            }
             Text(value)
-                .font(.title2)
+                .font(.title)
                 .fontWeight(.bold)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            if let change {
-                HStack(spacing: 2) {
-                    Image(systemName: trendIcon(for: change))
-                    Text(trendLabel(for: change))
-                }
-                .font(.caption2)
-                .foregroundStyle(trendColor(for: change))
-            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(LinearGradient(
+                    colors: [color.opacity(0.08), color.opacity(0.02)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(color.opacity(0.15), lineWidth: 1)
+        )
     }
 
     private func trendIcon(for change: Double) -> String {
@@ -160,7 +279,7 @@ struct MacInsightDashboardView: View {
         let data = useWeekly ? viewModel.weeklyCompletionRates : viewModel.dailyCompletionRates
         let title = useWeekly ? "주간 평균 완료율" : "일별 완료율"
 
-        return InsightCard(title: title, systemImage: "chart.line.uptrend.xyaxis") {
+        return InsightCard(title: title, systemImage: "chart.line.uptrend.xyaxis", accent: .green) {
             if data.isEmpty {
                 cardEmpty(message: "완료 데이터가 없습니다")
             } else {
@@ -188,7 +307,7 @@ struct MacInsightDashboardView: View {
 
     private var weekdayCard: some View {
         let labels = ["일", "월", "화", "수", "목", "금", "토"]
-        return InsightCard(title: "요일별 평균 일정 수", systemImage: "calendar") {
+        return InsightCard(title: "요일별 평균 일정 수", systemImage: "calendar", accent: .blue) {
             if viewModel.weekdayAvgCounts.isEmpty {
                 cardEmpty(message: "일정 데이터가 없습니다")
             } else {
@@ -210,7 +329,7 @@ struct MacInsightDashboardView: View {
     // MARK: - Hourly
 
     private var hourlyCard: some View {
-        InsightCard(title: "시간대 분포", systemImage: "clock") {
+        InsightCard(title: "시간대 분포", systemImage: "clock", accent: .orange) {
             if viewModel.hourlyDistribution.isEmpty {
                 cardEmpty(message: "일정 데이터가 없습니다")
             } else {
@@ -244,7 +363,7 @@ struct MacInsightDashboardView: View {
 
     private var recurrenceCard: some View {
         let total = viewModel.recurringCount + viewModel.oneTimeCount
-        return InsightCard(title: "반복 vs 일회성", systemImage: "repeat") {
+        return InsightCard(title: "반복 vs 일회성", systemImage: "repeat", accent: .purple) {
             if total == 0 {
                 cardEmpty(message: "일정 데이터가 없습니다")
             } else {
@@ -283,7 +402,7 @@ struct MacInsightDashboardView: View {
     // MARK: - Productivity
 
     private var productivityCard: some View {
-        InsightCard(title: "일별 생산성 점수", systemImage: "sparkles") {
+        InsightCard(title: "일별 생산성 점수", systemImage: "sparkles", accent: .indigo) {
             if viewModel.productivityScores.isEmpty {
                 cardEmpty(message: "생산성 기록이 없습니다")
             } else {
@@ -310,19 +429,27 @@ struct MacInsightDashboardView: View {
     // MARK: - Category
 
     private var categoryCard: some View {
-        InsightCard(title: "카테고리 분포", systemImage: "chart.pie.fill") {
+        InsightCard(title: "카테고리 분포", systemImage: "chart.pie.fill", accent: .pink) {
             if viewModel.categoryDistribution.isEmpty {
                 cardEmpty(message: "카테고리 기록이 없습니다")
             } else {
-                VStack(spacing: 8) {
+                let maxCount = viewModel.categoryDistribution.first?.count ?? 1
+                VStack(spacing: 10) {
                     ForEach(viewModel.categoryDistribution.prefix(6), id: \.category) { item in
-                        HStack {
-                            Text(item.category)
-                                .font(.subheadline)
-                            Spacer()
-                            Text("\(item.count)")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(item.category)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text("\(item.count)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.secondary)
+                            }
+                            ProgressView(value: Double(item.count), total: Double(max(maxCount, 1)))
+                                .tint(.pink)
+                                .scaleEffect(y: 0.7)
                         }
                     }
                 }
@@ -346,22 +473,40 @@ struct MacInsightDashboardView: View {
     }
 }
 
+private extension Array {
+    subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
+    }
+}
+
 // MARK: - InsightCard Container
 
 private struct InsightCard<Content: View>: View {
     let title: String
     let systemImage: String
+    var accent: Color = .secondary
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label(title, systemImage: systemImage)
-                .font(.subheadline)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 8) {
+                Image(systemName: systemImage)
+                    .font(.callout)
+                    .foregroundStyle(accent)
+                    .frame(width: 28, height: 28)
+                    .background(accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+            }
             content()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .padding(18)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
+        )
     }
 }

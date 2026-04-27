@@ -142,22 +142,25 @@ struct MacTodayView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack(spacing: 12) {
-            Image("Dozy-AI-40x40")
+        HStack(spacing: 16) {
+            Image("Dozy-AI-60x60")
                 .resizable()
                 .interpolation(.high)
-                .frame(width: 40, height: 40)
-                .clipShape(RoundedRectangle(cornerRadius: 9))
-            VStack(alignment: .leading, spacing: 4) {
+                .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+
+            VStack(alignment: .leading, spacing: 6) {
                 Text(viewModel.todayDateString)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Text(viewModel.greeting)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
             }
             Spacer()
         }
+        .padding(.bottom, 4)
     }
 
     // MARK: - Focus Card
@@ -167,40 +170,42 @@ struct MacTodayView: View {
         let upcomingEvent = viewModel.upcomingEvent
         let displayEvent = currentEvent ?? upcomingEvent
         let label = currentEvent != nil ? "지금 일정" : upcomingEvent != nil ? "다음 일정" : ""
-        let icon = currentEvent != nil ? "circle.fill" : "clock"
+        let accent = displayEvent.flatMap { Color(hex: $0.calendarColorHex) } ?? .blue
 
         return VStack(alignment: .leading, spacing: 0) {
             if let event = displayEvent {
-                HStack(spacing: 6) {
-                    Image(systemName: icon)
-                        .font(.caption)
-                        .foregroundStyle(currentEvent != nil ? .green : .secondary)
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(currentEvent != nil ? Color.green : accent)
+                        .frame(width: 8, height: 8)
                     Text(label)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(currentEvent != nil ? Color.green : accent)
+                        .textCase(.uppercase)
+                        .tracking(0.5)
                 }
-                .padding(.bottom, 10)
+                .padding(.bottom, 14)
 
-                HStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: 14) {
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                        .fill(accent)
                         .frame(width: 4)
 
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 10) {
                         Text(event.title)
-                            .font(.title3)
-                            .fontWeight(.semibold)
+                            .font(.title)
+                            .fontWeight(.bold)
                             .lineLimit(2)
 
-                        HStack(spacing: 10) {
+                        HStack(spacing: 14) {
                             Label(event.timeRangeString, systemImage: "clock")
-                                .font(.caption)
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
                             if let location = event.location, !location.isEmpty {
                                 Label(location, systemImage: "mappin")
-                                    .font(.caption)
+                                    .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
                             }
@@ -210,32 +215,55 @@ struct MacTodayView: View {
                     Spacer()
 
                     Text(timeUntilLabel(event))
-                        .font(.caption2)
-                        .fontWeight(.medium)
+                        .font(.subheadline)
+                        .fontWeight(.bold)
                         .foregroundStyle(timeUntilColor(event))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(timeUntilColor(event).opacity(0.1), in: Capsule())
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(timeUntilColor(event).opacity(0.12), in: Capsule())
                 }
             } else {
                 Button {
                     showNewEventSheet = true
                 } label: {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 14) {
                         Image(systemName: "calendar.badge.plus")
-                            .font(.title3)
-                            .foregroundStyle(Color.secondary)
-                        Text("오늘 일정이 없습니다. 새로 추가해볼까요?")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.title)
+                            .foregroundStyle(.tint)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("오늘 일정이 없습니다")
+                                .font(.body)
+                                .fontWeight(.semibold)
+                            Text("새로 추가해볼까요?")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.tint)
                     }
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(16)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(displayEvent != nil
+                    ? AnyShapeStyle(LinearGradient(
+                        colors: [accent.opacity(0.08), accent.opacity(0.02)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                    : AnyShapeStyle(.regularMaterial)
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(accent.opacity(displayEvent != nil ? 0.15 : 0), lineWidth: 1)
+        )
     }
 
     private func timeUntilLabel(_ event: CalendarEvent) -> String {
@@ -257,30 +285,96 @@ struct MacTodayView: View {
     // MARK: - Stats Row
 
     private var statsRow: some View {
-        HStack(spacing: 10) {
-            MacStatCard(
-                value: "\(viewModel.eventCount)",
-                label: "오늘 일정",
-                icon: "calendar",
-                color: .blue
-            )
-            MacStatCard(
-                value: "\(viewModel.completedCount)/\(viewModel.completedCount + viewModel.pendingCount)",
-                label: "할 일 완료",
-                icon: "checkmark.circle.fill",
-                color: .green
-            )
+        let total = viewModel.eventCount
+        let done = viewModel.completedCount
+        let pending = viewModel.pendingCount
+        let progress = total > 0 ? Double(done) / Double(total) : 0
+        let pct = Int(progress * 100)
+
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("오늘의 진행도")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                        .tracking(0.5)
+                    Text("\(done) / \(total) 완료")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                }
+                Spacer()
+                Text("\(pct)%")
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .foregroundStyle(progressColor(progress))
+                    .contentTransition(.numericText())
+            }
+
+            // 진행률 바
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.primary.opacity(0.06))
+                    Capsule()
+                        .fill(LinearGradient(
+                            colors: [progressColor(progress).opacity(0.7), progressColor(progress)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        ))
+                        .frame(width: geo.size.width * progress)
+                }
+            }
+            .frame(height: 12)
+
+            HStack(spacing: 22) {
+                progressLegend(icon: "checkmark.circle.fill", color: .green, value: done, label: "완료")
+                progressLegend(icon: "clock.fill", color: .orange, value: pending, label: "남음")
+                Spacer()
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
+        )
+    }
+
+    private func progressLegend(icon: String, color: Color, value: Int, label: String) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(color)
+            Text("\(value)")
+                .font(.body)
+                .fontWeight(.bold)
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func progressColor(_ value: Double) -> Color {
+        switch value {
+        case 1.0:       return .green
+        case 0.5..<1.0: return .blue
+        case 0.01..<0.5: return .orange
+        default:        return .secondary
         }
     }
 
     // MARK: - Event List
 
     private var eventListSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("오늘 일정")
-                .font(.footnote)
-                .fontWeight(.semibold)
+                .font(.subheadline)
+                .fontWeight(.bold)
                 .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .tracking(0.5)
                 .padding(.leading, 2)
 
             ForEach(viewModel.todayEvents) { event in
@@ -299,37 +393,43 @@ struct MacTodayView: View {
     // MARK: - AI Summary Preview
 
     private func aiSummaryPreview(_ summary: DailySummary) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Label("Dozy 요약", systemImage: "sparkles")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.indigo)
+                HStack(spacing: 7) {
+                    Image(systemName: "sparkles")
+                        .font(.subheadline)
+                    Text("Dozy 요약")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .textCase(.uppercase)
+                        .tracking(0.5)
+                }
+                .foregroundStyle(.indigo)
                 Spacer()
                 Text("\(viewModel.scorePercentage)점")
-                    .font(.caption2)
+                    .font(.subheadline)
                     .fontWeight(.bold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(scoreColor(summary.productivityScore).opacity(0.12))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(scoreColor(summary.productivityScore).opacity(0.15))
                     .foregroundStyle(scoreColor(summary.productivityScore))
                     .clipShape(Capsule())
             }
 
             Text(summary.summaryText)
-                .font(.caption)
+                .font(.body)
                 .foregroundStyle(.primary)
                 .lineLimit(3)
 
             if !summary.highlights.isEmpty {
                 ForEach(Array(summary.highlights.prefix(3).enumerated()), id: \.offset) { _, h in
-                    HStack(alignment: .top, spacing: 6) {
+                    HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "star.fill")
-                            .font(.system(size: 8))
+                            .font(.system(size: 11))
                             .foregroundStyle(.orange)
-                            .padding(.top, 4)
+                            .padding(.top, 5)
                         Text(h)
-                            .font(.caption2)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -339,23 +439,30 @@ struct MacTodayView: View {
             if !summary.nextActions.isEmpty {
                 Divider().padding(.vertical, 2)
                 ForEach(Array(summary.nextActions.prefix(3).enumerated()), id: \.offset) { _, action in
-                    HStack(alignment: .top, spacing: 6) {
+                    HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "arrow.right.circle")
-                            .font(.system(size: 10))
+                            .font(.system(size: 13))
                             .foregroundStyle(.blue)
                             .padding(.top, 3)
                         Text(action)
-                            .font(.caption2)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
                 }
             }
         }
-        .padding(14)
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.indigo.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.indigo.opacity(0.12), lineWidth: 1))
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(LinearGradient(
+                    colors: [Color.indigo.opacity(0.08), Color.indigo.opacity(0.02)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+        )
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Color.indigo.opacity(0.15), lineWidth: 1))
     }
 
     private func scoreColor(_ score: Double) -> Color {
@@ -372,22 +479,24 @@ struct MacTodayView: View {
     private var memoSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("메모")
-                .font(.footnote)
-                .fontWeight(.semibold)
+                .font(.subheadline)
+                .fontWeight(.bold)
                 .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .tracking(0.5)
                 .padding(.leading, 2)
 
             if let log = viewModel.todayLog {
                 ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("📝").font(.subheadline)
+                    HStack(alignment: .top, spacing: 10) {
+                        Text("📝").font(.body)
                         Text(memo)
-                            .font(.subheadline)
+                            .font(.body)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .textSelection(.enabled)
                     }
-                    .padding(10)
-                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+                    .padding(12)
+                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
                     .contextMenu {
                         Button {
                             editingMemoIndex = index
@@ -438,31 +547,31 @@ struct MacTodayView: View {
         Button {
             viewModel.generateAISummary()
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
                 if viewModel.isSummarizing {
-                    ProgressView().controlSize(.small)
+                    ProgressView().controlSize(.regular)
                 } else {
                     Image(systemName: "sparkles")
-                        .font(.subheadline)
+                        .font(.title3)
                         .foregroundStyle(.indigo)
                 }
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Dozy 요약 생성")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.body)
+                        .fontWeight(.semibold)
                         .foregroundStyle(.primary)
                     Text(viewModel.isSummarizing
                          ? "Dozy가 분석 중입니다..."
                          : "오늘 하루를 AI가 분석합니다")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.tertiary)
             }
-            .padding(14)
+            .padding(18)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
@@ -478,25 +587,41 @@ private struct MacStatCard: View {
     let label: String
     let icon: String
     let color: Color
+    var progress: Double? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundStyle(color)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.callout)
+                    .foregroundStyle(color)
+                    .frame(width: 28, height: 28)
+                    .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                Spacer()
+            }
 
             Text(value)
-                .font(.title3)
+                .font(.title)
                 .fontWeight(.bold)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.6)
                 .lineLimit(1)
 
             Text(label)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
+
+            if let progress {
+                ProgressView(value: progress)
+                    .tint(color)
+                    .scaleEffect(y: 0.8)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
+        )
     }
 }

@@ -76,13 +76,18 @@ struct MacSettingsView: View {
     // MARK: - Account
 
     private var accountSection: some View {
-        SettingsSection(title: "계정") {
-            HStack(spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("계정")
+                .font(.footnote)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 16) {
                 providerIcon(for: authViewModel.currentUser?.provider)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(authViewModel.currentUser?.email ?? "사용자")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.body)
+                        .fontWeight(.semibold)
                     Text(providerLabel(for: authViewModel.currentUser?.provider))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -92,28 +97,44 @@ struct MacSettingsView: View {
                     showSignOutAlert = true
                 }
                 .buttonStyle(.bordered)
+                .controlSize(.regular)
             }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(LinearGradient(
+                        colors: [Color.accentColor.opacity(0.08), Color.accentColor.opacity(0.02)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(Color.accentColor.opacity(0.15), lineWidth: 1)
+            )
         }
     }
 
     @ViewBuilder
     private func providerIcon(for provider: AuthProvider?) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color(nsColor: .controlBackgroundColor))
-                .frame(width: 34, height: 34)
+                .frame(width: 44, height: 44)
+                .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
             switch provider {
             case .apple:
-                Image(systemName: "apple.logo").font(.title3)
+                Image(systemName: "apple.logo").font(.title2)
             case .google:
                 Image("google")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 18, height: 18)
+                    .frame(width: 22, height: 22)
             case .email:
-                Image(systemName: "envelope.fill").font(.callout)
+                Image(systemName: "envelope.fill").font(.title3)
             case nil:
-                Image(systemName: "person.fill").font(.callout).foregroundStyle(.secondary)
+                Image(systemName: "person.fill").font(.title3).foregroundStyle(.secondary)
             }
         }
     }
@@ -242,7 +263,7 @@ private struct SettingsSection<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.footnote)
                 .fontWeight(.semibold)
@@ -251,9 +272,13 @@ private struct SettingsSection<Content: View>: View {
             VStack(alignment: .leading, spacing: 12) {
                 content()
             }
-            .padding(14)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
+            )
         }
     }
 }

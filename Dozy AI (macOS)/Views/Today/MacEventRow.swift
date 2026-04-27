@@ -13,41 +13,46 @@ struct MacEventRow: View {
     var isCompleted: Bool = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(event.source == .dozy
-                      ? (Color(hex: event.calendarColorHex) ?? .blue).opacity(0.35)
-                      : Color(hex: event.calendarColorHex) ?? .blue)
-                .frame(width: 4, height: 40)
+        let accent = Color(hex: event.calendarColorHex) ?? .blue
+        return HStack(spacing: 14) {
+            // 좌측: 완료 체크 표시 (todo 처럼 한눈에 상태 파악)
+            Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                .font(.title2)
+                .foregroundStyle(isCompleted ? Color.green : Color.secondary.opacity(0.5))
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 4) {
+            // 컬러 바
+            RoundedRectangle(cornerRadius: 3)
+                .fill(event.source == .dozy ? accent.opacity(0.5) : accent)
+                .frame(width: 4, height: 42)
+
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 5) {
                     if event.isPinned {
                         Image(systemName: "pin.fill")
-                            .font(.caption2)
-                            .foregroundStyle(Color(hex: event.calendarColorHex) ?? .blue)
+                            .font(.caption)
+                            .foregroundStyle(accent)
                     }
                     Text(event.title)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.body)
+                        .fontWeight(.semibold)
                         .strikethrough(isCompleted, color: .secondary)
                         .foregroundStyle(isCompleted ? .secondary : .primary)
                 }
 
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     Text(event.timeRangeString)
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
 
                     if event.isShared {
                         Label("공유", systemImage: "person.2.fill")
-                            .font(.caption2)
-                            .foregroundStyle(Color(hex: event.calendarColorHex) ?? .blue)
+                            .font(.caption)
+                            .foregroundStyle(accent)
                     }
 
                     if let location = event.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
-                            .font(.caption2)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -55,14 +60,16 @@ struct MacEventRow: View {
             }
 
             Spacer()
-
-            if isCompleted {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-            }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(nsColor: .controlBackgroundColor).opacity(isCompleted ? 0.5 : 1.0))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(accent.opacity(isCompleted ? 0 : 0.08), lineWidth: 1)
+        )
     }
 }
