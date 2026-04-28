@@ -29,18 +29,29 @@ final class MacMenuBarViewModel: ObservableObject {
 
     var currentEvent: CalendarEvent? {
         let now = Date()
-        return todayEvents.first { $0.startDate <= now && $0.endDate > now }
+        return todayEvents.first { !$0.isAllDay && $0.startDate <= now && $0.endDate > now }
     }
-
+    
     var upcomingEvent: CalendarEvent? {
         guard currentEvent == nil else { return nil }
         let now = Date()
-        return todayEvents.first { $0.startDate > now }
+        return todayEvents.first { !$0.isAllDay && $0.startDate > now }
+    }
+    
+    // 메뉴바 리스트 표시용, 미완료 -> 완료 순. 같은 그룹 내에서는 시작 시각 오름차순
+    var sortedEventsForDisplay: [CalendarEvent] {
+        todayEvents.sorted { a, b in
+            let ac = completionsByID[a.id] == true
+            let bc = completionsByID[b.id] == true
+            if ac != bc { return !ac }
+            return a.startDate < b.startDate
+        }
     }
 
+    /// 체크되지 않은 오늘 일정 — 시간 경과와 무관. 사용자 멘탈 모델은
+    /// "체크 안 한 = 남은" 이므로 endDate 시점 비교는 하지 않는다.
     var remainingEvents: [CalendarEvent] {
-        let now = Date()
-        return todayEvents.filter { $0.endDate > now && completionsByID[$0.id] != true }
+        todayEvents.filter { completionsByID[$0.id] != true }
     }
 
     var remainingCount: Int { remainingEvents.count }
@@ -79,6 +90,12 @@ final class MacMenuBarViewModel: ObservableObject {
                 if (note.object as AnyObject?) === self { return }
                 self.loadCompletions(for: self.todayEvents.map(\.id), on: Date())
             }
+            .store(in: &cancellables)
+
+        // 일정 자체가 만들어졌거나 지워졌을 때 — 리스트 통째 재로드.
+        NotificationCenter.default.publisher(for: .dozyEventListChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadTodayData() }
             .store(in: &cancellables)
     }
 

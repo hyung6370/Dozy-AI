@@ -111,6 +111,33 @@ final class MacCalendarViewModel: ObservableObject {
                 self.refreshCompletionsOnly()
             }
             .store(in: &cancellables)
+
+        // 다른 화면(Today / MenuBar)에서 일정을 만들거나 지웠을 때 — 리스트 자체가
+        // 바뀌었으므로 전체 캐시 무효화 후 재로드. 자기-트리거는 무시.
+        NotificationCenter.default.publisher(for: .dozyEventListChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] note in
+                guard let self else { return }
+                if (note.object as AnyObject?) === self { return }
+                self.invalidateCache()
+                self.loadEventsForCurrentMonth(force: true)
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .dozyRequestGoToToday)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.goToToday() }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: .dozyRequestPreviousPeriod)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.goToPreviousMonth() }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: .dozyRequestNextPeriod)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.goToNextMonth() }
+            .store(in: &cancellables)
     }
 
     /// 현재 보이는 범위의 EventCompletion 만 재조회. `.dozyEventChanged` 핸들러 — Apple/Dozy 이벤트
@@ -439,6 +466,11 @@ final class MacCalendarViewModel: ObservableObject {
         NotificationCenter.default.post(name: .dozyEventChanged, object: self)
     }
 
+    /// 일정 자체가 생성·삭제·수정된 경우 — Today / MenuBar 가 리스트를 통째로 다시 로드.
+    private func broadcastEventListChange() {
+        NotificationCenter.default.post(name: .dozyEventListChanged, object: self)
+    }
+
     // MARK: - Prefetch
 
     /// 현재 범위의 ±2 칸을 백그라운드로 미리 로드. 빠른 연속 스와이프에도 항상 캐시 한 칸 앞서있게.
@@ -517,6 +549,7 @@ final class MacCalendarViewModel: ObservableObject {
                 receiveValue: { [weak self] in
                     self?.invalidateCache()
                     self?.loadEventsForCurrentMonth(force: true)
+                    self?.broadcastEventListChange()
                 }
             )
             .store(in: &cancellables)
@@ -534,6 +567,7 @@ final class MacCalendarViewModel: ObservableObject {
                 receiveValue: { [weak self] in
                     self?.invalidateCache()
                     self?.loadEventsForCurrentMonth(force: true)
+                    self?.broadcastEventListChange()
                 }
             )
             .store(in: &cancellables)
@@ -549,6 +583,7 @@ final class MacCalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.invalidateCache()
                 self?.loadEventsForCurrentMonth(force: true)
+                self?.broadcastEventListChange()
             })
             .store(in: &cancellables)
     }
@@ -563,6 +598,7 @@ final class MacCalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.invalidateCache()
                 self?.loadEventsForCurrentMonth(force: true)
+                self?.broadcastEventListChange()
             })
             .store(in: &cancellables)
     }
