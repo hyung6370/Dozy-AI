@@ -187,7 +187,12 @@ final class MacAuthViewModel: ObservableObject {
             .sink(
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] _ in
-                    self?.state = .signedOut
+                    guard let self else { return }
+                    // 로컬 SwiftData 전체 삭제 — 다른 계정으로 로그인했을 때 이전 사용자의
+                    // UserCategory(userID 컬럼 없음) / DozyEvent / WorkLog 가 잔존해서
+                    // 카테고리 목록·통계가 섞이는 것 방지.
+                    self.syncService.clearAllLocalData()
+                    self.state = .signedOut
                 }
             )
             .store(in: &cancellables)

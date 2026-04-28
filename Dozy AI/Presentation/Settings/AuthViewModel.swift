@@ -235,9 +235,14 @@ final class AuthViewModel: ObservableObject {
             .sink(
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] in
+                    guard let self else { return }
+                    // 로컬 SwiftData 전체 삭제 — 다른 계정으로 로그인했을 때 이전 사용자의
+                    // UserCategory(userID 컬럼 없음) / DozyEvent / WorkLog 가 잔존해서
+                    // 카테고리 목록·통계가 섞이는 것 방지.
+                    self.syncService.clearAllLocalData()
                     // currentUser 및 Keychain 정리는 authStateChanges .signedOut 이벤트에서도 처리되지만
                     // UX 즉시성을 위해 여기서도 명시적으로 초기화합니다.
-                    self?.currentUser = nil
+                    self.currentUser = nil
                     KeychainService.delete(forKey: Self.displayNameKey)
                 }
             )
