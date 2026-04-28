@@ -25,6 +25,8 @@ struct MacCalendarWeekView: View {
     private let leftLabelWidth: CGFloat = 50
     private let allDayRowMaxHeight: CGFloat = 48
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         VStack(spacing: 0) {
             dateHeaderRow
@@ -149,20 +151,21 @@ struct MacCalendarWeekView: View {
         let xCenter = cellWidth * CGFloat(bar.startCol) + cellWidth * span / 2
         let y = 6 + CGFloat(bar.stackRow) * 20
         let color = Color(hex: bar.event.calendarColorHex) ?? .blue
+        let foreground: Color = colorScheme == .dark ? .white : color
 
         return HStack(spacing: 3) {
             if bar.event.isPinned {
                 Image(systemName: "pin.fill")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(color)
+                    .foregroundStyle(foreground)
                     .padding(.leading, 6)
             }
-            MacEventSourceIcon(source: bar.event.source, size: 10, tint: color)
+            MacEventSourceIcon(source: bar.event.source, size: 10, tint: foreground)
                 .padding(.leading, bar.event.isPinned ? 0 : 6)
             Text(bar.event.title)
                 .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(color)
+                .fontWeight(.regular)
+                .foregroundStyle(foreground)
                 .lineLimit(1)
                 .padding(.leading, (bar.event.isPinned || bar.event.source == .apple || bar.event.source == .google) ? 0 : 6)
                 .padding(.trailing, 6)
@@ -378,23 +381,24 @@ struct MacCalendarWeekView: View {
                 .frame(width: 3)
 
             VStack(alignment: .leading, spacing: 2) {
+                let foreground: Color = colorScheme == .dark ? .white : color
                 HStack(spacing: 3) {
                     if block.event.isPinned {
                         Image(systemName: "pin.fill")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(color)
+                            .foregroundStyle(foreground)
                     }
-                    MacEventSourceIcon(source: block.event.source, size: 10, tint: color)
+                    MacEventSourceIcon(source: block.event.source, size: 10, tint: foreground)
                     Text(block.event.title)
                         .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(color)
+                        .fontWeight(.medium)
+                        .foregroundStyle(foreground)
                         .lineLimit(2)
                 }
                 if height >= 36 && block.totalSubCols <= 2 {
                     Text(block.event.timeRangeString)
                         .font(.caption)
-                        .foregroundStyle(color.opacity(0.85))
+                        .foregroundStyle(foreground.opacity(0.85))
                         .lineLimit(1)
                 }
                 Spacer(minLength: 0)

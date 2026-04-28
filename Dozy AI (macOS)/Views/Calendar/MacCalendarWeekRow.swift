@@ -145,23 +145,26 @@ struct MacCalendarWeekRow: View {
 
 private struct EventBarView: View {
     let event: CalendarEvent
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
+        // 다크 모드에선 가독성을 위해 텍스트·아이콘을 흰색으로 통일.
+        let foreground: Color = colorScheme == .dark ? .white : color
         HStack(spacing: 3) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
                 Image(systemName: "pin.fill")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(color)
+                    .foregroundStyle(foreground)
                     .padding(.leading, 3)
             }
-            MacEventSourceIcon(source: event.source, size: 10, tint: color)
+            MacEventSourceIcon(source: event.source, size: 10, tint: foreground)
                 .padding(.leading, event.isPinned ? 0 : 4)
             Text(event.title)
                 .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(color)
+                .fontWeight(.regular)
+                .foregroundStyle(foreground)
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .padding(.leading, (event.isPinned || event.source == .apple || event.source == .google) ? 0 : 5)

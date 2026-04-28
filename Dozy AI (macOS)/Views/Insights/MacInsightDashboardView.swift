@@ -12,6 +12,7 @@ import Charts
 
 struct MacInsightDashboardView: View {
     @StateObject private var viewModel: MacInsightViewModel
+    @State private var showCategoryAnalysis = false
 
     init(container: DependencyContainer) {
         _viewModel = StateObject(wrappedValue: MacInsightViewModel(container: container))
@@ -59,6 +60,18 @@ struct MacInsightDashboardView: View {
         .onReceive(NotificationCenter.default.publisher(for: .dozyRequestRefresh)) { _ in
             viewModel.loadData()
         }
+        .sheet(isPresented: $showCategoryAnalysis) {
+            // frame 은 sheet wrapper 에서만 — view body 안에 두면 sheet 닫을 때 parent
+            // window 레이아웃에 영향을 줘서 메인 창이 줄어드는 버그 발생.
+            NavigationStack {
+                MacCategoryAnalysisView(
+                    events: viewModel.allEvents,
+                    dozyEvents: viewModel.currentDozyEvents,
+                    period: viewModel.selectedPeriod
+                )
+            }
+            .frame(minWidth: 760, idealWidth: 920, minHeight: 720, idealHeight: 760)
+        }
     }
 
     // MARK: - Empty
@@ -81,28 +94,28 @@ struct MacInsightDashboardView: View {
 
     private var headlineCard: some View {
         let (title, message, icon, color) = headlineMessage()
-        return HStack(spacing: 16) {
+        return HStack(spacing: 18) {
             Image(systemName: icon)
-                .font(.title)
+                .font(.largeTitle)
                 .foregroundStyle(color)
-                .frame(width: 52, height: 52)
-                .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 13))
+                .frame(width: 64, height: 64)
+                .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 14))
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.caption)
+                    .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
                     .tracking(0.5)
                 Text(message)
-                    .font(.title3)
+                    .font(.title2)
                     .fontWeight(.semibold)
                     .lineLimit(2)
             }
             Spacer()
         }
-        .padding(18)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -175,11 +188,11 @@ struct MacInsightDashboardView: View {
     // MARK: - Summary
 
     private var summaryRow: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(viewModel.selectedPeriod.label)
-                .font(.subheadline).fontWeight(.semibold)
+                .font(.headline).fontWeight(.semibold)
                 .foregroundStyle(.secondary)
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
                 summaryCard(
                     value: "\(Int(viewModel.averageCompletionRate * 100))%",
                     label: "평균 완료율",
@@ -208,38 +221,38 @@ struct MacInsightDashboardView: View {
     }
 
     private func summaryCard(value: String, label: String, change: Double?, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Image(systemName: icon)
-                    .font(.callout)
+                    .font(.title3)
                     .foregroundStyle(color)
-                    .frame(width: 32, height: 32)
-                    .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 9))
+                    .frame(width: 38, height: 38)
+                    .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
                 Spacer()
                 if let change {
-                    HStack(spacing: 2) {
+                    HStack(spacing: 3) {
                         Image(systemName: trendIcon(for: change))
                         Text(trendLabel(for: change))
                     }
-                    .font(.caption2)
+                    .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(trendColor(for: change))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
                     .background(trendColor(for: change).opacity(0.12), in: Capsule())
                 }
             }
             Text(value)
-                .font(.title)
+                .font(.largeTitle)
                 .fontWeight(.bold)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
             Text(label)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(16)
+        .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(LinearGradient(
@@ -298,7 +311,7 @@ struct MacInsightDashboardView: View {
                     }
                 }
                 .chartYScale(domain: 0...1)
-                .frame(height: 180)
+                .frame(height: 200)
             }
         }
     }
@@ -321,7 +334,7 @@ struct MacInsightDashboardView: View {
                         .cornerRadius(4)
                     }
                 }
-                .frame(height: 180)
+                .frame(height: 200)
             }
         }
     }
@@ -349,12 +362,12 @@ struct MacInsightDashboardView: View {
                         AxisValueLabel {
                             if let hour = value.as(Int.self) {
                                 Text("\(hour)시")
-                                    .font(.caption2)
+                                    .font(.caption)
                             }
                         }
                     }
                 }
-                .frame(height: 180)
+                .frame(height: 200)
             }
         }
     }
@@ -386,12 +399,12 @@ struct MacInsightDashboardView: View {
     }
 
     private func stat(value: String, label: String, ratio: Double, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(value)
-                .font(.title2).fontWeight(.bold)
+                .font(.title).fontWeight(.bold)
                 .foregroundStyle(color)
             Text(label)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
             ProgressView(value: ratio)
                 .tint(color)
@@ -421,7 +434,7 @@ struct MacInsightDashboardView: View {
                     }
                 }
                 .chartYScale(domain: 0...1)
-                .frame(height: 180)
+                .frame(height: 200)
             }
         }
     }
@@ -429,47 +442,60 @@ struct MacInsightDashboardView: View {
     // MARK: - Category
 
     private var categoryCard: some View {
-        InsightCard(title: "카테고리 분포", systemImage: "chart.pie.fill", accent: .pink) {
-            if viewModel.categoryDistribution.isEmpty {
-                cardEmpty(message: "카테고리 기록이 없습니다")
-            } else {
-                let maxCount = viewModel.categoryDistribution.first?.count ?? 1
-                VStack(spacing: 10) {
-                    ForEach(viewModel.categoryDistribution.prefix(6), id: \.category) { item in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(item.category)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                Spacer()
-                                Text("\(item.count)")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+        Button {
+            showCategoryAnalysis = true
+        } label: {
+            InsightCard(title: "카테고리 분포", systemImage: "chart.pie.fill", accent: .pink) {
+                VStack(alignment: .leading, spacing: 10) {
+                    if viewModel.categoryDistribution.isEmpty {
+                        cardEmpty(message: "카테고리 기록이 없습니다")
+                    } else {
+                        let maxCount = viewModel.categoryDistribution.first?.count ?? 1
+                        ForEach(viewModel.categoryDistribution.prefix(6), id: \.category) { item in
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text(item.category)
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                    Spacer()
+                                    Text("\(item.count)")
+                                        .font(.body)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.secondary)
+                                }
+                                ProgressView(value: Double(item.count), total: Double(max(maxCount, 1)))
+                                    .tint(.pink)
+                                    .scaleEffect(y: 0.85)
                             }
-                            ProgressView(value: Double(item.count), total: Double(max(maxCount, 1)))
-                                .tint(.pink)
-                                .scaleEffect(y: 0.7)
                         }
                     }
+                    HStack {
+                        Spacer()
+                        Label("자세히 보기", systemImage: "chevron.right")
+                            .font(.subheadline)
+                            .foregroundStyle(.pink)
+                            .labelStyle(.titleAndIcon)
+                    }
+                    .padding(.top, 6)
                 }
             }
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Helpers
 
     private func cardEmpty(message: String) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             Image(systemName: "tray")
-                .font(.title3)
+                .font(.title2)
                 .foregroundStyle(.tertiary)
             Text(message)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 80)
-        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, minHeight: 90)
+        .padding(.vertical, 10)
     }
 }
 
@@ -488,15 +514,15 @@ private struct InsightCard<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 10) {
                 Image(systemName: systemImage)
-                    .font(.callout)
+                    .font(.title3)
                     .foregroundStyle(accent)
-                    .frame(width: 28, height: 28)
-                    .background(accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                    .frame(width: 34, height: 34)
+                    .background(accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
                 Text(title)
-                    .font(.subheadline)
+                    .font(.title3)
                     .fontWeight(.semibold)
             }
             content()

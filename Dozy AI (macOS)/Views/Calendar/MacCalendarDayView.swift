@@ -19,6 +19,8 @@ struct MacCalendarDayView: View {
     private let hourHeight: CGFloat = 56
     private let leftLabelWidth: CGFloat = 60
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         VStack(spacing: 0) {
             dateHeader
@@ -90,20 +92,21 @@ struct MacCalendarDayView: View {
 
     private func allDayBar(event: CalendarEvent) -> some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
+        let foreground: Color = colorScheme == .dark ? .white : color
         return HStack(spacing: 4) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
                 Image(systemName: "pin.fill")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(color)
+                    .foregroundStyle(foreground)
                     .padding(.leading, 6)
             }
-            MacEventSourceIcon(source: event.source, size: 12, tint: color)
+            MacEventSourceIcon(source: event.source, size: 12, tint: foreground)
                 .padding(.leading, event.isPinned ? 0 : 8)
             Text(event.title)
                 .font(.body)
-                .fontWeight(.medium)
-                .foregroundStyle(color)
+                .fontWeight(.regular)
+                .foregroundStyle(foreground)
                 .lineLimit(1)
                 .padding(.leading, (event.isPinned || event.source == .apple || event.source == .google) ? 0 : 8)
                 .padding(.trailing, 8)
@@ -274,28 +277,29 @@ struct MacCalendarDayView: View {
         return HStack(spacing: 0) {
             Rectangle().fill(color).frame(width: 3)
             VStack(alignment: .leading, spacing: 4) {
+                let foreground: Color = colorScheme == .dark ? .white : color
                 HStack(spacing: 4) {
                     if block.event.isPinned {
                         Image(systemName: "pin.fill")
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(color)
+                            .foregroundStyle(foreground)
                     }
-                    MacEventSourceIcon(source: block.event.source, size: 12, tint: color)
+                    MacEventSourceIcon(source: block.event.source, size: 12, tint: foreground)
                     Text(block.event.title)
                         .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(color)
+                        .fontWeight(.medium)
+                        .foregroundStyle(foreground)
                         .lineLimit(2)
                 }
                 if height >= 50 && block.totalSubCols <= 2 {
                     Text(block.event.timeRangeString)
                         .font(.subheadline)
-                        .foregroundStyle(color.opacity(0.85))
+                        .foregroundStyle(foreground.opacity(0.85))
                 }
                 if height >= 80, block.totalSubCols == 1, let location = block.event.location, !location.isEmpty {
                     Label(location, systemImage: "mappin")
                         .font(.subheadline)
-                        .foregroundStyle(color.opacity(0.85))
+                        .foregroundStyle(foreground.opacity(0.85))
                         .lineLimit(1)
                 }
                 Spacer(minLength: 0)

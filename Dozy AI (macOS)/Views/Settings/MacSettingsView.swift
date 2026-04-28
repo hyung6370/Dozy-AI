@@ -209,8 +209,27 @@ struct MacSettingsView: View {
 
     // MARK: - App Info
 
+    private var privacyPolicyURL: URL? {
+        guard
+            let str = Bundle.main.infoDictionary?["PRIVACY_POLICY_URL"] as? String,
+            let url = URL(string: str)
+        else { return nil }
+        return url
+    }
+
     private var appInfoSection: some View {
         SettingsSection(title: "앱 정보") {
+            Button {
+                if let url = privacyPolicyURL {
+                    NSWorkspace.shared.open(url)
+                }
+            } label: {
+                settingsRow(asset: settingsAsset("Privacy"), title: "개인정보 처리방침")
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .disabled(privacyPolicyURL == nil)
+
             HStack(spacing: 10) {
                 Image(settingsAsset("Version"))
                     .resizable()
