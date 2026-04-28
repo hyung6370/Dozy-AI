@@ -68,6 +68,11 @@ final class MacInsightViewModel: ObservableObject {
     @Published var hasDozyData = false
     @Published var hasWorkLogData = false
 
+    // MARK: - Raw 데이터 (카테고리 분석 화면에 그대로 전달)
+
+    @Published var allEvents: [CalendarEvent] = []
+    @Published var currentDozyEvents: [DozyEvent] = []
+
     // MARK: - Deps
 
     private let fetchEventsUseCase: FetchDozyEventsForPeriodUseCase
@@ -153,6 +158,10 @@ final class MacInsightViewModel: ObservableObject {
         previousCompletions: [EventCompletion],
         days: Int
     ) {
+        // 카테고리 분석 화면 진입 시 raw 데이터 그대로 전달하기 위해 보관.
+        self.allEvents = allEvents
+        self.currentDozyEvents = current
+
         // hourly/weekday/peakHours 패턴 분석엔 Composite 가 머지한 [CalendarEvent] 사용
         // (Apple/Google 이벤트 시간대까지 함께 분석). DozyEvent 가 비었더라도 외부 캘린더
         // 일정이 있으면 데이터 있는 걸로 간주.

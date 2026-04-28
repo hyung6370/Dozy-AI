@@ -82,7 +82,6 @@ struct MacDailySummaryView: View {
                 }
             }
         }
-        .frame(minWidth: 560, idealWidth: 640, minHeight: 600)
         .navigationTitle("Dozy 일정 요약")
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

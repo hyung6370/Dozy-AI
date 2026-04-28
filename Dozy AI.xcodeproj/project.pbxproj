@@ -171,6 +171,7 @@
 		DD9F692B2F6AD082001952F6 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
 		F6BC1A0001000000DDDD0001 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
 		F6BC1A0001000000DDDD0002 /* MacDailySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */; };
+		F6BC1A0001000000DDDD0005 /* MacCategoryAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000DDDD0006 /* MacCategoryAnalysisView.swift */; };
 		DD9F692E2F6AD0A1001952F6 /* WorkLogListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692D2F6AD0A1001952F6 /* WorkLogListView.swift */; };
 		DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692F2F6AD0B1001952F6 /* WorkLogDetailView.swift */; };
 		DD9F69322F6AD0BF001952F6 /* WorkLogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69312F6AD0BF001952F6 /* WorkLogViewModel.swift */; };
@@ -468,6 +469,7 @@
 		DD9F69282F6AD073001952F6 /* DailySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryView.swift; sourceTree = "<group>"; };
 		DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryViewModel.swift; sourceTree = "<group>"; };
 		F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDailySummaryView.swift; sourceTree = "<group>"; };
+		F6BC1A0001000000DDDD0006 /* MacCategoryAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategoryAnalysisView.swift; sourceTree = "<group>"; };
 		DD9F692D2F6AD0A1001952F6 /* WorkLogListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogListView.swift; sourceTree = "<group>"; };
 		DD9F692F2F6AD0B1001952F6 /* WorkLogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogDetailView.swift; sourceTree = "<group>"; };
 		DD9F69312F6AD0BF001952F6 /* WorkLogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogViewModel.swift; sourceTree = "<group>"; };
@@ -1337,6 +1339,7 @@
 			isa = PBXGroup;
 			children = (
 				F6EC8B202F99E00000CFFF87 /* MacInsightDashboardView.swift */,
+				F6BC1A0001000000DDDD0006 /* MacCategoryAnalysisView.swift */,
 			);
 			path = Insights;
 			sourceTree = "<group>";
@@ -1913,6 +1916,7 @@
 				F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */,
 				F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */,
 				F6BC1A0001000000DDDD0002 /* MacDailySummaryView.swift in Sources */,
+				F6BC1A0001000000DDDD0005 /* MacCategoryAnalysisView.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,

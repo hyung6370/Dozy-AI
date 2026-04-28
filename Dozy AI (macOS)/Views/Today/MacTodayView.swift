@@ -116,6 +116,8 @@ struct MacTodayView: View {
             )
         }
         // AI 요약 풀뷰 — 카드 탭 또는 "AI 요약 생성" 버튼에서 진입.
+        // frame 은 sheet wrapper 에서만 — view body 안에 두면 sheet 닫을 때 parent
+        // window 가 줄어드는 macOS layout 버그 발생.
         .sheet(isPresented: $showSummarySheet) {
             NavigationStack {
                 MacDailySummaryView(
@@ -132,6 +134,7 @@ struct MacTodayView: View {
                     }
                 )
             }
+            .frame(minWidth: 640, idealWidth: 720, minHeight: 640, idealHeight: 720)
         }
         .alert("메모 수정", isPresented: $showEditMemoAlert) {
             TextField("메모", text: $editingMemoText)
