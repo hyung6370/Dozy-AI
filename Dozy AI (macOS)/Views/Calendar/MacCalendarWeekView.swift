@@ -169,17 +169,22 @@ struct MacCalendarWeekView: View {
         .frame(width: max(0, width), height: 20)
         .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
         .position(x: xCenter, y: y + 8)
-        .onTapGesture { onSelectEvent(bar.event) }
+        .onTapGesture {
+            guard !bar.event.isReadOnly else { return }
+            onSelectEvent(bar.event)
+        }
         .contextMenu {
-            Button {
-                onEditEvent?(bar.event)
-            } label: {
-                Label("수정", systemImage: "pencil")
-            }
-            Button(role: .destructive) {
-                onDeleteEvent?(bar.event)
-            } label: {
-                Label("삭제", systemImage: "trash")
+            if !bar.event.isReadOnly {
+                Button {
+                    onEditEvent?(bar.event)
+                } label: {
+                    Label("수정", systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    onDeleteEvent?(bar.event)
+                } label: {
+                    Label("삭제", systemImage: "trash")
+                }
             }
         }
     }
@@ -398,17 +403,22 @@ struct MacCalendarWeekView: View {
         .frame(width: width, height: height, alignment: .topLeading)
         .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
         .offset(x: xLeft, y: y)
-        .onTapGesture { onSelectEvent(block.event) }
+        .onTapGesture {
+            guard !block.event.isReadOnly else { return }
+            onSelectEvent(block.event)
+        }
         .contextMenu {
-            Button {
-                onEditEvent?(block.event)
-            } label: {
-                Label("수정", systemImage: "pencil")
-            }
-            Button(role: .destructive) {
-                onDeleteEvent?(block.event)
-            } label: {
-                Label("삭제", systemImage: "trash")
+            if !block.event.isReadOnly {
+                Button {
+                    onEditEvent?(block.event)
+                } label: {
+                    Label("수정", systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    onDeleteEvent?(block.event)
+                } label: {
+                    Label("삭제", systemImage: "trash")
+                }
             }
         }
     }

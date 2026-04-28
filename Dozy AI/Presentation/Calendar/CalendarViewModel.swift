@@ -292,6 +292,8 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func showDetail(for event: CalendarEvent) {
+        // 공휴일은 read-only 정보(이름·날짜)만 캘린더에 표시 — 상세 시트 진입 차단.
+        guard !event.isReadOnly else { return }
         // 항상 displaySettings를 적용 (allEventsInMonth 등 raw 이벤트에서 올 수 있음)
         let applied = event.applying(displaySettingsByID[event.id])
         Logger.calendar.debug("📋 showDetail: id=\(event.id.prefix(12)) category=\(applied.category) source=\(String(describing: event.source))")

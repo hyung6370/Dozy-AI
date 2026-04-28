@@ -108,17 +108,22 @@ struct MacCalendarWeekRow: View {
             .frame(width: max(0, width), height: barHeight)
             .opacity(touchesCurrentMonth ? 1.0 : 0.4)
             .position(x: xCenter, y: y)
-            .onTapGesture { onSelectEvent(bar.event) }
+            .onTapGesture {
+                guard !bar.event.isReadOnly else { return }
+                onSelectEvent(bar.event)
+            }
             .contextMenu {
-                Button {
-                    onEditEvent?(bar.event)
-                } label: {
-                    Label("수정", systemImage: "pencil")
-                }
-                Button(role: .destructive) {
-                    onDeleteEvent?(bar.event)
-                } label: {
-                    Label("삭제", systemImage: "trash")
+                if !bar.event.isReadOnly {
+                    Button {
+                        onEditEvent?(bar.event)
+                    } label: {
+                        Label("수정", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        onDeleteEvent?(bar.event)
+                    } label: {
+                        Label("삭제", systemImage: "trash")
+                    }
                 }
             }
     }

@@ -74,6 +74,9 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     /// Apple/Google 원본을 Dozy에 복제한 스냅샷인지 여부.
     var isExternalMirror: Bool { externalSource != nil && externalEventID != nil }
 
+    /// 사용자가 직접 수정·삭제할 수 없는 이벤트. 공휴일은 공공데이터 기반 read-only.
+    var isReadOnly: Bool { source == .holiday }
+
     // Swift가 자동으로 memberwise init을 생성합니다.
     // init(id:title:startDate:endDate:location:notes:isAllDay:calendarName:calendarColorHex:)
 

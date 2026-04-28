@@ -378,11 +378,13 @@ struct MacTodayView: View {
                 .padding(.leading, 2)
 
             ForEach(viewModel.todayEvents) { event in
+                // 공휴일은 read-only — 토글/상세 둘 다 비활성. nil 콜백을 받으면 MacEventRow 의
+                // 해당 Button 이 .disabled(true) 처리됨.
                 MacEventRow(
                     event: event,
                     isCompleted: viewModel.completionsByEventID[event.id] == true,
-                    onToggleCompletion: { viewModel.toggleCompletion(for: event) },
-                    onSelect: { selectedEvent = event }
+                    onToggleCompletion: event.isReadOnly ? nil : { viewModel.toggleCompletion(for: event) },
+                    onSelect: event.isReadOnly ? nil : { selectedEvent = event }
                 )
             }
         }

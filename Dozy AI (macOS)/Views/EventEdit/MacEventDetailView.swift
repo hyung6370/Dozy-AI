@@ -70,7 +70,9 @@ struct MacEventDetailView: View {
     }
 
     /// 공유 캘린더 이벤트 중 내가 생성자가 아닐 때는 편집 불가 (읽기 전용).
+    /// 공휴일은 source 자체가 read-only.
     private var canEditEvent: Bool {
+        if event.isReadOnly { return false }
         guard let dozyEvent else { return false }
         if dozyEvent.sharedCalendarID == nil { return true }
         guard let ownerID = dozyEvent.ownerID else { return true }
@@ -93,7 +95,8 @@ struct MacEventDetailView: View {
                     }
                 }
                 .padding(.vertical, 8)
-                .disabled(!canEditEvent && dozyEvent != nil)
+                // 공휴일은 form 입력 자체를 비활성화 (저장 버튼은 canEditEvent 로 별도 disable).
+                .disabled((!canEditEvent && dozyEvent != nil) || event.isReadOnly)
             }
             .navigationTitle("일정 상세")
             .toolbar {

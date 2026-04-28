@@ -526,10 +526,10 @@ struct MacCalendarView: View {
                         MacEventRow(
                             event: event,
                             isCompleted: viewModel.isCompleted(for: event, on: viewModel.selectedDate),
-                            onToggleCompletion: {
+                            onToggleCompletion: event.isReadOnly ? nil : {
                                 viewModel.toggleCompletion(for: event, on: viewModel.selectedDate)
                             },
-                            onSelect: { selectedEvent = event }
+                            onSelect: event.isReadOnly ? nil : { selectedEvent = event }
                         )
                     }
                 }
