@@ -605,10 +605,11 @@ struct EventDetailView: View {
     
     private var sourceIcon: String {
         switch event.source {
-        case .apple: return "apple.logo"
-        case .google: return "g.circle"
-        case .naver: return "n.circle"
-        case .dozy: return "d.circle.fill"
+        case .apple:   return "apple.logo"
+        case .google:  return "g.circle"
+        case .naver:   return "n.circle"
+        case .dozy:    return "d.circle.fill"
+        case .holiday: return "flag.fill"
         }
     }
     

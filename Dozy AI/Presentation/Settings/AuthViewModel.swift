@@ -85,7 +85,13 @@ final class AuthViewModel: ObservableObject {
                 case .initialSession:
                     guard let session else { return }
                     let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
-                    let provider: AuthProvider = providerString == "google" ? .google : .apple
+                    let provider: AuthProvider = {
+                        switch providerString {
+                        case "google": return .google
+                        case "email":  return .email
+                        default:       return .apple
+                        }
+                    }()
                     self.currentUser = AuthUser(
                         id: session.user.id.uuidString.lowercased(),
                         email: session.user.email,
@@ -164,6 +170,54 @@ final class AuthViewModel: ObservableObject {
                     if let name = user.displayName {
                         KeychainService.save(name, forKey: Self.displayNameKey)
                     }
+                    self?.requestNotificationPermissionIfNeeded()
+                    self?.showCongratulationAnimation = true
+                    self?.syncAfterLogin(userID: user.id)
+                    self?.startSharedCalendarRealtime()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Email / Password 로그인
+
+    func signInWithEmail(email: String, password: String) {
+        isLoading = true
+        errorMessage = nil
+        authService.signInWithEmail(email: email, password: password)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    self?.currentUser = user
+                    self?.requestNotificationPermissionIfNeeded()
+                    self?.showCongratulationAnimation = true
+                    self?.syncAfterLogin(userID: user.id)
+                    self?.startSharedCalendarRealtime()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func signUpWithEmail(email: String, password: String) {
+        isLoading = true
+        errorMessage = nil
+        authService.signUpWithEmail(email: email, password: password)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    self?.currentUser = user
                     self?.requestNotificationPermissionIfNeeded()
                     self?.showCongratulationAnimation = true
                     self?.syncAfterLogin(userID: user.id)

@@ -17,4 +17,5 @@ struct AuthUser {
 enum AuthProvider {
     case apple
     case google
+    case email
 }

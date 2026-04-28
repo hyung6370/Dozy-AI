@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct MonthWeekRowView: View {
-    
+
     let weekDates: [Date]
     let layouts: [CalendarEventLayout]
     let selectedDate: Date
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
     let isInMonth: (Date) -> Bool
+    let isHoliday: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String, Date) -> Void
@@ -136,13 +137,23 @@ struct MonthWeekRowView: View {
         Text("\(day)")
             .font(.subheadline)
             .fontWeight(isToday(date) ? .bold : .regular)
-            .foregroundStyle(
-                (isSelected(date) || isToday(date)) ? .white :
-                inMonth ? Color.primary : Color.secondary.opacity(0.4)
-            )
+            .foregroundStyle(dayLabelColor(date: date, inMonth: inMonth))
             .frame(width: 34, height: 34)
             .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : .clear))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// 날짜 숫자 색 — 한국 캘린더 관습: 공휴일 / 일요일 빨강, 토요일 파랑.
+    private func dayLabelColor(date: Date, inMonth: Bool) -> Color {
+        if isSelected(date) || isToday(date) { return .white }
+        guard inMonth else { return .secondary.opacity(0.4) }
+        if isHoliday(date) { return .red }
+        let weekday = Calendar.current.component(.weekday, from: date)
+        switch weekday {
+        case 1:  return .red
+        case 7:  return .blue
+        default: return .primary
+        }
     }
 }
 

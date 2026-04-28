@@ -64,7 +64,18 @@ struct CalendarEventEditView: View {
                     Toggle("종일", isOn: $isAllDay)
                     DatePicker("시작", selection: $startDate, displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
                         .environment(\.locale, Locale(identifier: "ko_KR"))
-                    DatePicker("종료", selection: $endDate, displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
+                        .onChange(of: startDate) { _, newStart in
+                            // 시작이 종료보다 뒤로 가면 종료 자동 보정 (allDay: 동일, 아니면 +1h)
+                            if endDate < newStart {
+                                endDate = isAllDay
+                                    ? newStart
+                                    : Calendar.current.date(byAdding: .hour, value: 1, to: newStart) ?? newStart
+                            }
+                        }
+                    DatePicker("종료",
+                               selection: $endDate,
+                               in: startDate...,
+                               displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
                         .environment(\.locale, Locale(identifier: "ko_KR"))
                 }
                 if onShareToSharedCalendar != nil, !sharedCalendars.isEmpty {

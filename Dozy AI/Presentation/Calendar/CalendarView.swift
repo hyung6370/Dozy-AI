@@ -400,6 +400,7 @@ struct CalendarView: View {
                         return cal.component(.month, from: date) == cal.component(.month, from: month)
                             && cal.component(.year, from: date) == cal.component(.year, from: month)
                     },
+                    isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
                     onSelect: { viewModel.selectDate($0) },
                     onLongPress: { date in
                         longPressDate = date
@@ -430,6 +431,7 @@ struct CalendarView: View {
                 selectedDate: viewModel.selectedDate,
                 isToday: { viewModel.isToday($0) },
                 isSelected: { viewModel.isSelected($0) },
+                isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
                 onSelect: { viewModel.selectDate($0) },
                 onLongPress: { date in longPressDate = date; showLongPressAlert = true },
                 onTapEvent: { id, date in viewModel.showDetailForEventID(id, on: date) },
@@ -480,6 +482,7 @@ struct CalendarView: View {
                     weekDates: viewModel.currentWeekDates,
                     selectedDate: viewModel.selectedDate,
                     eventBars: { viewModel.eventBars(for: $0) },
+                    isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
                     onSelectDate: { viewModel.selectDate($0) }
                 )
             case .day:

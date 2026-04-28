@@ -37,7 +37,10 @@ struct EventEditView: View {
                     } else {
                         DatePicker("시작", selection: $viewModel.startDate, displayedComponents: [.date, .hourAndMinute])
                             .environment(\.locale, Locale(identifier: "ko_KR"))
-                        DatePicker("종료", selection: $viewModel.endDate, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("종료",
+                                   selection: $viewModel.endDate,
+                                   in: viewModel.startDate...,
+                                   displayedComponents: [.date, .hourAndMinute])
                             .environment(\.locale, Locale(identifier: "ko_KR"))
                     }
                 }

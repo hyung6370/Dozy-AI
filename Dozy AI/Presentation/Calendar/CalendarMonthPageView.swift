@@ -18,6 +18,7 @@ struct MonthPageViewController: UIViewControllerRepresentable {
     let selectedDate: Date
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
+    let isHoliday: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String, Date) -> Void
@@ -83,6 +84,7 @@ struct MonthPageViewController: UIViewControllerRepresentable {
                 selectedDate: parent.selectedDate,
                 isToday: parent.isToday,
                 isSelected: parent.isSelected,
+                isHoliday: parent.isHoliday,
                 onSelect: parent.onSelect,
                 onLongPress: parent.onLongPress,
                 onTapEvent: parent.onTapEvent,
@@ -142,6 +144,7 @@ final class MonthPageCell: UIHostingController<MonthGridContent> {
          selectedDate: Date,
          isToday: @escaping (Date) -> Bool,
          isSelected: @escaping (Date) -> Bool,
+         isHoliday: @escaping (Date) -> Bool,
          onSelect: @escaping (Date) -> Void,
          onLongPress: @escaping (Date) -> Void,
          onTapEvent: @escaping (String, Date) -> Void,
@@ -153,6 +156,7 @@ final class MonthPageCell: UIHostingController<MonthGridContent> {
             selectedDate: selectedDate,
             isToday: isToday,
             isSelected: isSelected,
+            isHoliday: isHoliday,
             onSelect: onSelect,
             onLongPress: onLongPress,
             onTapEvent: onTapEvent,
@@ -170,6 +174,7 @@ final class MonthPageCell: UIHostingController<MonthGridContent> {
             selectedDate: selectedDate,
             isToday: rootView.isToday,
             isSelected: rootView.isSelected,
+            isHoliday: rootView.isHoliday,
             onSelect: rootView.onSelect,
             onLongPress: rootView.onLongPress,
             onTapEvent: rootView.onTapEvent,
@@ -187,6 +192,7 @@ struct MonthGridContent: View {
     let selectedDate: Date
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
+    let isHoliday: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String, Date) -> Void
@@ -204,6 +210,7 @@ struct MonthGridContent: View {
                     isToday: isToday,
                     isSelected: isSelected,
                     isInMonth: isInCurrentMonth,
+                    isHoliday: isHoliday,
                     onSelect: onSelect,
                     onLongPress: onLongPress,
                     onTapEvent: onTapEvent,

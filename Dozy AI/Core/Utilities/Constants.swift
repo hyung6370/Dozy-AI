@@ -9,6 +9,8 @@ import Foundation
 
 extension Notification.Name {
     static let dozyDataSyncCompleted = Notification.Name("dozy.dataSyncCompleted")
+    static let dozyRequestNewEvent = Notification.Name("dozy.requestNewEvent")
+    static let dozyRequestRefresh  = Notification.Name("dozy.requestRefresh")
     static let googleSignInRestored = Notification.Name("dozy.googleSignInRestored")
     static let dozyEventChanged = Notification.Name("dozy.eventChanged")
 }
