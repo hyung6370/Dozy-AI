@@ -157,12 +157,14 @@ struct MacCalendarWeekView: View {
                     .foregroundStyle(color)
                     .padding(.leading, 6)
             }
+            MacEventSourceIcon(source: bar.event.source, size: 10, tint: color)
+                .padding(.leading, bar.event.isPinned ? 0 : 6)
             Text(bar.event.title)
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
-                .padding(.leading, bar.event.isPinned ? 0 : 6)
+                .padding(.leading, (bar.event.isPinned || bar.event.source == .apple || bar.event.source == .google) ? 0 : 6)
                 .padding(.trailing, 6)
             Spacer(minLength: 0)
         }
@@ -382,6 +384,7 @@ struct MacCalendarWeekView: View {
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(color)
                     }
+                    MacEventSourceIcon(source: block.event.source, size: 10, tint: color)
                     Text(block.event.title)
                         .font(.subheadline)
                         .fontWeight(.semibold)

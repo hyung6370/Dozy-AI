@@ -98,12 +98,14 @@ struct MacCalendarDayView: View {
                     .foregroundStyle(color)
                     .padding(.leading, 6)
             }
+            MacEventSourceIcon(source: event.source, size: 12, tint: color)
+                .padding(.leading, event.isPinned ? 0 : 8)
             Text(event.title)
                 .font(.body)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
-                .padding(.leading, event.isPinned ? 0 : 8)
+                .padding(.leading, (event.isPinned || event.source == .apple || event.source == .google) ? 0 : 8)
                 .padding(.trailing, 8)
             Spacer(minLength: 0)
         }
@@ -278,6 +280,7 @@ struct MacCalendarDayView: View {
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(color)
                     }
+                    MacEventSourceIcon(source: block.event.source, size: 12, tint: color)
                     Text(block.event.title)
                         .font(.title3)
                         .fontWeight(.semibold)

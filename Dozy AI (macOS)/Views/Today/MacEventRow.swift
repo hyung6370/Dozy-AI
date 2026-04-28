@@ -71,6 +71,7 @@ struct MacEventRow: View {
                             .font(.caption)
                             .foregroundStyle(accent)
                     }
+                    MacEventSourceIcon(source: event.source, size: 13)
                     Text(event.title)
                         .font(.body)
                         .fontWeight(.semibold)

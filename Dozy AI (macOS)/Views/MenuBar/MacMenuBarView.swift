@@ -146,12 +146,15 @@ struct MacMenuBarView: View {
                 .fill(Color(hex: event.calendarColorHex) ?? .blue)
                 .frame(width: 3, height: 22)
             VStack(alignment: .leading, spacing: 1) {
-                Text(event.title)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .strikethrough(isCompleted, color: .secondary)
-                    .foregroundStyle(isCompleted ? .secondary : .primary)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    MacEventSourceIcon(source: event.source, size: 10)
+                    Text(event.title)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .strikethrough(isCompleted, color: .secondary)
+                        .foregroundStyle(isCompleted ? .secondary : .primary)
+                        .lineLimit(1)
+                }
                 Text(event.timeRangeString)
                     .font(.caption2)
                     .foregroundStyle(.secondary)

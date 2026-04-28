@@ -348,6 +348,7 @@
 		F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9885C44E183149258A057270 /* SharedCalendarViewModel.swift */; };
 		F6EC8B372F9A200000CFFF87 /* MacCalendarEventBarLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B362F9A200000CFFF87 /* MacCalendarEventBarLayout.swift */; };
 		F6EC8B392F9A200000CFFF87 /* MacCalendarWeekRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B382F9A200000CFFF87 /* MacCalendarWeekRow.swift */; };
+		F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */; };
 		F6EC8B3B2F9A300000CFFF87 /* MacCalendarViewMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */; };
 		F6EC8B3D2F9A300000CFFF87 /* MacCalendarWeekView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */; };
 		F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */; };
@@ -623,6 +624,7 @@
 		F6EC8B322F9A100000CFFF87 /* MacSharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		F6EC8B362F9A200000CFFF87 /* MacCalendarEventBarLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarEventBarLayout.swift; sourceTree = "<group>"; };
 		F6EC8B382F9A200000CFFF87 /* MacCalendarWeekRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarWeekRow.swift; sourceTree = "<group>"; };
+		F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventSourceIcon.swift; sourceTree = "<group>"; };
 		F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarViewMode.swift; sourceTree = "<group>"; };
 		F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarWeekView.swift; sourceTree = "<group>"; };
 		F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarDayView.swift; sourceTree = "<group>"; };
@@ -1302,6 +1304,7 @@
 				F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */,
 				F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */,
 				F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */,
+				F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */,
 			);
 			path = Calendar;
 			sourceTree = "<group>";
@@ -1896,6 +1899,7 @@
 				F6EC8B3B2F9A300000CFFF87 /* MacCalendarViewMode.swift in Sources */,
 				F6EC8B3D2F9A300000CFFF87 /* MacCalendarWeekView.swift in Sources */,
 				F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */,
+				F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,

@@ -156,13 +156,15 @@ private struct EventBarView: View {
                     .foregroundStyle(color)
                     .padding(.leading, 3)
             }
+            MacEventSourceIcon(source: event.source, size: 10, tint: color)
+                .padding(.leading, event.isPinned ? 0 : 4)
             Text(event.title)
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .padding(.leading, event.isPinned ? 0 : 5)
+                .padding(.leading, (event.isPinned || event.source == .apple || event.source == .google) ? 0 : 5)
                 .padding(.trailing, 5)
             Spacer(minLength: 0)
         }
