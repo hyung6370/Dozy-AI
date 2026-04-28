@@ -12,8 +12,10 @@ import SwiftUI
 struct MacTodayView: View {
     @ObservedObject var viewModel: MacHomeViewModel
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @EnvironmentObject private var container: DependencyContainer
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var showNewEventSheet = false
+    @State private var showSummarySheet = false
 
     @State private var memoText: String = ""
     @State private var editingMemoIndex: Int? = nil
@@ -38,7 +40,10 @@ struct MacTodayView: View {
                         .padding(.top, 40)
                 } else {
                     if let summary = viewModel.dailySummary {
-                        aiSummaryPreview(summary)
+                        Button { showSummarySheet = true } label: {
+                            aiSummaryPreview(summary)
+                        }
+                        .buttonStyle(.plain)
                     }
                     if !viewModel.todayEvents.isEmpty {
                         eventListSection
@@ -109,6 +114,24 @@ struct MacTodayView: View {
                     viewModel.saveDozyEvent(saved)
                 }
             )
+        }
+        // AI 요약 풀뷰 — 카드 탭 또는 "AI 요약 생성" 버튼에서 진입.
+        .sheet(isPresented: $showSummarySheet) {
+            NavigationStack {
+                MacDailySummaryView(
+                    generateSummaryUseCase: container.generateDailySummaryUseCase,
+                    fetchRecentLogsUseCase: container.fetchRecentLogsUseCase,
+                    events: viewModel.todayEvents,
+                    completedTasks: [],
+                    pendingTasks: [],
+                    memos: viewModel.todayLog?.memos ?? [],
+                    completedEventCount: viewModel.completedCount,
+                    existingSummary: viewModel.dailySummary,
+                    onSummaryGenerated: { newSummary in
+                        viewModel.dailySummary = newSummary
+                    }
+                )
+            }
         }
         .alert("메모 수정", isPresented: $showEditMemoAlert) {
             TextField("메모", text: $editingMemoText)
@@ -544,8 +567,9 @@ struct MacTodayView: View {
     // MARK: - AI Generate Button
 
     private var aiGenerateButton: some View {
+        // 생성·풀뷰 진입을 통합 — sheet 안에서 onAppear 가 generateSummary() 자동 호출.
         Button {
-            viewModel.generateAISummary()
+            showSummarySheet = true
         } label: {
             HStack(spacing: 14) {
                 if viewModel.isSummarizing {
