@@ -20,6 +20,7 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     private let googleService: GoogleCalendarService?
     #endif
     private let dozyService: DozyCalendarService
+    private let holidayService: HolidayService
     let sourceManager: CalendarSourceManager
 
     #if os(iOS)
@@ -27,21 +28,25 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         appleService: CalendarService,
         googleService: GoogleCalendarService?,
         dozyService: DozyCalendarService,
+        holidayService: HolidayService,
         sourceManager: CalendarSourceManager
     ) {
         self.appleService = appleService
         self.googleService = googleService
         self.dozyService = dozyService
+        self.holidayService = holidayService
         self.sourceManager = sourceManager
     }
     #else
     init(
         appleService: CalendarService,
         dozyService: DozyCalendarService,
+        holidayService: HolidayService,
         sourceManager: CalendarSourceManager
     ) {
         self.appleService = appleService
         self.dozyService = dozyService
+        self.holidayService = holidayService
         self.sourceManager = sourceManager
     }
     #endif
@@ -60,6 +65,7 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
 
         let appleEnabled = sourceManager.isEnabled(.apple)
+        let holidayEnabled = sourceManager.isEnabled(.holiday)
         #if os(iOS)
         let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
         #else
@@ -69,7 +75,7 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         if appleEnabled {
             // 권한 미허용 등 일시적 실패가 다른 소스(Dozy/Google)까지 무력화하지 않도록 차단.
             publishers.append(
-                appleService.fetchEvents(for: date)
+                appleService.fetchEvents(for: date, excludeSubscriptions: holidayEnabled)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }
@@ -82,6 +88,12 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         }
         #endif
         publishers.append(dozyService.fetchEvents(for: date))
+        if holidayEnabled {
+            publishers.append(
+                holidayService.fetchEvents(for: date)
+                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            )
+        }
 
         return Publishers.MergeMany(publishers)
             .collect()
@@ -105,6 +117,7 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
 
         let appleEnabled = sourceManager.isEnabled(.apple)
+        let holidayEnabled = sourceManager.isEnabled(.holiday)
         #if os(iOS)
         let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
         #else
@@ -113,7 +126,7 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
 
         if appleEnabled {
             publishers.append(
-                appleService.fetchEvents(from: start, to: end)
+                appleService.fetchEvents(from: start, to: end, excludeSubscriptions: holidayEnabled)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }
@@ -126,6 +139,12 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         }
         #endif
         publishers.append(dozyService.fetchEvents(from: start, to: end))
+        if holidayEnabled {
+            publishers.append(
+                holidayService.fetchEvents(from: start, to: end)
+                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            )
+        }
 
         return Publishers.MergeMany(publishers)
             .collect()
@@ -165,6 +184,12 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
                     continue
                 }
                 deduped.append(event)
+            } else if event.source == .holiday {
+                // 공휴일은 source-내부 dedup (같은 날 같은 이름) 만 — 다른 source 와는 합치지 않음.
+                let key = "holiday_\(event.title)_\(event.startDate.timeIntervalSince1970)"
+                if seen.insert(key).inserted {
+                    deduped.append(event)
+                }
             } else {
                 let key = "\(event.title.lowercased())_\(event.startDate.timeIntervalSince1970)"
                 if seen.insert(key).inserted {

@@ -39,6 +39,7 @@ final class DependencyContainer: ObservableObject {
 
     private lazy var appleCalendarService = CalendarService()
     private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
+    private lazy var holidayService = HolidayService()
 
     var appleCalendarServiceForSettings: CalendarService { appleCalendarService }
     
@@ -48,12 +49,14 @@ final class DependencyContainer: ObservableObject {
             appleService: appleCalendarService,
             googleService: googleCalendarService,
             dozyService: dozyCalendarService,
+            holidayService: holidayService,
             sourceManager: calendarSourceManager
         )
         #else
         return CompositeCalendarSerivce(
             appleService: appleCalendarService,
             dozyService: dozyCalendarService,
+            holidayService: holidayService,
             sourceManager: calendarSourceManager
         )
         #endif
