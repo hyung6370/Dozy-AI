@@ -18,6 +18,7 @@ struct MacSettingsView: View {
     @State private var showDeleteAccountAlert = false
     @State private var showCategoryManagement = false
     @State private var showSharedCalendarManagement = false
+    @State private var showShortcutsHelp = false
     @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
 
     /// iOS 와 공유하는 Setting/* 에셋 이름. light/dark 자동 분기.
@@ -33,6 +34,7 @@ struct MacSettingsView: View {
                 menuBarSection
                 calendarIntegrationSection
                 sharedCalendarSection
+                helpSection
                 appInfoSection
                 dangerZoneSection
             }
@@ -71,6 +73,9 @@ struct MacSettingsView: View {
         .sheet(isPresented: $showSharedCalendarManagement) {
             MacSharedCalendarListView(container: container)
                 .environmentObject(authViewModel)
+        }
+        .sheet(isPresented: $showShortcutsHelp) {
+            MacShortcutsHelpSheet()
         }
     }
 
@@ -207,6 +212,23 @@ struct MacSettingsView: View {
         }
     }
 
+    // MARK: - Help
+
+    private var helpSection: some View {
+        SettingsSection(title: "도움말") {
+            Button {
+                showShortcutsHelp = true
+            } label: {
+                settingsRow(
+                    asset: settingsAsset("Version"),
+                    title: "단축키 · 사용 팁"
+                )
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+        }
+    }
+
     // MARK: - App Info
 
     private var privacyPolicyURL: URL? {
@@ -280,6 +302,155 @@ struct MacSettingsView: View {
             Image(systemName: "chevron.right")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+        }
+    }
+}
+
+// MARK: - Shortcuts Help Sheet
+
+private struct MacShortcutsHelpSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    HelpGroup(title: "섹션 이동") {
+                        ShortcutRow(keys: ["⌘", "1"], label: "오늘")
+                        ShortcutRow(keys: ["⌘", "2"], label: "캘린더")
+                        ShortcutRow(keys: ["⌘", "3"], label: "인사이트")
+                        ShortcutRow(keys: ["⌘", "4"], label: "설정")
+                    }
+
+                    HelpGroup(title: "캘린더 탐색") {
+                        ShortcutRow(keys: ["⌘", "T"], label: "오늘로 이동")
+                        ShortcutRow(keys: ["⌘", "["], label: "이전 기간 (월·주·일)")
+                        ShortcutRow(keys: ["⌘", "]"], label: "다음 기간")
+                    }
+
+                    HelpGroup(title: "일정 · 새로고침") {
+                        ShortcutRow(keys: ["⌘", "N"], label: "새 일정")
+                        ShortcutRow(keys: ["⌘", "R"], label: "데이터 새로고침")
+                    }
+
+                    HelpGroup(title: "도구 · 윈도우") {
+                        ShortcutRow(keys: ["⌘", "⇧", "A"], label: "AI 요약 생성")
+                        ShortcutRow(keys: ["⌘", "⇧", "C"], label: "캘린더 단독 창 열기")
+                    }
+
+                    HelpGroup(title: "사용 팁") {
+                        TipRow(
+                            icon: "hand.tap",
+                            title: "캘린더 셀 더블클릭",
+                            detail: "그 날짜에 새 일정을 바로 만들 수 있어요."
+                        )
+                        TipRow(
+                            icon: "cursorarrow.click.2",
+                            title: "셀 우클릭",
+                            detail: "새 일정 / 오늘로 이동 등 컨텍스트 메뉴가 열려요."
+                        )
+                        TipRow(
+                            icon: "clock",
+                            title: "일 뷰 시간 슬롯 더블클릭",
+                            detail: "선택한 시각에 새 일정을 만들 수 있어요."
+                        )
+                        TipRow(
+                            icon: "menubar.rectangle",
+                            title: "메뉴바 팝오버",
+                            detail: "일정 행을 누르면 메인 윈도우로 점프하고, 체크 박스로 완료 상태를 토글합니다."
+                        )
+                        TipRow(
+                            icon: "person.2",
+                            title: "공유 캘린더",
+                            detail: "설정 → 파트너와 공유에서 초대 코드를 발급해 일정을 함께 볼 수 있어요."
+                        )
+                    }
+                }
+                .padding(28)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .navigationTitle("단축키 · 사용 팁")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("닫기") { dismiss() }
+                }
+            }
+        }
+        .frame(width: 520, height: 620)
+    }
+}
+
+private struct HelpGroup<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.footnote)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 8) {
+                content()
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
+            )
+        }
+    }
+}
+
+private struct ShortcutRow: View {
+    let keys: [String]
+    let label: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(label)
+                .font(.body)
+            Spacer()
+            HStack(spacing: 4) {
+                ForEach(keys, id: \.self) { key in
+                    Text(key)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .frame(minWidth: 22, minHeight: 22)
+                        .padding(.horizontal, 6)
+                        .background(Color(nsColor: .controlBackgroundColor),
+                                    in: RoundedRectangle(cornerRadius: 5))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 5)
+                                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
+                        )
+                }
+            }
+        }
+    }
+}
+
+private struct TipRow: View {
+    let icon: String
+    let title: String
+    let detail: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 22, height: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }

@@ -121,7 +121,22 @@ struct Dozy_AI__macOS_App: App {
                 }
                 .keyboardShortcut("a", modifiers: [.command, .shift])
             }
+
+            // 윈도우 메뉴 - 캘린더 단독 창
+            WindowCommands(isReady: coordinator.authViewModel != nil)
         }
+
+        // 캘린더 단독 창 — 사이드바 없이 캘린더만 풀 영역. 메인 창과
+        // 동일한 coordinator/container 를 공유해 데이터·완료 상태가 자동 동기화됨.
+        // Window (singular) 라 인스턴스가 항상 1개 — 이미 열려있으면 포커스만 옮김.
+        Window("캘린더", id: "calendar") {
+            calendarStandaloneView()
+                .frame(minWidth: 700, minHeight: 500)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
+        }
+        .windowResizability(.contentMinSize)
 
         MenuBarExtra {
             if let container = coordinator.container,
@@ -155,6 +170,50 @@ struct Dozy_AI__macOS_App: App {
             .environmentObject(authViewModel)
             .environmentObject(coordinator)
             .modelContainer(container.modelContainer)
+    }
+
+    @ViewBuilder
+    private func calendarStandaloneView() -> some View {
+        if let container = coordinator.container,
+           let authViewModel = coordinator.authViewModel,
+           let calendarVM = coordinator.calendarViewModel,
+           authViewModel.currentUser != nil {
+            MacCalendarView(viewModel: calendarVM)
+                .environmentObject(container)
+                .environmentObject(authViewModel)
+                .environmentObject(coordinator)
+                .modelContainer(container.modelContainer)
+        } else {
+            VStack(spacing: 12) {
+                Image(systemName: "calendar.badge.exclamationmark")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.secondary)
+                Text("로그인 후 사용할 수 있어요")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+// MARK: - Window Commands
+
+/// `@Environment(\.openWindow)` 를 쓰려면 별도 Commands 구조체가 필요. App 의 `.commands { }`
+/// 블록 안에 직접 쓰면 환경값 주입이 안 됨.
+private struct WindowCommands: Commands {
+    let isReady: Bool
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some Commands {
+        CommandGroup(after: .windowArrangement) {
+            Divider()
+            Button("캘린더 새 창") {
+                openWindow(id: "calendar")
+            }
+            .keyboardShortcut("c", modifiers: [.command, .shift])
+            .disabled(!isReady)
+        }
     }
 }
 
