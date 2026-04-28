@@ -123,7 +123,7 @@ struct Dozy_AI__macOS_App: App {
             }
 
             // 윈도우 메뉴 - 캘린더 단독 창
-            WindowCommands(isReady: coordinator.authViewModel != nil)
+            WindowCommands(isSignedIn: coordinator.isSignedIn)
         }
 
         // 캘린더 단독 창 — 사이드바 없이 캘린더만 풀 영역. 메인 창과
@@ -174,10 +174,10 @@ struct Dozy_AI__macOS_App: App {
 
     @ViewBuilder
     private func calendarStandaloneView() -> some View {
-        if let container = coordinator.container,
+        if coordinator.isSignedIn,
+           let container = coordinator.container,
            let authViewModel = coordinator.authViewModel,
-           let calendarVM = coordinator.calendarViewModel,
-           authViewModel.currentUser != nil {
+           let calendarVM = coordinator.calendarViewModel {
             MacCalendarView(viewModel: calendarVM)
                 .environmentObject(container)
                 .environmentObject(authViewModel)
@@ -202,17 +202,20 @@ struct Dozy_AI__macOS_App: App {
 /// `@Environment(\.openWindow)` 를 쓰려면 별도 Commands 구조체가 필요. App 의 `.commands { }`
 /// 블록 안에 직접 쓰면 환경값 주입이 안 됨.
 private struct WindowCommands: Commands {
-    let isReady: Bool
+    let isSignedIn: Bool
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
         CommandGroup(after: .windowArrangement) {
             Divider()
             Button("캘린더 새 창") {
+                // SwiftUI 의 .disabled 만으로는 keyboardShortcut 발화를 100% 차단하지
+                // 못하는 케이스가 있어서 액션 자체에서도 한 번 더 가드.
+                guard isSignedIn else { return }
                 openWindow(id: "calendar")
             }
             .keyboardShortcut("c", modifiers: [.command, .shift])
-            .disabled(!isReady)
+            .disabled(!isSignedIn)
         }
     }
 }
@@ -225,6 +228,9 @@ private struct WindowCommands: Commands {
 final class MacAppCoordinator: ObservableObject {
     @Published private(set) var isReady = false
     @Published var selectedSection: MacSection? = .today
+    /// authViewModel.state 를 미러링한 published 플래그. App body / Commands 가 직접
+    /// authViewModel 을 observe 하지 않아도 로그인/로그아웃에 반응할 수 있게 한다.
+    @Published private(set) var isSignedIn: Bool = false
     private(set) var container: DependencyContainer?
     private(set) var authViewModel: MacAuthViewModel?
     private(set) var menuBarViewModel: MacMenuBarViewModel?
@@ -232,6 +238,7 @@ final class MacAppCoordinator: ObservableObject {
     private(set) var calendarViewModel: MacCalendarViewModel?
 
     private var calendarAccessCancellables = Set<AnyCancellable>()
+    private var authStateCancellable: AnyCancellable?
 
     init() {
         #if !DEBUG
@@ -244,10 +251,24 @@ final class MacAppCoordinator: ObservableObject {
         rebuildSupabaseClient()
         #endif
         let c = DependencyContainer()
-        authViewModel = MacAuthViewModel(
+        let auth = MacAuthViewModel(
             authService: c.authService,
             modelContainer: c.modelContainer
         )
+        authViewModel = auth
+
+        // authViewModel.state 의 변경을 isSignedIn 으로 미러링 — App body /
+        // WindowCommands 가 로그인/로그아웃에 즉시 반응.
+        authStateCancellable = auth.$state
+            .receive(on: DispatchQueue.main)
+            .map { state -> Bool in
+                if case .signedIn = state { return true }
+                return false
+            }
+            .removeDuplicates()
+            .sink { [weak self] signedIn in
+                self?.isSignedIn = signedIn
+            }
 
         // Apple 캘린더 토글이 ON 인 경우 — 시스템 권한 다이얼로그를 미리 띄우거나
         // 이미 허용된 권한 상태를 EKEventStore 에 워밍업. 토글 OFF 면 아무 것도 안 함.
