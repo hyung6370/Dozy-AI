@@ -29,13 +29,23 @@ final class MacMenuBarViewModel: ObservableObject {
 
     var currentEvent: CalendarEvent? {
         let now = Date()
-        return todayEvents.first { $0.startDate <= now && $0.endDate > now }
+        return todayEvents.first { !$0.isAllDay && $0.startDate <= now && $0.endDate > now }
     }
-
+    
     var upcomingEvent: CalendarEvent? {
         guard currentEvent == nil else { return nil }
         let now = Date()
-        return todayEvents.first { $0.startDate > now }
+        return todayEvents.first { !$0.isAllDay && $0.startDate > now }
+    }
+    
+    // 메뉴바 리스트 표시용, 미완료 -> 완료 순. 같은 그룹 내에서는 시작 시각 오름차순
+    var sortedEventsForDisplay: [CalendarEvent] {
+        todayEvents.sorted { a, b in
+            let ac = completionsByID[a.id] == true
+            let bc = completionsByID[b.id] == true
+            if ac != bc { return !ac }
+            return a.startDate < b.startDate
+        }
     }
 
     var remainingEvents: [CalendarEvent] {

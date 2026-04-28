@@ -125,17 +125,36 @@ struct MacMenuBarView: View {
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
             } else {
-                ScrollView {
-                    VStack(spacing: 4) {
-                        ForEach(viewModel.todayEvents) { event in
-                            eventRow(
-                                event: event,
-                                isCompleted: viewModel.completionsByID[event.id] == true
-                            )
+                let displayLimit = 5
+                let displayed = Array(viewModel.sortedEventsForDisplay.prefix(displayLimit))
+                let hidden = max(0, viewModel.todayEvents.count - displayLimit)
+
+                VStack(spacing: 4) {
+                    ForEach(displayed) { event in
+                        eventRow(
+                            event: event,
+                            isCompleted: viewModel.completionsByID[event.id] == true
+                        )
+                    }
+                    if hidden > 0 {
+                        Button {
+                            openMainWindow()
+                        } label: {
+                            HStack {
+                                Text("+ \(hidden)개 더 보기")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
-                .frame(maxHeight: 180)
             }
         }
     }
@@ -173,6 +192,10 @@ struct MacMenuBarView: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
         .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            openMainWindow()
+        }
     }
 
     // MARK: - Actions
