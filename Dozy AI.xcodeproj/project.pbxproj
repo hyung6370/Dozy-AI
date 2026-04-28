@@ -169,9 +169,6 @@
 		DD9F69252F6ACFFD001952F6 /* WorkLogDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69242F6ACFFD001952F6 /* WorkLogDTO.swift */; };
 		DD9F69292F6AD073001952F6 /* DailySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69282F6AD073001952F6 /* DailySummaryView.swift */; };
 		DD9F692B2F6AD082001952F6 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
-		F6BC1A0001000000DDDD0001 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
-		F6BC1A0001000000DDDD0002 /* MacDailySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */; };
-		F6BC1A0001000000DDDD0005 /* MacCategoryAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000DDDD0006 /* MacCategoryAnalysisView.swift */; };
 		DD9F692E2F6AD0A1001952F6 /* WorkLogListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692D2F6AD0A1001952F6 /* WorkLogListView.swift */; };
 		DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692F2F6AD0B1001952F6 /* WorkLogDetailView.swift */; };
 		DD9F69322F6AD0BF001952F6 /* WorkLogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69312F6AD0BF001952F6 /* WorkLogViewModel.swift */; };
@@ -307,6 +304,10 @@
 		F699C14B2F9F59F4001FBF8F /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C14A2F9F59F4001FBF8F /* HolidayService.swift */; };
 		F699C14C2F9F59F4001FBF8F /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C14A2F9F59F4001FBF8F /* HolidayService.swift */; };
 		F6B0413B2F8F4CB500EEAC89 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */; };
+		F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */; };
+		F6BC1A0001000000DDDD0001 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
+		F6BC1A0001000000DDDD0002 /* MacDailySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */; };
+		F6BC1A0001000000DDDD0005 /* MacCategoryAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000DDDD0006 /* MacCategoryAnalysisView.swift */; };
 		F6BC59912F7396450090DF3A /* StatBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59902F7396450090DF3A /* StatBadge.swift */; };
 		F6BC59932F73977B0090DF3A /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59922F73977B0090DF3A /* SectionHeader.swift */; };
 		F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59942F7399E90090DF3A /* EventRow.swift */; };
@@ -351,7 +352,6 @@
 		F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9885C44E183149258A057270 /* SharedCalendarViewModel.swift */; };
 		F6EC8B372F9A200000CFFF87 /* MacCalendarEventBarLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B362F9A200000CFFF87 /* MacCalendarEventBarLayout.swift */; };
 		F6EC8B392F9A200000CFFF87 /* MacCalendarWeekRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B382F9A200000CFFF87 /* MacCalendarWeekRow.swift */; };
-		F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */; };
 		F6EC8B3B2F9A300000CFFF87 /* MacCalendarViewMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */; };
 		F6EC8B3D2F9A300000CFFF87 /* MacCalendarWeekView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */; };
 		F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */; };
@@ -468,8 +468,6 @@
 		DD9F69242F6ACFFD001952F6 /* WorkLogDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogDTO.swift; sourceTree = "<group>"; };
 		DD9F69282F6AD073001952F6 /* DailySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryView.swift; sourceTree = "<group>"; };
 		DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryViewModel.swift; sourceTree = "<group>"; };
-		F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDailySummaryView.swift; sourceTree = "<group>"; };
-		F6BC1A0001000000DDDD0006 /* MacCategoryAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategoryAnalysisView.swift; sourceTree = "<group>"; };
 		DD9F692D2F6AD0A1001952F6 /* WorkLogListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogListView.swift; sourceTree = "<group>"; };
 		DD9F692F2F6AD0B1001952F6 /* WorkLogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogDetailView.swift; sourceTree = "<group>"; };
 		DD9F69312F6AD0BF001952F6 /* WorkLogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLogViewModel.swift; sourceTree = "<group>"; };
@@ -585,6 +583,9 @@
 		F699C14A2F9F59F4001FBF8F /* HolidayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayService.swift; sourceTree = "<group>"; };
 		F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		F6B041F52F90751A00EEAC89 /* Dozy AIRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AIRelease.entitlements"; sourceTree = "<group>"; };
+		F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventSourceIcon.swift; sourceTree = "<group>"; };
+		F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDailySummaryView.swift; sourceTree = "<group>"; };
+		F6BC1A0001000000DDDD0006 /* MacCategoryAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategoryAnalysisView.swift; sourceTree = "<group>"; };
 		F6BC59902F7396450090DF3A /* StatBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBadge.swift; sourceTree = "<group>"; };
 		F6BC59922F73977B0090DF3A /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		F6BC59942F7399E90090DF3A /* EventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRow.swift; sourceTree = "<group>"; };
@@ -629,7 +630,6 @@
 		F6EC8B322F9A100000CFFF87 /* MacSharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		F6EC8B362F9A200000CFFF87 /* MacCalendarEventBarLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarEventBarLayout.swift; sourceTree = "<group>"; };
 		F6EC8B382F9A200000CFFF87 /* MacCalendarWeekRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarWeekRow.swift; sourceTree = "<group>"; };
-		F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventSourceIcon.swift; sourceTree = "<group>"; };
 		F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarViewMode.swift; sourceTree = "<group>"; };
 		F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarWeekView.swift; sourceTree = "<group>"; };
 		F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarDayView.swift; sourceTree = "<group>"; };
@@ -1197,6 +1197,14 @@
 			path = Intro;
 			sourceTree = "<group>";
 		};
+		F6BC1A0001000000DDDD0004 /* DailySummary */ = {
+			isa = PBXGroup;
+			children = (
+				F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */,
+			);
+			path = DailySummary;
+			sourceTree = "<group>";
+		};
 		F6EC8AE12F9896E000CFFF87 /* Dozy AI (macOS)UITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -1298,14 +1306,6 @@
 				F6EC8B092F99B00000CFFF87 /* MacEventDetailView.swift */,
 			);
 			path = EventEdit;
-			sourceTree = "<group>";
-		};
-		F6BC1A0001000000DDDD0004 /* DailySummary */ = {
-			isa = PBXGroup;
-			children = (
-				F6BC1A0001000000DDDD0003 /* MacDailySummaryView.swift */,
-			);
-			path = DailySummary;
 			sourceTree = "<group>";
 		};
 		F6EC8B132F99C00000CFFF87 /* Calendar */ = {
@@ -2161,7 +2161,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -2204,7 +2204,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2223,7 +2223,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 140;
+				CURRENT_PROJECT_VERSION = 141;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -2245,7 +2245,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 140;
+				CURRENT_PROJECT_VERSION = 141;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -2266,7 +2266,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 140;
+				CURRENT_PROJECT_VERSION = 141;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
@@ -2286,7 +2286,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 140;
+				CURRENT_PROJECT_VERSION = 141;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
@@ -2324,7 +2324,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS";
 				PRODUCT_MODULE_NAME = Dozy_AI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2371,7 +2371,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.DozyAI.macOS";
 				PRODUCT_MODULE_NAME = Dozy_AI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
