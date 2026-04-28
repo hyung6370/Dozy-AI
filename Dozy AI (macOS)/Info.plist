@@ -36,6 +36,8 @@
     <string>$(PROD_SUPABASE_HOST)</string>
     <key>PROD_SUPABASE_ANON_KEY</key>
     <string>$(PROD_SUPABASE_ANON_KEY)</string>
+    <key>PRIVACY_POLICY_URL</key>
+    <string>https://www.dozyapp.kr/privacy</string>
     <key>GIDClientID</key>
     <string>271897237404-v4v7dfeigg9i45vo46hoh4pjc3nvqgk5.apps.googleusercontent.com</string>
     <key>CFBundleURLTypes</key>
