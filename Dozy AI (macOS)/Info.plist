@@ -24,10 +24,10 @@
     <string>$(MACOSX_DEPLOYMENT_TARGET)</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.productivity</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>NSCalendarsFullAccessUsageDescription</key>
     <string>업무 일정을 분석하여 자동 일지를 생성하기 위해 캘린더 접근이 필요합니다.</string>
-    <key>NSRemindersFullAccessUsageDescription</key>
-    <string>완료한 할 일을 수집하여 업무 보고서에 포함하기 위해 필요합니다.</string>
     <key>SUPABASE_HOST</key>
     <string>$(SUPABASE_HOST)</string>
     <key>SUPABASE_ANON_KEY</key>
