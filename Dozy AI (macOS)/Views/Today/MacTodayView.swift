@@ -76,6 +76,9 @@ struct MacTodayView: View {
         .refreshable {
             viewModel.loadTodayData()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestSummary)) { _ in
+            showSummarySheet = true
+        }
         // Detail sheet — 모든 편집이 인라인으로 이루어짐
         .sheet(item: $selectedEvent) { event in
             MacEventDetailView(

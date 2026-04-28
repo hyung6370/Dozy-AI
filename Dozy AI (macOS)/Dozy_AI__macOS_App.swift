@@ -91,6 +91,36 @@ struct Dozy_AI__macOS_App: App {
                 Button("설정") { coordinator.selectedSection = .settings }
                     .keyboardShortcut("4", modifiers: [.command])
             }
+            
+            
+            // View -> Sidebar 뒤에 캘린더 navigation
+            CommandGroup(after: .sidebar) {
+                Divider()
+                Button("오늘로 이동") {
+                    coordinator.selectedSection = .calendar
+                    NotificationCenter.default.post(name: .dozyRequestGoToToday, object: nil)
+                }
+                .keyboardShortcut("t", modifiers: [.command])
+                
+                Button("이전 기간") {
+                    NotificationCenter.default.post(name: .dozyRequestPreviousPeriod, object: nil)
+                }
+                .keyboardShortcut("[", modifiers: [.command])
+                
+                Button("다음 기간") {
+                    NotificationCenter.default.post(name: .dozyRequestNextPeriod, object: nil)
+                }
+                .keyboardShortcut("]", modifiers: [.command])
+            }
+            
+            // 도구 메뉴 - AI 요약
+            CommandMenu("도구") {
+                Button("AI 요약 생성") {
+                    coordinator.selectedSection = .today
+                    NotificationCenter.default.post(name: .dozyRequestSummary, object: nil)
+                }
+                .keyboardShortcut("a", modifiers: [.command, .shift])
+            }
         }
 
         MenuBarExtra {

@@ -111,6 +111,21 @@ final class MacCalendarViewModel: ObservableObject {
                 self.refreshCompletionsOnly()
             }
             .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: .dozyRequestGoToToday)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.goToToday() }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: .dozyRequestPreviousPeriod)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.goToPreviousMonth() }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: .dozyRequestNextPeriod)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.goToNextMonth() }
+            .store(in: &cancellables)
     }
 
     /// 현재 보이는 범위의 EventCompletion 만 재조회. `.dozyEventChanged` 핸들러 — Apple/Dozy 이벤트
