@@ -65,7 +65,6 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
 
         let appleEnabled = sourceManager.isEnabled(.apple)
-        let holidayEnabled = sourceManager.isEnabled(.holiday)
         #if os(iOS)
         let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
         #else
@@ -73,9 +72,10 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         #endif
 
         if appleEnabled {
-            // 권한 미허용 등 일시적 실패가 다른 소스(Dozy/Google)까지 무력화하지 않도록 차단.
+            // 공휴일 데이터는 항상 Dozy 자체 데이터(공공데이터포털)로만 노출 — Apple 의 시스템
+            // 한국 공휴일 캘린더(subscription)는 항상 제외해서 중복 표시 방지.
             publishers.append(
-                appleService.fetchEvents(for: date, excludeSubscriptions: holidayEnabled)
+                appleService.fetchEvents(for: date, excludeSubscriptions: true)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }
@@ -88,12 +88,11 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         }
         #endif
         publishers.append(dozyService.fetchEvents(for: date))
-        if holidayEnabled {
-            publishers.append(
-                holidayService.fetchEvents(for: date)
-                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-            )
-        }
+        // 공휴일은 사용자 토글 없이 항상 ON — 한국 공휴일은 표시 기본값.
+        publishers.append(
+            holidayService.fetchEvents(for: date)
+                .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        )
 
         return Publishers.MergeMany(publishers)
             .collect()
@@ -117,7 +116,6 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
 
         let appleEnabled = sourceManager.isEnabled(.apple)
-        let holidayEnabled = sourceManager.isEnabled(.holiday)
         #if os(iOS)
         let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
         #else
@@ -126,7 +124,7 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
 
         if appleEnabled {
             publishers.append(
-                appleService.fetchEvents(from: start, to: end, excludeSubscriptions: holidayEnabled)
+                appleService.fetchEvents(from: start, to: end, excludeSubscriptions: true)
                     .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
             )
         }
@@ -139,12 +137,10 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         }
         #endif
         publishers.append(dozyService.fetchEvents(from: start, to: end))
-        if holidayEnabled {
-            publishers.append(
-                holidayService.fetchEvents(from: start, to: end)
-                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-            )
-        }
+        publishers.append(
+            holidayService.fetchEvents(from: start, to: end)
+                .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        )
 
         return Publishers.MergeMany(publishers)
             .collect()

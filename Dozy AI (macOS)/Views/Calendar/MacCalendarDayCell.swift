@@ -13,6 +13,7 @@ struct MacCalendarDayCell: View {
     let isInCurrentMonth: Bool
     let isSelected: Bool
     let isToday: Bool
+    let isHoliday: Bool       // 한국 캘린더 관습대로 공휴일이면 날짜 숫자도 빨강.
     let overflowCount: Int    // +N 표시용. 0 이면 숨김.
 
     var body: some View {
@@ -54,6 +55,7 @@ struct MacCalendarDayCell: View {
 
     private var dayColor: Color {
         if !isInCurrentMonth { return .secondary.opacity(0.4) }
+        if isHoliday { return .red }
         let weekday = Calendar.current.component(.weekday, from: date)
         switch weekday {
         case 1:  return .red

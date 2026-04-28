@@ -61,6 +61,8 @@ final class CalendarViewModel: ObservableObject {
     @Published var pendingDeleteEvent: DozyEvent? = nil
     @Published var pendingDeleteCalendarEvent: CalendarEvent? = nil
     @Published var eventBarsPerDate: [Date: [EventBarInfo]] = [:]
+    /// 공휴일이 있는 날짜(startOfDay) 집합 — 캘린더 셀의 날짜 숫자를 빨강으로 표시할 때 조회.
+    @Published var holidayDates: Set<Date> = []
     @Published var viewMode: CalendarViewMode = .month
     @Published var isLoading = false
     @Published var showEventDetail = false
@@ -850,8 +852,13 @@ final class CalendarViewModel: ObservableObject {
         allEventsInMonth.merge(eventDatesMap.mapValues { $0.0 }) { _, new in new }
         
         var barsDict: [Date: [EventBarInfo]] = [:]
+        var holidaysFound: Set<Date> = []
         for (id, (event, dates)) in eventDatesMap {
             let sorted = dates.sorted()
+            // 공휴일은 날짜 숫자를 빨강으로 표시하기 위해 별도로 collect.
+            if event.source == .holiday {
+                for d in sorted { holidaysFound.insert(d) }
+            }
             for date in sorted {
                 let pos: BarPosition
                 if sorted.count <= 1 { pos = .single }
@@ -873,6 +880,9 @@ final class CalendarViewModel: ObservableObject {
                 let key = cal.startOfDay(for: date)
                 eventBarsPerDate[key] = barsDict[key]
             }
+            // holidayDates 도 같이 갱신 — 다른 월의 공휴일은 별도 fetch 호출에서 갱신됨.
+            // 명시적 덮어쓰기 대신 union 으로 유지하여 인접 월의 공휴일도 보존.
+            holidayDates.formUnion(holidaysFound)
         }
 
         // 주간 레이아웃 계산 (forMonth 기준 주 배열 로컬 계산)

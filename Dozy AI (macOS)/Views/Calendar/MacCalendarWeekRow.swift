@@ -50,6 +50,7 @@ struct MacCalendarWeekRow: View {
                             isInCurrentMonth: isInMonth(date),
                             isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate),
                             isToday: Calendar.current.isDateInToday(date),
+                            isHoliday: hasHoliday(on: date),
                             overflowCount: layout.overflowByCol[col] ?? 0
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -126,6 +127,12 @@ struct MacCalendarWeekRow: View {
         let cal = Calendar.current
         return cal.component(.month, from: date) == cal.component(.month, from: currentMonth)
             && cal.component(.year, from: date) == cal.component(.year, from: currentMonth)
+    }
+
+    /// 해당 날짜에 공휴일 source 의 이벤트가 있는지.
+    private func hasHoliday(on date: Date) -> Bool {
+        let day = Calendar.current.startOfDay(for: date)
+        return (eventsByDate[day] ?? []).contains { $0.source == .holiday }
     }
 }
 

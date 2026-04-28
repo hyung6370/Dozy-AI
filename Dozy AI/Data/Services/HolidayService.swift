@@ -75,7 +75,10 @@ final class HolidayService {
     // MARK: - CalendarEvent 매핑
 
     private static func makeCalendarEvent(from entry: Payload.Entry, on day: Date) -> CalendarEvent {
-        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: day) ?? day
+        // 같은 날 23:59:59 — endDate 를 다음날 자정으로 설정하면 bar layout engine 이
+        // startOfDay(endDate) 를 다음날로 인식해 single-day 공휴일이 2일짜리 막대로 그려짐.
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: day)?
+            .addingTimeInterval(-1) ?? day
         return CalendarEvent(
             id: "holiday_\(entry.date)_\(entry.name)",
             calendarId: nil,

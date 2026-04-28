@@ -8,14 +8,15 @@
 import SwiftUI
 
 struct WeekGridView: View {
-    
+
     let weekDates: [Date]
     let selectedDate: Date
     let eventBars: (Date) -> [EventBarInfo]
+    let isHoliday: (Date) -> Bool
     let onSelectDate: (Date) -> Void
-    
+
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
-    
+
     var body: some View {
         HStack(spacing: 0) {
             ForEach(Array(weekDates.enumerated()), id: \.offset) { index, date in
@@ -24,11 +25,11 @@ struct WeekGridView: View {
                         Text(weekdays[index])
                             .font(.caption2)
                             .foregroundStyle(index == 0 ? .red : index == 6 ? .blue : .secondary)
-                        
+
                         Text("\(Calendar.current.component(.day, from: date))")
                             .font(.subheadline)
                             .fontWeight(isToday(date) ? .bold : .regular)
-                            .foregroundStyle((isSelected(date) || isToday(date)) ? .white : .primary)
+                            .foregroundStyle(dayNumberColor(for: date, weekdayIndex: index))
                             .frame(width: 32, height: 32)
                             .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : Color.clear))
                         
@@ -57,8 +58,19 @@ struct WeekGridView: View {
     private func isSelected(_ date: Date) -> Bool {
         Calendar.current.isDate(date, inSameDayAs: selectedDate)
     }
-    
+
     private func isToday(_ date: Date) -> Bool {
         Calendar.current.isDateInToday(date)
+    }
+
+    /// 한국 캘린더 관습: 공휴일 / 일요일 빨강, 토요일 파랑.
+    private func dayNumberColor(for date: Date, weekdayIndex: Int) -> Color {
+        if isSelected(date) || isToday(date) { return .white }
+        if isHoliday(date) { return .red }
+        switch weekdayIndex {
+        case 0: return .red
+        case 6: return .blue
+        default: return .primary
+        }
     }
 }
