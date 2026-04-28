@@ -92,7 +92,8 @@ struct MacCalendarDayView: View {
 
     private func allDayBar(event: CalendarEvent) -> some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
-        let foreground: Color = colorScheme == .dark ? .white : color
+        // 공휴일은 빨강 시그널 유지 (다크모드 흰색 통일에서 제외).
+        let foreground: Color = (colorScheme == .dark && event.source != .holiday) ? .white : color
         return HStack(spacing: 4) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
@@ -277,7 +278,7 @@ struct MacCalendarDayView: View {
         return HStack(spacing: 0) {
             Rectangle().fill(color).frame(width: 3)
             VStack(alignment: .leading, spacing: 4) {
-                let foreground: Color = colorScheme == .dark ? .white : color
+                let foreground: Color = (colorScheme == .dark && block.event.source != .holiday) ? .white : color
                 HStack(spacing: 4) {
                     if block.event.isPinned {
                         Image(systemName: "pin.fill")

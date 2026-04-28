@@ -149,8 +149,9 @@ private struct EventBarView: View {
 
     var body: some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
-        // 다크 모드에선 가독성을 위해 텍스트·아이콘을 흰색으로 통일.
-        let foreground: Color = colorScheme == .dark ? .white : color
+        // 다크 모드에선 가독성을 위해 텍스트·아이콘을 흰색으로 통일. 단, 공휴일은
+        // 빨강이 의미를 갖는 시그널이라 다크모드에서도 원색 유지.
+        let foreground: Color = (colorScheme == .dark && event.source != .holiday) ? .white : color
         HStack(spacing: 3) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
