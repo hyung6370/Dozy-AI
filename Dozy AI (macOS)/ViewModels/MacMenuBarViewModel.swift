@@ -48,9 +48,10 @@ final class MacMenuBarViewModel: ObservableObject {
         }
     }
 
+    /// 체크되지 않은 오늘 일정 — 시간 경과와 무관. 사용자 멘탈 모델은
+    /// "체크 안 한 = 남은" 이므로 endDate 시점 비교는 하지 않는다.
     var remainingEvents: [CalendarEvent] {
-        let now = Date()
-        return todayEvents.filter { $0.endDate > now && completionsByID[$0.id] != true }
+        todayEvents.filter { completionsByID[$0.id] != true }
     }
 
     var remainingCount: Int { remainingEvents.count }
@@ -89,6 +90,12 @@ final class MacMenuBarViewModel: ObservableObject {
                 if (note.object as AnyObject?) === self { return }
                 self.loadCompletions(for: self.todayEvents.map(\.id), on: Date())
             }
+            .store(in: &cancellables)
+
+        // 일정 자체가 만들어졌거나 지워졌을 때 — 리스트 통째 재로드.
+        NotificationCenter.default.publisher(for: .dozyEventListChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadTodayData() }
             .store(in: &cancellables)
     }
 

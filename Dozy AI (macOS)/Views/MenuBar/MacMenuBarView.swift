@@ -57,8 +57,13 @@ struct MacMenuBarView: View {
     // MARK: - Focus Card
 
     private var focusCard: some View {
-        let display = viewModel.currentEvent ?? viewModel.upcomingEvent
+        // 우선순위: 진행 중 시간 일정 → 다가오는 시간 일정 → 그 외 미완료 일정 (종일 / 이미 지난 것).
+        // 마지막 fallback 까지 nil 이면 "오늘 일정 모두 완료" / "오늘 일정이 없습니다" 메시지.
+        let display = viewModel.currentEvent
+            ?? viewModel.upcomingEvent
+            ?? viewModel.remainingEvents.first
         let isNow = viewModel.currentEvent != nil
+        let isUpcoming = !isNow && viewModel.upcomingEvent != nil
         return Group {
             if let event = display {
                 HStack(alignment: .top, spacing: 10) {
@@ -67,10 +72,10 @@ struct MacMenuBarView: View {
                         .frame(width: 3, height: 38)
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 6) {
-                            Image(systemName: isNow ? "circle.fill" : "clock")
+                            Image(systemName: focusIcon(isNow: isNow, isUpcoming: isUpcoming))
                                 .font(.system(size: 9))
-                                .foregroundStyle(isNow ? .green : .secondary)
-                            Text(isNow ? "지금 일정" : "다음 일정")
+                                .foregroundStyle(isNow ? Color.green : Color.secondary)
+                            Text(focusLabel(isNow: isNow, isUpcoming: isUpcoming))
                                 .font(.caption2)
                                 .fontWeight(.medium)
                                 .foregroundStyle(.secondary)
@@ -91,7 +96,7 @@ struct MacMenuBarView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                    Text(viewModel.todayEvents.isEmpty ? "오늘 일정이 없습니다" : "남은 일정이 없습니다")
+                    Text(viewModel.todayEvents.isEmpty ? "오늘 일정이 없습니다" : "오늘 일정 모두 완료!")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -100,6 +105,18 @@ struct MacMenuBarView: View {
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
             }
         }
+    }
+
+    private func focusIcon(isNow: Bool, isUpcoming: Bool) -> String {
+        if isNow { return "circle.fill" }
+        if isUpcoming { return "clock" }
+        return "calendar"
+    }
+
+    private func focusLabel(isNow: Bool, isUpcoming: Bool) -> String {
+        if isNow { return "지금 일정" }
+        if isUpcoming { return "다음 일정" }
+        return "오늘 일정"
     }
 
     // MARK: - Event List

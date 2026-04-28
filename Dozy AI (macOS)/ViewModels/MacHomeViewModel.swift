@@ -120,6 +120,17 @@ final class MacHomeViewModel: ObservableObject {
                 self.loadCompletions(for: self.todayEvents.map(\.id), on: Date())
             }
             .store(in: &cancellables)
+
+        // 다른 화면(Calendar / MenuBar)에서 일정을 만들거나 지웠을 때 — 리스트 자체가
+        // 바뀌었으므로 todayEvents 통째로 재로드. 자기-트리거는 무시.
+        NotificationCenter.default.publisher(for: .dozyEventListChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] note in
+                guard let self else { return }
+                if (note.object as AnyObject?) === self { return }
+                self.loadTodayData()
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Actions
@@ -211,6 +222,11 @@ final class MacHomeViewModel: ObservableObject {
         NotificationCenter.default.post(name: .dozyEventChanged, object: self)
     }
 
+    /// 일정 자체가 생성·삭제·수정된 경우 — Calendar / MenuBar 가 리스트를 통째로 다시 로드.
+    private func broadcastEventListChange() {
+        NotificationCenter.default.post(name: .dozyEventListChanged, object: self)
+    }
+
     /// 새 일정이면 create, 기존이면 update. Supabase 동기화 후 로컬 Today 재로드.
     func saveDozyEvent(_ event: DozyEvent) {
         let isNew = dozyEventsByID[event.id] == nil
@@ -227,6 +243,7 @@ final class MacHomeViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] in
                     self?.loadTodayData()
+                    self?.broadcastEventListChange()
                     if isNew { self?.showSuccessAnimation = true }
                 }
             )
@@ -244,6 +261,7 @@ final class MacHomeViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] in
                     self?.loadTodayData()
+                    self?.broadcastEventListChange()
                 }
             )
             .store(in: &cancellables)
@@ -257,6 +275,7 @@ final class MacHomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.loadTodayData()
+                self?.broadcastEventListChange()
             })
             .store(in: &cancellables)
     }
@@ -269,6 +288,7 @@ final class MacHomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.loadTodayData()
+                self?.broadcastEventListChange()
             })
             .store(in: &cancellables)
     }

@@ -17,6 +17,9 @@ extension Notification.Name {
     static let dozyRequestSummary = Notification.Name("dozy.requestSummary")
     static let googleSignInRestored = Notification.Name("dozy.googleSignInRestored")
     static let dozyEventChanged = Notification.Name("dozy.eventChanged")
+    /// 일정이 생성·삭제됨 — completion 토글이 아니라 리스트 자체가 바뀐 경우.
+    /// 듣는 쪽은 todayEvents / 캘린더 범위를 통째로 다시 로드해야 한다.
+    static let dozyEventListChanged = Notification.Name("dozy.eventListChanged")
 }
 
 // MARK: - App Store
