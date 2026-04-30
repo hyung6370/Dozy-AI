@@ -53,6 +53,8 @@ struct MacTodayView: View {
                         aiGenerateButton
                     }
                 }
+                
+                MacWeatherCardView()
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
