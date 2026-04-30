@@ -137,6 +137,7 @@ struct MacCalendarView: View {
         }
         .onAppear {
             viewModel.loadEventsForCurrentMonth()
+            viewModel.loadMySharedCalendars()
             installScrollSwipeMonitor()
         }
         .onDisappear {
