@@ -44,6 +44,14 @@ App Store에 릴리즈 빌드 배포
 
 macOS 로컬 컴파일 검증 (archive·서명 없이 build만)
 
+### mac beta
+
+```sh
+[bundle exec] fastlane mac beta
+```
+
+TestFlight(macOS)에 베타 빌드 배포
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
