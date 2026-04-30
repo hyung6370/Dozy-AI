@@ -10,6 +10,7 @@
 import SwiftUI
 import SwiftData
 import Supabase
+import AppKit
 
 struct MacCategoryEditSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -22,6 +23,7 @@ struct MacCategoryEditSheet: View {
     @State private var name: String
     @State private var emoji: String
     @State private var selectedColor: Color
+    @FocusState private var emojiFieldFocused: Bool
     private let originalName: String
     private let originalColorHex: String
 
@@ -59,11 +61,8 @@ struct MacCategoryEditSheet: View {
             Form {
                 Section("이름") {
                     HStack(spacing: 10) {
-                        TextField("📌", text: $emoji)
-                            .frame(width: 44)
-                            .multilineTextAlignment(.center)
-                            .font(.title2)
-                        TextField("카테고리 이름", text: $name)
+                        emojiPickerButton
+                        TextField("카테고리 명", text: $name, prompt: Text("카테고리 명"))
                     }
                 }
 
@@ -106,6 +105,47 @@ struct MacCategoryEditSheet: View {
             }
         }
         .frame(minWidth: 440, idealWidth: 500, minHeight: 460)
+    }
+
+    // MARK: - Emoji Picker
+
+    /// 시스템 이모지 패널을 띄우는 버튼. 숨겨진 TextField 가 포커스를 받아
+    /// 패널이 선택한 이모지를 거기로 흘려보내고, onChange 가 마지막 1글자만 남김.
+    private var emojiPickerButton: some View {
+        ZStack {
+            TextField("이모지", text: $emoji)
+                .focused($emojiFieldFocused)
+                .opacity(0)
+                .allowsHitTesting(false)
+                .frame(width: 44, height: 44)
+                .onChange(of: emoji) { _, newValue in
+                    if newValue.count > 1 {
+                        emoji = String(newValue.suffix(1))
+                    }
+                }
+
+            Button {
+                emojiFieldFocused = true
+                DispatchQueue.main.async {
+                    NSApp.orderFrontCharacterPalette(nil)
+                }
+            } label: {
+                Text(emoji.isEmpty ? "📌" : emoji)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.secondary.opacity(0.08))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+            .help("클릭하면 이모지 선택 창이 열립니다")
+        }
+        .frame(width: 44, height: 44)
     }
 
     // MARK: - Save
