@@ -84,7 +84,7 @@ struct MacSettingsView: View {
     private var accountSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("계정")
-                .font(.footnote)
+                .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
 
@@ -464,7 +464,7 @@ private struct SettingsSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.footnote)
+                .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
 
