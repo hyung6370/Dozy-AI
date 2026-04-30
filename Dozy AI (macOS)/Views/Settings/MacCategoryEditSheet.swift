@@ -28,18 +28,34 @@ struct MacCategoryEditSheet: View {
     private let originalColorHex: String
 
     private let presetColors: [Color] = [
+        // 따뜻한 계열
         Color(hex: "#FF3B30") ?? .red,
+        Color(hex: "#FF6B6B") ?? .red,
+        Color(hex: "#FF2D55") ?? .pink,
+        Color(hex: "#FF8FA3") ?? .pink,
         Color(hex: "#FF9500") ?? .orange,
+        Color(hex: "#FFB57A") ?? .orange,
+        // 노랑·갈색
         Color(hex: "#FFCC00") ?? .yellow,
+        Color(hex: "#FFE066") ?? .yellow,
+        Color(hex: "#A2845E") ?? .brown,
+        Color(hex: "#C7A988") ?? .brown,
         Color(hex: "#34C759") ?? .green,
+        Color(hex: "#9CE5A8") ?? .green,
+        // 청록·파랑
         Color(hex: "#00C7BE") ?? .mint,
+        Color(hex: "#5DD3CB") ?? .mint,
         Color(hex: "#30B0C7") ?? .teal,
+        Color(hex: "#7DC4F5") ?? .teal,
         Color(hex: "#007AFF") ?? .blue,
+        Color(hex: "#003F88") ?? .blue,
+        // 보라·회색
         Color(hex: "#5856D6") ?? .indigo,
         Color(hex: "#AF52DE") ?? .purple,
-        Color(hex: "#FF2D55") ?? .pink,
-        Color(hex: "#A2845E") ?? .brown,
-        Color(hex: "#8E8E93") ?? .gray
+        Color(hex: "#C996E8") ?? .purple,
+        Color(hex: "#6B6B70") ?? .gray,
+        Color(hex: "#8E8E93") ?? .gray,
+        Color(hex: "#C7C7CC") ?? .gray
     ]
 
     init(category: UserCategory? = nil) {
@@ -83,8 +99,6 @@ struct MacCategoryEditSheet: View {
                         }
                     }
                     .padding(.vertical, 4)
-
-                    ColorPicker("직접 선택", selection: $selectedColor, supportsOpacity: false)
                 }
             }
             .formStyle(.grouped)
