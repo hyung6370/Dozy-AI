@@ -10,6 +10,7 @@
 import SwiftUI
 import SwiftData
 import Supabase
+import AppKit
 
 struct MacCategoryEditSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -22,22 +23,39 @@ struct MacCategoryEditSheet: View {
     @State private var name: String
     @State private var emoji: String
     @State private var selectedColor: Color
+    @FocusState private var emojiFieldFocused: Bool
     private let originalName: String
     private let originalColorHex: String
 
     private let presetColors: [Color] = [
+        // 따뜻한 계열
         Color(hex: "#FF3B30") ?? .red,
+        Color(hex: "#FF6B6B") ?? .red,
+        Color(hex: "#FF2D55") ?? .pink,
+        Color(hex: "#FF8FA3") ?? .pink,
         Color(hex: "#FF9500") ?? .orange,
+        Color(hex: "#FFB57A") ?? .orange,
+        // 노랑·갈색
         Color(hex: "#FFCC00") ?? .yellow,
+        Color(hex: "#FFE066") ?? .yellow,
+        Color(hex: "#A2845E") ?? .brown,
+        Color(hex: "#C7A988") ?? .brown,
         Color(hex: "#34C759") ?? .green,
+        Color(hex: "#9CE5A8") ?? .green,
+        // 청록·파랑
         Color(hex: "#00C7BE") ?? .mint,
+        Color(hex: "#5DD3CB") ?? .mint,
         Color(hex: "#30B0C7") ?? .teal,
+        Color(hex: "#7DC4F5") ?? .teal,
         Color(hex: "#007AFF") ?? .blue,
+        Color(hex: "#003F88") ?? .blue,
+        // 보라·회색
         Color(hex: "#5856D6") ?? .indigo,
         Color(hex: "#AF52DE") ?? .purple,
-        Color(hex: "#FF2D55") ?? .pink,
-        Color(hex: "#A2845E") ?? .brown,
-        Color(hex: "#8E8E93") ?? .gray
+        Color(hex: "#C996E8") ?? .purple,
+        Color(hex: "#6B6B70") ?? .gray,
+        Color(hex: "#8E8E93") ?? .gray,
+        Color(hex: "#C7C7CC") ?? .gray
     ]
 
     init(category: UserCategory? = nil) {
@@ -59,11 +77,8 @@ struct MacCategoryEditSheet: View {
             Form {
                 Section("이름") {
                     HStack(spacing: 10) {
-                        TextField("📌", text: $emoji)
-                            .frame(width: 44)
-                            .multilineTextAlignment(.center)
-                            .font(.title2)
-                        TextField("카테고리 이름", text: $name)
+                        emojiPickerButton
+                        TextField("카테고리 명", text: $name, prompt: Text("카테고리 명"))
                     }
                 }
 
@@ -84,8 +99,6 @@ struct MacCategoryEditSheet: View {
                         }
                     }
                     .padding(.vertical, 4)
-
-                    ColorPicker("직접 선택", selection: $selectedColor, supportsOpacity: false)
                 }
             }
             .formStyle(.grouped)
@@ -106,6 +119,47 @@ struct MacCategoryEditSheet: View {
             }
         }
         .frame(minWidth: 440, idealWidth: 500, minHeight: 460)
+    }
+
+    // MARK: - Emoji Picker
+
+    /// 시스템 이모지 패널을 띄우는 버튼. 숨겨진 TextField 가 포커스를 받아
+    /// 패널이 선택한 이모지를 거기로 흘려보내고, onChange 가 마지막 1글자만 남김.
+    private var emojiPickerButton: some View {
+        ZStack {
+            TextField("이모지", text: $emoji)
+                .focused($emojiFieldFocused)
+                .opacity(0)
+                .allowsHitTesting(false)
+                .frame(width: 44, height: 44)
+                .onChange(of: emoji) { _, newValue in
+                    if newValue.count > 1 {
+                        emoji = String(newValue.suffix(1))
+                    }
+                }
+
+            Button {
+                emojiFieldFocused = true
+                DispatchQueue.main.async {
+                    NSApp.orderFrontCharacterPalette(nil)
+                }
+            } label: {
+                Text(emoji.isEmpty ? "📌" : emoji)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.secondary.opacity(0.08))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+            .help("클릭하면 이모지 선택 창이 열립니다")
+        }
+        .frame(width: 44, height: 44)
     }
 
     // MARK: - Save

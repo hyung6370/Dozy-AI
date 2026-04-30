@@ -63,6 +63,7 @@ final class SharedCalendarViewModel: ObservableObject {
                     self.calendars = sorted
                     for cal in sorted { self.loadMembers(calendarID: cal.id) }
                     ActiveSharedCalendarStore.shared.reconcile(with: sorted)
+                    NotificationCenter.default.post(name: .dozySharedCalendarsChanged, object: nil)
                 }
             )
             .store(in: &cancellables)
@@ -134,6 +135,7 @@ final class SharedCalendarViewModel: ObservableObject {
                     self?.calendars.removeAll { $0.id == calendar.id }
                     self?.membersMap.removeValue(forKey: calendar.id)
                     ActiveSharedCalendarStore.shared.clearIfMatches(calendar.id)
+                    NotificationCenter.default.post(name: .dozySharedCalendarsChanged, object: nil)
                     completion()
                 }
             )

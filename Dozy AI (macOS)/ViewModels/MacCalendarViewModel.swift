@@ -138,6 +138,12 @@ final class MacCalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.goToNextMonth() }
             .store(in: &cancellables)
+
+        // 설정 화면에서 공유 캘린더를 만들거나 나간 직후 picker 가 stale 되지 않도록.
+        NotificationCenter.default.publisher(for: .dozySharedCalendarsChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadMySharedCalendars() }
+            .store(in: &cancellables)
     }
 
     /// 현재 보이는 범위의 EventCompletion 만 재조회. `.dozyEventChanged` 핸들러 — Apple/Dozy 이벤트

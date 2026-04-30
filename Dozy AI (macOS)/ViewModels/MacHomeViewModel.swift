@@ -131,6 +131,12 @@ final class MacHomeViewModel: ObservableObject {
                 self.loadTodayData()
             }
             .store(in: &cancellables)
+
+        // 설정 화면에서 공유 캘린더를 만들거나 나간 직후 picker 가 stale 되지 않도록.
+        NotificationCenter.default.publisher(for: .dozySharedCalendarsChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadMySharedCalendars() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Actions

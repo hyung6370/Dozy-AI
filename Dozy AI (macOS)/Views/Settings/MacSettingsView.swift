@@ -84,7 +84,7 @@ struct MacSettingsView: View {
     private var accountSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("계정")
-                .font(.footnote)
+                .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
 
@@ -284,13 +284,15 @@ struct MacSettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .contentShape(Rectangle())
         }
     }
 
     /// 공통 설정 행 — 좌측 커스텀 에셋 아이콘 + 제목 + 우측 chevron.
+    /// frame + contentShape 로 행 전체(여백·chevron 포함)가 클릭 가능하도록.
     private func settingsRow(asset: String, title: String) -> some View {
         HStack(spacing: 10) {
             Image(asset)
@@ -303,6 +305,8 @@ struct MacSettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
     }
 }
 
@@ -464,7 +468,7 @@ private struct SettingsSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.footnote)
+                .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
 

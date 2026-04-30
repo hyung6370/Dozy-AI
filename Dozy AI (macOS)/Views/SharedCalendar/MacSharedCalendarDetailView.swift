@@ -104,11 +104,17 @@ struct MacSharedCalendarDetailView: View {
     // MARK: - Invite Code
 
     private var inviteCodeSection: some View {
-        Section {
+        let isExpired: Bool = {
+            guard let expires = currentCalendar.inviteCodeExpiresAt else { return false }
+            return expires < Date()
+        }()
+
+        return Section {
             HStack(spacing: 10) {
                 Text(currentCalendar.inviteCode ?? "-")
                     .font(.system(.title3, design: .monospaced))
                     .fontWeight(.bold)
+                    .foregroundStyle(isExpired ? Color.red : Color.primary)
                     .textSelection(.enabled)
                 Spacer()
                 Button {
@@ -132,7 +138,12 @@ struct MacSharedCalendarDetailView: View {
             if let expires = currentCalendar.inviteCodeExpiresAt {
                 Text("만료: \(expires.formatted(date: .abbreviated, time: .shortened))")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(isExpired ? .red : .secondary)
+            }
+            if isExpired {
+                Text("초대 코드가 만료되었습니다")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
         } header: {
             Text("초대 코드")
