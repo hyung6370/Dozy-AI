@@ -62,7 +62,7 @@ struct MacEventEditView: View {
                     }
                 }
                 
-                Section("카테고리") {
+                Section {
                     Picker("카테고리", selection: $viewModel.category) {
                         ForEach(categories) { cat in
                             Text("\(cat.emoji) \(cat.name)").tag(cat.name)
@@ -74,6 +74,10 @@ struct MacEventEditView: View {
                             viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
                         }
                     }
+                } header: {
+                    Text("카테고리")
+                } footer: {
+                    Text("카테고리는 설정에서 생성, 수정할 수 있습니다.")
                 }
 
                 if !viewModel.sharedCalendars.isEmpty {

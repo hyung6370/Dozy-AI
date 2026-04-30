@@ -79,7 +79,10 @@ struct EventEditView: View {
                 } header: {
                     Text("카테고리")
                 } footer: {
-                    Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("카테고리는 설정에서 생성, 수정할 수 있습니다.")
+                        Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                    }
                 }
 
                 Section("추가 정보") {
