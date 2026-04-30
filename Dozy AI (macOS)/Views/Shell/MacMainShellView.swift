@@ -57,16 +57,15 @@ struct MacMainShellView: View {
     @EnvironmentObject private var coordinator: MacAppCoordinator
     @Environment(\.colorScheme) private var colorScheme
 
+    /// List 의 selection 바인딩은 view update 중 published 프로퍼티에 직접 쓰면
+    /// "Publishing changes from within view updates" 경고가 떠서, 로컬 @State 에
+    /// 두고 onChange 로 coordinator 와 양방향 동기화한다.
+    @State private var selection: MacSection? = .today
+
     var body: some View {
         NavigationSplitView {
-            List(
-                MacSection.allCases,
-                selection: Binding(
-                    get: { coordinator.selectedSection },
-                    set: { coordinator.selectedSection = $0 }
-                )
-            ) { section in
-                let isSelected = coordinator.selectedSection == section
+            List(MacSection.allCases, selection: $selection) { section in
+                let isSelected = selection == section
                 Label {
                     Text(section.displayName)
                 } icon: {
@@ -80,6 +79,17 @@ struct MacMainShellView: View {
             .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: 180, ideal: 220)
             .navigationTitle("Dozy")
+            .onAppear { selection = coordinator.selectedSection }
+            .onChange(of: selection) { _, newValue in
+                if coordinator.selectedSection != newValue {
+                    coordinator.selectedSection = newValue
+                }
+            }
+            .onChange(of: coordinator.selectedSection) { _, newValue in
+                if selection != newValue {
+                    selection = newValue
+                }
+            }
         } detail: {
             Group {
                 switch coordinator.selectedSection {
