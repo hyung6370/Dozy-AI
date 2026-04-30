@@ -1,21 +1,28 @@
 default_platform(:ios)
 
+# ── App Store Connect API Key ───────────────────────────────────────────────
+# iOS / macOS 양쪽 lane 에서 공통 사용. 같은 Team 의 App Manager 권한이라 둘 다 커버.
+def api_key
+  app_store_connect_api_key(
+    key_id: "3J7D3KMFK9",
+    issuer_id: "af50aef2-47fe-4b8e-9cb1-821ad1e0e236",
+    key_filepath: "./fastlane/api_key.p8"
+  )
+end
+
 platform :ios do
 
-  # ── App Store Connect API Key ──────────────────────────────────────────────
-  def api_key
-    app_store_connect_api_key(
-      key_id: "3J7D3KMFK9",
-      issuer_id: "af50aef2-47fe-4b8e-9cb1-821ad1e0e236",
-      key_filepath: "./fastlane/api_key.p8"
-    )
-  end
-
   # ── Beta: TestFlight 배포 ───────────────────────────────────────────────────
+  # 빌드 번호 증가는 increment_build_number_in_xcodeproj 으로 — agvtool 은
+  # 프로젝트 전체 타겟을 일괄 변경해서 macOS 까지 끌려가는 부작용이 있음.
   desc "TestFlight에 베타 빌드 배포"
   lane :beta do
     latest = latest_testflight_build_number(api_key: api_key)
-    increment_build_number(build_number: latest + 1)
+    increment_build_number_in_xcodeproj(
+      xcodeproj: "Dozy AI.xcodeproj",
+      target: "Dozy AI",
+      build_number: (latest + 1).to_s
+    )
     build_app(
       scheme: "Dozy AI",
       configuration: "Release",
@@ -31,7 +38,11 @@ platform :ios do
   desc "App Store에 릴리즈 빌드 배포"
   lane :release do
     latest = latest_testflight_build_number(api_key: api_key)
-    increment_build_number(build_number: latest + 1)
+    increment_build_number_in_xcodeproj(
+      xcodeproj: "Dozy AI.xcodeproj",
+      target: "Dozy AI",
+      build_number: (latest + 1).to_s
+    )
     build_app(
       scheme: "Dozy AI",
       configuration: "Release",
@@ -48,13 +59,40 @@ platform :ios do
 end
 
 # ─── macOS ─────────────────────────────────────────────────────────────────
-# Phase M1 단계에선 로컬 빌드 검증만. 실제 TestFlight/MAS 업로드 lane은 M7에서.
 
 platform :mac do
 
   desc "macOS 로컬 컴파일 검증 (archive·서명 없이 build만)"
   lane :build do
     sh %Q(xcodebuild -project "../Dozy AI.xcodeproj" -scheme "Dozy AI (macOS)" -destination "platform=macOS" -configuration Debug build | xcbeautify || true)
+  end
+
+  desc "TestFlight(macOS)에 베타 빌드 배포"
+  lane :beta do
+    latest = latest_testflight_build_number(
+      api_key: api_key,
+      app_identifier: "com.dozy-ai.DozyAI.macOS",
+      platform: "osx"
+    )
+    increment_build_number_in_xcodeproj(
+      xcodeproj: "Dozy AI.xcodeproj",
+      target: "Dozy AI (macOS)",
+      build_number: (latest + 1).to_s
+    )
+    build_mac_app(
+      project: "Dozy AI.xcodeproj",
+      scheme: "Dozy AI (macOS)",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "build/mac",
+      clean: true
+    )
+    upload_to_testflight(
+      api_key: api_key,
+      pkg: lane_context[SharedValues::PKG_OUTPUT_PATH],
+      app_platform: "osx",
+      skip_waiting_for_build_processing: true
+    )
   end
 
 end
