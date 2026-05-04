@@ -18,6 +18,9 @@ final class SharedCalendarRealtimeService: ObservableObject {
 
     private let modelContext: ModelContext
     private let notificationRepository: NotificationRepository
+    /// SwiftData fetch/save 를 background 에서 처리하기 위한 ModelActor.
+    /// iOS 17.4+ 부터 ModelContext 가 @MainActor 라 main-thread I/O 경고가 떠서 분리.
+    private let syncActor: SharedCalendarSyncActor
 
     /// UI에서 파트너 탈퇴 시 알림 표시용
     @Published var partnerLeft: String? = nil   // calendarID
@@ -28,6 +31,7 @@ final class SharedCalendarRealtimeService: ObservableObject {
     init(modelContext: ModelContext, notificationRepository: NotificationRepository) {
         self.modelContext = modelContext
         self.notificationRepository = notificationRepository
+        self.syncActor = SharedCalendarSyncActor(modelContainer: modelContext.container)
     }
 
     // MARK: - 공개 인터페이스
@@ -141,17 +145,10 @@ final class SharedCalendarRealtimeService: ObservableObject {
             let remoteIDs = Set(rows.map { $0.id })
 
             // (2) 로컬에만 있는 row 삭제 — 파트너가 공유 해제/자동 삭제한 row 정리.
-            let calID = calendarID
-            let localStale: [DozyEvent] = {
-                let predicate = #Predicate<DozyEvent> { $0.sharedCalendarID == calID }
-                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
-                let local = (try? modelContext.fetch(descriptor)) ?? []
-                return local.filter { !remoteIDs.contains($0.id) }
-            }()
-            if !localStale.isEmpty {
-                for event in localStale { modelContext.delete(event) }
-                try? modelContext.save()
-                Logger.realtime.info("🗑 \(calendarID) 로컬 고아 삭제: \(localStale.count)개")
+            // SwiftData fetch/save 를 ModelActor 로 분리해 main-thread I/O 경고 회피.
+            let staleCount = await syncActor.deleteOrphans(calendarID: calendarID, remoteIDs: remoteIDs)
+            if staleCount > 0 {
+                Logger.realtime.info("🗑 \(calendarID) 로컬 고아 삭제: \(staleCount)개")
             }
 
             // (1) 원격 row upsert
@@ -269,53 +266,10 @@ final class SharedCalendarRealtimeService: ObservableObject {
     // MARK: - Shared upsert logic
 
     private func upsertEvent(row: SharedEventRow, isUpdate: Bool) async {
-        let rowID = row.id
-        let existing = try? modelContext.fetch(
-            FetchDescriptor<DozyEvent>(predicate: #Predicate { $0.id == rowID }))
-
-        if let event = existing?.first {
-            guard isUpdate, event.ownerID == row.userID else { return }
-            event.title = row.title
-            event.startDate = row.startDate
-            event.endDate = row.endDate
-            event.isAllDay = row.isAllDay
-            event.location = row.location
-            event.notes = row.notes
-            event.colorHex = row.colorHex
-            event.recurrenceRule = row.recurrenceRule
-            event.recurrenceEndDate = row.recurrenceEndDate
-            event.notificationMinutesBefore = row.notificationMinutesBefore
-            event.memos = row.memos
-            event.isCompleted = row.isCompleted
-            event.priority = row.priority
-            event.isPinned = row.isPinned
-            event.category = row.category
-            event.externalSource = row.externalSource
-            event.externalEventID = row.externalEventID
-            event.externalLastSyncedAt = row.externalLastSyncedAt
-            event.externalDeleted = row.externalDeleted
-            try? modelContext.save()
-            Logger.realtime.info("✏️ 공유 이벤트 UPDATE: \(row.title)")
-        } else {
-            let event = DozyEvent(
-                id: row.id, title: row.title,
-                startDate: row.startDate, endDate: row.endDate,
-                isAllDay: row.isAllDay, location: row.location, notes: row.notes,
-                colorHex: row.colorHex, recurrenceRule: row.recurrenceRule,
-                recurrenceEndDate: row.recurrenceEndDate,
-                notificationMinutesBefore: row.notificationMinutesBefore,
-                priority: row.priority, isPinned: row.isPinned, category: row.category,
-                sharedCalendarID: row.sharedCalendarID, ownerID: row.userID,
-                externalSource: row.externalSource,
-                externalEventID: row.externalEventID,
-                externalLastSyncedAt: row.externalLastSyncedAt,
-                externalDeleted: row.externalDeleted
-            )
-            event.memos = row.memos
-            event.isCompleted = row.isCompleted
-            modelContext.insert(event)
-            try? modelContext.save()
-            Logger.realtime.info("➕ 공유 이벤트 INSERT: \(row.title)")
+        // SwiftData fetch/save 를 ModelActor 로 분리해 main-thread I/O 경고 회피.
+        let action = await syncActor.upsert(row: row, isUpdate: isUpdate)
+        if let action {
+            Logger.realtime.info("\(action == "UPDATE" ? "✏️" : "➕") 공유 이벤트 \(action): \(row.title)")
         }
     }
 
@@ -441,7 +395,7 @@ final class SharedCalendarRealtimeService: ObservableObject {
 
 // MARK: - Internal DTO
 
-private struct SharedEventRow {
+private struct SharedEventRow: Sendable {
     let id: String
     let userID: String
     let title: String
@@ -544,4 +498,79 @@ private struct DozyEventDownloadRow: Decodable {
 
 private extension Logger {
     static let realtime = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Dozy", category: "Realtime")
+}
+
+// MARK: - SharedCalendarSyncActor
+//
+// SwiftData 의 ModelContext 가 iOS 17.4+ 부터 @MainActor 로 isolated 라
+// background fetch/save 를 위해서는 @ModelActor 매크로로 별도 actor 가 필요.
+// 이 actor 는 자체 ModelContext 를 보유하고 자기 직렬 executor 에서 동작 →
+// main-thread I/O 경고 발생 없이 SwiftData 작업 수행.
+@ModelActor
+private actor SharedCalendarSyncActor {
+
+    /// 공유 캘린더의 로컬 orphan(원격에서 사라진 row) 정리. 삭제된 row 수 반환.
+    func deleteOrphans(calendarID: String, remoteIDs: Set<String>) -> Int {
+        let calID = calendarID
+        let predicate = #Predicate<DozyEvent> { $0.sharedCalendarID == calID }
+        let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+        let local = (try? modelContext.fetch(descriptor)) ?? []
+        let stale = local.filter { !remoteIDs.contains($0.id) }
+        guard !stale.isEmpty else { return 0 }
+        for event in stale { modelContext.delete(event) }
+        try? modelContext.save()
+        return stale.count
+    }
+
+    /// 공유 row upsert. 액션 ("UPDATE" | "INSERT") 또는 nil(스킵) 반환.
+    func upsert(row: SharedEventRow, isUpdate: Bool) -> String? {
+        let rowID = row.id
+        let existing = try? modelContext.fetch(
+            FetchDescriptor<DozyEvent>(predicate: #Predicate { $0.id == rowID }))
+
+        if let event = existing?.first {
+            guard isUpdate, event.ownerID == row.userID else { return nil }
+            event.title = row.title
+            event.startDate = row.startDate
+            event.endDate = row.endDate
+            event.isAllDay = row.isAllDay
+            event.location = row.location
+            event.notes = row.notes
+            event.colorHex = row.colorHex
+            event.recurrenceRule = row.recurrenceRule
+            event.recurrenceEndDate = row.recurrenceEndDate
+            event.notificationMinutesBefore = row.notificationMinutesBefore
+            event.memos = row.memos
+            event.isCompleted = row.isCompleted
+            event.priority = row.priority
+            event.isPinned = row.isPinned
+            event.category = row.category
+            event.externalSource = row.externalSource
+            event.externalEventID = row.externalEventID
+            event.externalLastSyncedAt = row.externalLastSyncedAt
+            event.externalDeleted = row.externalDeleted
+            try? modelContext.save()
+            return "UPDATE"
+        } else {
+            let event = DozyEvent(
+                id: row.id, title: row.title,
+                startDate: row.startDate, endDate: row.endDate,
+                isAllDay: row.isAllDay, location: row.location, notes: row.notes,
+                colorHex: row.colorHex, recurrenceRule: row.recurrenceRule,
+                recurrenceEndDate: row.recurrenceEndDate,
+                notificationMinutesBefore: row.notificationMinutesBefore,
+                priority: row.priority, isPinned: row.isPinned, category: row.category,
+                sharedCalendarID: row.sharedCalendarID, ownerID: row.userID,
+                externalSource: row.externalSource,
+                externalEventID: row.externalEventID,
+                externalLastSyncedAt: row.externalLastSyncedAt,
+                externalDeleted: row.externalDeleted
+            )
+            event.memos = row.memos
+            event.isCompleted = row.isCompleted
+            modelContext.insert(event)
+            try? modelContext.save()
+            return "INSERT"
+        }
+    }
 }

@@ -300,8 +300,6 @@
 		F67333062FA836E2000A610A /* congratulation.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68872F85EBFE003464E8 /* congratulation.json */; };
 		F67333072FA836F2000A610A /* loading.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68792F85E54A003464E8 /* loading.json */; };
 		F673330A2FA837C5000A610A /* MacLottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333092FA837C5000A610A /* MacLottieView.swift */; };
-		F6A77F012FB40000000A610A /* MacNotificationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A77F002FB40000000A610A /* MacNotificationListView.swift */; };
-		F6A77F032FB40000000A610A /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */; };
 		F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
 		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
@@ -311,6 +309,8 @@
 		F699C1492F9F5822001FBF8F /* holidays.json in Resources */ = {isa = PBXBuildFile; fileRef = F699C1472F9F5822001FBF8F /* holidays.json */; };
 		F699C14B2F9F59F4001FBF8F /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C14A2F9F59F4001FBF8F /* HolidayService.swift */; };
 		F699C14C2F9F59F4001FBF8F /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C14A2F9F59F4001FBF8F /* HolidayService.swift */; };
+		F6A77F012FB40000000A610A /* MacNotificationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A77F002FB40000000A610A /* MacNotificationListView.swift */; };
+		F6A77F032FB40000000A610A /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686D2F84F79B003464E8 /* NotificationViewModel.swift */; };
 		F6B0413B2F8F4CB500EEAC89 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */; };
 		F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */; };
 		F6BC1A0001000000DDDD0001 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
@@ -586,12 +586,12 @@
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
 		F67333092FA837C5000A610A /* MacLottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLottieView.swift; sourceTree = "<group>"; };
-		F6A77F002FB40000000A610A /* MacNotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacNotificationListView.swift; sourceTree = "<group>"; };
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
 		F699C1472F9F5822001FBF8F /* holidays.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = holidays.json; sourceTree = "<group>"; };
 		F699C14A2F9F59F4001FBF8F /* HolidayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayService.swift; sourceTree = "<group>"; };
+		F6A77F002FB40000000A610A /* MacNotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacNotificationListView.swift; sourceTree = "<group>"; };
 		F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		F6B041F52F90751A00EEAC89 /* Dozy AIRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AIRelease.entitlements"; sourceTree = "<group>"; };
 		F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventSourceIcon.swift; sourceTree = "<group>"; };
@@ -1225,6 +1225,14 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		F6A77F022FB40000000A610A /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				F6A77F002FB40000000A610A /* MacNotificationListView.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
 		F6BC1A0001000000DDDD0004 /* DailySummary */ = {
 			isa = PBXGroup;
 			children = (
@@ -1289,14 +1297,6 @@
 				F6BC1A0001000000DDDD0004 /* DailySummary */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		F6A77F022FB40000000A610A /* Notifications */ = {
-			isa = PBXGroup;
-			children = (
-				F6A77F002FB40000000A610A /* MacNotificationListView.swift */,
-			);
-			path = Notifications;
 			sourceTree = "<group>";
 		};
 		F6EC8AF12F99957200CFFF87 /* ViewModels */ = {
@@ -2187,7 +2187,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 141;
+				CURRENT_PROJECT_VERSION = 142;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2230,7 +2230,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 141;
+				CURRENT_PROJECT_VERSION = 142;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2358,7 +2358,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI (macOS)/Dozy AI (macOS)Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2397,7 +2397,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;

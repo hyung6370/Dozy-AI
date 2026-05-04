@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftData
 import Supabase
+import OSLog
 
 final class DozyEventRepository: DozyEventRepositoryProtocol {
     
@@ -51,7 +52,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 context.insert(event)
                 do {
                     try context.save()
-                    Task { await Self.upsertToSupabase(event) }
+                    await Self.upsertToSupabase(event)
                     promise(.success(()))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -67,7 +68,11 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 event.updatedAt = Date()
                 do {
                     try modelContainer.mainContext.save()
-                    Task { await Self.upsertToSupabase(event) }
+                    // 로그아웃 직후 clearAllLocalData 가 race 로 로컬을 비우는 동안
+                    // fire-and-forget Task 가 supabase.auth.session 가드에 막히거나
+                    // 네트워크가 끊겨 메모/필드가 Supabase 에 영영 안 올라가던 버그가 있어
+                    // upsert 를 inline await 로 보장.
+                    await Self.upsertToSupabase(event)
                     promise(.success(()))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -137,7 +142,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
 
                 do {
                     try context.save()
-                    Task { await Self.upsertToSupabase(event) }
+                    await Self.upsertToSupabase(event)
                     promise(.success(event))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -212,10 +217,8 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 guard !touched.isEmpty else { promise(.success(())); return }
                 do {
                     try context.save()
-                    Task {
-                        for event in touched {
-                            await Self.upsertToSupabase(event)
-                        }
+                    for event in touched {
+                        await Self.upsertToSupabase(event)
                     }
                     promise(.success(()))
                 } catch {
@@ -276,7 +279,10 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
     // MARK: - Supabase 즉시 동기화
 
     private static func upsertToSupabase(_ event: DozyEvent) async {
-        guard let currentUserID = try? await supabase.auth.session.user.id.uuidString.lowercased() else { return }
+        guard let currentUserID = try? await supabase.auth.session.user.id.uuidString.lowercased() else {
+            Logger.sync.warning("⚠️ DozyEvent upsert skipped — no auth session (event id: \(event.id))")
+            return
+        }
         // 파트너 이벤트를 편집(메모 등)할 때 원래 소유자(user_id) 보존.
         // 이렇게 해야 Supabase 기록이 유지되고, 파트너 디바이스의 realtime UPDATE 가드를 통과한다.
         let row = DozyEventRow(
@@ -305,7 +311,11 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             createdAt: event.createdAt,
             updatedAt: event.updatedAt
         )
-        try? await supabase.from("dozy_events").upsert(row).execute()
+        do {
+            try await supabase.from("dozy_events").upsert(row).execute()
+        } catch {
+            Logger.sync.error("❌ DozyEvent upsert 실패 (id: \(event.id)): \(error.localizedDescription)")
+        }
     }
 
     private static func deleteFromSupabase(eventID: String) async {
