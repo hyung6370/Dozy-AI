@@ -38,6 +38,7 @@ struct MacEventDetailView: View {
     // Dialogs
     @State private var showDeleteDialog = false
     @State private var showRecurringSaveConfirm = false
+    @State private var showCategoryManagement = false
 
     init(
         event: CalendarEvent,
@@ -79,24 +80,32 @@ struct MacEventDetailView: View {
         return ownerID == currentUserID
     }
 
+    /// 파트너 이벤트(공유 캘린더의 다른 사용자가 만든 이벤트) 또는 공휴일(읽기 전용)일 때
+    /// 제목·시간·장소·메모를 제외한 표시 설정 등의 필드 입력을 잠근다.
+    /// 메모는 파트너 이벤트에서도 입력 가능 — iOS 와 동일.
+    private var fieldsLocked: Bool {
+        (!canEditEvent && dozyEvent != nil) || event.isReadOnly
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     headerSection
+                        .disabled(fieldsLocked)
                     Divider().padding(.horizontal, 20).padding(.vertical, 6)
                     infoSection
+                        .disabled(fieldsLocked)
                     if let dozy = dozyEvent {
                         memoSection(dozy)
                         displaySettingsSection
+                            .disabled(fieldsLocked)
                         if canEditEvent {
                             deleteSection(dozy)
                         }
                     }
                 }
                 .padding(.vertical, 8)
-                // 공휴일은 form 입력 자체를 비활성화 (저장 버튼은 canEditEvent 로 별도 disable).
-                .disabled((!canEditEvent && dozyEvent != nil) || event.isReadOnly)
             }
             .navigationTitle("일정 상세")
             .toolbar {
@@ -157,6 +166,9 @@ struct MacEventDetailView: View {
                 Button("취소", role: .cancel) { }
             } message: {
                 Text("반복 일정의 모든 항목이 수정됩니다.")
+            }
+            .sheet(isPresented: $showCategoryManagement) {
+                MacCategoryManagementView()
             }
         }
         .frame(minWidth: 520, idealWidth: 560, minHeight: 600)
@@ -364,31 +376,19 @@ struct MacEventDetailView: View {
                 .padding(.top, 6)
 
             ForEach(Array(memos.enumerated()), id: \.offset) { index, memo in
-                HStack(alignment: .top, spacing: 8) {
-                    Text("📝").font(.subheadline)
-                    Text(memo)
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .textSelection(.enabled)
-                }
-                .padding(10)
-                .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
-                .padding(.horizontal, 20)
-                .contextMenu {
-                    Button {
+                MacMemoRow(
+                    memo: memo,
+                    onEdit: {
                         editingMemoIndex = index
                         editingMemoText = memo
                         showEditMemoAlert = true
-                    } label: {
-                        Label("수정", systemImage: "pencil")
-                    }
-                    Button(role: .destructive) {
+                    },
+                    onDelete: {
                         deletingMemoIndex = index
                         showDeleteMemoAlert = true
-                    } label: {
-                        Label("삭제", systemImage: "trash")
                     }
-                }
+                )
+                .padding(.horizontal, 20)
             }
 
             HStack(spacing: 10) {
@@ -473,14 +473,24 @@ struct MacEventDetailView: View {
                 settingsRow {
                     Label("카테고리", systemImage: "tag")
                 } trailing: {
-                    Picker("", selection: $editVM.category) {
-                        ForEach(categories) { cat in
-                            Text("\(cat.emoji) \(cat.name)").tag(cat.name)
+                    HStack(spacing: 8) {
+                        Picker("", selection: $editVM.category) {
+                            ForEach(categories) { cat in
+                                Text("\(cat.emoji) \(cat.name)").tag(cat.name)
+                            }
                         }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .frame(width: 160, alignment: .trailing)
+                        Button {
+                            showCategoryManagement = true
+                        } label: {
+                            Image(systemName: "pencil.line")
+                                .font(.subheadline)
+                        }
+                        .buttonStyle(.borderless)
+                        .help("카테고리 관리 (추가·수정·삭제)")
                     }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .frame(width: 160, alignment: .trailing)
                 }
             }
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -578,5 +588,65 @@ private struct EditRow<Content: View>: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
+    }
+}
+
+// MARK: - MacMemoRow
+//
+// 메모 1행 — hover 시 우측에 수정/삭제 버튼 노출. 우클릭 contextMenu 도 같이.
+// macOS 에서는 contextMenu(우클릭)만으로는 발견성이 낮아 hover 액션 버튼 추가.
+private struct MacMemoRow: View {
+    let memo: String
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("📝").font(.subheadline)
+            Text(memo)
+                .font(.subheadline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
+
+            if isHovered {
+                HStack(spacing: 8) {
+                    Button(action: onEdit) {
+                        Image(systemName: "pencil")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 22, height: 22)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("수정")
+
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.body)
+                            .foregroundStyle(.red)
+                            .frame(width: 22, height: 22)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("삭제")
+                }
+                .transition(.opacity)
+            }
+        }
+        .padding(10)
+        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isHovered = hovering
+            }
+        }
+        .contextMenu {
+            Button(action: onEdit) {
+                Label("수정", systemImage: "pencil")
+            }
+            Button(role: .destructive, action: onDelete) {
+                Label("삭제", systemImage: "trash")
+            }
+        }
     }
 }

@@ -30,6 +30,8 @@ final class MacAuthViewModel: ObservableObject {
     private let authService: AuthService
     private let modelContainer: ModelContainer
     private let syncService: SyncService
+    private let sharedCalendarService: SharedCalendarServiceProtocol
+    private let realtimeService: SharedCalendarRealtimeService
     private var cancellables = Set<AnyCancellable>()
 
     var currentUser: AuthUser? {
@@ -37,10 +39,17 @@ final class MacAuthViewModel: ObservableObject {
         return nil
     }
 
-    init(authService: AuthService, modelContainer: ModelContainer) {
+    init(
+        authService: AuthService,
+        modelContainer: ModelContainer,
+        sharedCalendarService: SharedCalendarServiceProtocol,
+        realtimeService: SharedCalendarRealtimeService
+    ) {
         self.authService = authService
         self.modelContainer = modelContainer
         self.syncService = SyncService(modelContext: modelContainer.mainContext)
+        self.sharedCalendarService = sharedCalendarService
+        self.realtimeService = realtimeService
     }
 
     // MARK: - Sign-in success + sync
@@ -49,6 +58,31 @@ final class MacAuthViewModel: ObservableObject {
     private func completeSignIn(_ user: AuthUser) {
         state = .signedIn(user)
         syncAfterLogin(userID: user.id)
+        startSharedCalendarRealtime()
+    }
+
+    /// 공유 캘린더 목록을 가져와 각각에 대해 Realtime 채널 구독 시작.
+    /// 파트너가 INSERT 하는 일정에 대해 알림 카드를 생성하려면 이 구독이 필요함.
+    private func startSharedCalendarRealtime() {
+        sharedCalendarService.fetchMyCalendars()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Logger.auth.warning("⚠️ 공유 캘린더 목록 조회 실패: \(error.localizedDescription)")
+                    }
+                },
+                receiveValue: { [weak self] calendars in
+                    guard let self else { return }
+                    for cal in calendars {
+                        self.realtimeService.startWatching(calendarID: cal.id)
+                    }
+                    if !calendars.isEmpty {
+                        Logger.auth.info("📡 공유 캘린더 Realtime 구독 시작 (\(calendars.count)개)")
+                    }
+                }
+            )
+            .store(in: &cancellables)
     }
 
     private func syncAfterLogin(userID: String) {
@@ -111,6 +145,7 @@ final class MacAuthViewModel: ObservableObject {
                 }, receiveValue: { [weak self] user in
                     self?.state = .signedIn(user)
                     self?.showCongratulationAnimation = true
+                    self?.startSharedCalendarRealtime()
                 }
             )
             .store(in: &cancellables)

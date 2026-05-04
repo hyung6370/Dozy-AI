@@ -17,6 +17,7 @@ struct MacTodayView: View {
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var showNewEventSheet = false
     @State private var showSummarySheet = false
+    @State private var showNotificationSheet = false
 
     @State private var memoText: String = ""
     @State private var editingMemoIndex: Int? = nil
@@ -75,12 +76,25 @@ struct MacTodayView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
+                    showNotificationSheet = true
+                } label: {
+                    Label("알림", systemImage: viewModel.hasUnreadNotification ? "bell.badge.fill" : "bell")
+                }
+                .help("알림")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
                     showNewEventSheet = true
                 } label: {
                     Label("새 일정", systemImage: "plus")
                 }
                 .help("새 일정 추가")
             }
+        }
+        .sheet(isPresented: $showNotificationSheet, onDismiss: {
+            viewModel.refreshNotificationBadge()
+        }) {
+            MacNotificationListView(repository: container.notificationRepository)
         }
         .overlay {
             if viewModel.showSuccessAnimation {

@@ -1,45 +1,52 @@
 //
-//  NotificationListView.swift
-//  Dozy AI
+//  MacNotificationListView.swift
+//  Dozy AI (macOS)
 //
-//  Created by Hyungjun KIM on 4/7/26.
+//  iOS NotificationListView 의 macOS 포팅. sheet 로 띄우는 단일 컬럼 리스트.
+//  NotificationViewModel / NotificationRepository / NotificationRecord 는
+//  iOS 와 공유되는 코드를 그대로 재사용.
 //
 
 import SwiftUI
 
-struct NotificationListView: View {
+struct MacNotificationListView: View {
 
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: NotificationViewModel
-    @Environment(\.colorScheme) private var colorScheme
 
     init(repository: NotificationRepository) {
         _viewModel = StateObject(wrappedValue: NotificationViewModel(repository: repository))
     }
 
     var body: some View {
-        Group {
-            if viewModel.records.isEmpty {
-                emptyView
-            } else {
-                listView
+        NavigationStack {
+            Group {
+                if viewModel.records.isEmpty {
+                    emptyView
+                } else {
+                    listView
+                }
             }
+            .navigationTitle("알림")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("닫기") { dismiss() }
+                }
+            }
+            .onAppear { viewModel.onAppear() }
         }
-        .navigationTitle("알림")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear { viewModel.onAppear() }
+        .frame(minWidth: 460, idealWidth: 520, minHeight: 480)
     }
 
     private var emptyView: some View {
         VStack(spacing: 12) {
-            Image(colorScheme == .dark ? "Dark-Bell-non" : "Light-Bell-non")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 48, height: 48)
-                .opacity(0.4)
-            Text("아직 아무런 알림이 없습니다!\n알림을 설정해서 일정을 미리 확인하세요!")
+            Image(systemName: "bell.slash")
+                .font(.system(size: 44))
+                .foregroundStyle(.secondary)
+                .opacity(0.5)
+            Text("아직 아무런 알림이 없습니다")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -47,11 +54,18 @@ struct NotificationListView: View {
     private var listView: some View {
         List {
             ForEach(viewModel.records) { record in
-                NotificationRowView(record: record)
+                MacNotificationRow(record: record)
                     .listRowBackground(
                         record.isRead ? Color.clear : Color.blue.opacity(0.05)
                     )
                     .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            viewModel.delete(record)
+                        } label: {
+                            Label("삭제", systemImage: "trash")
+                        }
+                    }
+                    .contextMenu {
                         Button(role: .destructive) {
                             viewModel.delete(record)
                         } label: {
@@ -63,8 +77,7 @@ struct NotificationListView: View {
     }
 }
 
-private struct NotificationRowView: View {
-
+private struct MacNotificationRow: View {
     let record: NotificationRecord
 
     var body: some View {

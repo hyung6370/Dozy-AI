@@ -17,6 +17,7 @@ import OSLog
 final class SharedCalendarRealtimeService: ObservableObject {
 
     private let modelContext: ModelContext
+    private let notificationRepository: NotificationRepository
 
     /// UI에서 파트너 탈퇴 시 알림 표시용
     @Published var partnerLeft: String? = nil   // calendarID
@@ -24,8 +25,9 @@ final class SharedCalendarRealtimeService: ObservableObject {
     private var channelTasks: [String: Task<Void, Never>] = [:]
     private var activeChannels: [String: RealtimeChannelV2] = [:]
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, notificationRepository: NotificationRepository) {
         self.modelContext = modelContext
+        self.notificationRepository = notificationRepository
     }
 
     // MARK: - 공개 인터페이스
@@ -110,6 +112,7 @@ final class SharedCalendarRealtimeService: ObservableObject {
     private func handleInsert(_ action: InsertAction) async {
         guard let row = decode(record: action.record) else { return }
         await upsertEvent(row: row, isUpdate: false)
+        await postSharedNotificationIfNeeded(row: row)
     }
 
     // MARK: - UPDATE
@@ -196,6 +199,41 @@ final class SharedCalendarRealtimeService: ObservableObject {
             }
         } catch {
             Logger.realtime.error("⚠️ 멤버 체크 실패 (\(calendarID)): \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Shared Notification
+
+    /// 파트너가 공유 캘린더에 일정 INSERT 했을 때 NotificationRecord 카드 생성.
+    /// - 내가 만든 row 면 무시 (자기 알림 방지)
+    /// - 외부 미러(externalSource != nil) 도 무시 — 캘린더 통째 미러링은 spam 됨
+    /// - 초기 fetch 경로(`fetchAndSyncExistingEvents`) 는 호출 안 됨 → 첫 진입 시 spam 없음
+    private func postSharedNotificationIfNeeded(row: SharedEventRow) async {
+        do {
+            let myID = try await supabase.auth.session.user.id.uuidString.lowercased()
+            guard row.userID.lowercased() != myID else { return }
+            guard row.externalSource == nil else { return }
+
+            let calID = row.sharedCalendarID
+            let partner = calID.flatMap {
+                ActiveSharedCalendarStore.shared.partnerDisplayName(for: $0)
+            } ?? "파트너"
+
+            let body = "\(partner)님이 '\(row.title)' 일정을 공유했습니다"
+            let record = NotificationRecord(
+                eventID: row.id,
+                eventTitle: row.title,
+                body: body,
+                deliveryDate: Date(),
+                eventStartDate: row.startDate,
+                kind: "shared",
+                senderName: partner
+            )
+            notificationRepository.save(record)
+            NotificationCenter.default.post(name: .dozyNotificationsChanged, object: nil)
+            Logger.realtime.info("🔔 공유 알림 카드 생성: \(body)")
+        } catch {
+            Logger.realtime.error("⚠️ 공유 알림 생성 실패: \(error.localizedDescription)")
         }
     }
 
