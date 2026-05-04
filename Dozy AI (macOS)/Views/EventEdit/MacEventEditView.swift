@@ -14,6 +14,7 @@ struct MacEventEditView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: EventEditViewModel
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
+    @State private var showCategoryManagement = false
 
     init(
         eventToEdit: DozyEvent?,
@@ -74,10 +75,16 @@ struct MacEventEditView: View {
                             viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
                         }
                     }
+                    Button {
+                        showCategoryManagement = true
+                    } label: {
+                        Label("카테고리 관리", systemImage: "pencil.line")
+                            .font(.subheadline)
+                    }
                 } header: {
                     Text("카테고리")
                 } footer: {
-                    Text("카테고리는 설정에서 생성, 수정할 수 있습니다.")
+                    Text("카테고리 추가·수정·삭제는 카테고리 관리에서 할 수 있습니다.")
                 }
 
                 if !viewModel.sharedCalendars.isEmpty {
@@ -136,6 +143,9 @@ struct MacEventEditView: View {
                 if let cat = categories.first(where: { $0.name == viewModel.category }) {
                     viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
                 }
+            }
+            .sheet(isPresented: $showCategoryManagement) {
+                MacCategoryManagementView()
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

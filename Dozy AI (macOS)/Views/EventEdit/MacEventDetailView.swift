@@ -38,6 +38,7 @@ struct MacEventDetailView: View {
     // Dialogs
     @State private var showDeleteDialog = false
     @State private var showRecurringSaveConfirm = false
+    @State private var showCategoryManagement = false
 
     init(
         event: CalendarEvent,
@@ -157,6 +158,9 @@ struct MacEventDetailView: View {
                 Button("취소", role: .cancel) { }
             } message: {
                 Text("반복 일정의 모든 항목이 수정됩니다.")
+            }
+            .sheet(isPresented: $showCategoryManagement) {
+                MacCategoryManagementView()
             }
         }
         .frame(minWidth: 520, idealWidth: 560, minHeight: 600)
@@ -473,14 +477,24 @@ struct MacEventDetailView: View {
                 settingsRow {
                     Label("카테고리", systemImage: "tag")
                 } trailing: {
-                    Picker("", selection: $editVM.category) {
-                        ForEach(categories) { cat in
-                            Text("\(cat.emoji) \(cat.name)").tag(cat.name)
+                    HStack(spacing: 8) {
+                        Picker("", selection: $editVM.category) {
+                            ForEach(categories) { cat in
+                                Text("\(cat.emoji) \(cat.name)").tag(cat.name)
+                            }
                         }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .frame(width: 160, alignment: .trailing)
+                        Button {
+                            showCategoryManagement = true
+                        } label: {
+                            Image(systemName: "pencil.line")
+                                .font(.subheadline)
+                        }
+                        .buttonStyle(.borderless)
+                        .help("카테고리 관리 (추가·수정·삭제)")
                     }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .frame(width: 160, alignment: .trailing)
                 }
             }
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
