@@ -294,6 +294,12 @@
 		F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */; };
 		F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */; };
 		F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7F88A300F9C124 /* InsightBannerView.swift */; };
+		F67333012FA34508000A610A /* MacWeatherCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333002FA34508000A610A /* MacWeatherCardView.swift */; };
+		F67333042FA836C4000A610A /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F67333032FA836C4000A610A /* Lottie */; };
+		F67333052FA836DD000A610A /* success.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68812F85EA71003464E8 /* success.json */; };
+		F67333062FA836E2000A610A /* congratulation.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68872F85EBFE003464E8 /* congratulation.json */; };
+		F67333072FA836F2000A610A /* loading.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68792F85E54A003464E8 /* loading.json */; };
+		F673330A2FA837C5000A610A /* MacLottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333092FA837C5000A610A /* MacLottieView.swift */; };
 		F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
 		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
@@ -576,6 +582,8 @@
 		F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchEventCompletionsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		F650683C2F7F88A300F9C124 /* InsightBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightBannerView.swift; sourceTree = "<group>"; };
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
+		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
+		F67333092FA837C5000A610A /* MacLottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLottieView.swift; sourceTree = "<group>"; };
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
@@ -678,6 +686,7 @@
 				039B2B0FCC822BEBD1DE829B /* Auth in Frameworks */,
 				7668E58917E3B1C6A2C18D69 /* Functions in Frameworks */,
 				E2D59D8FB4222EC81FE9E82B /* PostgREST in Frameworks */,
+				F67333042FA836C4000A610A /* Lottie in Frameworks */,
 				E5FAF054B59D083A0F0F43E2 /* Realtime in Frameworks */,
 				5B7182A224756F74A04B9382 /* Storage in Frameworks */,
 				1BC96F8C4DCEC267B80DBBA8 /* Supabase in Frameworks */,
@@ -733,6 +742,7 @@
 				F6EC8AEA2F9896E000CFFF87 /* Dozy AI (macOS) */,
 				F6EC8AE52F9896E000CFFF87 /* Dozy AI (macOS)Tests */,
 				F6EC8AE12F9896E000CFFF87 /* Dozy AI (macOS)UITests */,
+				F67333022FA836C4000A610A /* Frameworks */,
 				DD808E852F694B2100F4956A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -1197,6 +1207,21 @@
 			path = Intro;
 			sourceTree = "<group>";
 		};
+		F67333022FA836C4000A610A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F67333082FA8379A000A610A /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F67333092FA837C5000A610A /* MacLottieView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		F6BC1A0001000000DDDD0004 /* DailySummary */ = {
 			isa = PBXGroup;
 			children = (
@@ -1247,6 +1272,7 @@
 		F6EC8AF02F99956C00CFFF87 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F67333082FA8379A000A610A /* Components */,
 				F6EC8AF42F9995A200CFFF87 /* Login */,
 				F6EC8AFC2F9995F000CFFF87 /* Shell */,
 				F6EC8B062F99A00000CFFF87 /* Today */,
@@ -1295,6 +1321,7 @@
 			children = (
 				F6EC8B022F99A00000CFFF87 /* MacTodayView.swift */,
 				F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */,
+				F67333002FA34508000A610A /* MacWeatherCardView.swift */,
 			);
 			path = Today;
 			sourceTree = "<group>";
@@ -1457,6 +1484,7 @@
 				F60ADF052F7FAA01007B8D9F /* Storage */,
 				F60ADF072F7FAA01007B8D9F /* Supabase */,
 				F6EC8AA02F9705A300CFFF87 /* Kingfisher */,
+				F67333032FA836C4000A610A /* Lottie */,
 			);
 			productName = "Dozy AI (macOS)";
 			productReference = F6EC8AB82F9896CE00CFFF87 /* Dozy AI (macOS).app */;
@@ -1599,7 +1627,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F699C1492F9F5822001FBF8F /* holidays.json in Resources */,
+				F67333062FA836E2000A610A /* congratulation.json in Resources */,
 				F6EC8AED2F9896E000CFFF87 /* Assets.xcassets in Resources */,
+				F67333052FA836DD000A610A /* success.json in Resources */,
+				F67333072FA836F2000A610A /* loading.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1858,6 +1889,7 @@
 				6A240FA9ABDC65D07B228D92 /* UpdateCalendarEventUseCase.swift in Sources */,
 				7EDC59EB75B22E1EE31874D6 /* AIServiceProtocol.swift in Sources */,
 				6BC42F227D080E424322F8C7 /* FetchCalendarEventsUseCase.swift in Sources */,
+				F67333012FA34508000A610A /* MacWeatherCardView.swift in Sources */,
 				14DA287D28AE4755AA8385FB /* CalendarEvent.swift in Sources */,
 				205F4867C0D576571C1F7F2A /* EventCompletion.swift in Sources */,
 				E75D1231C01579E54A5A6FE7 /* ToggleDozyEventCompletionUseCase.swift in Sources */,
@@ -1906,6 +1938,7 @@
 				F6EC8B2B2F9A000000CFFF87 /* MacMenuBarQuickAddView.swift in Sources */,
 				F6EC8B2D2F9A100000CFFF87 /* MacSharedCalendarListView.swift in Sources */,
 				F6EC8B2F2F9A100000CFFF87 /* MacSharedCalendarCreateView.swift in Sources */,
+				F673330A2FA837C5000A610A /* MacLottieView.swift in Sources */,
 				F6EC8B312F9A100000CFFF87 /* MacSharedCalendarJoinView.swift in Sources */,
 				F6EC8B332F9A100000CFFF87 /* MacSharedCalendarDetailView.swift in Sources */,
 				F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */,
@@ -2634,6 +2667,11 @@
 			productName = GoogleSignInSwift;
 		};
 		F63C68722F85E35F003464E8 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
+		};
+		F67333032FA836C4000A610A /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;

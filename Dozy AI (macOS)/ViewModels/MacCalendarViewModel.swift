@@ -28,6 +28,7 @@ final class MacCalendarViewModel: ObservableObject {
     @Published var mySharedCalendars: [SharedCalendar] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var showSuccessAnimation: Bool = false
 
     // MARK: - Cache (range key → fetched data)
 
@@ -348,6 +349,21 @@ final class MacCalendarViewModel: ObservableObject {
                     }
                 }
 
+                // visible range 안에서 새 fetch 결과에 없는 날짜의 stale 데이터 제거.
+                // 일정 삭제/날짜 이동으로 그 날짜의 마지막 일정이 사라진 경우, merge 만으로는
+                // 이전 데이터가 남아 있게 되므로 명시적으로 비워야 함. (range 밖 prefetch 키는 보존)
+                let cal = Calendar.current
+                let rangeStart = cal.startOfDay(for: start)
+                let rangeEnd   = cal.startOfDay(for: end)
+                var cursor = rangeStart
+                while cursor < rangeEnd {
+                    if byDate[cursor] == nil, self.eventsByDate[cursor] != nil {
+                        self.eventsByDate.removeValue(forKey: cursor)
+                    }
+                    guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
+                    cursor = next
+                }
+
                 self.cachedEventsByDate[key] = byDate
                 self.cachedDozyEventsByID[key] = byID
                 self.loadedRangeKeys.insert(key)
@@ -527,14 +543,19 @@ final class MacCalendarViewModel: ObservableObject {
 
     // MARK: - Cache invalidation
 
-    private func invalidateCache() {
+    /// - Parameter clearVisible: true 면 @Published 까지 즉시 비움 (계정 전환·전체 리셋용).
+    ///   false 면 내부 캐시만 비우고 visible 상태는 유지 — 직후 force fetch 결과가
+    ///   merge 로 덮어쓰기 때문에 빈 화면 깜빡임 없이 부드럽게 갱신됨.
+    private func invalidateCache(clearVisible: Bool = true) {
         cachedEventsByDate.removeAll()
         cachedDozyEventsByID.removeAll()
         cachedCompletions.removeAll()
         loadedRangeKeys.removeAll()
-        eventsByDate.removeAll()
-        dozyEventsByID.removeAll()
-        completionsByID.removeAll()
+        if clearVisible {
+            eventsByDate.removeAll()
+            dozyEventsByID.removeAll()
+            completionsByID.removeAll()
+        }
     }
 
     // MARK: - CRUD
@@ -553,9 +574,18 @@ final class MacCalendarViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] in
-                    self?.invalidateCache()
+                    // 공유 캘린더로 저장한 경우 active 를 그 캘린더로 전환해야
+                    // filterByCurrentAccount 가 즉시 노출시킴. 안 그러면 저장된
+                    // 일정이 화면에서 사라진 것처럼 보임.
+                    if let sharedID = event.sharedCalendarID {
+                        ActiveSharedCalendarStore.shared.setActive(sharedID)
+                    }
+                    // 내부 캐시만 비우고 @Published 는 유지 — fetch 결과가 merge 로
+                    // 부드럽게 덮어써서 일정 카드가 한번 사라졌다 나타나는 깜빡임 제거.
+                    self?.invalidateCache(clearVisible: false)
                     self?.loadEventsForCurrentMonth(force: true)
                     self?.broadcastEventListChange()
+                    if isNew { self?.showSuccessAnimation = true }
                 }
             )
             .store(in: &cancellables)
@@ -571,7 +601,7 @@ final class MacCalendarViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] in
-                    self?.invalidateCache()
+                    self?.invalidateCache(clearVisible: false)
                     self?.loadEventsForCurrentMonth(force: true)
                     self?.broadcastEventListChange()
                 }
@@ -587,7 +617,7 @@ final class MacCalendarViewModel: ObservableObject {
         updateDozyEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.invalidateCache()
+                self?.invalidateCache(clearVisible: false)
                 self?.loadEventsForCurrentMonth(force: true)
                 self?.broadcastEventListChange()
             })
@@ -602,7 +632,7 @@ final class MacCalendarViewModel: ObservableObject {
         updateDozyEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.invalidateCache()
+                self?.invalidateCache(clearVisible: false)
                 self?.loadEventsForCurrentMonth(force: true)
                 self?.broadcastEventListChange()
             })
@@ -633,7 +663,7 @@ final class MacCalendarViewModel: ObservableObject {
         updateDozyEventUseCase.execute(dozy)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.invalidateCache()
+                self?.invalidateCache(clearVisible: false)
                 self?.loadEventsForCurrentMonth(force: true)
             })
             .store(in: &cancellables)

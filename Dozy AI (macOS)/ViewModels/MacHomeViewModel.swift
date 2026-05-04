@@ -141,8 +141,11 @@ final class MacHomeViewModel: ObservableObject {
 
     // MARK: - Actions
 
-    func loadTodayData() {
-        isLoading = true
+    /// - Parameter showLoading: true 면 isLoading 을 토글해 ProgressView 노출
+    ///   (초기 진입·refresh). false 면 이미 표시된 todayEvents 를 유지하면서
+    ///   백그라운드 갱신 — 일정 저장 직후 깜빡임 방지용.
+    func loadTodayData(showLoading: Bool = true) {
+        if showLoading { isLoading = true }
         errorMessage = nil
         let today = Date()
 
@@ -248,7 +251,15 @@ final class MacHomeViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] in
-                    self?.loadTodayData()
+                    // 공유 캘린더로 저장한 경우 active 를 그 캘린더로 전환해야
+                    // filterByCurrentAccount 가 즉시 노출시킴. 안 그러면 저장된
+                    // 일정이 화면에서 사라진 것처럼 보임.
+                    if let sharedID = event.sharedCalendarID {
+                        ActiveSharedCalendarStore.shared.setActive(sharedID)
+                    }
+                    // showLoading: false → ProgressView 로 깜빡이지 않고 이전 todayEvents
+                    // 유지한 채 백그라운드 갱신 후 atomic 교체.
+                    self?.loadTodayData(showLoading: false)
                     self?.broadcastEventListChange()
                     if isNew { self?.showSuccessAnimation = true }
                 }
@@ -266,7 +277,7 @@ final class MacHomeViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] in
-                    self?.loadTodayData()
+                    self?.loadTodayData(showLoading: false)
                     self?.broadcastEventListChange()
                 }
             )
@@ -280,7 +291,7 @@ final class MacHomeViewModel: ObservableObject {
         updateDozyEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadTodayData()
+                self?.loadTodayData(showLoading: false)
                 self?.broadcastEventListChange()
             })
             .store(in: &cancellables)
@@ -293,7 +304,7 @@ final class MacHomeViewModel: ObservableObject {
         updateDozyEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadTodayData()
+                self?.loadTodayData(showLoading: false)
                 self?.broadcastEventListChange()
             })
             .store(in: &cancellables)
@@ -321,7 +332,7 @@ final class MacHomeViewModel: ObservableObject {
         updateDozyEventUseCase.execute(dozy)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadTodayData()
+                self?.loadTodayData(showLoading: false)
             })
             .store(in: &cancellables)
     }

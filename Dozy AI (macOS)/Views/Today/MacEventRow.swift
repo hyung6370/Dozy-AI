@@ -84,12 +84,6 @@ struct MacEventRow: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
-                    if event.isShared {
-                        Label("공유", systemImage: "person.2.fill")
-                            .font(.caption)
-                            .foregroundStyle(accent)
-                    }
-
                     if let location = event.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
                             .font(.caption)
@@ -100,6 +94,13 @@ struct MacEventRow: View {
             }
 
             Spacer(minLength: 0)
+
+            if event.isShared {
+                Image(systemName: "person.2.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(accent)
+                    .help("공유 캘린더 일정")
+            }
         }
         .contentShape(Rectangle())
     }

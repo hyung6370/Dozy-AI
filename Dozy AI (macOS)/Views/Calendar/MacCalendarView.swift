@@ -9,6 +9,7 @@
 import SwiftUI
 import AppKit
 import Combine
+import Lottie
 
 struct MacCalendarView: View {
     @ObservedObject var viewModel: MacCalendarViewModel
@@ -122,6 +123,15 @@ struct MacCalendarView: View {
                     case .ended:  swipeState.isHovering = false
                     }
                 }
+            }
+        }
+        .overlay {
+            if viewModel.showSuccessAnimation {
+                MacLottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                    viewModel.showSuccessAnimation = false
+                }
+                .scaleEffect(0.22)
+                .allowsHitTesting(false)
             }
         }
         .navigationTitle("캘린더")

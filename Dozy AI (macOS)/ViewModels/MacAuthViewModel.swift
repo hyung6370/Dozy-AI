@@ -23,6 +23,9 @@ final class MacAuthViewModel: ObservableObject {
     @Published var state: State = .loading
     @Published var errorMessage: String?
     @Published var isSigningIn = false
+    /// 사용자 트리거 로그인 성공 직후 한 번 true. MacAppRootView 가 Lottie 오버레이로 노출.
+    /// session 복원에는 세팅하지 않음 (앱 부팅 시마다 재생되면 안 됨).
+    @Published var showCongratulationAnimation = false
     
     private let authService: AuthService
     private let modelContainer: ModelContainer
@@ -107,11 +110,12 @@ final class MacAuthViewModel: ObservableObject {
                     }
                 }, receiveValue: { [weak self] user in
                     self?.state = .signedIn(user)
+                    self?.showCongratulationAnimation = true
                 }
             )
             .store(in: &cancellables)
     }
-    
+
     // MARK: - Google Sign In
 
     func signInWithGoogle() {
@@ -130,6 +134,7 @@ final class MacAuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.completeSignIn(user)
+                    self?.showCongratulationAnimation = true
                 }
             )
             .store(in: &cancellables)
@@ -153,6 +158,7 @@ final class MacAuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.completeSignIn(user)
+                    self?.showCongratulationAnimation = true
                 }
             )
             .store(in: &cancellables)
@@ -174,6 +180,7 @@ final class MacAuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.completeSignIn(user)
+                    self?.showCongratulationAnimation = true
                 }
             )
             .store(in: &cancellables)
