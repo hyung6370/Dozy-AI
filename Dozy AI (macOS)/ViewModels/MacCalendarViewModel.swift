@@ -553,6 +553,12 @@ final class MacCalendarViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] in
+                    // 공유 캘린더로 저장한 경우 active 를 그 캘린더로 전환해야
+                    // filterByCurrentAccount 가 즉시 노출시킴. 안 그러면 저장된
+                    // 일정이 화면에서 사라진 것처럼 보임.
+                    if let sharedID = event.sharedCalendarID {
+                        ActiveSharedCalendarStore.shared.setActive(sharedID)
+                    }
                     self?.invalidateCache()
                     self?.loadEventsForCurrentMonth(force: true)
                     self?.broadcastEventListChange()
