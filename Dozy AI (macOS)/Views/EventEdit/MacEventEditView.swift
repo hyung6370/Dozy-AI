@@ -37,6 +37,8 @@ struct MacEventEditView: View {
             Form {
                 Section("기본 정보") {
                     TextField("제목", text: $viewModel.title)
+                        .textFieldStyle(.roundedBorder)
+                        .multilineTextAlignment(.leading)
                     Toggle("종일", isOn: $viewModel.isAllDay)
 
                     if viewModel.isAllDay {
@@ -102,7 +104,11 @@ struct MacEventEditView: View {
 
                 Section("추가 정보") {
                     TextField("장소 (선택)", text: $viewModel.location)
+                        .textFieldStyle(.roundedBorder)
+                        .multilineTextAlignment(.leading)
                     TextField("메모 (선택)", text: $viewModel.notes, axis: .vertical)
+                        .textFieldStyle(.roundedBorder)
+                        .multilineTextAlignment(.leading)
                         .lineLimit(3...6)
                 }
 
