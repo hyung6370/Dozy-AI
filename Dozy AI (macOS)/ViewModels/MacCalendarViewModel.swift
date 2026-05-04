@@ -28,6 +28,7 @@ final class MacCalendarViewModel: ObservableObject {
     @Published var mySharedCalendars: [SharedCalendar] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var showSuccessAnimation: Bool = false
 
     // MARK: - Cache (range key → fetched data)
 
@@ -562,6 +563,7 @@ final class MacCalendarViewModel: ObservableObject {
                     self?.invalidateCache()
                     self?.loadEventsForCurrentMonth(force: true)
                     self?.broadcastEventListChange()
+                    if isNew { self?.showSuccessAnimation = true }
                 }
             )
             .store(in: &cancellables)

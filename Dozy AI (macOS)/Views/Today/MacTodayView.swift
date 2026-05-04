@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import Lottie
 
 struct MacTodayView: View {
     @ObservedObject var viewModel: MacHomeViewModel
@@ -61,6 +62,15 @@ struct MacTodayView: View {
             .frame(maxWidth: 720, alignment: .top)
             .frame(maxWidth: .infinity, alignment: .top)
         }
+        .overlay {
+            if viewModel.showSuccessAnimation {
+                MacLottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                    viewModel.showSuccessAnimation = false
+                }
+                .scaleEffect(0.22)
+                .allowsHitTesting(false)
+            }
+        }
         .navigationTitle("오늘")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -70,6 +80,15 @@ struct MacTodayView: View {
                     Label("새 일정", systemImage: "plus")
                 }
                 .help("새 일정 추가")
+            }
+        }
+        .overlay {
+            if viewModel.showSuccessAnimation {
+                MacLottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                    viewModel.showSuccessAnimation = false
+                }
+                .scaleEffect(0.22)
+                .allowsHitTesting(false)
             }
         }
         .onAppear {
