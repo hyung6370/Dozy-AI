@@ -183,6 +183,12 @@ final class HomeViewModel: ObservableObject {
             .sink { [weak self] _ in self?.loadTodayData() }
             .store(in: &cancellables)
 
+        // 파트너 공유 일정 카드 생성 시 알림 뱃지 즉시 갱신
+        NotificationCenter.default.publisher(for: .dozyNotificationsChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.refreshNotificationBadge() }
+            .store(in: &cancellables)
+
         // 기본 공유 캘린더 변경 감지 → 오늘 데이터 재로드
         ActiveSharedCalendarStore.shared.$activeCalendarID
             .dropFirst()

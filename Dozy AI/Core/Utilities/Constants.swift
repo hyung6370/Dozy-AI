@@ -24,6 +24,9 @@ extension Notification.Name {
     /// 듣는 쪽 (Mac Home/Calendar VM) 은 mySharedCalendars 를 다시 로드해서
     /// 일정 생성/수정 시트의 picker 가 stale 되지 않게 한다.
     static let dozySharedCalendarsChanged = Notification.Name("dozy.sharedCalendarsChanged")
+    /// NotificationRecord 가 새로 추가됨 — 파트너 공유 일정 카드 등.
+    /// 듣는 쪽(Home VM) 은 알림 뱃지 즉시 갱신.
+    static let dozyNotificationsChanged = Notification.Name("dozy.notificationsChanged")
 }
 
 // MARK: - App Store

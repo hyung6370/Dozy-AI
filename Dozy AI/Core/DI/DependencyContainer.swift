@@ -33,7 +33,10 @@ final class DependencyContainer: ObservableObject {
     lazy var aiService: AIServiceProtocol = AIService()
     lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
     lazy var authService = AuthService()
-    lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(modelContext: modelContainer.mainContext)
+    lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(
+        modelContext: modelContainer.mainContext,
+        notificationRepository: notificationRepository
+    )
     lazy var calendarSourceManager = CalendarSourceManager()
     lazy var patternAnalysisService = PatternAnalysisService()
 

@@ -253,7 +253,9 @@ final class MacAppCoordinator: ObservableObject {
         let c = DependencyContainer()
         let auth = MacAuthViewModel(
             authService: c.authService,
-            modelContainer: c.modelContainer
+            modelContainer: c.modelContainer,
+            sharedCalendarService: c.sharedCalendarService,
+            realtimeService: c.sharedCalendarRealtimeService
         )
         authViewModel = auth
 
