@@ -38,6 +38,9 @@ struct MacLoginView: View {
             // 시스템 SignInWithAppleButton 을 쓰지 않고 우리 AuthService 만 호출.
             // SignInWithAppleButton 을 쓰면 기본 request 와 우리 request 가 동시에
             // 실행되어 Apple 이 "Sign up not completed" 로 중단시키는 경우가 있다.
+            // borderedProminent + .tint(.black) 를 쓰면 윈도우가 inactive 가 됐을 때
+            // 시스템이 fill·텍스트를 모두 desaturate 해서 버튼이 사실상 사라진다.
+            // .plain + 수동 background 로 active 상태와 무관하게 색을 고정.
             Button {
                 authViewModel.signInWithApple()
             } label: {
@@ -47,11 +50,11 @@ struct MacLoginView: View {
                     Text("Apple로 로그인")
                         .fontWeight(.medium)
                 }
+                .foregroundStyle(.white)
                 .frame(width: 280, height: 44)
+                .background(Color.black, in: RoundedRectangle(cornerRadius: 8))
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.black)
-            .controlSize(.large)
+            .buttonStyle(.plain)
             .disabled(authViewModel.isSigningIn)
 
             Button {
@@ -112,15 +115,17 @@ struct MacLoginView: View {
                 .frame(width: 280)
                 .onSubmit { submit() }
 
+            // Apple 버튼과 동일한 사유로 .plain + 수동 background.
             Button {
                 submit()
             } label: {
                 Text(mode == .signIn ? "이메일로 로그인" : "이메일로 가입")
                     .fontWeight(.medium)
+                    .foregroundStyle(.white)
                     .frame(width: 280, height: 36)
+                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8))
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(.plain)
             .disabled(authViewModel.isSigningIn || email.isEmpty || password.isEmpty)
         }
     }

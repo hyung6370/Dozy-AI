@@ -25,15 +25,6 @@ struct MacAppRootView: View {
                 MacMainShellView()
             }
         }
-        .overlay {
-            if authViewModel.showCongratulationAnimation {
-                MacLottieView(name: "congratulation", loopMode: .playOnce) {
-                    authViewModel.showCongratulationAnimation = false
-                }
-                .scaleEffect(0.3)
-                .allowsHitTesting(false)
-            }
-        }
         .task {
             await authViewModel.restoreSession()
         }

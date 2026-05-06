@@ -234,6 +234,9 @@ final class MacAuthViewModel: ObservableObject {
                     // UserCategory(userID 컬럼 없음) / DozyEvent / WorkLog 가 잔존해서
                     // 카테고리 목록·통계가 섞이는 것 방지.
                     self.syncService.clearAllLocalData()
+                    // 로그인 직후 트리거된 축하 애니메이션이 아직 재생 중이면 overlay 가
+                    // 로그인 화면 위에 그대로 떠 있는 버그 방지.
+                    self.showCongratulationAnimation = false
                     self.state = .signedOut
                 }
             )
@@ -252,6 +255,7 @@ final class MacAuthViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] _ in
+                    self?.showCongratulationAnimation = false
                     self?.state = .signedOut
                 }
             )

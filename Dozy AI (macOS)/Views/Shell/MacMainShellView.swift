@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Lottie
 
 // MARK: - Section
 
@@ -125,6 +126,21 @@ struct MacMainShellView: View {
                 }
             }
             .modifier(ThemedContainerBackground(theme: backgroundTheme))
+            .overlay {
+                // 로그인 직후 축하 애니메이션 — 사이드바를 제외한 detail 영역 정중앙에 표시.
+                // 윈도우 짧은 변의 70% 사이즈로 윈도우 크기에 비례.
+                if authViewModel.showCongratulationAnimation {
+                    GeometryReader { proxy in
+                        let side = min(proxy.size.width, proxy.size.height) * 0.7
+                        MacLottieView(name: "congratulation", loopMode: .playOnce) {
+                            authViewModel.showCongratulationAnimation = false
+                        }
+                        .frame(width: side, height: side)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .allowsHitTesting(false)
+                }
+            }
         }
     }
 }
