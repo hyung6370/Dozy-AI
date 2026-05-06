@@ -20,6 +20,26 @@ final class AuthViewModel: ObservableObject {
     @Published var showCongratulationAnimation = false
     @Published var pendingInviteCode: String? = nil
 
+    /// 회원가입 OTP 흐름 진행 상태. View 가 단계별 UI 분기에 사용.
+    @Published var emailOTPStep: EmailOTPStep = .idle
+
+    /// 클라이언트 측 코드 입력 마감 시각. View 가 TimelineView 로 카운트다운 렌더.
+    /// Supabase 서버 측 OTP 유효시간(5분) 보다 짧게 두어 "다시 받기" 를 적극 유도 (3분).
+    @Published var otpExpiresAt: Date?
+
+    enum EmailOTPStep: Equatable {
+        case idle               // 회원가입 폼 진입 전
+        case otpSent(String)    // OTP 발송 완료, 코드 입력 대기
+        case verified(String)   // OTP 검증 완료, 비밀번호 입력 대기
+    }
+
+    /// OTP 검증까지만 마치고 비밀번호 set 전에 앱이 죽으면 partial 사용자가
+    /// signed-in 상태로 남는다 — 다음 부팅 시 .initialSession 이 이 키를 보고 정리.
+    static let signupInProgressKey = "signupInProgressEmail"
+
+    /// 클라이언트 카운트다운 길이 (초). Supabase OTP_EXPIRY (5분) 보다 짧게.
+    private static let otpClientTTL: TimeInterval = 180  // 3분
+
     private let authService: AuthService
     private let syncService: SyncService
     private let realtimeService: SharedCalendarRealtimeService
@@ -84,6 +104,14 @@ final class AuthViewModel: ObservableObject {
                 switch event {
                 case .initialSession:
                     guard let session else { return }
+                    // mid-signup 정리: OTP 검증까지만 마치고 비밀번호 set 전에 앱이 죽으면
+                    // partial 사용자가 signed-in 상태로 남는다 — 강제 sign out.
+                    if let pendingEmail = UserDefaults.standard.string(forKey: Self.signupInProgressKey),
+                       session.user.email?.lowercased() == pendingEmail {
+                        UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
+                        try? await supabase.auth.signOut()
+                        continue
+                    }
                     let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
                     let provider: AuthProvider = {
                         switch providerString {
@@ -202,6 +230,102 @@ final class AuthViewModel: ObservableObject {
                 }
             )
             .store(in: &cancellables)
+    }
+
+    // MARK: - Email signup (OTP)
+
+    /// Step 1: 이메일에 OTP 코드 전송. 성공 시 .otpSent 로 step 전환.
+    func sendEmailOTP(email: String) {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
+        authService.sendEmailOTP(email: email)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.emailOTPStep = .otpSent(normalized)
+                    self.otpExpiresAt = Date().addingTimeInterval(Self.otpClientTTL)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 2: OTP 코드 검증. 성공 시 .verified 로 step 전환 + signup-in-progress 플래그 set.
+    func verifyEmailOTP(email: String, code: String) {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
+        authService.verifyEmailOTP(email: email, code: code)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.emailOTPStep = .verified(normalized)
+                    self.otpExpiresAt = nil
+                    UserDefaults.standard.set(normalized, forKey: Self.signupInProgressKey)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 3: 비밀번호 set + 가입 완료. 성공 시 currentUser 세팅 → 메인 진입.
+    func completeEmailSignUp(password: String) {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
+        authService.setPasswordForCurrentSession(password)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    guard let self else { return }
+                    UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
+                    self.emailOTPStep = .idle
+                    self.otpExpiresAt = nil
+                    self.currentUser = user
+                    self.requestNotificationPermissionIfNeeded()
+                    self.showCongratulationAnimation = true
+                    self.syncAfterLogin(userID: user.id)
+                    self.startSharedCalendarRealtime()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 사용자가 가입 흐름을 도중에 취소 / 다른 모드로 전환할 때.
+    func cancelEmailOTPFlow() {
+        emailOTPStep = .idle
+        otpExpiresAt = nil
+        errorMessage = nil
+        if UserDefaults.standard.string(forKey: Self.signupInProgressKey) != nil {
+            UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
+            Task {
+                try? await supabase.auth.signOut()
+            }
+        }
     }
 
     func signUpWithEmail(email: String, password: String) {
