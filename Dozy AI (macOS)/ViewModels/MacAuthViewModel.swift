@@ -27,6 +27,34 @@ final class MacAuthViewModel: ObservableObject {
     /// session 복원에는 세팅하지 않음 (앱 부팅 시마다 재생되면 안 됨).
     @Published var showCongratulationAnimation = false
     @Published var showSessionExpiredAlert = false // 세션 만료 시 alert 노출 트리거, "예" 탭 시 confirmSessionExpiry()가 정리
+
+    /// 회원가입 OTP 흐름 진행 상태. View 가 단계별 UI 분기에 사용.
+    @Published var emailOTPStep: EmailOTPStep = .idle
+
+    /// 비밀번호 재설정 OTP 흐름 진행 상태. signup 흐름과 동일 패턴이지만
+    /// 분리해서 한 화면에서 두 흐름이 충돌 없이 공존.
+    @Published var passwordResetStep: EmailOTPStep = .idle
+
+    /// 재설정 카운트다운 만료 시각. signup 의 otpExpiresAt 과 분리.
+    @Published var passwordResetExpiresAt: Date?
+
+    /// 클라이언트 측 코드 입력 마감 시각. View 가 TimelineView 로 카운트다운 렌더.
+    /// nil 이면 OTP 가 활성화되지 않은 상태. Supabase 서버 측 OTP 유효시간(5분) 보다
+    /// 짧게 두어, 사용자에게 "다시 받기" 를 적극적으로 유도한다 (3분).
+    @Published var otpExpiresAt: Date?
+
+    enum EmailOTPStep: Equatable {
+        case idle               // 회원가입 폼 진입 전
+        case otpSent(String)    // OTP 발송 완료, 코드 입력 대기 (associated: email)
+        case verified(String)   // OTP 검증 완료, 비밀번호 입력 대기 (associated: email)
+    }
+
+    /// OTP 검증까지만 마치고 비밀번호 set 전에 앱이 죽으면 partial 사용자가
+    /// signed-in 상태로 남는다 — 다음 부팅 시 restoreSession 이 이 키를 보고 정리.
+    static let signupInProgressKey = "signupInProgressEmail"
+
+    /// 클라이언트 카운트다운 길이 (초). Supabase OTP_EXPIRY (5분) 보다 짧게.
+    private static let otpClientTTL: TimeInterval = 180  // 3분
     
     private let authService: AuthService
     private let modelContainer: ModelContainer
@@ -53,6 +81,200 @@ final class MacAuthViewModel: ObservableObject {
         self.syncService = SyncService(modelContext: modelContainer.mainContext)
         self.sharedCalendarService = sharedCalendarService
         self.realtimeService = realtimeService
+    }
+
+    // MARK: - Email signup (OTP)
+
+    /// Step 1: 이메일에 OTP 코드 전송. 성공 시 .otpSent 로 step 전환.
+    func sendEmailOTP(email: String) {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        errorMessage = nil
+
+        authService.sendEmailOTP(email: email)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isSigningIn = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.emailOTPStep = .otpSent(normalized)
+                    self.otpExpiresAt = Date().addingTimeInterval(Self.otpClientTTL)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 2: OTP 코드 검증. 성공 시 .verified 로 step 전환 + signup-in-progress 플래그 set.
+    func verifyEmailOTP(email: String, code: String) {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        errorMessage = nil
+
+        authService.verifyEmailOTP(email: email, code: code)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isSigningIn = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.emailOTPStep = .verified(normalized)
+                    self.otpExpiresAt = nil   // 검증 끝났으니 카운트다운 종료.
+                    // 사용자는 supabase 상에 signed-in 상태. 비밀번호 set 까지가 가입 완료.
+                    UserDefaults.standard.set(normalized, forKey: Self.signupInProgressKey)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 3: 비밀번호 set + 가입 완료. 성공 시 completeSignIn → MainShell 전환.
+    func completeEmailSignUp(password: String) {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        errorMessage = nil
+
+        authService.setPasswordForCurrentSession(password)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isSigningIn = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    guard let self else { return }
+                    UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
+                    self.emailOTPStep = .idle
+                    self.otpExpiresAt = nil
+                    self.completeSignIn(user)
+                    self.showCongratulationAnimation = true
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Password reset (OTP)
+
+    /// Step 1: 재설정 OTP 발송. 성공 시 .otpSent + 3분 카운트다운.
+    func sendPasswordResetOTP(email: String) {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        errorMessage = nil
+
+        authService.sendPasswordResetOTP(email: email)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isSigningIn = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.passwordResetStep = .otpSent(normalized)
+                    self.passwordResetExpiresAt = Date().addingTimeInterval(Self.otpClientTTL)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 2: 재설정 OTP 검증. 성공 시 .verified — 사용자가 recovery 세션으로 sign-in.
+    func verifyPasswordResetOTP(email: String, code: String) {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        errorMessage = nil
+
+        authService.verifyPasswordResetOTP(email: email, code: code)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isSigningIn = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.passwordResetStep = .verified(normalized)
+                    self.passwordResetExpiresAt = nil
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 3: 새 비밀번호로 변경 + 자동 로그인 진입. 이전 비밀번호와 같으면 거부.
+    /// signup 의 completeEmailSignUp 과 동일하게 setPasswordForCurrentSession 사용.
+    func completePasswordReset(password: String) {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        errorMessage = nil
+
+        // 1) 이전 비밀번호와 동일한지 RPC 로 검사 → 2) 다르면 update.
+        authService.isSameAsCurrentPassword(password)
+            .flatMap { [authService] same -> AnyPublisher<AuthUser, DozyError> in
+                if same {
+                    return Fail(error: .passwordSameAsCurrent).eraseToAnyPublisher()
+                }
+                return authService.setPasswordForCurrentSession(password)
+            }
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isSigningIn = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    guard let self else { return }
+                    self.passwordResetStep = .idle
+                    self.passwordResetExpiresAt = nil
+                    self.completeSignIn(user)
+                    self.showCongratulationAnimation = true
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 사용자가 비밀번호 찾기 흐름을 취소 / 로그인으로 돌아갈 때.
+    func cancelPasswordResetFlow() {
+        passwordResetStep = .idle
+        passwordResetExpiresAt = nil
+        errorMessage = nil
+        // verified 까지 진행했으면 supabase 상 recovery session 이 살아있음 — 정리.
+        if case .verified = passwordResetStep {
+            didUserInitiateSignOut = true
+            Task { try? await supabase.auth.signOut() }
+        }
+    }
+
+    /// 사용자가 가입 흐름을 도중에 취소 / 다른 모드로 전환할 때.
+    func cancelEmailOTPFlow() {
+        emailOTPStep = .idle
+        otpExpiresAt = nil
+        errorMessage = nil
+        // 이미 verified 상태에서 취소하면 supabase 상 signed-in 이라 정리 필요.
+        if UserDefaults.standard.string(forKey: Self.signupInProgressKey) != nil {
+            UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
+            didUserInitiateSignOut = true   // session listener 의 만료 alert 우회.
+            Task {
+                try? await supabase.auth.signOut()
+            }
+        }
     }
 
     // MARK: - Sign-in success + sync
@@ -139,6 +361,16 @@ final class MacAuthViewModel: ObservableObject {
     func restoreSession() async {
         do {
             let session = try await supabase.auth.session
+            // mid-signup 정리: OTP 검증까지만 마치고 비밀번호 set 전에 앱이 죽으면
+            // partial 사용자가 signed-in 상태로 남는다 — 강제로 sign out 해서 처음부터.
+            if let pendingEmail = UserDefaults.standard.string(forKey: Self.signupInProgressKey),
+               session.user.email?.lowercased() == pendingEmail {
+                UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
+                didUserInitiateSignOut = true
+                try? await supabase.auth.signOut()
+                state = .signedOut
+                return
+            }
             let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
             let provider: AuthProvider = {
                 switch providerString {

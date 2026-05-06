@@ -296,7 +296,7 @@ struct MacSettingsView: View {
     // MARK: - Danger Zone
 
     private var dangerZoneSection: some View {
-        SettingsSection(title: "위험 구역") {
+        SettingsSection(title: "계정 탈퇴") {
             Button {
                 showDeleteAccountAlert = true
             } label: {

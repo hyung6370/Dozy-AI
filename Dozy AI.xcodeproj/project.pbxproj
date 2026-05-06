@@ -114,6 +114,8 @@
 		BEDBAC0D5C430ABDFB0A57C6 /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */; };
 		BF0B976768ED331A7479E90E /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		C56216131A337FABE51EB98E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68EB2F6ACD36001952F6 /* Constants.swift */; };
+		F6A790012FB90001000A610A /* PasswordPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A790002FB90001000A610A /* PasswordPolicy.swift */; };
+		F6A790022FB90001000A610A /* PasswordPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A790002FB90001000A610A /* PasswordPolicy.swift */; };
 		C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		C9281237CC6E4AABA7AB5BA5 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
 		CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */; };
@@ -453,6 +455,7 @@
 		DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+Extensions.swift"; sourceTree = "<group>"; };
 		DD9F68E92F6ACD2E001952F6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		DD9F68EB2F6ACD36001952F6 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		F6A790002FB90001000A610A /* PasswordPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordPolicy.swift; sourceTree = "<group>"; };
 		DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLog.swift; sourceTree = "<group>"; };
 		DD9F68EF2F6ACD62001952F6 /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
 		DD9F68F12F6ACD74001952F6 /* CalendarEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEvent.swift; sourceTree = "<group>"; };
@@ -976,6 +979,7 @@
 				3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */,
 				DD9F68EB2F6ACD36001952F6 /* Constants.swift */,
 				DD44DDD22F72C44100EEE463 /* DozyError.swift */,
+				F6A790002FB90001000A610A /* PasswordPolicy.swift */,
 				DD9F68E92F6ACD2E001952F6 /* Logger.swift */,
 				F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */,
 				68E74C13AD0E4860A1AE7875 /* KeychainService.swift */,
@@ -1799,6 +1803,7 @@
 				F65068332F7DEA9200F9C124 /* CalendarEventEditView.swift in Sources */,
 				DD9F69102F6ACF04001952F6 /* CalendarService.swift in Sources */,
 				DD9F68EC2F6ACD36001952F6 /* Constants.swift in Sources */,
+				F6A790012FB90001000A610A /* PasswordPolicy.swift in Sources */,
 				DD9F68F92F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift in Sources */,
 				F650682F2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift in Sources */,
 				DD9F69162F6ACF3B001952F6 /* SpeechService.swift in Sources */,
@@ -2000,6 +2005,7 @@
 				F4656376E2828E2826D19E21 /* UserPatternRepository.swift in Sources */,
 				25B21ACCD30EBFC76A1439AB /* CalendarService.swift in Sources */,
 				C56216131A337FABE51EB98E /* Constants.swift in Sources */,
+				F6A790022FB90001000A610A /* PasswordPolicy.swift in Sources */,
 				7FFF373EB6B35C46EB1A6487 /* SpeechService.swift in Sources */,
 				13631B4305AC21FAE10F14E0 /* SwiftDataContainer.swift in Sources */,
 				41CA189E759F615475FF68CC /* AIResponseParser.swift in Sources */,
