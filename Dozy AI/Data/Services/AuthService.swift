@@ -193,8 +193,6 @@ final class AuthService: NSObject {
                 do {
                     let response = try await supabase.auth.signUp(email: normalizedEmail, password: password)
                     let authUser = response.user
-                    // Confirm-email OFF 이고 이미 가입된 이메일일 때 Supabase 는 에러 없이
-                    // identities 가 비어 있는 obfuscated user 를 돌려주기도 하므로 방어 처리.
                     if (authUser.identities ?? []).isEmpty {
                         promise(.failure(.emailAlreadyRegistered))
                         return
@@ -211,6 +209,132 @@ final class AuthService: NSObject {
                     Logger.auth.error("🔴 signUp failed: \(error.localizedDescription)")
                     #endif
                     promise(.failure(Self.mapSignUpError(error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    // MARK: - Email OTP (이메일 사전 검증 흐름)
+
+    /// auth.users 에 해당 이메일이 이미 존재하는지 확인. Supabase 에 정의된
+    /// public.check_email_exists(text) → bool RPC 호출.
+    func checkEmailExists(email: String) -> AnyPublisher<Bool, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            Task {
+                do {
+                    let exists: Bool = try await supabase
+                        .rpc("check_email_exists", params: ["email_to_check": normalizedEmail])
+                        .execute()
+                        .value
+                    promise(.success(exists))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 check_email_exists failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// 이메일 검증용 OTP 코드 발송. 이미 가입된 이메일이면 .emailAlreadyRegistered 로
+    /// 실패시켜 호출자가 안내. 신규 이메일만 OTP 발송 (shouldCreateUser: true 로
+    /// passwordless user 즉시 생성, 검증 후 비밀번호 별도 set).
+    func sendEmailOTP(email: String) -> AnyPublisher<Void, DozyError> {
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        #if DEBUG
+        Logger.auth.debug("📧 OTP send → email='\(normalizedEmail)' env=\(AppEnvironment.current.displayName)")
+        #endif
+        let emailRegex = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        if normalizedEmail.range(of: emailRegex, options: .regularExpression) == nil {
+            return Fail(error: .emailInvalid).eraseToAnyPublisher()
+        }
+        // 1) 이미 가입된 이메일이면 OTP 보내지 말고 즉시 실패.
+        return checkEmailExists(email: normalizedEmail)
+            .flatMap { exists -> AnyPublisher<Void, DozyError> in
+                if exists {
+                    return Fail(error: .emailAlreadyRegistered).eraseToAnyPublisher()
+                }
+                // 2) 신규 이메일 → OTP 발송.
+                return Future<Void, DozyError> { promise in
+                    Task {
+                        do {
+                            try await supabase.auth.signInWithOTP(
+                                email: normalizedEmail,
+                                shouldCreateUser: true
+                            )
+                            promise(.success(()))
+                        } catch {
+                            #if DEBUG
+                            Logger.auth.error("🔴 OTP send failed: \(error.localizedDescription)")
+                            #endif
+                            promise(.failure(.emailAuthFailed(underlying: error)))
+                        }
+                    }
+                }
+                .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// OTP 코드 검증. 성공 시 사용자가 signed-in 상태가 되며, 호출자는 이어서
+    /// `setPasswordForCurrentSession` 으로 비밀번호를 부여해야 한다.
+    func verifyEmailOTP(email: String, code: String) -> AnyPublisher<Void, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+            Task {
+                do {
+                    _ = try await supabase.auth.verifyOTP(
+                        email: normalizedEmail,
+                        token: trimmedCode,
+                        type: .email
+                    )
+                    promise(.success(()))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 OTP verify failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailInvalidCredentials))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// OTP 검증 후 현재 signed-in 세션에 비밀번호 설정 + signup_completed marker 기록.
+    /// 이 marker 가 있어야 pg_cron 의 미인증 사용자 정리 작업이 이 사용자를 보호한다
+    /// (Supabase 가 signInWithOTP 시점에 email_confirmed_at 등 모든 컬럼을 채워버려서
+    /// 클라이언트 측 마커 외엔 가입 완료 여부를 구분할 방법이 없음).
+    func setPasswordForCurrentSession(_ password: String) -> AnyPublisher<AuthUser, DozyError> {
+        Future { promise in
+            if password.count < 6 {
+                promise(.failure(.passwordTooShort))
+                return
+            }
+            Task {
+                do {
+                    let updatedUser = try await supabase.auth.update(
+                        user: UserAttributes(
+                            password: password,
+                            data: ["signup_completed": .bool(true)]
+                        )
+                    )
+                    let user = AuthUser(
+                        id: updatedUser.id.uuidString.lowercased(),
+                        email: updatedUser.email,
+                        displayName: nil,
+                        provider: .email
+                    )
+                    promise(.success(user))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 password set failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
                 }
             }
         }
