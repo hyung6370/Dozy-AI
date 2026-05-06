@@ -37,6 +37,7 @@ final class MacCalendarViewModel: ObservableObject {
     private var cachedCompletions:    [String: [String: Bool]]          = [:]
     private var loadedRangeKeys:      Set<String> = []
     private var inflightRangeKeys:    Set<String> = []
+    private var prefetchTask: DispatchWorkItem?
 
     // MARK: - Deps
 
@@ -271,14 +272,24 @@ final class MacCalendarViewModel: ObservableObject {
         let key = rangeKey(for: viewMode, anchor: currentMonth)
 
         if !force, loadedRangeKeys.contains(key) {
-            // 이미 캐시에 있고 eventsByDate 에 union 으로 머지되어 있음 → 즉시 반환.
+            // 캐시에서 visible dict 로 hydrate. prefetch 는 published dict 를
+            // 건드리지 않으므로, 사용자가 prefetch 된 키로 이동한 시점에 여기서 merge.
             isLoading = false
-            prefetchAdjacent()
+            if let cached = cachedEventsByDate[key] {
+                eventsByDate.merge(cached) { _, new in new }
+            }
+            if let cachedDozy = cachedDozyEventsByID[key] {
+                dozyEventsByID.merge(cachedDozy) { _, new in new }
+            }
+            if let cachedComp = cachedCompletions[key] {
+                for (k, v) in cachedComp { completionsByID[k] = v }
+            }
+            schedulePrefetchAdjacent()
             return
         }
 
         fetchRange(viewMode: viewMode, anchor: currentMonth, isPrefetch: false) { [weak self] in
-            self?.prefetchAdjacent()
+            self?.schedulePrefetchAdjacent()
         }
     }
 
@@ -352,26 +363,32 @@ final class MacCalendarViewModel: ObservableObject {
                 // visible range 안에서 새 fetch 결과에 없는 날짜의 stale 데이터 제거.
                 // 일정 삭제/날짜 이동으로 그 날짜의 마지막 일정이 사라진 경우, merge 만으로는
                 // 이전 데이터가 남아 있게 되므로 명시적으로 비워야 함. (range 밖 prefetch 키는 보존)
-                let cal = Calendar.current
-                let rangeStart = cal.startOfDay(for: start)
-                let rangeEnd   = cal.startOfDay(for: end)
-                var cursor = rangeStart
-                while cursor < rangeEnd {
-                    if byDate[cursor] == nil, self.eventsByDate[cursor] != nil {
-                        self.eventsByDate.removeValue(forKey: cursor)
+                // prefetch 는 화면에 노출되지도 않은 키라 published dict 를 건드리지 않는다.
+                if !isPrefetch {
+                    let cal = Calendar.current
+                    let rangeStart = cal.startOfDay(for: start)
+                    let rangeEnd   = cal.startOfDay(for: end)
+                    var cursor = rangeStart
+                    while cursor < rangeEnd {
+                        if byDate[cursor] == nil, self.eventsByDate[cursor] != nil {
+                            self.eventsByDate.removeValue(forKey: cursor)
+                        }
+                        guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
+                        cursor = next
                     }
-                    guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
-                    cursor = next
                 }
 
                 self.cachedEventsByDate[key] = byDate
                 self.cachedDozyEventsByID[key] = byID
                 self.loadedRangeKeys.insert(key)
 
-                // 항상 published 에 union merge — 현재 범위든 prefetch 든.
-                // 같은 key 데이터는 새 값으로 교체되지만, 다른 key 의 데이터는 보존됨.
-                self.eventsByDate.merge(byDate)   { _, new in new }
-                self.dozyEventsByID.merge(byID)   { _, new in new }
+                // visible 키만 published 에 merge. prefetch 결과는 캐시에만 두고,
+                // 사용자가 그 키로 이동했을 때 loadEventsForCurrentMonth 의 cache-hit
+                // 분기가 hydrate 한다 — 노출 안 된 데이터로 view 트리가 흔들리는 걸 방지.
+                if !isPrefetch {
+                    self.eventsByDate.merge(byDate) { _, new in new }
+                    self.dozyEventsByID.merge(byID) { _, new in new }
+                }
 
                 self.loadCompletions(for: start, to: end, key: key, isPrefetch: isPrefetch)
                 onComplete?()
@@ -400,17 +417,20 @@ final class MacCalendarViewModel: ObservableObject {
                     }
                     // 같은 range 의 이전 cached 키들을 먼저 제거 — 토글 OFF (DB 에서 isCompleted=false
                     // 가 되어 map 에 포함 안 됨) 도 즉시 visual 반영. 다른 range 의 키는 보존.
-                    if let oldMap = self.cachedCompletions[key] {
-                        for oldKey in oldMap.keys {
-                            self.completionsByID.removeValue(forKey: oldKey)
+                    // prefetch 는 캐시에만 적재하고 published 는 건드리지 않는다.
+                    if isPrefetch {
+                        self.cachedCompletions[key] = map
+                    } else {
+                        if let oldMap = self.cachedCompletions[key] {
+                            for oldKey in oldMap.keys {
+                                self.completionsByID.removeValue(forKey: oldKey)
+                            }
                         }
-                    }
-                    self.cachedCompletions[key] = map
-                    for (k, v) in map {
-                        self.completionsByID[k] = v
-                    }
+                        self.cachedCompletions[key] = map
+                        for (k, v) in map {
+                            self.completionsByID[k] = v
+                        }
 
-                    if !isPrefetch {
                         let currentKey = self.rangeKey(for: self.viewMode, anchor: self.currentMonth)
                         if key == currentKey { self.isLoading = false }
                     }
@@ -494,6 +514,17 @@ final class MacCalendarViewModel: ObservableObject {
     }
 
     // MARK: - Prefetch
+    
+    /// 스와이프/페이지 애니메이션이 끝난 뒤 prefetch가 동작하도록 지연
+    /// spring response 0.28s + 약간의 여유 -> 0.35s
+    private func schedulePrefetchAdjacent() {
+        prefetchTask?.cancel()
+        let task = DispatchWorkItem { [weak self] in
+            self?.prefetchAdjacent()
+        }
+        prefetchTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: task)
+    }
 
     /// 현재 범위의 ±2 칸을 백그라운드로 미리 로드. 빠른 연속 스와이프에도 항상 캐시 한 칸 앞서있게.
     private func prefetchAdjacent() {

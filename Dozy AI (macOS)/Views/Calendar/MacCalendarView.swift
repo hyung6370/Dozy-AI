@@ -482,6 +482,7 @@ struct MacCalendarView: View {
                     onEditEvent: handleEditEvent,
                     onDeleteEvent: handleDeleteEvent
                 )
+                .equatable()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if row < 5 {

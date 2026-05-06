@@ -141,6 +141,24 @@ struct MacCalendarWeekRow: View {
     }
 }
 
+// 클로저 프로퍼티 때문에 자동 derive 가 안 되어 데이터 필드만 비교한다.
+// eventsByDate 전체(42칸) 를 비교하면 비싸서, 이 row 가 보는 7일치만 슬라이스해서 비교 →
+// 캘린더 페이징 시 변하지 않은 row 는 SwiftUI 가 .equatable() 로 body 호출 자체를 skip.
+extension MacCalendarWeekRow: Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.weekDates == rhs.weekDates,
+              lhs.currentMonth == rhs.currentMonth,
+              Calendar.current.isDate(lhs.selectedDate, inSameDayAs: rhs.selectedDate)
+        else { return false }
+        for date in lhs.weekDates {
+            if (lhs.eventsByDate[date] ?? []) != (rhs.eventsByDate[date] ?? []) {
+                return false
+            }
+        }
+        return true
+    }
+}
+
 // MARK: - EventBarView
 
 private struct EventBarView: View {
@@ -151,8 +169,10 @@ private struct EventBarView: View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
         // 다크 모드에선 가독성을 위해 텍스트·아이콘을 흰색으로 통일. 단, 공휴일은
         // 빨강이 의미를 갖는 시그널이라 다크모드에서도 원색 유지.
-        let foreground: Color = (colorScheme == .dark && event.source != .holiday)
-            ? .white
+        // 다크 모드: 일반 일정은 흰색, 공휴일은 원래 빨강 그대로 (어둡게 처리하면 안 보임).
+        // 라이트 모드: 카테고리 색을 35% 어둡게 — material 위에서 또렷이 읽히도록.
+        let foreground: Color = colorScheme == .dark
+            ? (event.source == .holiday ? color : .white)
             : color.adjustingBrightness(0.65)
         HStack(spacing: 3) {
             Rectangle().fill(color).frame(width: 3)
