@@ -93,7 +93,9 @@ struct MacCalendarDayView: View {
     private func allDayBar(event: CalendarEvent) -> some View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
         // 공휴일은 빨강 시그널 유지 (다크모드 흰색 통일에서 제외).
-        let foreground: Color = (colorScheme == .dark && event.source != .holiday) ? .white : color
+        let foreground: Color = (colorScheme == .dark && event.source != .holiday)
+            ? .white
+            : color.adjustingBrightness(0.65)
         return HStack(spacing: 4) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
@@ -115,7 +117,7 @@ struct MacCalendarDayView: View {
         }
         .frame(height: 30)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
+        .themedEventChipBackground(color: color, cornerRadius: 6)
         .padding(.trailing, 20)
         .contentShape(Rectangle())
         .onTapGesture {
@@ -278,7 +280,9 @@ struct MacCalendarDayView: View {
         return HStack(spacing: 0) {
             Rectangle().fill(color).frame(width: 3)
             VStack(alignment: .leading, spacing: 4) {
-                let foreground: Color = (colorScheme == .dark && block.event.source != .holiday) ? .white : color
+                let foreground: Color = (colorScheme == .dark && block.event.source != .holiday)
+                    ? .white
+                    : color.adjustingBrightness(0.65)
                 HStack(spacing: 4) {
                     if block.event.isPinned {
                         Image(systemName: "pin.fill")
@@ -310,7 +314,7 @@ struct MacCalendarDayView: View {
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
         .frame(width: blockWidth, height: height, alignment: .topLeading)
-        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
+        .themedEventChipBackground(color: color, cornerRadius: 8)
         .offset(x: xLeft, y: y)
         .onTapGesture {
             guard !block.event.isReadOnly else { return }

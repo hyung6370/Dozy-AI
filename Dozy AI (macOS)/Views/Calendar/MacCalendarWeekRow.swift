@@ -151,7 +151,9 @@ private struct EventBarView: View {
         let color = Color(hex: event.calendarColorHex) ?? .blue
         // 다크 모드에선 가독성을 위해 텍스트·아이콘을 흰색으로 통일. 단, 공휴일은
         // 빨강이 의미를 갖는 시그널이라 다크모드에서도 원색 유지.
-        let foreground: Color = (colorScheme == .dark && event.source != .holiday) ? .white : color
+        let foreground: Color = (colorScheme == .dark && event.source != .holiday)
+            ? .white
+            : color.adjustingBrightness(0.65)
         HStack(spacing: 3) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
@@ -173,7 +175,7 @@ private struct EventBarView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 7))
+        .themedEventChipBackground(color: color, cornerRadius: 7)
         .contentShape(Rectangle())
     }
 }

@@ -71,6 +71,25 @@ enum MacBackgroundTheme: String, CaseIterable, Identifiable {
         case .blob:         return Color.primary.opacity(0.07)
         }
     }
+
+    // MARK: - Calendar event chip
+
+    /// 캘린더 일정 칩(카테고리 색 틴트)의 알파. 색이 있는 배경 위에선 살짝 더 진하게.
+    var eventChipColorOpacity: Double {
+        switch self {
+        case .system:                   return 0.22
+        case .ambientMesh, .blob:       return 0.32
+        }
+    }
+
+    /// 일정 칩 아래 깔리는 안정 표면. system 은 배경이 단색이라 불필요해서 nil.
+    /// ambient/blob 은 material 위에 색조를 올려 텍스트 대비를 보장한다.
+    var eventChipSubstrate: Material? {
+        switch self {
+        case .system:                   return nil
+        case .ambientMesh, .blob:       return .regularMaterial
+        }
+    }
 }
 
 /// 선택된 테마에 맞춰 배경 뷰를 렌더링하는 헬퍼. `.system` 의 경우 EmptyView 를 반환하므로
@@ -120,5 +139,36 @@ extension View {
     /// (선택적으로 `.overlay(...strokeBorder...)`) 패턴을 통째로 대체한다.
     func themedCardSurface(cornerRadius: CGFloat) -> some View {
         modifier(ThemedCardSurfaceModifier(cornerRadius: cornerRadius))
+    }
+
+    /// 캘린더 일정 칩 배경. 기존 `.background(color.opacity(0.22), in: RoundedRectangle(...))`
+    /// 패턴을 대체. ambient/blob 테마에선 머티리얼 서브스트레이트 위에 색조를 얹어
+    /// 색이 있는 배경 너머에서도 칩 텍스트 대비를 유지한다.
+    func themedEventChipBackground(color: Color, cornerRadius: CGFloat) -> some View {
+        modifier(ThemedEventChipBackgroundModifier(color: color, cornerRadius: cornerRadius))
+    }
+}
+
+private struct ThemedEventChipBackgroundModifier: ViewModifier {
+    let color: Color
+    let cornerRadius: CGFloat
+
+    @AppStorage("macBackgroundTheme")
+    private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
+
+    private var theme: MacBackgroundTheme {
+        MacBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
+    }
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius)
+        content.background {
+            ZStack {
+                if let substrate = theme.eventChipSubstrate {
+                    shape.fill(substrate)
+                }
+                shape.fill(color.opacity(theme.eventChipColorOpacity))
+            }
+        }
     }
 }

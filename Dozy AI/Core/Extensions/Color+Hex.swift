@@ -23,6 +23,21 @@ extension Color {
         self.init(red: r, green: g, blue: b)
     }
 
+    /// HSB brightness 를 `factor` 만큼 곱한 변형색을 반환. factor < 1 이면 어둡게.
+    /// 캘린더 일정 텍스트처럼 대비가 필요한 곳에서 카테고리 색을 진하게 가져갈 때 사용.
+    func adjustingBrightness(_ factor: CGFloat) -> Color {
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        #if canImport(UIKit)
+        guard UIColor(self).getHue(&h, saturation: &s, brightness: &b, alpha: &a) else { return self }
+        #elseif canImport(AppKit)
+        guard let ns = NSColor(self).usingColorSpace(.sRGB) else { return self }
+        ns.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+        #else
+        return self
+        #endif
+        return Color(hue: h, saturation: s, brightness: max(0, min(1, b * factor)), opacity: a)
+    }
+
     /// sRGB 기준으로 정규화된 hex 문자열을 반환. P3/extended 컬러스페이스 안전.
     func toHex() -> String? {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0

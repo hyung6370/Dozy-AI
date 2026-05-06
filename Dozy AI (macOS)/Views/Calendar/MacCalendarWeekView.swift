@@ -55,10 +55,10 @@ struct MacCalendarWeekView: View {
                         .fontWeight(.medium)
                         .foregroundStyle(weekdayColor(idx))
                     Text("\(cal.component(.day, from: date))")
-                        .font(.subheadline)
+                        .font(.body)
                         .fontWeight(cal.isDateInToday(date) ? .bold : .medium)
                         .foregroundStyle(cal.isDateInToday(date) ? Color.white : .primary)
-                        .frame(width: 26, height: 26)
+                        .frame(width: 30, height: 30)
                         .background(cal.isDateInToday(date) ? Color.accentColor : Color.clear, in: Circle())
                 }
                 .frame(maxWidth: .infinity)
@@ -152,7 +152,9 @@ struct MacCalendarWeekView: View {
         let y = 6 + CGFloat(bar.stackRow) * 20
         let color = Color(hex: bar.event.calendarColorHex) ?? .blue
         // 공휴일은 빨강 시그널 유지 (다크모드 흰색 통일에서 제외).
-        let foreground: Color = (colorScheme == .dark && bar.event.source != .holiday) ? .white : color
+        let foreground: Color = (colorScheme == .dark && bar.event.source != .holiday)
+            ? .white
+            : color.adjustingBrightness(0.65)
 
         return HStack(spacing: 3) {
             if bar.event.isPinned {
@@ -173,7 +175,7 @@ struct MacCalendarWeekView: View {
             Spacer(minLength: 0)
         }
         .frame(width: max(0, width), height: 20)
-        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
+        .themedEventChipBackground(color: color, cornerRadius: 6)
         .position(x: xCenter, y: y + 8)
         .onTapGesture {
             guard !bar.event.isReadOnly else { return }
@@ -382,7 +384,9 @@ struct MacCalendarWeekView: View {
                 .frame(width: 3)
 
             VStack(alignment: .leading, spacing: 2) {
-                let foreground: Color = (colorScheme == .dark && block.event.source != .holiday) ? .white : color
+                let foreground: Color = (colorScheme == .dark && block.event.source != .holiday)
+                    ? .white
+                    : color.adjustingBrightness(0.65)
                 HStack(spacing: 3) {
                     if block.event.isPinned {
                         Image(systemName: "pin.fill")
@@ -409,7 +413,7 @@ struct MacCalendarWeekView: View {
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
         .frame(width: width, height: height, alignment: .topLeading)
-        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 6))
+        .themedEventChipBackground(color: color, cornerRadius: 6)
         .offset(x: xLeft, y: y)
         .onTapGesture {
             guard !block.event.isReadOnly else { return }
