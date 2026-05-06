@@ -27,6 +27,12 @@ final class AuthViewModel: ObservableObject {
     /// Supabase 서버 측 OTP 유효시간(5분) 보다 짧게 두어 "다시 받기" 를 적극 유도 (3분).
     @Published var otpExpiresAt: Date?
 
+    /// 비밀번호 재설정 OTP 흐름 진행 상태 — signup 흐름과 분리.
+    @Published var passwordResetStep: EmailOTPStep = .idle
+
+    /// 재설정 카운트다운 만료 시각.
+    @Published var passwordResetExpiresAt: Date?
+
     enum EmailOTPStep: Equatable {
         case idle               // 회원가입 폼 진입 전
         case otpSent(String)    // OTP 발송 완료, 코드 입력 대기
@@ -325,6 +331,103 @@ final class AuthViewModel: ObservableObject {
             Task {
                 try? await supabase.auth.signOut()
             }
+        }
+    }
+
+    // MARK: - Password reset (OTP)
+
+    /// Step 1: 재설정 OTP 발송.
+    func sendPasswordResetOTP(email: String) {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
+        authService.sendPasswordResetOTP(email: email)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.passwordResetStep = .otpSent(normalized)
+                    self.passwordResetExpiresAt = Date().addingTimeInterval(Self.otpClientTTL)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 2: 재설정 OTP 검증 — 성공 시 recovery 세션으로 sign-in.
+    func verifyPasswordResetOTP(email: String, code: String) {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
+        authService.verifyPasswordResetOTP(email: email, code: code)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.passwordResetStep = .verified(normalized)
+                    self.passwordResetExpiresAt = nil
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 3: 새 비밀번호로 변경 + 자동 로그인. 이전 비밀번호와 같으면 거부.
+    func completePasswordReset(password: String) {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
+        authService.isSameAsCurrentPassword(password)
+            .flatMap { [authService] same -> AnyPublisher<AuthUser, DozyError> in
+                if same {
+                    return Fail(error: .passwordSameAsCurrent).eraseToAnyPublisher()
+                }
+                return authService.setPasswordForCurrentSession(password)
+            }
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    guard let self else { return }
+                    self.passwordResetStep = .idle
+                    self.passwordResetExpiresAt = nil
+                    self.currentUser = user
+                    self.requestNotificationPermissionIfNeeded()
+                    self.showCongratulationAnimation = true
+                    self.syncAfterLogin(userID: user.id)
+                    self.startSharedCalendarRealtime()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 사용자가 비밀번호 찾기 흐름을 취소 / 로그인으로 돌아갈 때.
+    func cancelPasswordResetFlow() {
+        passwordResetStep = .idle
+        passwordResetExpiresAt = nil
+        errorMessage = nil
+        if case .verified = passwordResetStep {
+            Task { try? await supabase.auth.signOut() }
         }
     }
 

@@ -25,6 +25,7 @@ enum DozyError: LocalizedError {
     case passwordTooShort
     case emailAlreadyRegistered
     case emailInvalidCredentials
+    case passwordSameAsCurrent
     case naverCalendarFetchFailed
     case calendarWriteFailed(underlying: Error)
     case calendarEventNotFound
@@ -77,6 +78,8 @@ enum DozyError: LocalizedError {
             return "이미 존재하는 이메일입니다. 로그인 탭을 사용해주세요."
         case .emailInvalidCredentials:
             return "이메일 또는 비밀번호가 올바르지 않습니다."
+        case .passwordSameAsCurrent:
+            return "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요."
         case .calendarWriteFailed(let error):
             return "캘린더 일정 수정/삭제에 실패했습니다. (\(error.localizedDescription))"
         case .calendarEventNotFound:

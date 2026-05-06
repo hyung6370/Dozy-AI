@@ -305,6 +305,84 @@ final class AuthService: NSObject {
         .eraseToAnyPublisher()
     }
 
+    /// 입력 비밀번호가 현재 저장된 비밀번호와 같은지 확인 (RPC). 비밀번호 재설정에서
+    /// "이전과 똑같이 못 하게" 가드용. authenticated 상태에서만 호출 가능.
+    func isSameAsCurrentPassword(_ password: String) -> AnyPublisher<Bool, DozyError> {
+        Future { promise in
+            Task {
+                do {
+                    let same: Bool = try await supabase
+                        .rpc("is_same_as_current_password", params: ["input_password": password])
+                        .execute()
+                        .value
+                    promise(.success(same))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 is_same_as_current_password failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    // MARK: - Password reset (OTP)
+
+    /// 비밀번호 재설정용 OTP 발송. resetPasswordForEmail 은 Reset Password 템플릿을
+    /// 사용하므로 sign-up Magic Link 와 별개의 메일 — 템플릿에 `{{ .Token }}` 가
+    /// 포함돼 있어야 6자리 코드가 메일에 표시된다.
+    func sendPasswordResetOTP(email: String) -> AnyPublisher<Void, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            #if DEBUG
+            Logger.auth.debug("📧 Reset OTP send → email='\(normalizedEmail)' env=\(AppEnvironment.current.displayName)")
+            #endif
+            let emailRegex = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+            if normalizedEmail.range(of: emailRegex, options: .regularExpression) == nil {
+                promise(.failure(.emailInvalid))
+                return
+            }
+            Task {
+                do {
+                    try await supabase.auth.resetPasswordForEmail(normalizedEmail)
+                    promise(.success(()))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 reset OTP send failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// 재설정 OTP 검증. type: .recovery 로 verify — 성공 시 사용자가 recovery
+    /// 세션으로 signed-in 상태가 되고, 그 위에 setPasswordForCurrentSession 호출.
+    func verifyPasswordResetOTP(email: String, code: String) -> AnyPublisher<Void, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+            Task {
+                do {
+                    _ = try await supabase.auth.verifyOTP(
+                        email: normalizedEmail,
+                        token: trimmedCode,
+                        type: .recovery
+                    )
+                    promise(.success(()))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 reset OTP verify failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailInvalidCredentials))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     /// OTP 검증 후 현재 signed-in 세션에 비밀번호 설정 + signup_completed marker 기록.
     /// 이 marker 가 있어야 pg_cron 의 미인증 사용자 정리 작업이 이 사용자를 보호한다
     /// (Supabase 가 signInWithOTP 시점에 email_confirmed_at 등 모든 컬럼을 채워버려서
