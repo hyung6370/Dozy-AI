@@ -62,6 +62,13 @@ struct MacMainShellView: View {
     /// 두고 onChange 로 coordinator 와 양방향 동기화한다.
     @State private var selection: MacSection? = .today
 
+    @AppStorage("macBackgroundTheme")
+    private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
+
+    private var backgroundTheme: MacBackgroundTheme {
+        MacBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
+    }
+
     var body: some View {
         NavigationSplitView {
             List(MacSection.allCases, selection: $selection) { section in
@@ -77,6 +84,7 @@ struct MacMainShellView: View {
                 .tag(section)
             }
             .listStyle(.sidebar)
+            .modifier(ThemedContainerBackground(theme: backgroundTheme))
             .navigationSplitViewColumnWidth(min: 180, ideal: 220)
             .navigationTitle("Dozy")
             .onAppear { selection = coordinator.selectedSection }
@@ -116,6 +124,25 @@ struct MacMainShellView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            .modifier(ThemedContainerBackground(theme: backgroundTheme))
+        }
+    }
+}
+
+/// 선택된 테마에 맞춰 컨테이너 배경을 입히는 modifier. `.system` 인 경우 macOS
+/// 기본 머티리얼/배경을 그대로 살리기 위해 `.scrollContentBackground` 도 건드리지 않는다.
+private struct ThemedContainerBackground: ViewModifier {
+    let theme: MacBackgroundTheme
+
+    func body(content: Content) -> some View {
+        if theme == .system {
+            content
+        } else {
+            content
+                .scrollContentBackground(.hidden)
+                .background {
+                    MacShellBackgroundView(theme: theme)
+                }
         }
     }
 }

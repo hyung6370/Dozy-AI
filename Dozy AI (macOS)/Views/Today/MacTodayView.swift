@@ -399,11 +399,7 @@ struct MacTodayView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
-        )
+        .themedCardSurface(cornerRadius: 16)
     }
 
     private func progressLegend(icon: String, color: Color, value: Int, label: String) -> some View {
@@ -637,7 +633,7 @@ struct MacTodayView: View {
                     .foregroundStyle(.tertiary)
             }
             .padding(18)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .themedCardSurface(cornerRadius: 14)
         }
         .buttonStyle(.plain)
         .disabled(!viewModel.hasData || viewModel.isSummarizing)
@@ -683,10 +679,6 @@ private struct MacStatCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
-        )
+        .themedCardSurface(cornerRadius: 14)
     }
 }

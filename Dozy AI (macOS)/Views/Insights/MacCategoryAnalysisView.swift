@@ -179,7 +179,7 @@ struct MacCategoryAnalysisView: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .themedCardSurface(cornerRadius: 14)
     }
 
     private func statCell(value: String, label: String, small: Bool = false) -> some View {
@@ -245,7 +245,7 @@ struct MacCategoryAnalysisView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .themedCardSurface(cornerRadius: 14)
     }
 
     // MARK: - 일정 건수
@@ -284,7 +284,7 @@ struct MacCategoryAnalysisView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .themedCardSurface(cornerRadius: 14)
     }
 
     // MARK: - 완료율 (Dozy 일정 기준)
@@ -328,7 +328,7 @@ struct MacCategoryAnalysisView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .themedCardSurface(cornerRadius: 14)
     }
 
     // MARK: - 선호 시간대
@@ -361,7 +361,7 @@ struct MacCategoryAnalysisView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .themedCardSurface(cornerRadius: 14)
     }
 
     // MARK: - 요일 패턴
@@ -405,7 +405,7 @@ struct MacCategoryAnalysisView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .themedCardSurface(cornerRadius: 14)
     }
 
     // MARK: - 집중도
@@ -453,7 +453,7 @@ struct MacCategoryAnalysisView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .themedCardSurface(cornerRadius: 14)
     }
 
     // MARK: - Helpers

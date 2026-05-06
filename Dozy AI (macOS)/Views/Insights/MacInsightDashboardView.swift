@@ -529,10 +529,6 @@ private struct InsightCard<Content: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
-        )
+        .themedCardSurface(cornerRadius: 16)
     }
 }

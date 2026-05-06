@@ -20,6 +20,12 @@ struct MacSettingsView: View {
     @State private var showSharedCalendarManagement = false
     @State private var showShortcutsHelp = false
     @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
+    @AppStorage("macBackgroundTheme")
+    private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
+
+    private var backgroundTheme: MacBackgroundTheme {
+        MacBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
+    }
 
     /// iOS 와 공유하는 Setting/* 에셋 이름. light/dark 자동 분기.
     private func settingsAsset(_ stem: String) -> String {
@@ -31,6 +37,7 @@ struct MacSettingsView: View {
             VStack(alignment: .leading, spacing: 28) {
                 accountSection
                 categorySection
+                appearanceSection
                 menuBarSection
                 calendarIntegrationSection
                 sharedCalendarSection
@@ -168,6 +175,27 @@ struct MacSettingsView: View {
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
+        }
+    }
+
+    // MARK: - Appearance
+
+    private var appearanceSection: some View {
+        SettingsSection(title: "테마") {
+            VStack(alignment: .leading, spacing: 10) {
+                Picker("배경", selection: $backgroundThemeRaw) {
+                    ForEach(MacBackgroundTheme.allCases) { theme in
+                        Text(theme.displayName).tag(theme.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+
+                Text(backgroundTheme.summary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
     }
 
@@ -399,11 +427,7 @@ private struct HelpGroup<Content: View>: View {
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
-            )
+            .themedCardSurface(cornerRadius: 12)
         }
     }
 }
@@ -477,11 +501,7 @@ private struct SettingsSection<Content: View>: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.primary.opacity(0.05), lineWidth: 1)
-            )
+            .themedCardSurface(cornerRadius: 14)
         }
     }
 }

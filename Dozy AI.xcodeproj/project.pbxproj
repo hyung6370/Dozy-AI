@@ -271,6 +271,7 @@
 		F63C688B2F85F0CA003464E8 /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68892F85F0CA003464E8 /* IntroView.swift */; };
 		F63C688D2F85F0D9003464E8 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C688C2F85F0D9003464E8 /* RootView.swift */; };
 		F63C68E02F861F5E003464E8 /* BlobBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */; };
+		F6A78001000000000000B10B /* BlobBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */; };
 		F63C68E22F862E87003464E8 /* LoginPromptBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */; };
 		F63C68E42F8642C7003464E8 /* EventDisplaySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E32F8642C7003464E8 /* EventDisplaySettings.swift */; };
 		F63C68E62F86430D003464E8 /* EventDisplaySettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E52F86430D003464E8 /* EventDisplaySettingsRepository.swift */; };
@@ -300,6 +301,8 @@
 		F67333062FA836E2000A610A /* congratulation.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68872F85EBFE003464E8 /* congratulation.json */; };
 		F67333072FA836F2000A610A /* loading.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68792F85E54A003464E8 /* loading.json */; };
 		F673330A2FA837C5000A610A /* MacLottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333092FA837C5000A610A /* MacLottieView.swift */; };
+		F6A780042FB80001000A610A /* AmbientMeshBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A780032FB80001000A610A /* AmbientMeshBackgroundView.swift */; };
+		F6A780062FB80002000A610A /* MacBackgroundTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A780052FB80002000A610A /* MacBackgroundTheme.swift */; };
 		F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
 		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
@@ -586,6 +589,8 @@
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
 		F67333092FA837C5000A610A /* MacLottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLottieView.swift; sourceTree = "<group>"; };
+		F6A780032FB80001000A610A /* AmbientMeshBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientMeshBackgroundView.swift; sourceTree = "<group>"; };
+		F6A780052FB80002000A610A /* MacBackgroundTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacBackgroundTheme.swift; sourceTree = "<group>"; };
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
@@ -1221,6 +1226,8 @@
 			isa = PBXGroup;
 			children = (
 				F67333092FA837C5000A610A /* MacLottieView.swift */,
+				F6A780032FB80001000A610A /* AmbientMeshBackgroundView.swift */,
+				F6A780052FB80002000A610A /* MacBackgroundTheme.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1951,8 +1958,11 @@
 				F6EC8B2D2F9A100000CFFF87 /* MacSharedCalendarListView.swift in Sources */,
 				F6EC8B2F2F9A100000CFFF87 /* MacSharedCalendarCreateView.swift in Sources */,
 				F673330A2FA837C5000A610A /* MacLottieView.swift in Sources */,
+				F6A780042FB80001000A610A /* AmbientMeshBackgroundView.swift in Sources */,
+				F6A780062FB80002000A610A /* MacBackgroundTheme.swift in Sources */,
 				F6A77F012FB40000000A610A /* MacNotificationListView.swift in Sources */,
 				F6A77F032FB40000000A610A /* NotificationViewModel.swift in Sources */,
+				F6A78001000000000000B10B /* BlobBackgroundView.swift in Sources */,
 				F6EC8B312F9A100000CFFF87 /* MacSharedCalendarJoinView.swift in Sources */,
 				F6EC8B332F9A100000CFFF87 /* MacSharedCalendarDetailView.swift in Sources */,
 				F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */,
