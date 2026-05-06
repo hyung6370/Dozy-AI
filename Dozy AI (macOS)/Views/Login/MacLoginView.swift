@@ -12,9 +12,31 @@ struct MacLoginView: View {
 
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var passwordConfirm: String = ""
     @State private var mode: Mode = .signIn
 
     enum Mode { case signIn, signUp }
+
+    /// 회원가입 모드에서 confirm 필드가 채워졌는데 password 와 다르면 true.
+    /// signIn 모드이거나 confirm 이 비어있으면 false → 입력 도중 경고가 깜빡이지 않게.
+    private var passwordMismatch: Bool {
+        mode == .signUp && !passwordConfirm.isEmpty && passwordConfirm != password
+    }
+
+    /// 가입 시 활성화 조건 — 비밀번호 confirm 까지 일치해야 함.
+    private var canSubmit: Bool {
+        guard !authViewModel.isSigningIn, !email.isEmpty, !password.isEmpty else { return false }
+        if mode == .signUp {
+            return !passwordConfirm.isEmpty && passwordConfirm == password
+        }
+        return true
+    }
+
+    /// 이메일이 비어 있는 채로 비밀번호(또는 확인) 를 먼저 입력한 상태면 true.
+    /// 사용자가 어떤 필드를 빠뜨렸는지 즉시 알 수 있게 안내 caption 노출용.
+    private var needsEmailFirst: Bool {
+        email.isEmpty && (!password.isEmpty || !passwordConfirm.isEmpty)
+    }
 
     var body: some View {
         VStack(spacing: 28) {
@@ -103,6 +125,11 @@ struct MacLoginView: View {
             .pickerStyle(.segmented)
             .frame(width: 280)
             .labelsHidden()
+            .onChange(of: mode) { _, _ in
+                // 모드 전환 시 confirm 필드는 항상 초기화 — 잔존값으로 오작동 방지.
+                passwordConfirm = ""
+                authViewModel.errorMessage = nil
+            }
 
             TextField("이메일", text: $email)
                 .textFieldStyle(.roundedBorder)
@@ -110,10 +137,33 @@ struct MacLoginView: View {
                 .disableAutocorrection(true)
                 .onSubmit { submit() }
 
+            if needsEmailFirst {
+                Text("이메일을 먼저 입력해주세요.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .frame(width: 280, alignment: .leading)
+            }
+
             SecureField("비밀번호 (6자 이상)", text: $password)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 280)
                 .onSubmit { submit() }
+
+            // 회원가입 모드에서만 비밀번호 확인 필드 노출. 가입 시 typo 로 다음 로그인이
+            // invalid credentials 로 빠지는 케이스를 입력 시점에 잡아낸다.
+            if mode == .signUp {
+                SecureField("비밀번호 확인", text: $passwordConfirm)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 280)
+                    .onSubmit { submit() }
+
+                if passwordMismatch {
+                    Text("비밀번호가 일치하지 않습니다.")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .frame(width: 280, alignment: .leading)
+                }
+            }
 
             // Apple 버튼과 동일한 사유로 .plain + 수동 background.
             Button {
@@ -126,14 +176,12 @@ struct MacLoginView: View {
                     .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
-            .disabled(authViewModel.isSigningIn || email.isEmpty || password.isEmpty)
+            .disabled(!canSubmit)
         }
     }
 
     private func submit() {
-        guard !authViewModel.isSigningIn,
-              !email.isEmpty,
-              !password.isEmpty else { return }
+        guard canSubmit else { return }
         authViewModel.errorMessage = nil
         switch mode {
         case .signIn:
