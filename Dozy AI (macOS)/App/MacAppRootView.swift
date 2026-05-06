@@ -26,7 +26,18 @@ struct MacAppRootView: View {
             }
         }
         .task {
+            authViewModel.startAuthListenerIfNeeded()
             await authViewModel.restoreSession()
+        }
+        .alert(
+            "세션 만료",
+            isPresented: $authViewModel.showSessionExpiredAlert
+        ) {
+            Button("예", role: .destructive) {
+                authViewModel.confirmSessionExpiry()
+            }
+        } message: {
+            Text("세션이 만료되어서 다시 로그인하셔야 합니다.")
         }
     }
 }

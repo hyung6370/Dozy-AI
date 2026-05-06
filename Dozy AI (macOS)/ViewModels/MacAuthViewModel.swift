@@ -26,6 +26,7 @@ final class MacAuthViewModel: ObservableObject {
     /// 사용자 트리거 로그인 성공 직후 한 번 true. MacAppRootView 가 Lottie 오버레이로 노출.
     /// session 복원에는 세팅하지 않음 (앱 부팅 시마다 재생되면 안 됨).
     @Published var showCongratulationAnimation = false
+    @Published var showSessionExpiredAlert = false // 세션 만료 시 alert 노출 트리거, "예" 탭 시 confirmSessionExpiry()가 정리
     
     private let authService: AuthService
     private let modelContainer: ModelContainer
@@ -33,7 +34,9 @@ final class MacAuthViewModel: ObservableObject {
     private let sharedCalendarService: SharedCalendarServiceProtocol
     private let realtimeService: SharedCalendarRealtimeService
     private var cancellables = Set<AnyCancellable>()
-
+    private var didUserInitiateSignOut = false // authStateChanges 의 .signedOut 이벤트가 자동 만료인지 의도된 로그아웃인지 판단.
+    private var didStartAuthListener = false // 앱 lifecycle 당 한 번만 listener 띄우기 위한 가드.
+    
     var currentUser: AuthUser? {
         if case .signedIn(let user) = state { return user }
         return nil
@@ -100,6 +103,35 @@ final class MacAuthViewModel: ObservableObject {
                 }
             )
             .store(in: &cancellables)
+    }
+    
+    // MARK: - Auth State listener
+    /// Supabase의 authStateChanges 스트림을 구독. 토큰 자동 갱신 실패 등으로 SDK가
+    /// 세션을 종료하면 .signedOut이 들어오는데, 사용자가 직접 로그아웃 한 게 아니면
+    /// 세션 만료 alert를 띄운다. MacAppRootView의 .task에서 한 번 호출
+    func startAuthListenerIfNeeded() {
+        guard !didStartAuthListener else { return }
+        didStartAuthListener = true
+        Task { [weak self] in
+            for await (event, _) in supabase.auth.authStateChanges {
+                guard let self else { return }
+                switch event {
+                case .signedOut:
+                    // 사용자가 명시적으로 누른 signOut/deleteAccount면 alert 없이 패스
+                    if self.didUserInitiateSignOut {
+                        self.didUserInitiateSignOut = false
+                        continue
+                    }
+                    // .signedIn 상태에서 갑자기 SDK가 세션을 끊은 경우만 만료로 본다.
+                    // (앱 부팅 시 세션 자체가 없어서 .signedOut이 와도 이건 무시)
+                    if case .signedIn = self.state {
+                        self.showSessionExpiredAlert = true
+                    }
+                default:
+                    break
+                }
+            }
+        }
     }
     
     // MARK: - Session
@@ -224,6 +256,7 @@ final class MacAuthViewModel: ObservableObject {
     // MARK: - Sign out
 
     func signOut() {
+        didUserInitiateSignOut = true
         authService.signOut()
             .receive(on: DispatchQueue.main)
             .sink(
@@ -242,10 +275,24 @@ final class MacAuthViewModel: ObservableObject {
             )
             .store(in: &cancellables)
     }
+    
+    /// 세션 만료 alert의 "예" 탭에서 호출. SDK는 이미 세션을 비웠기 때문에
+    /// authService.signOut()까지 부르면 실패할 수 있어 로컬 정리만 수행
+    func confirmSessionExpiry() {
+        // 정리 도중 다시 들어오는 .signedOut 이벤트 무시.
+        didUserInitiateSignOut = true
+        showSessionExpiredAlert = false
+        showCongratulationAnimation = false
+        realtimeService.stopAll()
+        syncService.clearAllLocalData()
+        state = .signedOut
+        didUserInitiateSignOut = false
+    }
 
     // MARK: - 회원탈퇴
 
     func deleteAccount() {
+        didUserInitiateSignOut = true
         authService.deleteAccount()
             .receive(on: DispatchQueue.main)
             .sink(
