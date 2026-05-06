@@ -311,7 +311,9 @@ final class AuthService: NSObject {
     /// 클라이언트 측 마커 외엔 가입 완료 여부를 구분할 방법이 없음).
     func setPasswordForCurrentSession(_ password: String) -> AnyPublisher<AuthUser, DozyError> {
         Future { promise in
-            if password.count < 6 {
+            // 정책: PasswordPolicy.minLength (8자) 이상. 그 외 변형/블록리스트/이메일 일치는
+            // View 측 체크리스트가 1차 검증 — 여기선 길이만 server-bound 가드로.
+            if password.count < PasswordPolicy.minLength {
                 promise(.failure(.passwordTooShort))
                 return
             }
@@ -363,7 +365,7 @@ final class AuthService: NSObject {
         if trimmed.range(of: emailRegex, options: .regularExpression) == nil {
             return .emailInvalid
         }
-        if password.count < 6 {
+        if password.count < PasswordPolicy.minLength {
             return .passwordTooShort
         }
         return nil

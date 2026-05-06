@@ -35,12 +35,13 @@ struct MacLoginView: View {
         return false
     }
 
-    /// 가입/로그인 버튼 활성화 조건. signUp 은 OTP 검증 완료 + 비밀번호 일치 필요.
+    /// 가입/로그인 버튼 활성화 조건. signUp 은 OTP 검증 완료 + 비밀번호 정책 통과 + 일치 필요.
     private var canSubmit: Bool {
         guard !authViewModel.isSigningIn, !email.isEmpty else { return false }
         if mode == .signUp {
             guard isPasswordStageReady else { return false }
-            return !password.isEmpty && !passwordConfirm.isEmpty && passwordConfirm == password
+            return PasswordPolicy.isValid(password, email: email)
+                && passwordConfirm == password
         }
         return !password.isEmpty
     }
@@ -61,6 +62,18 @@ struct MacLoginView: View {
         let m = seconds / 60
         let s = seconds % 60
         return String(format: "%d:%02d", m, s)
+    }
+
+    /// 비밀번호 정책 체크리스트 한 줄 — 통과 시 초록 ✓, 미통과 시 회색 원.
+    private func passwordRule(_ label: String, passed: Bool) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: passed ? "checkmark.circle.fill" : "circle")
+                .font(.caption)
+                .foregroundStyle(passed ? .green : .secondary)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(passed ? .primary : .secondary)
+        }
     }
 
     var body: some View {
@@ -275,15 +288,50 @@ struct MacLoginView: View {
             // ── 비밀번호 입력 단계 ────────────────────────────
             // signIn 은 항상 노출, signUp 은 OTP 검증 완료 후에만.
             if mode == .signIn || isPasswordStageReady {
-                SecureField("비밀번호 (6자 이상)", text: $password)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 280)
-                    .onSubmit { submit() }
+                SecureField(
+                    mode == .signUp ? "비밀번호 (\(PasswordPolicy.minLength)자 이상)" : "비밀번호",
+                    text: $password
+                )
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 280)
+                // 한글 IME 가 영문 키 입력을 가로채는 문제 회피 — password 컨텍스트면
+                // 시스템이 ASCII 입력 모드로 처리.
+                .textContentType(mode == .signUp ? .newPassword : .password)
+                .onSubmit { submit() }
+
+                // 회원가입 모드 — 입력 도중 정책 통과 여부 실시간 체크리스트.
+                if mode == .signUp, !password.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        passwordRule(
+                            "\(PasswordPolicy.minLength)자 이상",
+                            passed: PasswordPolicy.hasValidLength(password)
+                        )
+                        passwordRule(
+                            "영문 대문자 포함",
+                            passed: PasswordPolicy.hasUppercase(password)
+                        )
+                        passwordRule(
+                            "숫자 포함",
+                            passed: PasswordPolicy.hasDigit(password)
+                        )
+                        passwordRule(
+                            "기호 포함",
+                            passed: PasswordPolicy.hasSpecial(password)
+                        )
+                        passwordRule(
+                            "흔하지 않고 이메일과 다른 비밀번호",
+                            passed: PasswordPolicy.isNotCommon(password)
+                                && PasswordPolicy.isNotSameAsEmail(password, email: email)
+                        )
+                    }
+                    .frame(width: 280, alignment: .leading)
+                }
 
                 if mode == .signUp {
                     SecureField("비밀번호 확인", text: $passwordConfirm)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 280)
+                        .textContentType(.newPassword)
                         .onSubmit { submit() }
 
                     if passwordMismatch {

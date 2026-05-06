@@ -72,7 +72,7 @@ enum DozyError: LocalizedError {
         case .emailInvalid:
             return "올바른 이메일 형식을 입력해주세요."
         case .passwordTooShort:
-            return "비밀번호는 최소 6자 이상이어야 합니다."
+            return "비밀번호는 최소 \(PasswordPolicy.minLength)자 이상이어야 합니다."
         case .emailAlreadyRegistered:
             return "이미 존재하는 이메일입니다. 로그인 탭을 사용해주세요."
         case .emailInvalidCredentials:
