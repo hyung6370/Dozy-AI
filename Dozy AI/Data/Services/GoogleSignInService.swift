@@ -15,7 +15,10 @@ final class GoogleSignInService: ObservableObject {
     @Published private(set) var userEmail: String?
     @Published private(set) var userName: String?
     
-    private let scopes = ["https://www.googleapis.com/auth/calendar"]
+    private let scopes = [
+        "https://www.googleapis.com/auth/calendar.events",
+        "https://www.googleapis.com/auth/calendar.calendarlist.readonly"
+    ]
     
     init() {
         restorePreviousSignIn()

@@ -114,8 +114,6 @@
 		BEDBAC0D5C430ABDFB0A57C6 /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */; };
 		BF0B976768ED331A7479E90E /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		C56216131A337FABE51EB98E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68EB2F6ACD36001952F6 /* Constants.swift */; };
-		F6A790012FB90001000A610A /* PasswordPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A790002FB90001000A610A /* PasswordPolicy.swift */; };
-		F6A790022FB90001000A610A /* PasswordPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A790002FB90001000A610A /* PasswordPolicy.swift */; };
 		C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		C9281237CC6E4AABA7AB5BA5 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
 		CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */; };
@@ -213,13 +211,11 @@
 		F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */; };
 		F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */; };
 		F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF132F832AD6007B8D9F /* SettingsView.swift */; };
-		F6A7C0012FBA0003000A610A /* PasswordChangeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7C0002FBA0003000A610A /* PasswordChangeSheet.swift */; };
 		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
 		F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD02F7B448300FA0476 /* NaverSignInService.swift */; };
 		F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */; };
 		F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */; };
 		F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD62F7B625700FA0476 /* BannerView.swift */; };
-		F6A7A0012FBA0001000A610A /* PrivacyScreenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7A0002FBA0001000A610A /* PrivacyScreenManager.swift */; };
 		F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */; };
 		F616DCEA2F7CAFA400FA0476 /* NotificationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */; };
 		F616DCEC2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */; };
@@ -318,6 +314,11 @@
 		F6A78001000000000000B10B /* BlobBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68DF2F861F5E003464E8 /* BlobBackgroundView.swift */; };
 		F6A780042FB80001000A610A /* AmbientMeshBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A780032FB80001000A610A /* AmbientMeshBackgroundView.swift */; };
 		F6A780062FB80002000A610A /* MacBackgroundTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A780052FB80002000A610A /* MacBackgroundTheme.swift */; };
+		F6A790012FB90001000A610A /* PasswordPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A790002FB90001000A610A /* PasswordPolicy.swift */; };
+		F6A790022FB90001000A610A /* PasswordPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A790002FB90001000A610A /* PasswordPolicy.swift */; };
+		F6A7A0012FBA0001000A610A /* PrivacyScreenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7A0002FBA0001000A610A /* PrivacyScreenManager.swift */; };
+		F6A7B0012FBA0002000A610A /* MacPasswordChangeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B0002FBA0002000A610A /* MacPasswordChangeSheet.swift */; };
+		F6A7C0012FBA0003000A610A /* PasswordChangeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7C0002FBA0003000A610A /* PasswordChangeSheet.swift */; };
 		F6B0413B2F8F4CB500EEAC89 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */; };
 		F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */; };
 		F6BC1A0001000000DDDD0001 /* DailySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F692A2F6AD082001952F6 /* DailySummaryViewModel.swift */; };
@@ -352,7 +353,6 @@
 		F6EC8B152F99D00000CFFF87 /* MacSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B142F99D00000CFFF87 /* MacSettingsView.swift */; };
 		F6EC8B172F99D00000CFFF87 /* MacCategoryManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B162F99D00000CFFF87 /* MacCategoryManagementView.swift */; };
 		F6EC8B192F99D00000CFFF87 /* MacCategoryEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B182F99D00000CFFF87 /* MacCategoryEditSheet.swift */; };
-		F6A7B0012FBA0002000A610A /* MacPasswordChangeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B0002FBA0002000A610A /* MacPasswordChangeSheet.swift */; };
 		F6EC8B1B2F99D00000CFFF87 /* MacCategorySupabaseSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B1A2F99D00000CFFF87 /* MacCategorySupabaseSync.swift */; };
 		F6EC8B1D2F99E00000CFFF87 /* PatternAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */; };
 		F6EC8B1F2F99E00000CFFF87 /* MacInsightViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */; };
@@ -458,7 +458,6 @@
 		DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+Extensions.swift"; sourceTree = "<group>"; };
 		DD9F68E92F6ACD2E001952F6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		DD9F68EB2F6ACD36001952F6 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		F6A790002FB90001000A610A /* PasswordPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordPolicy.swift; sourceTree = "<group>"; };
 		DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkLog.swift; sourceTree = "<group>"; };
 		DD9F68EF2F6ACD62001952F6 /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
 		DD9F68F12F6ACD74001952F6 /* CalendarEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEvent.swift; sourceTree = "<group>"; };
@@ -511,12 +510,10 @@
 		F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthError.swift; sourceTree = "<group>"; };
 		F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		F60ADF132F832AD6007B8D9F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		F6A7C0002FBA0003000A610A /* PasswordChangeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordChangeSheet.swift; sourceTree = "<group>"; };
 		F616DCD02F7B448300FA0476 /* NaverSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverSignInService.swift; sourceTree = "<group>"; };
 		F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarListResponse.swift; sourceTree = "<group>"; };
 		F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarService.swift; sourceTree = "<group>"; };
 		F616DCD62F7B625700FA0476 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
-		F6A7A0002FBA0001000A610A /* PrivacyScreenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyScreenManager.swift; sourceTree = "<group>"; };
 		F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabBar.swift; sourceTree = "<group>"; };
 		F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceProtocol.swift; sourceTree = "<group>"; };
 		F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleNotificationUseCase.swift; sourceTree = "<group>"; };
@@ -605,6 +602,10 @@
 		F6A77F002FB40000000A610A /* MacNotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacNotificationListView.swift; sourceTree = "<group>"; };
 		F6A780032FB80001000A610A /* AmbientMeshBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientMeshBackgroundView.swift; sourceTree = "<group>"; };
 		F6A780052FB80002000A610A /* MacBackgroundTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacBackgroundTheme.swift; sourceTree = "<group>"; };
+		F6A790002FB90001000A610A /* PasswordPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordPolicy.swift; sourceTree = "<group>"; };
+		F6A7A0002FBA0001000A610A /* PrivacyScreenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyScreenManager.swift; sourceTree = "<group>"; };
+		F6A7B0002FBA0002000A610A /* MacPasswordChangeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPasswordChangeSheet.swift; sourceTree = "<group>"; };
+		F6A7C0002FBA0003000A610A /* PasswordChangeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordChangeSheet.swift; sourceTree = "<group>"; };
 		F6B0413A2F8F4CB500EEAC89 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		F6B041F52F90751A00EEAC89 /* Dozy AIRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Dozy AIRelease.entitlements"; sourceTree = "<group>"; };
 		F6BC1A0001000000ACCC0002 /* MacEventSourceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEventSourceIcon.swift; sourceTree = "<group>"; };
@@ -641,7 +642,6 @@
 		F6EC8B142F99D00000CFFF87 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
 		F6EC8B162F99D00000CFFF87 /* MacCategoryManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategoryManagementView.swift; sourceTree = "<group>"; };
 		F6EC8B182F99D00000CFFF87 /* MacCategoryEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategoryEditSheet.swift; sourceTree = "<group>"; };
-		F6A7B0002FBA0002000A610A /* MacPasswordChangeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPasswordChangeSheet.swift; sourceTree = "<group>"; };
 		F6EC8B1A2F99D00000CFFF87 /* MacCategorySupabaseSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategorySupabaseSync.swift; sourceTree = "<group>"; };
 		F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacInsightViewModel.swift; sourceTree = "<group>"; };
 		F6EC8B202F99E00000CFFF87 /* MacInsightDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacInsightDashboardView.swift; sourceTree = "<group>"; };
@@ -2215,7 +2215,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 143;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2236,7 +2236,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -2258,7 +2258,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 143;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2279,7 +2279,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2386,7 +2386,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI (macOS)/Dozy AI (macOS)Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2425,7 +2425,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
