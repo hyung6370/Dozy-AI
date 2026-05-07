@@ -380,18 +380,24 @@ struct MacCalendarView: View {
     }
 
     /// 버튼/단축키로 월 이동 시 실시간 paging 애니메이션 재사용.
+    /// spring response: 0.28 → 0.22 (snappier), damping 0.92 → 0.86 (덜 mushy).
+    private static let pagingAnimation: Animation = .spring(response: 0.22, dampingFraction: 0.86)
+
     private func animatedGoToPreviousMonth() {
         let width = swipeState.viewWidth
         guard width > 0 else { viewModel.goToPreviousMonth(); return }
-        let anim: Animation = .spring(response: 0.28, dampingFraction: 0.92)
-        withAnimation(anim) {
+        withAnimation(Self.pagingAnimation) {
             swipeState.liveOffset = width
         } completion: {
-            var txn = Transaction()
-            txn.disablesAnimations = true
-            withTransaction(txn) {
-                viewModel.goToPreviousMonth()
-                swipeState.liveOffset = 0
+            // 무거운 view 트리 재구성 (currentMonth swap → 3-pane 재계산) 을 spring 의
+            // 마지막 프레임이 아닌 다음 runloop 으로 미뤄 hitch 회피.
+            DispatchQueue.main.async {
+                var txn = Transaction()
+                txn.disablesAnimations = true
+                withTransaction(txn) {
+                    viewModel.goToPreviousMonth()
+                    swipeState.liveOffset = 0
+                }
             }
         }
     }
@@ -399,15 +405,16 @@ struct MacCalendarView: View {
     private func animatedGoToNextMonth() {
         let width = swipeState.viewWidth
         guard width > 0 else { viewModel.goToNextMonth(); return }
-        let anim: Animation = .spring(response: 0.28, dampingFraction: 0.92)
-        withAnimation(anim) {
+        withAnimation(Self.pagingAnimation) {
             swipeState.liveOffset = -width
         } completion: {
-            var txn = Transaction()
-            txn.disablesAnimations = true
-            withTransaction(txn) {
-                viewModel.goToNextMonth()
-                swipeState.liveOffset = 0
+            DispatchQueue.main.async {
+                var txn = Transaction()
+                txn.disablesAnimations = true
+                withTransaction(txn) {
+                    viewModel.goToNextMonth()
+                    swipeState.liveOffset = 0
+                }
             }
         }
     }
