@@ -169,7 +169,7 @@ final class MacAuthViewModel: ObservableObject {
                     self.emailOTPStep = .idle
                     self.otpExpiresAt = nil
                     self.completeSignIn(user)
-                    self.showCongratulationAnimation = true
+                    self.triggerCongratulationAnimation()
                 }
             )
             .store(in: &cancellables)
@@ -255,7 +255,7 @@ final class MacAuthViewModel: ObservableObject {
                     self.passwordResetStep = .idle
                     self.passwordResetExpiresAt = nil
                     self.completeSignIn(user)
-                    self.showCongratulationAnimation = true
+                    self.triggerCongratulationAnimation()
                 }
             )
             .store(in: &cancellables)
@@ -378,6 +378,18 @@ final class MacAuthViewModel: ObservableObject {
             Task {
                 try? await supabase.auth.signOut()
             }
+        }
+    }
+
+    /// 로그인 성공 시 축하 Lottie 노출 트리거. Lottie 가 끝까지 재생되지 못해도
+    /// (탭 전환 등으로 view 가 tear down 되면 finished == false → onComplete 미호출)
+    /// flag 가 영구히 true 로 남아 다음 view 진입 시 다시 재생되는 루프를 방지하기
+    /// 위해 일정 시간 후 강제 false 처리.
+    private func triggerCongratulationAnimation() {
+        showCongratulationAnimation = true
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)  // 3초
+            self?.showCongratulationAnimation = false
         }
     }
 
@@ -512,7 +524,7 @@ final class MacAuthViewModel: ObservableObject {
                     }
                 }, receiveValue: { [weak self] user in
                     self?.state = .signedIn(user)
-                    self?.showCongratulationAnimation = true
+                    self?.triggerCongratulationAnimation()
                     self?.startSharedCalendarRealtime()
                 }
             )
@@ -537,7 +549,7 @@ final class MacAuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.completeSignIn(user)
-                    self?.showCongratulationAnimation = true
+                    self?.triggerCongratulationAnimation()
                 }
             )
             .store(in: &cancellables)
@@ -561,7 +573,7 @@ final class MacAuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.completeSignIn(user)
-                    self?.showCongratulationAnimation = true
+                    self?.triggerCongratulationAnimation()
                 }
             )
             .store(in: &cancellables)
@@ -583,7 +595,7 @@ final class MacAuthViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] user in
                     self?.completeSignIn(user)
-                    self?.showCongratulationAnimation = true
+                    self?.triggerCongratulationAnimation()
                 }
             )
             .store(in: &cancellables)

@@ -170,6 +170,10 @@ struct MacLoginView: View {
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            BlobBackgroundView(intensity: 0.6)
+                .ignoresSafeArea()
+        }
     }
 
     // MARK: - Email / Password
