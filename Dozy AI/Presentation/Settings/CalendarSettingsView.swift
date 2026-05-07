@@ -30,7 +30,7 @@ struct CalendarSettingsView: View {
                 Section {
                     dozyRow
                     appleRow
-//                    googleRow  // Google Calendar API 심사 중 — 완료 후 재활성화
+                    googleRow  // ⚠️ 데모 영상 촬영 임시 활성화 — 촬영 후 다시 주석 처리
 //                    naverRow
                 } header: {
                     Text("연결된 캘린더")
@@ -98,25 +98,24 @@ struct CalendarSettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Google 캘린더")
                     .font(.subheadline).fontWeight(.medium)
-                Text(viewModel.googleUserEmail ?? "연결되지 않음")
+                // 명시적으로 캘린더 연동을 켰을 때만 이메일 노출. 단순 앱 로그인 (Google
+                // OAuth 가 calendar grant 를 보존해도) 에는 "연결되지 않음" 으로 표시.
+                Text(viewModel.sourceManager.isEnabled(.google)
+                     ? (viewModel.googleUserEmail ?? "연결됨")
+                     : "연결되지 않음")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
-            if viewModel.isGoogleSignedIn {
-                VStack(spacing: 6) {
-                    Toggle("", isOn: Binding(
-                        get: { viewModel.sourceManager.isEnabled(.google) },
-                        set: { _ in viewModel.sourceManager.toggle(.google) }
-                    ))
-                    .labelsHidden()
-                    
-                    Button("연결 해제") { viewModel.disconnectGoogle() }
-                        .font(.caption2)
-                        .foregroundStyle(.red)
-                        .buttonStyle(.plain)
-                }
+
+            // 사용자가 명시적으로 enable 한 source 상태로 분기. Google 의 grant 보존
+            // 정책 때문에 isGoogleSignedIn (= grantedScopes 검사) 으론 앱 로그인과
+            // 캘린더 연동을 안정적으로 구분 못 함.
+            if viewModel.sourceManager.isEnabled(.google) {
+                Button("연결 해제") { viewModel.disconnectGoogle() }
+                    .font(.subheadline).fontWeight(.medium)
+                    .foregroundStyle(.red)
+                    .buttonStyle(.plain)
             } else {
                 Button("연결") { viewModel.connectGoogle() }
                     .font(.subheadline).fontWeight(.medium)

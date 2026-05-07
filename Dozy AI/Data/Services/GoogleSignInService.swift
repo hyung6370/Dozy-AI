@@ -86,12 +86,20 @@ final class GoogleSignInService: ObservableObject {
     }
     
     // MARK: - Private
+
+    /// 앱 로그인용 Google sign-in (`additionalScopes: nil` 호출) 과 캘린더 연동용
+    /// sign-in (`additionalScopes` 에 calendar scope 포함) 을 구분하기 위해, 사용자의
+    /// granted scopes 에 calendar scope 가 있는 경우만 "Calendar 연결됨" 으로 본다.
+    /// CalendarSettingsView 가 이걸 기준으로 "연결" / "연결 해제" UI 를 분기.
     private func updateState(user: GIDGoogleUser?) {
         let wasSignedIn = isSignedIn
-        isSignedIn = user != nil
+        let hasCalendarScope = user?.grantedScopes?.contains(where: {
+            $0 == "https://www.googleapis.com/auth/calendar.events"
+                || $0 == "https://www.googleapis.com/auth/calendar.calendarlist.readonly"
+        }) ?? false
+        isSignedIn = user != nil && hasCalendarScope
         userEmail = user?.profile?.email
         userName = user?.profile?.name
-        // 로그인 미완료 → 완료 전환 시 캘린더 새로고침 트리거
         if !wasSignedIn && isSignedIn {
             NotificationCenter.default.post(name: .googleSignInRestored, object: nil)
         }

@@ -466,9 +466,25 @@ final class AuthService: NSObject {
     }
     
     // MARK: - 회원탈퇴
+    /// 회원 탈퇴 — Supabase 계정 삭제와 함께 Google OAuth grant 도 서버측 revoke.
+    /// 단순 signOut 은 로컬 토큰만 비우므로 Google 입장에선 동의가 그대로 남아있어
+    /// 같은 사용자가 다시 가입할 때 calendar scope consent 화면이 안 떠 (이전 동의가
+    /// 캐시됨). 회원 탈퇴는 명시적으로 권한까지 끊어, Privacy Policy 의 "탈퇴 시
+    /// 외부 캘린더 액세스 토큰 정리" 와도 일관성 유지.
     func deleteAccount() -> AnyPublisher<Void, DozyError> {
         Future { promise in
             Task {
+                // 1) Google OAuth grant 서버측 revoke — 실패해도 다음 단계로 진행 (사용자가
+                //    Google 로그인 하지 않은 케이스 / 네트워크 오류 등에 막히지 않게).
+                await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                    GIDSignIn.sharedInstance.disconnect { error in
+                        if let error {
+                            Logger.auth.warning("⚠️ Google OAuth disconnect 실패 (계속 진행): \(error.localizedDescription)")
+                        }
+                        continuation.resume()
+                    }
+                }
+                // 2) Supabase 사용자 데이터 삭제
                 do {
                     try await supabase.rpc("delete_user_account").execute()
                     promise(.success(()))

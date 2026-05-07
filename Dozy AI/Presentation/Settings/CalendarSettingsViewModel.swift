@@ -36,6 +36,12 @@ final class CalendarSettingsViewModel: ObservableObject {
         naverSignInService.objectWillChange
             .sink { [weak self] in self?.objectWillChange.send() }
             .store(in: &cancellables)
+
+        // sourceManager.enabledSources 변화도 View 에 forward — UI 가 sourceManager
+        // 기준으로 "연결됨" 분기하므로 enable/disable 시 즉시 갱신.
+        sourceManager.objectWillChange
+            .sink { [weak self] in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Computed

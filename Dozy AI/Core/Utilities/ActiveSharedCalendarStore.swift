@@ -45,13 +45,19 @@ final class ActiveSharedCalendarStore: ObservableObject {
     }
 
     private func applyActive(_ id: String?) {
-        if let id, !id.isEmpty {
+        // 값이 같으면 @Published 재방출 방지 — reconcile(with:) 가 매번 같은 ID 로
+        // 호출돼도 sink 가 다시 발동하지 않게 idempotent 보장.
+        // 이전엔 같은 값 재할당에도 @Published 가 emit 해서 CalendarViewModel 의
+        // subscribeToActiveSharedCalendarChanges 가 refreshData → loadInitialData →
+        // loadMySharedCalendars → reconcile → applyActive 무한 루프를 돌렸음.
+        let normalized = (id?.isEmpty == false) ? id : nil
+        guard normalized != activeCalendarID else { return }
+        if let id = normalized {
             UserDefaults.standard.set(id, forKey: key)
-            activeCalendarID = id
         } else {
             UserDefaults.standard.removeObject(forKey: key)
-            activeCalendarID = nil
         }
+        activeCalendarID = normalized
     }
 
     func isActive(_ id: String) -> Bool {

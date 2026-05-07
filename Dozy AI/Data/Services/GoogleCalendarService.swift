@@ -98,7 +98,7 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 guard let self else {
                     return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }
-                let active = calendars.filter { $0.selected != false }
+                let active = calendars.filter { $0.selected != false && !Self.isHolidayCalendar($0) }
                 guard !active.isEmpty else {
                     return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }
@@ -286,13 +286,23 @@ final class GoogleCalendarService: CalendarServiceProtocol {
     }
 
     // MARK: - Private
+
+    /// Google 의 시스템 휴일 캘린더 (한국 공휴일 등) 식별. Dozy 는 자체 공공데이터포털
+    /// 데이터로 공휴일을 노출하므로 Google 휴일 캘린더는 중복 표시 방지를 위해 제외.
+    /// ID 패턴 예: `ko.south_korea#holiday@group.v.calendar.google.com`
+    /// 더불어 Birthdays 캘린더 (`addressbook#contacts@group.v.calendar.google.com`) 도
+    /// 사용자 일정과 무관해서 함께 제외.
+    private static func isHolidayCalendar(_ cal: GoogleCalendarItem) -> Bool {
+        cal.id.contains("#holiday@") || cal.id.contains("addressbook#contacts@")
+    }
+
     private func fetchAllEvents(for date: Date, token: String) -> AnyPublisher<[CalendarEvent], DozyError> {
         fetchCalendarList(token: token)
             .flatMap { [weak self] calendars -> AnyPublisher<[CalendarEvent], DozyError> in
                 guard let self else {
                     return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }
-                let active = calendars.filter { $0.selected != false }
+                let active = calendars.filter { $0.selected != false && !Self.isHolidayCalendar($0) }
                 guard !active.isEmpty else {
                     return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }

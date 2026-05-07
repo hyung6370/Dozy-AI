@@ -155,6 +155,7 @@ final class CalendarViewModel: ObservableObject {
     private func subscribeToActiveSharedCalendarChanges() {
         ActiveSharedCalendarStore.shared.$activeCalendarID
             .dropFirst()
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self else { return }
