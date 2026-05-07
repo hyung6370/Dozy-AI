@@ -33,6 +33,15 @@ final class AuthViewModel: ObservableObject {
     /// 재설정 카운트다운 만료 시각.
     @Published var passwordResetExpiresAt: Date?
 
+    /// Settings 의 비밀번호 변경 sheet 가 사용. submit 진행 상태 / 에러 / 성공 표시.
+    @Published var isChangingPassword = false
+    @Published var changePasswordError: String?
+    @Published var changePasswordSucceeded = false
+
+    /// 비밀번호 변경 sheet 의 OTP step. login-screen forgot-password 와 분리.
+    @Published var passwordChangeStep: EmailOTPStep = .idle
+    @Published var passwordChangeExpiresAt: Date?
+
     enum EmailOTPStep: Equatable {
         case idle               // 회원가입 폼 진입 전
         case otpSent(String)    // OTP 발송 완료, 코드 입력 대기
@@ -429,6 +438,99 @@ final class AuthViewModel: ObservableObject {
         if case .verified = passwordResetStep {
             Task { try? await supabase.auth.signOut() }
         }
+    }
+
+    // MARK: - Change password (in-app, settings) — OTP 본인 인증 후 변경
+
+    /// Step 1: 본인 이메일에 OTP 발송. resetPasswordForEmail 재사용.
+    func sendPasswordChangeOTP(email: String) {
+        guard !isChangingPassword else { return }
+        isChangingPassword = true
+        changePasswordError = nil
+
+        authService.sendPasswordResetOTP(email: email)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isChangingPassword = false
+                    if case .failure(let error) = completion {
+                        self?.changePasswordError = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.passwordChangeStep = .otpSent(normalized)
+                    self.passwordChangeExpiresAt = Date().addingTimeInterval(Self.otpClientTTL)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 2: OTP 검증. 사용자 세션은 유지 (recovery 세션으로 갱신만).
+    func verifyPasswordChangeOTP(email: String, code: String) {
+        guard !isChangingPassword else { return }
+        isChangingPassword = true
+        changePasswordError = nil
+
+        authService.verifyPasswordResetOTP(email: email, code: code)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isChangingPassword = false
+                    if case .failure(let error) = completion {
+                        self?.changePasswordError = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    self.passwordChangeStep = .verified(normalized)
+                    self.passwordChangeExpiresAt = nil
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Step 3: 새 비밀번호 검증 (이전과 다름) + 변경. 로그인 상태는 유지.
+    func completeInAppPasswordChange(newPassword: String) {
+        guard !isChangingPassword else { return }
+        isChangingPassword = true
+        changePasswordError = nil
+        changePasswordSucceeded = false
+
+        authService.isSameAsCurrentPassword(newPassword)
+            .flatMap { [authService] isSame -> AnyPublisher<AuthUser, DozyError> in
+                if isSame {
+                    return Fail(error: DozyError.passwordSameAsCurrent).eraseToAnyPublisher()
+                }
+                return authService.setPasswordForCurrentSession(newPassword)
+            }
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isChangingPassword = false
+                    if case .failure(let error) = completion {
+                        self?.changePasswordError = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    self.passwordChangeStep = .idle
+                    self.passwordChangeExpiresAt = nil
+                    self.changePasswordSucceeded = true
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// Sheet 닫힐 때 / 취소 시 — sign out 하지 않음 (사용자는 로그인 상태 유지).
+    func resetChangePasswordState() {
+        changePasswordError = nil
+        changePasswordSucceeded = false
+        isChangingPassword = false
+        passwordChangeStep = .idle
+        passwordChangeExpiresAt = nil
     }
 
     func signUpWithEmail(email: String, password: String) {

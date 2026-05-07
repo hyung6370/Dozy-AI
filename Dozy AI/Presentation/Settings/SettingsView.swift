@@ -23,6 +23,7 @@ struct SettingsView: View {
     }
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
+    @State private var showPasswordChange = false
     @State private var loginEmail: String = ""
     @State private var loginPassword: String = ""
     @State private var loginPasswordConfirm: String = ""
@@ -117,6 +118,9 @@ struct SettingsView: View {
                 calendarSection
                 categorySection
                 infoSection
+                if authViewModel.currentUser?.provider == .email {
+                    passwordChangeSection
+                }
                 dangerZoneSection
             }
             .navigationTitle("설정")
@@ -151,6 +155,10 @@ struct SettingsView: View {
                 Button("취소", role: .cancel) { }
             } message: {
                 Text("모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.")
+            }
+            .sheet(isPresented: $showPasswordChange) {
+                PasswordChangeSheet()
+                    .environmentObject(authViewModel)
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .inactive || newPhase == .background {
@@ -203,27 +211,9 @@ struct SettingsView: View {
     
     private var loggedOutRow: some View {
         VStack(spacing: 12) {
-            if authViewModel.isLoading {
-                ProgressView().frame(maxWidth: .infinity)
-            } else {
-                // Apple 로그인 (DEBUG 개발 환경에서는 미지원)
-                #if DEBUG
-                if AppEnvironment.current != .development {
-                    Button { authViewModel.signInWithApple() } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "apple.logo")
-                                .font(.system(size: 16, weight: .medium))
-                            Text("Apple로 로그인")
-                                .font(.subheadline).fontWeight(.medium)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.primary, in: RoundedRectangle(cornerRadius: 10))
-                        .foregroundStyle(Color(uiColor: .systemBackground))
-                    }
-                    .buttonStyle(.plain)
-                }
-                #else
+            // Apple 로그인 (DEBUG 개발 환경에서는 미지원)
+            #if DEBUG
+            if AppEnvironment.current != .development {
                 Button { authViewModel.signInWithApple() } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "apple.logo")
@@ -237,29 +227,53 @@ struct SettingsView: View {
                     .foregroundStyle(Color(uiColor: .systemBackground))
                 }
                 .buttonStyle(.plain)
-                #endif
-
-                // Google 로그인
-                Button { authViewModel.signInWithGoogle() } label: {
-                    HStack(spacing: 10) {
-                        Image("google")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 18, height: 18)
-                        Text("Google로 로그인")
-                            .font(.subheadline).fontWeight(.medium)
-                            .foregroundStyle(.primary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
-                }
-                .buttonStyle(.plain)
-
-                emailPasswordLoginBlock
             }
+            #else
+            Button { authViewModel.signInWithApple() } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "apple.logo")
+                        .font(.system(size: 16, weight: .medium))
+                    Text("Apple로 로그인")
+                        .font(.subheadline).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.primary, in: RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(Color(uiColor: .systemBackground))
+            }
+            .buttonStyle(.plain)
+            #endif
+
+            // Google 로그인
+            Button { authViewModel.signInWithGoogle() } label: {
+                HStack(spacing: 10) {
+                    Image("google")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                    Text("Google로 로그인")
+                        .font(.subheadline).fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+
+            emailPasswordLoginBlock
         }
         .padding(.vertical, 8)
+        // 로딩 중에도 폼 (이메일·OTP·비밀번호) 은 그대로 보이게 — 사용자가 지금
+        // 어느 단계에서 무엇을 입력했는지 시각적으로 유지. 위에 머티리얼 카드로
+        // 감싼 ProgressView 만 overlay 로 띄움.
+        .disabled(authViewModel.isLoading)
+        .overlay {
+            if authViewModel.isLoading {
+                ProgressView()
+                    .progressViewStyle(.circular)
+            }
+        }
     }
 
     private var emailPasswordLoginBlock: some View {
@@ -639,6 +653,32 @@ struct SettingsView: View {
             }
         } header: {
             Text("앱 정보")
+        }
+    }
+
+    // MARK: - 비밀번호 변경 섹션 (이메일 로그인 사용자 한정)
+
+    @ViewBuilder
+    private var passwordChangeSection: some View {
+        Section {
+            Button {
+                showPasswordChange = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "key.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 24)
+                    Text("비밀번호 변경")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        } header: {
+            Text("비밀번호")
         }
     }
 

@@ -19,6 +19,7 @@ struct MacSettingsView: View {
     @State private var showCategoryManagement = false
     @State private var showSharedCalendarManagement = false
     @State private var showShortcutsHelp = false
+    @State private var showPasswordChange = false
     @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
     @AppStorage("macBackgroundTheme")
     private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
@@ -43,6 +44,9 @@ struct MacSettingsView: View {
                 sharedCalendarSection
                 helpSection
                 appInfoSection
+                if authViewModel.currentUser?.provider == .email {
+                    passwordChangeSection
+                }
                 dangerZoneSection
             }
             .padding(.horizontal, 28)
@@ -83,6 +87,10 @@ struct MacSettingsView: View {
         }
         .sheet(isPresented: $showShortcutsHelp) {
             MacShortcutsHelpSheet()
+        }
+        .sheet(isPresented: $showPasswordChange) {
+            MacPasswordChangeSheet()
+                .environmentObject(authViewModel)
         }
     }
 
@@ -290,6 +298,31 @@ struct MacSettingsView: View {
                 Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    // MARK: - Password Change (이메일 로그인 사용자 한정)
+
+    private var passwordChangeSection: some View {
+        SettingsSection(title: "비밀번호 변경") {
+            Button {
+                showPasswordChange = true
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "key.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 22, height: 22)
+                    Text("비밀번호 변경")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 

@@ -213,11 +213,13 @@
 		F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */; };
 		F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */; };
 		F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF132F832AD6007B8D9F /* SettingsView.swift */; };
+		F6A7C0012FBA0003000A610A /* PasswordChangeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7C0002FBA0003000A610A /* PasswordChangeSheet.swift */; };
 		F616DCCF2F7A698800FA0476 /* NaverThirdPartyLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F616DCCE2F7A698800FA0476 /* NaverThirdPartyLogin */; };
 		F616DCD12F7B448300FA0476 /* NaverSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD02F7B448300FA0476 /* NaverSignInService.swift */; };
 		F616DCD32F7B449700FA0476 /* NaverCalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */; };
 		F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */; };
 		F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD62F7B625700FA0476 /* BannerView.swift */; };
+		F6A7A0012FBA0001000A610A /* PrivacyScreenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7A0002FBA0001000A610A /* PrivacyScreenManager.swift */; };
 		F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */; };
 		F616DCEA2F7CAFA400FA0476 /* NotificationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */; };
 		F616DCEC2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */; };
@@ -350,6 +352,7 @@
 		F6EC8B152F99D00000CFFF87 /* MacSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B142F99D00000CFFF87 /* MacSettingsView.swift */; };
 		F6EC8B172F99D00000CFFF87 /* MacCategoryManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B162F99D00000CFFF87 /* MacCategoryManagementView.swift */; };
 		F6EC8B192F99D00000CFFF87 /* MacCategoryEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B182F99D00000CFFF87 /* MacCategoryEditSheet.swift */; };
+		F6A7B0012FBA0002000A610A /* MacPasswordChangeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B0002FBA0002000A610A /* MacPasswordChangeSheet.swift */; };
 		F6EC8B1B2F99D00000CFFF87 /* MacCategorySupabaseSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B1A2F99D00000CFFF87 /* MacCategorySupabaseSync.swift */; };
 		F6EC8B1D2F99E00000CFFF87 /* PatternAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */; };
 		F6EC8B1F2F99E00000CFFF87 /* MacInsightViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */; };
@@ -508,10 +511,12 @@
 		F60ADF0F2F7FB29C007B8D9F /* AuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthError.swift; sourceTree = "<group>"; };
 		F60ADF112F7FB746007B8D9F /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		F60ADF132F832AD6007B8D9F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F6A7C0002FBA0003000A610A /* PasswordChangeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordChangeSheet.swift; sourceTree = "<group>"; };
 		F616DCD02F7B448300FA0476 /* NaverSignInService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverSignInService.swift; sourceTree = "<group>"; };
 		F616DCD22F7B449700FA0476 /* NaverCalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarListResponse.swift; sourceTree = "<group>"; };
 		F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaverCalendarService.swift; sourceTree = "<group>"; };
 		F616DCD62F7B625700FA0476 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
+		F6A7A0002FBA0001000A610A /* PrivacyScreenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyScreenManager.swift; sourceTree = "<group>"; };
 		F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabBar.swift; sourceTree = "<group>"; };
 		F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceProtocol.swift; sourceTree = "<group>"; };
 		F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleNotificationUseCase.swift; sourceTree = "<group>"; };
@@ -636,6 +641,7 @@
 		F6EC8B142F99D00000CFFF87 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
 		F6EC8B162F99D00000CFFF87 /* MacCategoryManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategoryManagementView.swift; sourceTree = "<group>"; };
 		F6EC8B182F99D00000CFFF87 /* MacCategoryEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategoryEditSheet.swift; sourceTree = "<group>"; };
+		F6A7B0002FBA0002000A610A /* MacPasswordChangeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPasswordChangeSheet.swift; sourceTree = "<group>"; };
 		F6EC8B1A2F99D00000CFFF87 /* MacCategorySupabaseSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCategorySupabaseSync.swift; sourceTree = "<group>"; };
 		F6EC8B1E2F99E00000CFFF87 /* MacInsightViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacInsightViewModel.swift; sourceTree = "<group>"; };
 		F6EC8B202F99E00000CFFF87 /* MacInsightDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacInsightDashboardView.swift; sourceTree = "<group>"; };
@@ -933,6 +939,7 @@
 				F619D9432F74AF0100084C61 /* MetaChip.swift */,
 				F619D9682F7A170E00084C61 /* FilterTab.swift */,
 				F616DCD62F7B625700FA0476 /* BannerView.swift */,
+				F6A7A0002FBA0001000A610A /* PrivacyScreenManager.swift */,
 				F650683C2F7F88A300F9C124 /* InsightBannerView.swift */,
 				F616DCD82F7B83DD00FA0476 /* HomeTabBar.swift */,
 				F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */,
@@ -1157,6 +1164,7 @@
 				DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */,
 				DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */,
 				F60ADF132F832AD6007B8D9F /* SettingsView.swift */,
+				F6A7C0002FBA0003000A610A /* PasswordChangeSheet.swift */,
 				F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */,
 			);
 			path = Settings;
@@ -1379,6 +1387,7 @@
 				F6EC8B142F99D00000CFFF87 /* MacSettingsView.swift */,
 				F6EC8B162F99D00000CFFF87 /* MacCategoryManagementView.swift */,
 				F6EC8B182F99D00000CFFF87 /* MacCategoryEditSheet.swift */,
+				F6A7B0002FBA0002000A610A /* MacPasswordChangeSheet.swift */,
 				F6EC8B1A2F99D00000CFFF87 /* MacCategorySupabaseSync.swift */,
 				F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */,
 			);
@@ -1772,9 +1781,11 @@
 				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
 				F65068212F7D072E00F9C124 /* CalendarEventEditRequest.swift in Sources */,
 				F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */,
+				F6A7C0012FBA0003000A610A /* PasswordChangeSheet.swift in Sources */,
 				F65068292F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift in Sources */,
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
 				F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */,
+				F6A7A0012FBA0001000A610A /* PrivacyScreenManager.swift in Sources */,
 				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
 				F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */,
 				D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */,
@@ -1952,6 +1963,7 @@
 				F6EC8B152F99D00000CFFF87 /* MacSettingsView.swift in Sources */,
 				F6EC8B172F99D00000CFFF87 /* MacCategoryManagementView.swift in Sources */,
 				F6EC8B192F99D00000CFFF87 /* MacCategoryEditSheet.swift in Sources */,
+				F6A7B0012FBA0002000A610A /* MacPasswordChangeSheet.swift in Sources */,
 				F6EC8B1B2F99D00000CFFF87 /* MacCategorySupabaseSync.swift in Sources */,
 				F6EC8B1D2F99E00000CFFF87 /* PatternAnalysisService.swift in Sources */,
 				F6EC8B1F2F99E00000CFFF87 /* MacInsightViewModel.swift in Sources */,
