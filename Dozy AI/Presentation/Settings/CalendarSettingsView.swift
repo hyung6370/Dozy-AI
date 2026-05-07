@@ -30,7 +30,7 @@ struct CalendarSettingsView: View {
                 Section {
                     dozyRow
                     appleRow
-                    googleRow  // ⚠️ 데모 영상 촬영 임시 활성화 — 촬영 후 다시 주석 처리
+//                    googleRow  // Google Calendar API 심사 중 — 완료 후 재활성화
 //                    naverRow
                 } header: {
                     Text("연결된 캘린더")
