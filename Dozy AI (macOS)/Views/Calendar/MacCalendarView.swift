@@ -414,39 +414,18 @@ struct MacCalendarView: View {
     /// spring response: 0.28 → 0.22 (snappier), damping 0.92 → 0.86 (덜 mushy).
     private static let pagingAnimation: Animation = .spring(response: 0.22, dampingFraction: 0.86)
 
+    /// chevron 버튼 / 단축키. 월 모드는 MacMonthPagingScrollView 의 onChange 가
+    /// 받아 scrollPosition 을 spring 으로 이동, 주/일 모드는 .id() + transition
+    /// 이 슬라이드인 처리 — 양쪽 모두 withAnimation 감싸서 트리거.
     private func animatedGoToPreviousMonth() {
-        let width = swipeState.viewWidth
-        guard width > 0 else { viewModel.goToPreviousMonth(); return }
         withAnimation(Self.pagingAnimation) {
-            swipeState.liveOffset = width
-        } completion: {
-            // 무거운 view 트리 재구성 (currentMonth swap → 3-pane 재계산) 을 spring 의
-            // 마지막 프레임이 아닌 다음 runloop 으로 미뤄 hitch 회피.
-            DispatchQueue.main.async {
-                var txn = Transaction()
-                txn.disablesAnimations = true
-                withTransaction(txn) {
-                    viewModel.goToPreviousMonth()
-                    swipeState.liveOffset = 0
-                }
-            }
+            viewModel.goToPreviousMonth()
         }
     }
 
     private func animatedGoToNextMonth() {
-        let width = swipeState.viewWidth
-        guard width > 0 else { viewModel.goToNextMonth(); return }
         withAnimation(Self.pagingAnimation) {
-            swipeState.liveOffset = -width
-        } completion: {
-            DispatchQueue.main.async {
-                var txn = Transaction()
-                txn.disablesAnimations = true
-                withTransaction(txn) {
-                    viewModel.goToNextMonth()
-                    swipeState.liveOffset = 0
-                }
-            }
+            viewModel.goToNextMonth()
         }
     }
 
@@ -479,23 +458,12 @@ struct MacCalendarView: View {
     }
 
     private var pagingMonthArea: some View {
-        GeometryReader { geo in
-            HStack(spacing: 0) {
-                monthGridView(for: previousMonth).frame(width: geo.size.width)
-                monthGridView(for: viewModel.currentMonth).frame(width: geo.size.width)
-                monthGridView(for: nextMonth).frame(width: geo.size.width)
-            }
-            .offset(x: -geo.size.width + swipeState.liveOffset)
-            .onAppear { swipeState.viewWidth = geo.size.width }
-            .onChange(of: geo.size.width) { _, newWidth in
-                swipeState.viewWidth = newWidth
-            }
-            .onContinuousHover { phase in
-                switch phase {
-                case .active: swipeState.isHovering = true
-                case .ended:  swipeState.isHovering = false
-                }
-            }
+        // SwiftUI ScrollView + .scrollTargetBehavior(.paging) 로 교체.
+        // 트랙패드/Magic Mouse 가로 스크롤이 OS 레벨 paging 으로 처리되어 손가락
+        // follow 가 frame-perfect, 이전 NSEvent monitor + liveOffset 60fps publish
+        // 방식의 stutter 가 사라짐.
+        MacMonthPagingScrollView(viewModel: viewModel) { month in
+            monthGridView(for: month)
         }
         .clipped()
     }
@@ -591,8 +559,11 @@ struct MacCalendarView: View {
 
     // MARK: - Magic Mouse Horizontal Scroll (월 전환)
 
-    /// Magic Mouse / 트랙패드의 가로 스크롤을 실시간 offset 으로 변환.
-    /// 가능하면 event.phase 로 즉시 commit, 아니면 짧은 inactivity 후 fallback.
+    /// Magic Mouse / 트랙패드의 가로 스크롤을 누적 델타로 모은 뒤 한 번에 commit.
+    /// 라이브 프리뷰 (스크롤마다 liveOffset 업데이트) 를 빼서 60fps 의 SwiftUI
+    /// 트리 invalidate 를 제거 — 무거운 grid 의 .equatable() 체크가 매 프레임
+    /// 돌면서 발생하던 stutter 를 해소. 사용자 입장에선 스크롤 중엔 화면이
+    /// 정지하다가 끝에 스냅 애니메이션으로 다음/이전 달로 넘어감.
     private func installScrollSwipeMonitor() {
         guard swipeState.monitor == nil else { return }
         let vm = viewModel
@@ -600,6 +571,9 @@ struct MacCalendarView: View {
         swipeState.monitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { event in
             guard state.isHovering else { return event }
             guard state.viewWidth > 0 else { return event }
+            // 월 모드는 SwiftUI ScrollView 가 native paging 으로 처리 — monitor 가
+            // 가로채면 안 됨. 주/일 모드만 기존 누적-델타 방식 사용.
+            guard vm.viewMode != .month else { return event }
 
             // 관성 스크롤 무시
             guard event.momentumPhase == [] else { return event }
@@ -610,15 +584,10 @@ struct MacCalendarView: View {
             // 가로 우세 스크롤만
             guard abs(dx) > abs(dy) * 1.2, abs(dx) > 0.1 else { return event }
 
-            // 실시간 offset 누적 (애니메이션 없이 즉시 반영)
-            var txn = Transaction()
-            txn.disablesAnimations = true
-            withTransaction(txn) {
-                state.liveOffset = max(-state.viewWidth, min(state.viewWidth, state.liveOffset + dx))
-            }
+            // SwiftUI 와 무관한 ivar 누적 — 트리 invalidate 안 함.
+            state.pendingDeltaX += dx
 
-            // phase 로 정확한 종료 감지. 트랙패드/Magic Mouse 는 .ended/.cancelled 보냄.
-            // phase 정보가 없는 구형 이벤트면 짧은 inactivity 후 fallback commit.
+            // phase 로 종료 감지하면 즉시 commit, 아니면 짧은 inactivity 후 fallback.
             if event.phase.contains(.ended) || event.phase.contains(.cancelled) {
                 state.commitWork?.cancel()
                 state.commitWork = nil
@@ -636,55 +605,47 @@ struct MacCalendarView: View {
         }
     }
 
-    /// liveOffset 임계값에 따라 스냅. 월 뷰는 live preview + completion 콜백 기반,
-    /// 주/일 뷰는 단순 threshold 감지 + .id() 트랜지션으로 애니메이션.
+    /// pendingDeltaX 임계값에 따라 다음/이전 달 commit. 라이브 프리뷰 없이 한 번에
+    /// 슬라이드 애니메이션으로 넘김 — month 뷰는 liveOffset 으로 슬라이드, week/day 는
+    /// VM 의 currentMonth 변경에 따른 transition 만 사용.
     private func commitSwipe(state: MonthSwipeState, vm: MacCalendarViewModel) {
         let width = state.viewWidth
-        guard width > 0 else { return }
+        guard width > 0 else {
+            state.pendingDeltaX = 0
+            return
+        }
         let anim: Animation = .spring(response: 0.28, dampingFraction: 0.92)
+        let delta = state.pendingDeltaX
+        state.pendingDeltaX = 0
 
-        if vm.viewMode == .month {
-            let threshold = width * 0.12
-            if state.liveOffset > threshold {
-                withAnimation(anim) {
-                    state.liveOffset = width
-                } completion: {
-                    var txn = Transaction()
-                    txn.disablesAnimations = true
-                    withTransaction(txn) {
-                        vm.goToPreviousMonth()
-                        state.liveOffset = 0
-                    }
-                }
-            } else if state.liveOffset < -threshold {
-                withAnimation(anim) {
-                    state.liveOffset = -width
-                } completion: {
-                    var txn = Transaction()
-                    txn.disablesAnimations = true
-                    withTransaction(txn) {
-                        vm.goToNextMonth()
-                        state.liveOffset = 0
-                    }
-                }
-            } else {
-                withAnimation(anim) {
+        // 월 뷰 / 주·일 뷰 동일하게 동작 — 라이브 프리뷰 빠진 모델에선 차이 없음.
+        let threshold: CGFloat = vm.viewMode == .month ? max(width * 0.12, 40) : 50
+
+        if delta > threshold {
+            // 오른쪽으로 스와이프 → 이전 달. 슬라이드 애니메이션으로 넘김.
+            withAnimation(anim) {
+                state.liveOffset = width
+            } completion: {
+                var txn = Transaction()
+                txn.disablesAnimations = true
+                withTransaction(txn) {
+                    vm.goToPreviousMonth()
                     state.liveOffset = 0
                 }
             }
-        } else {
-            // 주/일 뷰: live preview 없이 단순 threshold + 트랜지션
-            let threshold: CGFloat = 50
-            if state.liveOffset > threshold {
-                withAnimation(anim) { vm.goToPreviousMonth() }
-                state.liveOffset = 0
-            } else if state.liveOffset < -threshold {
-                withAnimation(anim) { vm.goToNextMonth() }
-                state.liveOffset = 0
-            } else {
-                state.liveOffset = 0
+        } else if delta < -threshold {
+            withAnimation(anim) {
+                state.liveOffset = -width
+            } completion: {
+                var txn = Transaction()
+                txn.disablesAnimations = true
+                withTransaction(txn) {
+                    vm.goToNextMonth()
+                    state.liveOffset = 0
+                }
             }
         }
+        // threshold 미만이면 아무 일도 안 함 (라이브 프리뷰 없으니 되돌릴 것도 없음).
     }
 
     private func removeScrollSwipeMonitor() {
@@ -701,7 +662,10 @@ struct MacCalendarView: View {
 // MARK: - MonthSwipeState
 
 final class MonthSwipeState: ObservableObject {
-    @Published var liveOffset: CGFloat = 0   // 현재 drag 누적 오프셋 (양수: 오른쪽 = 이전 월 peek)
+    @Published var liveOffset: CGFloat = 0   // commit 시 슬라이드 애니메이션용 (스크롤 중엔 0 유지)
+    /// 스크롤 중 누적되는 가로 델타. 라이브 프리뷰 없이 .ended/inactivity 시점에 threshold 비교용.
+    /// SwiftUI 와 무관 (published 아님) — 스크롤 60fps 호출에도 view 트리 invalidate 안 됨.
+    var pendingDeltaX: CGFloat = 0
     var isHovering: Bool = false
     var viewWidth: CGFloat = 0
     var monitor: Any?
