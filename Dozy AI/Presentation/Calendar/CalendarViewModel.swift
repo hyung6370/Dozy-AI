@@ -152,16 +152,24 @@ final class CalendarViewModel: ObservableObject {
         self.mirrorExternalEventUseCase = mirrorExternalEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
         self.visibilityFilter = visibilityFilter
-        subscribeToActiveSharedCalendarChanges()
         subscribeToVisibilityFilterChanges()
     }
 
-    /// 사용자가 소스 필터를 토글하면 현재 월/날짜를 다시 계산해 화면 갱신.
-    /// fetch 자체는 그대로 두고 filter 결과만 다시 publish 하기 위해 force 재fetch.
+    /// 사용자가 가시성 필터 (소스 OR 공유 캘린더) 를 토글하면 현재 월/날짜를 다시
+    /// 계산해 화면 갱신. fetch 자체는 그대로 두고 filter 결과만 다시 publish 하기 위해
+    /// force 재fetch. 각 publisher 마다 dropFirst() 로 초기 emit 만 따로 무시 — merge
+    /// 후 dropFirst(2) 로 묶으면 user 의 첫 토글이 race 로 같이 잡혀 먹힐 수 있음.
     private func subscribeToVisibilityFilterChanges() {
-        visibilityFilter.$hiddenSources
+        let sources = visibilityFilter.$hiddenSources
             .dropFirst()
-            .removeDuplicates()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+        let shared = visibilityFilter.$hiddenSharedCalendarIDs
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+
+        Publishers.Merge(sources, shared)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self else { return }
@@ -171,21 +179,15 @@ final class CalendarViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// 기본 공유 캘린더가 바뀌면 캐시를 비우고 재fetch한다.
-    private func subscribeToActiveSharedCalendarChanges() {
-        ActiveSharedCalendarStore.shared.$activeCalendarID
-            .dropFirst()
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                self.dozyEventsByID.removeAll()
-                self.eventsForSelectedDate.removeAll()
-                self.dozyEventsForSelectedDate.removeAll()
-                self.refreshData()
-            }
-            .store(in: &cancellables)
+    /// 이벤트가 현재 가시성 필터로 보여야 하는지 판단 — 소스 + 공유 캘린더 두 차원 AND.
+    private func passesVisibility(_ event: CalendarEvent) -> Bool {
+        guard visibilityFilter.isVisible(event.source) else { return false }
+        if let id = event.sharedCalendarID, !visibilityFilter.isVisibleSharedCalendar(id) {
+            return false
+        }
+        return true
     }
+
 
     convenience init(container: DependencyContainer) {
         self.init(
@@ -622,6 +624,8 @@ final class CalendarViewModel: ObservableObject {
                 receiveValue: { [weak self] calendars in
                     self?.mySharedCalendars = calendars
                     ActiveSharedCalendarStore.shared.reconcile(with: calendars)
+                    // 탈퇴/삭제로 사라진 공유 캘린더 ID 가 hidden 셋에 남아있으면 정리.
+                    self?.visibilityFilter.reconcileSharedCalendars(with: calendars)
                 }
             )
             .store(in: &cancellables)
@@ -676,7 +680,7 @@ final class CalendarViewModel: ObservableObject {
                         }
                         self.displaySettingsByID.merge(settings) { _, new in new }
                         let applied = events
-                            .filter { self.visibilityFilter.isVisible($0.source) }
+                            .filter { self.passesVisibility($0) }
                             .map { $0.applying(self.displaySettingsByID[$0.id]) }
                         for e in applied where e.source == .google {
                             Logger.calendar.debug("🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
@@ -861,12 +865,13 @@ final class CalendarViewModel: ObservableObject {
     private func buildLayouts(from results: [(Date, [CalendarEvent])], forMonth month: Date) {
         let cal = Calendar.current
 
-        // 이벤트별 날짜 집합 구성. 사용자 visibility 필터로 숨긴 소스는 여기서 미리
-        // 걸러내어 bar prefix(3) overflow 가 보이는 일정 기준으로 정확히 잡히게 함.
+        // 이벤트별 날짜 집합 구성. 사용자 visibility 필터 (소스 + 공유 캘린더) 로
+        // 숨긴 일정은 여기서 미리 걸러내어 bar prefix(3) overflow 가 보이는 일정 기준으로
+        // 정확히 잡히게 함.
         var eventDatesMap: [String: (CalendarEvent, Set<Date>)] = [:]
         for (date, events) in results {
             let key = cal.startOfDay(for: date)
-            for event in events where visibilityFilter.isVisible(event.source) {
+            for event in events where passesVisibility(event) {
                 if eventDatesMap[event.id] == nil {
                     eventDatesMap[event.id] = (event, [key])
                 } else {

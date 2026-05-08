@@ -127,8 +127,11 @@ struct CalendarView: View {
                     .presentationDetents([.medium])
             }
             .sheet(isPresented: $showFilter) {
-                CalendarFilterSheet(filter: viewModel.visibilityFilter)
-                    .presentationDetents([.medium])
+                CalendarFilterSheet(
+                    filter: viewModel.visibilityFilter,
+                    sharedCalendars: viewModel.mySharedCalendars
+                )
+                .presentationDetents([.medium, .large])
             }
             .fullScreenCover(isPresented: $showSearch) {
                 SearchView(container: container)

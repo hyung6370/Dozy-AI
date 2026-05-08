@@ -12,6 +12,7 @@ import UIKit
 struct CalendarFilterSheet: View {
 
     @ObservedObject var filter: CalendarVisibilityFilter
+    let sharedCalendars: [SharedCalendar]
     @Environment(\.dismiss) private var dismiss
 
     /// 토글로 노출할 소스 — naver 는 현재 미사용이라 제외, 나머지는 모두 노출.
@@ -20,7 +21,7 @@ struct CalendarFilterSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
+                Section("소스") {
                     ForEach(sources, id: \.self) { source in
                         Toggle(isOn: Binding(
                             get: { filter.isVisible(source) },
@@ -33,18 +34,37 @@ struct CalendarFilterSheet: View {
                             }
                         }
                     }
-                } footer: {
-                    Text("끈 소스의 일정은 캘린더에 표시되지 않아요. 데이터는 그대로 유지됩니다.")
                 }
 
-                if filter.isFilterActive {
-                    Section {
+                if !sharedCalendars.isEmpty {
+                    Section("공유 캘린더") {
+                        ForEach(sharedCalendars) { cal in
+                            Toggle(isOn: Binding(
+                                get: { filter.isVisibleSharedCalendar(cal.id) },
+                                set: { filter.setVisibleSharedCalendar(cal.id, $0) }
+                            )) {
+                                Label {
+                                    Text(cal.name)
+                                } icon: {
+                                    Image(systemName: "person.2.fill")
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 24, height: 24)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Section {
+                    if filter.isFilterActive {
                         Button(role: .destructive) {
                             filter.reset()
                         } label: {
                             Label("모두 표시", systemImage: "arrow.counterclockwise")
                         }
                     }
+                } footer: {
+                    Text("끈 항목의 일정은 캘린더에 표시되지 않아요. 데이터는 그대로 유지됩니다.")
                 }
             }
             .navigationTitle("캘린더 필터")
