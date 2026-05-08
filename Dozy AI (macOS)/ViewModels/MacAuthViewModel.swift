@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftData
 import Supabase
+import Auth
 import OSLog
 
 @MainActor
@@ -509,8 +510,10 @@ final class MacAuthViewModel: ObservableObject {
                 )
                 completeSignIn(user)
                 return
-            } catch let authError as AuthError where authError == .sessionMissing {
+            } catch let authError as Auth.AuthError where authError == Auth.AuthError.sessionMissing {
                 // 진짜 세션 없음 — 재시도 의미 없음.
+                // 프로젝트 자체 AuthError (Core/Utilities/AuthError.swift) 와
+                // 이름 충돌해서 모듈 prefix 로 Supabase 측 타입 명시 필요.
                 state = .signedOut
                 return
             } catch {
