@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftData
 import OSLog
+import Security
 import Supabase
 
 @MainActor
@@ -110,9 +111,36 @@ final class AuthViewModel: ObservableObject {
         let key = "app.hasLaunchedBefore"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         UserDefaults.standard.set(true, forKey: key)
+
+        // 새 기기 / 재설치 첫 진입에선 어떤 인증 자취도 남기지 않는다.
+        // 일반 supabase.auth.signOut() 만으로는 iCloud Keychain 동기 (다른
+        // 기기에서 흘러들어왔거나 SDK 가 무심코 sync=true 로 저장한) 케이스
+        // 까지는 못 지워, 사용자가 의도하지 않은 자동 로그인이 발생할 수 있음.
+        // SecItemDelete 를 kSecAttrSynchronizableAny 로 광범위하게 호출해
+        // 동기/비동기 모든 keychain 아이템을 지운 뒤 SDK 메모리 세션도 정리.
+        Self.wipeAllKeychainItems()
         try? await supabase.auth.signOut()
         KeychainService.delete(forKey: Self.displayNameKey)
-        Logger.auth.info("🔄 재설치 감지 → Keychain 세션 초기화 완료")
+        Logger.auth.info("🔄 재설치/새 기기 감지 → Keychain 전면 nuke + 세션 초기화 완료")
+    }
+
+    /// 앱 keychain 자취 광범위 삭제. 첫 부팅 시 한 번만 호출 — Google/Naver SDK
+    /// 토큰까지 같이 지워지지만 첫 진입이라 영향 없음 (사용자가 어차피 새로 로그인).
+    private static func wipeAllKeychainItems() {
+        let classes: [CFString] = [
+            kSecClassGenericPassword,
+            kSecClassInternetPassword,
+            kSecClassCertificate,
+            kSecClassKey,
+            kSecClassIdentity
+        ]
+        for cls in classes {
+            let query: [CFString: Any] = [
+                kSecClass: cls,
+                kSecAttrSynchronizable: kSecAttrSynchronizableAny
+            ]
+            SecItemDelete(query as CFDictionary)
+        }
     }
 
     // MARK: - Auth State Listener
