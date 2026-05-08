@@ -229,6 +229,23 @@ final class CalendarViewModel: ObservableObject {
                 self?.refreshData()
             }
             .store(in: &cancellables)
+
+        // 파트너의 공유 일정 INSERT/UPDATE 가 realtime 으로 들어오면 SwiftData 만
+        // 갱신되고 CalendarViewModel 의 published 캐시는 stale 해서 그리드에 안
+        // 나타나는 게 자주 발생하던 원인. .dozyEventListChanged 를 받으면 월/날짜
+        // force 재fetch. 자기-트리거 (현 디바이스 로컬 변경의 후속 broadcast) 는
+        // SharedCalendarRealtimeService 가 object: 로 자기 인스턴스를 넘기는
+        // 패턴은 아니지만, 로컬 CRUD 가 .dozyEventChanged 로 분리되어 있어 충돌
+        // 없음 — 여기선 외부 in-bound realtime 만 통과한다.
+        NotificationCenter.default.publisher(for: .dozyEventListChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Logger.calendar.info("🔔 dozyEventListChanged 수신 → 월/날짜 재fetch")
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Computed

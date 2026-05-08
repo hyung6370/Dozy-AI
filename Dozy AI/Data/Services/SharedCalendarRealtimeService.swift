@@ -270,6 +270,13 @@ final class SharedCalendarRealtimeService: ObservableObject {
         let action = await syncActor.upsert(row: row, isUpdate: isUpdate)
         if let action {
             Logger.realtime.info("\(action == "UPDATE" ? "✏️" : "➕") 공유 이벤트 \(action): \(row.title)")
+            // CalendarViewModel 이 SwiftData 직접 변경을 못 봐서 그리드가 stale.
+            // INSERT/UPDATE 모두 .dozyEventListChanged 로 갱신 트리거. object: self 로
+            // 자기-트리거 가드 (이미 ViewModel 들에서 self 비교해 자기 post 는 무시
+            // 하는 패턴) 와 호환.
+            await MainActor.run {
+                NotificationCenter.default.post(name: .dozyEventListChanged, object: self)
+            }
         }
     }
 
