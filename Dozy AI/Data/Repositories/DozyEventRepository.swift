@@ -345,22 +345,20 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
     }
 
     /// 현재 로그인 계정 기준으로 이벤트 필터링.
+    /// - 로그인 안 된 상태(userID nil): 모든 이벤트 차단. clearAllLocalData
+    ///   가 race 로 못 따라갔거나 일부 잔여가 있어도 그리드엔 안 보이게.
     /// - 개인 이벤트(sharedCalendarID == nil): ownerID 가 현재 userID 와 일치하거나
     ///   nil(아직 서버 업로드 전)일 때만 노출. 다른 계정으로 로그인했을 때
     ///   이전 계정의 SwiftData 잔여 데이터를 차단한다.
-    /// - 공유 이벤트(sharedCalendarID != nil): 사용자가 가입한 모든 공유 캘린더의
-    ///   이벤트를 그대로 통과시킨다. 이전엔 ActiveSharedCalendarStore 의 단일
-    ///   activeCalendarID 와 일치하는 것만 통과시켰지만, 멀티 가시성 필터로
-    ///   전환하면서 데이터 레이어 제약을 풀고 표시 단계 (CalendarVisibilityFilter)
-    ///   에서 hidden 셋으로만 가린다.
+    /// - 공유 이벤트(sharedCalendarID != nil): 가입한 모든 공유 캘린더의 이벤트를
+    ///   그대로 통과 (단일 active 제약은 멀티 가시성 필터로 이전됨).
     @MainActor
     private static func filterByCurrentAccount(_ events: [DozyEvent]) async -> [DozyEvent] {
-        let userID = try? await supabase.auth.session.user.id.uuidString.lowercased()
+        guard let userID = try? await supabase.auth.session.user.id.uuidString.lowercased()
+        else { return [] }
         return events.filter { event in
             guard event.sharedCalendarID == nil else { return true }
-            if let uid = userID, let oid = event.ownerID, oid != uid {
-                return false
-            }
+            if let oid = event.ownerID, oid != userID { return false }
             return true
         }
     }

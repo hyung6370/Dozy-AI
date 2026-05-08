@@ -499,7 +499,10 @@ final class SyncService {
             { try self.modelContext.delete(model: EventCompletion.self) },
             { try self.modelContext.delete(model: EventDisplaySettings.self) },
             { try self.modelContext.delete(model: UserCategory.self) },
-            { try self.modelContext.delete(model: DozyEvent.self) }
+            { try self.modelContext.delete(model: DozyEvent.self) },
+            // 알림 카드도 계정 종속이라 로그아웃 / 탈퇴 시 같이 정리.
+            // 빠지면 다음 미로그인 진입 시 알림 페이지에 이전 사용자 카드가 남음.
+            { try self.modelContext.delete(model: NotificationRecord.self) }
         ]
         for deletion in deletions { try? deletion() }
         try? modelContext.save()
