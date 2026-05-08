@@ -103,9 +103,10 @@ struct MacEventEditView: View {
                 }
 
                 Section("추가 정보") {
-                    TextField("장소 (선택)", text: $viewModel.location)
-                        .textFieldStyle(.roundedBorder)
-                        .multilineTextAlignment(.leading)
+                    LocationSearchField(
+                        locationText: $viewModel.location,
+                        resolvedLocation: $viewModel.resolvedLocation
+                    )
                     TextField("메모 (선택)", text: $viewModel.notes, axis: .vertical)
                         .textFieldStyle(.roundedBorder)
                         .multilineTextAlignment(.leading)

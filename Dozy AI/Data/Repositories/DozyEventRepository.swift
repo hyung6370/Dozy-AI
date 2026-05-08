@@ -293,6 +293,8 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             endDate: event.endDate,
             isAllDay: event.isAllDay,
             location: event.location,
+            latitude: event.latitude,
+            longitude: event.longitude,
             notes: event.notes,
             colorHex: event.colorHex,
             recurrenceRule: event.recurrenceRule,
@@ -374,6 +376,8 @@ private struct DozyEventRow: Codable {
     let endDate: Date
     let isAllDay: Bool
     let location: String?
+    let latitude: Double?
+    let longitude: Double?
     let notes: String?
     let colorHex: String
     let recurrenceRule: String
@@ -399,7 +403,7 @@ private struct DozyEventRow: Codable {
         case startDate = "start_date"
         case endDate = "end_date"
         case isAllDay = "is_all_day"
-        case location, notes
+        case location, latitude, longitude, notes
         case colorHex = "color_hex"
         case recurrenceRule = "recurrence_rule"
         case recurrenceEndDate = "recurrence_end_date"

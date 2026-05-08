@@ -86,7 +86,10 @@ struct EventEditView: View {
                 }
 
                 Section("추가 정보") {
-                    TextField("장소 (선택)", text: $viewModel.location)
+                    LocationSearchField(
+                        locationText: $viewModel.location,
+                        resolvedLocation: $viewModel.resolvedLocation
+                    )
                     TextField("메모 (선택)", text: $viewModel.notes, axis: .vertical)
                         .lineLimit(3...6)
                 }

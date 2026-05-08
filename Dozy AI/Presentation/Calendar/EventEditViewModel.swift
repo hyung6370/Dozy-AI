@@ -17,6 +17,8 @@ final class EventEditViewModel: ObservableObject {
     @Published var startDate: Date
     @Published var endDate: Date
     @Published var location: String
+    /// 자동완성 제안에서 사용자가 고른 좌표 포함 장소. nil 이면 텍스트만 입력된 케이스 — 지도 미표시.
+    @Published var resolvedLocation: EventLocation?
     @Published var notes: String
     @Published var notificationMinutesBefore: Int
     @Published var recurrenceRule: String
@@ -51,6 +53,16 @@ final class EventEditViewModel: ObservableObject {
             startDate = e.startDate
             endDate = e.endDate
             location = e.location ?? ""
+            if let lat = e.latitude, let lng = e.longitude {
+                resolvedLocation = EventLocation(
+                    name: e.location ?? "",
+                    address: nil,
+                    latitude: lat,
+                    longitude: lng
+                )
+            } else {
+                resolvedLocation = nil
+            }
             notes = e.notes ?? ""
             notificationMinutesBefore = e.notificationMinutesBefore
             recurrenceRule = e.recurrenceRule
@@ -78,6 +90,7 @@ final class EventEditViewModel: ObservableObject {
             startDate = resolvedStart
             endDate = resolvedEnd
             location = ""
+            resolvedLocation = nil
             notes = ""
             notificationMinutesBefore = -1
             recurrenceRule = "none"
@@ -117,6 +130,8 @@ final class EventEditViewModel: ObservableObject {
             event.startDate = startDate
             event.endDate = finalEnd
             event.location = location.isEmpty ? nil : location
+            event.latitude = resolvedLocation?.latitude
+            event.longitude = resolvedLocation?.longitude
             event.notes = notes.isEmpty ? nil : notes
             event.notificationMinutesBefore = notificationMinutesBefore
             event.recurrenceRule = recurrenceRule
@@ -134,6 +149,8 @@ final class EventEditViewModel: ObservableObject {
                 endDate: finalEnd,
                 isAllDay: isAllDay,
                 location: location.isEmpty ? nil : location,
+                latitude: resolvedLocation?.latitude,
+                longitude: resolvedLocation?.longitude,
                 notes: notes.isEmpty ? nil : notes,
                 colorHex: colorHex,
                 recurrenceRule: recurrenceRule,

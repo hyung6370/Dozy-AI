@@ -178,6 +178,17 @@ struct EventDetailView: View {
             if let location = event.location, !location.isEmpty {
                 Divider().padding(.leading, 52)
                 DetailRow(icon: "mappin", label: "위치", value: location)
+                // 좌표가 있을 때만 지도 임베드. 자동완성에서 안 골랐거나 외부(Apple/Google) 이벤트면 nil — 자연스럽게 미표시.
+                if let lat = dozyEvent?.latitude, let lng = dozyEvent?.longitude {
+                    LocationMapView(location: EventLocation(
+                        name: location,
+                        address: nil,
+                        latitude: lat,
+                        longitude: lng
+                    ))
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+                }
             }
             
             if let notes = event.notes, !notes.isEmpty {

@@ -242,9 +242,17 @@ struct MacEventDetailView: View {
 
             divider
             EditRow(icon: "mappin", label: "위치") {
-                TextField("장소 (선택)", text: $editVM.location)
-                    .textFieldStyle(.plain)
-                    .font(.subheadline)
+                LocationSearchField(
+                    locationText: $editVM.location,
+                    resolvedLocation: $editVM.resolvedLocation
+                )
+            }
+            // 좌표가 있으면 지도 임베드. 자동완성 선택 직후 라이브 반영되도록
+            // editVM.resolvedLocation 기준으로 표시 (저장 전에도 미리보기).
+            if let resolved = editVM.resolvedLocation {
+                LocationMapView(location: resolved)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
             }
 
             divider
