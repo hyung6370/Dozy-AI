@@ -119,7 +119,10 @@ final class MacCalendarViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.invalidateCache()
+                // clearVisible: false — published eventsByDate 를 즉시 비우면
+                // 그리드에서 일정이 사라졌다 나타나는 깜빡임 발생. 내부 캐시만
+                // 비우고 force fetch 결과의 merge 가 부드럽게 덮어쓰게 한다.
+                self?.invalidateCache(clearVisible: false)
                 self?.loadEventsForCurrentMonth(force: true)
             }
             .store(in: &cancellables)
@@ -136,14 +139,18 @@ final class MacCalendarViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // 다른 화면(Today / MenuBar)에서 일정을 만들거나 지웠을 때 — 리스트 자체가
-        // 바뀌었으므로 전체 캐시 무효화 후 재로드. 자기-트리거는 무시.
+        // 다른 화면(Today / MenuBar) 또는 SharedCalendarRealtimeService 가 partner
+        // 이벤트 INSERT/UPDATE 후 broadcast 하는 경로. 리스트 자체가 바뀌었으므로
+        // 캐시 무효화 후 재로드, 자기-트리거는 무시.
+        // clearVisible: false — eventsByDate 를 즉시 비우면 partner 가 일정을
+        // 만들거나 고칠 때마다 그리드의 모든 일정이 깜빡 사라졌다 나타나는
+        // flicker 가 보임. fetch merge 로 자연스럽게 갱신되도록.
         NotificationCenter.default.publisher(for: .dozyEventListChanged)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] note in
                 guard let self else { return }
                 if (note.object as AnyObject?) === self { return }
-                self.invalidateCache()
+                self.invalidateCache(clearVisible: false)
                 self.loadEventsForCurrentMonth(force: true)
             }
             .store(in: &cancellables)
@@ -405,35 +412,31 @@ final class MacCalendarViewModel: ObservableObject {
                     }
                 }
 
-                // visible range 안에서 새 fetch 결과에 없는 날짜의 stale 데이터 제거.
-                // 일정 삭제/날짜 이동으로 그 날짜의 마지막 일정이 사라진 경우, merge 만으로는
-                // 이전 데이터가 남아 있게 되므로 명시적으로 비워야 함. (range 밖 prefetch 키는 보존)
-                // prefetch 는 화면에 노출되지도 않은 키라 published dict 를 건드리지 않는다.
-                if !isPrefetch {
-                    let cal = Calendar.current
-                    let rangeStart = cal.startOfDay(for: start)
-                    let rangeEnd   = cal.startOfDay(for: end)
-                    var cursor = rangeStart
-                    while cursor < rangeEnd {
-                        if byDate[cursor] == nil, self.eventsByDate[cursor] != nil {
-                            self.eventsByDate.removeValue(forKey: cursor)
-                        }
-                        guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
-                        cursor = next
+                // visible / prefetch 양쪽 모두 자기 range 의 stale 데이터 제거.
+                // pagingMonthArea 가 previous / current / next 3개월을 동시에 HStack
+                // 에 그려두기 때문에 prefetch 된 인접 달도 published dict 에 미리
+                // 들어가 있어야 페이지 넘기는 순간 빈 그리드가 안 보인다.
+                let cal = Calendar.current
+                let rangeStart = cal.startOfDay(for: start)
+                let rangeEnd   = cal.startOfDay(for: end)
+                var cursor = rangeStart
+                while cursor < rangeEnd {
+                    if byDate[cursor] == nil, self.eventsByDate[cursor] != nil {
+                        self.eventsByDate.removeValue(forKey: cursor)
                     }
+                    guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
+                    cursor = next
                 }
 
                 self.cachedEventsByDate[key] = byDate
                 self.cachedDozyEventsByID[key] = byID
                 self.loadedRangeKeys.insert(key)
 
-                // visible 키만 published 에 merge. prefetch 결과는 캐시에만 두고,
-                // 사용자가 그 키로 이동했을 때 loadEventsForCurrentMonth 의 cache-hit
-                // 분기가 hydrate 한다 — 노출 안 된 데이터로 view 트리가 흔들리는 걸 방지.
-                if !isPrefetch {
-                    self.eventsByDate.merge(byDate) { _, new in new }
-                    self.dozyEventsByID.merge(byID) { _, new in new }
-                }
+                // prefetch 결과도 published 에 merge — paging HStack 의 off-screen
+                // 인접 달이 미리 데이터를 갖춘 상태로 그려져 있어야 페이지 전환 시
+                // 데이터가 뒤늦게 붙는 현상이 안 보인다.
+                self.eventsByDate.merge(byDate) { _, new in new }
+                self.dozyEventsByID.merge(byID) { _, new in new }
 
                 self.loadCompletions(for: start, to: end, key: key, isPrefetch: isPrefetch)
                 onComplete?()
@@ -462,20 +465,19 @@ final class MacCalendarViewModel: ObservableObject {
                     }
                     // 같은 range 의 이전 cached 키들을 먼저 제거 — 토글 OFF (DB 에서 isCompleted=false
                     // 가 되어 map 에 포함 안 됨) 도 즉시 visual 반영. 다른 range 의 키는 보존.
-                    // prefetch 는 캐시에만 적재하고 published 는 건드리지 않는다.
-                    if isPrefetch {
-                        self.cachedCompletions[key] = map
-                    } else {
-                        if let oldMap = self.cachedCompletions[key] {
-                            for oldKey in oldMap.keys {
-                                self.completionsByID.removeValue(forKey: oldKey)
-                            }
+                    // prefetch 도 published 에 merge — paging HStack 의 off-screen 인접 달이
+                    // 미리 완료 표식을 갖춘 상태로 그려져야 페이지 전환 시 체크 깜빡임 없음.
+                    if let oldMap = self.cachedCompletions[key] {
+                        for oldKey in oldMap.keys {
+                            self.completionsByID.removeValue(forKey: oldKey)
                         }
-                        self.cachedCompletions[key] = map
-                        for (k, v) in map {
-                            self.completionsByID[k] = v
-                        }
+                    }
+                    self.cachedCompletions[key] = map
+                    for (k, v) in map {
+                        self.completionsByID[k] = v
+                    }
 
+                    if !isPrefetch {
                         let currentKey = self.rangeKey(for: self.viewMode, anchor: self.currentMonth)
                         if key == currentKey { self.isLoading = false }
                     }
