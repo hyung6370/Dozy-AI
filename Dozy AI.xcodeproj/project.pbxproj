@@ -377,6 +377,8 @@
 		FC652980D606704F32887363 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
 		F6CAFE122FA0000000000011 /* CalendarVisibilityFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */; };
 		F6CAFE142FA0000000000013 /* CalendarFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */; };
+		F6CAFE152FA0000000000014 /* CalendarVisibilityFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */; };
+		F6CAFE172FA0000000000016 /* MacCalendarFilterPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE162FA0000000000015 /* MacCalendarFilterPopover.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -663,6 +665,7 @@
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 		F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityFilter.swift; sourceTree = "<group>"; };
 		F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarFilterSheet.swift; sourceTree = "<group>"; };
+		F6CAFE162FA0000000000015 /* MacCalendarFilterPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarFilterPopover.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1379,6 +1382,7 @@
 				F6EC8B112F99C00000CFFF87 /* MacCalendarDayCell.swift */,
 				F6EC8B362F9A200000CFFF87 /* MacCalendarEventBarLayout.swift */,
 				F6EC8B382F9A200000CFFF87 /* MacCalendarWeekRow.swift */,
+				F6CAFE162FA0000000000015 /* MacCalendarFilterPopover.swift */,
 				F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */,
 				F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */,
 				F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */,
@@ -1993,6 +1997,7 @@
 				F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */,
 				F6EC8B372F9A200000CFFF87 /* MacCalendarEventBarLayout.swift in Sources */,
 				F6EC8B392F9A200000CFFF87 /* MacCalendarWeekRow.swift in Sources */,
+				F6CAFE172FA0000000000016 /* MacCalendarFilterPopover.swift in Sources */,
 				F6EC8B3B2F9A300000CFFF87 /* MacCalendarViewMode.swift in Sources */,
 				F6EC8B3D2F9A300000CFFF87 /* MacCalendarWeekView.swift in Sources */,
 				F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */,
@@ -2034,6 +2039,7 @@
 				41711C2ECF8FD688F9018EA8 /* NotificationService.swift in Sources */,
 				F699C14C2F9F59F4001FBF8F /* HolidayService.swift in Sources */,
 				F603DC338A1489D8D11733E3 /* CalendarSourceManager.swift in Sources */,
+				F6CAFE152FA0000000000014 /* CalendarVisibilityFilter.swift in Sources */,
 				7C64594B0B062758DAB886B5 /* SchemaV1.swift in Sources */,
 				D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */,
 				966230045F58049E702E2323 /* WorkLogRepository.swift in Sources */,

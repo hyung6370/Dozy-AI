@@ -22,6 +22,7 @@ struct MacCalendarView: View {
     @State private var showMonthPicker = false
     @State private var pickerYear = Calendar.current.component(.year, from: Date())
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
+    @State private var showFilterPopover = false
 
     init(viewModel: MacCalendarViewModel) {
         self.viewModel = viewModel
@@ -136,6 +137,23 @@ struct MacCalendarView: View {
         }
         .navigationTitle("캘린더")
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showFilterPopover.toggle()
+                } label: {
+                    Label("캘린더 필터",
+                          systemImage: viewModel.visibilityFilter.isFilterActive
+                            ? "line.3.horizontal.decrease.circle.fill"
+                            : "line.3.horizontal.decrease.circle")
+                }
+                .help("표시할 소스 / 공유 캘린더 선택")
+                .popover(isPresented: $showFilterPopover, arrowEdge: .bottom) {
+                    MacCalendarFilterPopover(
+                        filter: viewModel.visibilityFilter,
+                        sharedCalendars: viewModel.mySharedCalendars
+                    )
+                }
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     showNewEventSheet = true
