@@ -50,7 +50,13 @@ struct MacMonthPagingScrollView<Page: View>: View {
             }
             .scrollTargetLayout()
         }
-        .scrollTargetBehavior(.paging)
+        // 기본 .paging 은 ~50% 임계값이라 trackpad 로 살짝 밀면 안 넘어가고, 반대로
+        // 강하게 밀면 momentum 이 여러 페이지 건너뛰는 문제. velocity 부호 기준
+        // 으로 currentOffset ± 1 로 clamp 해서 어떤 세기든 정확히 한 페이지만 이동.
+        .scrollTargetBehavior(SensitivePagingBehavior(
+            currentOffset: lastReportedOffset,
+            windowRadius: Self.windowRadius
+        ))
         .scrollPosition(id: $scrolledOffset, anchor: .center)
         .onChange(of: scrolledOffset) { _, newValue in
             guard let newValue, newValue != lastReportedOffset else { return }
@@ -90,5 +96,40 @@ struct MacMonthPagingScrollView<Page: View>: View {
                 scrolledOffset = offset
             }
         }
+    }
+}
+
+/// 커스텀 ScrollTargetBehavior — velocity 부호로 commit 방향 결정 + currentOffset
+/// ± 1 로 clamp. 가벼운 swipe 도 잘 받고, 강한 fling 의 momentum 이 여러 페이지
+/// 건너뛰는 것도 막는다 (정확히 한 페이지만 이동).
+struct SensitivePagingBehavior: ScrollTargetBehavior {
+    /// 사용자가 현재 보고 있는 페이지의 offset (anchorMonth 기준 -windowRadius...windowRadius).
+    /// 매 body 리렌더 시 lastReportedOffset 으로 갱신되어, 다음 scroll 시 이 값에서
+    /// ± 1 로만 commit 된다.
+    let currentOffset: Int
+    /// LazyHStack 의 시작 페이지 (offset = -windowRadius) 가 content 좌표 0 이라
+    /// content space page index = offset + windowRadius. 변환에 필요.
+    let windowRadius: Int
+    /// commit 결정에 영향을 주는 최소 velocity. 너무 낮추면 손가락 떼는 순간의
+    /// 미세 진동으로도 페이지가 넘어갈 수 있어 80 정도가 안전한 기본값.
+    var velocityThreshold: CGFloat = 80
+
+    func updateTarget(_ target: inout ScrollTarget, context: ScrollTargetBehaviorContext) {
+        let pageWidth = context.containerSize.width
+        guard pageWidth > 0 else { return }
+        let velocity = context.velocity.dx
+        let currentContentPage = currentOffset + windowRadius
+
+        let targetContentPage: Int
+        if velocity > velocityThreshold {
+            targetContentPage = currentContentPage + 1
+        } else if velocity < -velocityThreshold {
+            targetContentPage = currentContentPage - 1
+        } else {
+            // 거의 정지 — 같은 페이지에 머무름.
+            targetContentPage = currentContentPage
+        }
+
+        target.rect.origin.x = max(0, CGFloat(targetContentPage) * pageWidth)
     }
 }

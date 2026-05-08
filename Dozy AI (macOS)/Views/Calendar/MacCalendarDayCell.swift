@@ -23,7 +23,7 @@ struct MacCalendarDayCell: View {
                     .font(.title2)
                     .fontWeight(isToday ? .bold : .medium)
                     .foregroundStyle(isToday ? Color.white : dayColor)
-                    .frame(width: 38, height: 38)
+                    .frame(width: 28, height: 28)
                     .background(isToday ? Color.accentColor : Color.clear, in: Circle())
                 Spacer()
             }

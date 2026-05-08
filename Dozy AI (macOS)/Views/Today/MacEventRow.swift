@@ -47,14 +47,17 @@ struct MacEventRow: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(isCompleted ? 0.5 : 1.0))
-        )
+        // 배경 테마 (system / ambientMesh / blob) 에 맞춰 머티리얼 + 색조 + 외곽
+        // stroke 가 함께 갈아끼는 공통 modifier. controlBackgroundColor 직접 사용
+        // 시 ambient/blob 의 컬러풀한 배경 위에 카드가 떠 보이는 문제 해소.
+        .themedCardSurface(cornerRadius: 10)
+        // 카테고리 accent 외곽선은 카드 surface 위에 추가로 얹어 일정의 색상 컨텍스트
+        // 유지. 완료 상태에선 stroke 도 같이 dim.
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(accent.opacity(isCompleted ? 0 : 0.08), lineWidth: 1)
+                .strokeBorder(accent.opacity(isCompleted ? 0 : 0.12), lineWidth: 1)
         )
+        .opacity(isCompleted ? 0.6 : 1.0)
     }
 
     @ViewBuilder
