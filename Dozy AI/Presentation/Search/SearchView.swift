@@ -64,7 +64,13 @@ struct SearchView: View {
                 loadExternalEvents()
             }
             .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .inactive || newPhase == .background {
+                // 이전엔 .inactive 에서도 모달 상태를 지웠는데, iOS 가 sheet
+                // 프레젠테이션 / 키보드 dismiss 시 scenePhase 를 일시적으로
+                // .inactive 로 떨어뜨리는 경우가 있어 검색 결과 탭 → 상세
+                // sheet 가 떴다가 즉시 dismiss 되는 버그를 만들었음. 진짜
+                // 백그라운드 (.background) 로 갈 때만 정리하도록 좁힘 — privacy
+                // 오버레이는 PrivacyScreenManager 가 .inactive 에 별도 처리.
+                if newPhase == .background {
                     selectedEvent = nil
                     dozyEventToEdit = nil
                     calendarEventToEdit = nil

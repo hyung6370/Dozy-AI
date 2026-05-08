@@ -50,6 +50,7 @@ final class MacCalendarViewModel: ObservableObject {
     private let toggleDozyEventCompletionUseCase: ToggleDozyEventCompletionUseCase
     private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
     private let sharedCalendarService: SharedCalendarServiceProtocol
+    let visibilityFilter: CalendarVisibilityFilter
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed
@@ -93,6 +94,27 @@ final class MacCalendarViewModel: ObservableObject {
         self.toggleDozyEventCompletionUseCase = container.toggleDozyEventCompletionUseCase
         self.toggleCalendarEventCompletionUseCase = container.toggleCalendarEventCompletionUseCase
         self.sharedCalendarService = container.sharedCalendarService
+        self.visibilityFilter = container.calendarVisibilityFilter
+
+        // 가시성 필터 (소스 / 공유 캘린더) 토글 시 캐시 무효화 + 현재 월 재로드.
+        // 각 publisher 마다 dropFirst 로 초기 emit 만 무시. fetch 자체는 그대로 두고
+        // filter 결과만 다시 publish 하기 위해 force 재fetch.
+        let sourcesPub = visibilityFilter.$hiddenSources
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+        let sharedPub = visibilityFilter.$hiddenSharedCalendarIDs
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+        Publishers.Merge(sourcesPub, sharedPub)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.invalidateCache(clearVisible: false)
+                self.loadEventsForCurrentMonth(force: true)
+            }
+            .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -146,6 +168,23 @@ final class MacCalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.loadMySharedCalendars() }
             .store(in: &cancellables)
+    }
+
+    /// 가시성 필터 — 소스 + 공유 캘린더 ID 두 차원 AND. CalendarEvent / DozyEvent 모두 지원.
+    private func passesVisibility(_ event: CalendarEvent) -> Bool {
+        guard visibilityFilter.isVisible(event.source) else { return false }
+        if let id = event.sharedCalendarID, !visibilityFilter.isVisibleSharedCalendar(id) {
+            return false
+        }
+        return true
+    }
+
+    private func passesVisibility(dozy: DozyEvent) -> Bool {
+        guard visibilityFilter.isVisible(.dozy) else { return false }
+        if let id = dozy.sharedCalendarID, !visibilityFilter.isVisibleSharedCalendar(id) {
+            return false
+        }
+        return true
     }
 
     /// 현재 보이는 범위의 EventCompletion 만 재조회. `.dozyEventChanged` 핸들러 — Apple/Dozy 이벤트
@@ -333,18 +372,24 @@ final class MacCalendarViewModel: ObservableObject {
                 guard let self else { return }
 
                 // 편집 가능한 DozyEvent 인덱스 — priority / isPinned / category 변경 시 사용.
+                // visibilityFilter 와 무관하게 raw 인덱스 유지 (필터 풀면 즉시 다시 보이도록).
                 var byID: [String: DozyEvent] = [:]
                 for d in dozyEvents { byID[d.id] = d }
+
+                // 가시성 필터 (소스 + 공유 캘린더) 적용 — buildEventsByDate / bucketByDate
+                // 이전에 미리 걸러서 화면에 표시될 일정만 처리한다.
+                let filteredDozy = dozyEvents.filter { self.passesVisibility(dozy: $0) }
+                let filteredAll = allEvents.filter { self.passesVisibility($0) }
 
                 // Dozy 이벤트는 반복 / 멀티데이 해석을 위해 buildEventsByDate 로 처리.
                 // Apple/Google 등 외부 소스 이벤트는 시작~종료일 범위로 bucket 처리.
                 let dozyByDate = Self.buildEventsByDate(
-                    dozyEvents: dozyEvents,
+                    dozyEvents: filteredDozy,
                     from: start,
                     to: end
                 )
                 let externalByDate = Self.bucketByDate(
-                    events: allEvents.filter { $0.source != .dozy },
+                    events: filteredAll.filter { $0.source != .dozy },
                     from: start,
                     to: end
                 )
@@ -554,6 +599,8 @@ final class MacCalendarViewModel: ObservableObject {
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] calendars in
                     self?.mySharedCalendars = calendars
+                    // 탈퇴/삭제로 사라진 공유 캘린더 ID 가 hidden 셋에 남아있으면 정리.
+                    self?.visibilityFilter.reconcileSharedCalendars(with: calendars)
                 }
             )
             .store(in: &cancellables)

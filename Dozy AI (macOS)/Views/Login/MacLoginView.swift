@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MacLoginView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var email: String = ""
     @State private var password: String = ""
@@ -121,6 +122,8 @@ struct MacLoginView: View {
             // borderedProminent + .tint(.black) 를 쓰면 윈도우가 inactive 가 됐을 때
             // 시스템이 fill·텍스트를 모두 desaturate 해서 버튼이 사실상 사라진다.
             // .plain + 수동 background 로 active 상태와 무관하게 색을 고정.
+            // 다크모드에선 라이트모드와 색을 반전 — 어두운 윈도우 배경에 검정 버튼이
+            // 묻히는 걸 막고 흰 배경 + 검정 텍스트로 가독성 확보.
             Button {
                 authViewModel.signInWithApple()
             } label: {
@@ -130,9 +133,12 @@ struct MacLoginView: View {
                     Text("Apple로 로그인")
                         .fontWeight(.medium)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(colorScheme == .dark ? Color.black : Color.white)
                 .frame(width: 280, height: 44)
-                .background(Color.black, in: RoundedRectangle(cornerRadius: 8))
+                .background(
+                    colorScheme == .dark ? Color.white : Color.black,
+                    in: RoundedRectangle(cornerRadius: 8)
+                )
             }
             .buttonStyle(.plain)
             .disabled(authViewModel.isSigningIn)

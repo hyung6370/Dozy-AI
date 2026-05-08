@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftData
 import Supabase
+import Auth
 import OSLog
 
 @MainActor
@@ -475,36 +476,55 @@ final class MacAuthViewModel: ObservableObject {
     // MARK: - Session
     
     func restoreSession() async {
-        do {
-            let session = try await supabase.auth.session
-            // mid-signup 정리: OTP 검증까지만 마치고 비밀번호 set 전에 앱이 죽으면
-            // partial 사용자가 signed-in 상태로 남는다 — 강제로 sign out 해서 처음부터.
-            if let pendingEmail = UserDefaults.standard.string(forKey: Self.signupInProgressKey),
-               session.user.email?.lowercased() == pendingEmail {
-                UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
-                didUserInitiateSignOut = true
-                try? await supabase.auth.signOut()
+        // 네트워크 일시 장애로 토큰 refresh 가 실패하면 supabase.auth.session 이
+        // throw 하는데, 이전엔 catch 즉시 .signedOut 으로 떨어뜨려 사용자가
+        // 자주 로그아웃되던 게 macOS 세션 짧아 보이는 주요 원인이었음.
+        // sessionMissing (진짜 세션 부재) 만 즉시 sign out 처리하고, 그 외
+        // (network / server transient) 는 1s → 2s → 4s 백오프로 재시도.
+        for attempt in 0..<3 {
+            do {
+                let session = try await supabase.auth.session
+                // mid-signup 정리: OTP 검증까지만 마치고 비밀번호 set 전에 앱이 죽으면
+                // partial 사용자가 signed-in 상태로 남는다 — 강제로 sign out 해서 처음부터.
+                if let pendingEmail = UserDefaults.standard.string(forKey: Self.signupInProgressKey),
+                   session.user.email?.lowercased() == pendingEmail {
+                    UserDefaults.standard.removeObject(forKey: Self.signupInProgressKey)
+                    didUserInitiateSignOut = true
+                    try? await supabase.auth.signOut()
+                    state = .signedOut
+                    return
+                }
+                let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
+                let provider: AuthProvider = {
+                    switch providerString {
+                    case "google": return .google
+                    case "email":  return .email
+                    default:       return .apple
+                    }
+                }()
+                let user = AuthUser(
+                    id: session.user.id.uuidString.lowercased(),
+                    email: session.user.email,
+                    displayName: nil,
+                    provider: provider
+                )
+                completeSignIn(user)
+                return
+            } catch let authError as Auth.AuthError where authError == Auth.AuthError.sessionMissing {
+                // 진짜 세션 없음 — 재시도 의미 없음.
+                // 프로젝트 자체 AuthError (Core/Utilities/AuthError.swift) 와
+                // 이름 충돌해서 모듈 prefix 로 Supabase 측 타입 명시 필요.
                 state = .signedOut
                 return
+            } catch {
+                Logger.auth.warning("⚠️ restoreSession 시도 \(attempt + 1) 실패: \(error.localizedDescription)")
+                let delaySeconds = UInt64(pow(2.0, Double(attempt))) // 1, 2, 4
+                try? await Task.sleep(nanoseconds: delaySeconds * 1_000_000_000)
             }
-            let providerString = session.user.appMetadata["provider"]?.stringValue ?? ""
-            let provider: AuthProvider = {
-                switch providerString {
-                case "google": return .google
-                case "email":  return .email
-                default:       return .apple
-                }
-            }()
-            let user = AuthUser(
-                id: session.user.id.uuidString.lowercased(),
-                email: session.user.email,
-                displayName: nil,
-                provider: provider
-            )
-            completeSignIn(user)
-        } catch {
-            state = .signedOut
         }
+        // 3 회 재시도 후에도 실패 — 그제서야 sign out. authStateChanges 가 이후에
+        // 살아나면 .signedIn 이벤트로 돌아와 자동 복귀.
+        state = .signedOut
     }
     
     // MARK: - Apple Sign In

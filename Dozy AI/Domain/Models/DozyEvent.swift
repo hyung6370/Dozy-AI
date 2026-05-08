@@ -16,6 +16,8 @@ final class DozyEvent {
     var endDate: Date
     var isAllDay: Bool
     var location: String?
+    var latitude: Double?
+    var longitude: Double? // 자동완성으로 고른 장소의 좌표, nil이면 지도 미표시 (텍스트만 저장된 케이스)
     var notes: String?
     var colorHex: String
     var createdAt: Date
@@ -51,6 +53,8 @@ final class DozyEvent {
         endDate: Date,
         isAllDay: Bool = false,
         location: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
         notes: String? = nil,
         colorHex: String = "#007AFF",
         recurrenceRule: String = "none",
@@ -72,6 +76,8 @@ final class DozyEvent {
         self.endDate = endDate
         self.isAllDay = isAllDay
         self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
         self.notes = notes
         self.colorHex = colorHex
         self.createdAt = Date()

@@ -156,7 +156,9 @@ final class SharedCalendarRealtimeService: ObservableObject {
                 let sharedRow = SharedEventRow(
                     id: row.id, userID: row.userID, title: row.title,
                     startDate: row.startDate, endDate: row.endDate,
-                    isAllDay: row.isAllDay, location: row.location, notes: row.notes,
+                    isAllDay: row.isAllDay, location: row.location,
+                    latitude: row.latitude, longitude: row.longitude,
+                    notes: row.notes,
                     colorHex: row.colorHex, recurrenceRule: row.recurrenceRule,
                     recurrenceEndDate: row.recurrenceEndDate,
                     notificationMinutesBefore: row.notificationMinutesBefore,
@@ -270,6 +272,13 @@ final class SharedCalendarRealtimeService: ObservableObject {
         let action = await syncActor.upsert(row: row, isUpdate: isUpdate)
         if let action {
             Logger.realtime.info("\(action == "UPDATE" ? "✏️" : "➕") 공유 이벤트 \(action): \(row.title)")
+            // CalendarViewModel 이 SwiftData 직접 변경을 못 봐서 그리드가 stale.
+            // INSERT/UPDATE 모두 .dozyEventListChanged 로 갱신 트리거. object: self 로
+            // 자기-트리거 가드 (이미 ViewModel 들에서 self 비교해 자기 post 는 무시
+            // 하는 패턴) 와 호환.
+            await MainActor.run {
+                NotificationCenter.default.post(name: .dozyEventListChanged, object: self)
+            }
         }
     }
 
@@ -292,6 +301,16 @@ final class SharedCalendarRealtimeService: ObservableObject {
         }()
         let location: String? = {
             if case .string(let v) = record["location"] { return v }
+            return nil
+        }()
+        let latitude: Double? = {
+            if case .double(let v) = record["latitude"] { return v }
+            if case .integer(let v) = record["latitude"] { return Double(v) }
+            return nil
+        }()
+        let longitude: Double? = {
+            if case .double(let v) = record["longitude"] { return v }
+            if case .integer(let v) = record["longitude"] { return Double(v) }
             return nil
         }()
         let notes: String? = {
@@ -360,7 +379,9 @@ final class SharedCalendarRealtimeService: ObservableObject {
         return SharedEventRow(
             id: id, userID: userID, title: title,
             startDate: startDate, endDate: endDate, isAllDay: isAllDay,
-            location: location, notes: notes, colorHex: colorHex,
+            location: location,
+            latitude: latitude, longitude: longitude,
+            notes: notes, colorHex: colorHex,
             recurrenceRule: recurrenceRule, recurrenceEndDate: recurrenceEndDate,
             notificationMinutesBefore: notificationMinutesBefore, memos: memos,
             isCompleted: isCompleted, priority: priority, isPinned: isPinned,
@@ -403,6 +424,8 @@ private struct SharedEventRow: Sendable {
     let endDate: Date
     let isAllDay: Bool
     let location: String?
+    let latitude: Double?
+    let longitude: Double?
     let notes: String?
     let colorHex: String
     let recurrenceRule: String
@@ -429,6 +452,8 @@ private struct DozyEventDownloadRow: Decodable {
     let endDate: Date
     let isAllDay: Bool
     let location: String?
+    let latitude: Double?
+    let longitude: Double?
     let notes: String?
     let colorHex: String
     let recurrenceRule: String
@@ -452,7 +477,7 @@ private struct DozyEventDownloadRow: Decodable {
         case startDate = "start_date"
         case endDate = "end_date"
         case isAllDay = "is_all_day"
-        case location, notes
+        case location, latitude, longitude, notes
         case colorHex = "color_hex"
         case recurrenceRule = "recurrence_rule"
         case recurrenceEndDate = "recurrence_end_date"
@@ -478,6 +503,8 @@ private struct DozyEventDownloadRow: Decodable {
         endDate = try c.decode(Date.self, forKey: .endDate)
         isAllDay = try c.decode(Bool.self, forKey: .isAllDay)
         location = try c.decodeIfPresent(String.self, forKey: .location)
+        latitude = try c.decodeIfPresent(Double.self, forKey: .latitude)
+        longitude = try c.decodeIfPresent(Double.self, forKey: .longitude)
         notes = try c.decodeIfPresent(String.self, forKey: .notes)
         colorHex = try c.decode(String.self, forKey: .colorHex)
         recurrenceRule = try c.decode(String.self, forKey: .recurrenceRule)
@@ -535,6 +562,8 @@ private actor SharedCalendarSyncActor {
             event.endDate = row.endDate
             event.isAllDay = row.isAllDay
             event.location = row.location
+            event.latitude = row.latitude
+            event.longitude = row.longitude
             event.notes = row.notes
             event.colorHex = row.colorHex
             event.recurrenceRule = row.recurrenceRule
@@ -555,7 +584,9 @@ private actor SharedCalendarSyncActor {
             let event = DozyEvent(
                 id: row.id, title: row.title,
                 startDate: row.startDate, endDate: row.endDate,
-                isAllDay: row.isAllDay, location: row.location, notes: row.notes,
+                isAllDay: row.isAllDay, location: row.location,
+                latitude: row.latitude, longitude: row.longitude,
+                notes: row.notes,
                 colorHex: row.colorHex, recurrenceRule: row.recurrenceRule,
                 recurrenceEndDate: row.recurrenceEndDate,
                 notificationMinutesBefore: row.notificationMinutesBefore,

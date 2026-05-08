@@ -14,6 +14,7 @@ struct CalendarView: View {
     @ObservedObject var viewModel: CalendarViewModel
     @State private var showLegend = false
     @State private var showSearch = false
+    @State private var showFilter = false
     @State private var longPressDate: Date? = nil
     @State private var showLongPressAlert = false
     @State private var pageIndex = 1
@@ -91,6 +92,28 @@ struct CalendarView: View {
                     .accessibilityLabel("검색")
                     .accessibilityIdentifier("btn_calendar_search")
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showFilter = true } label: {
+                        Image(colorScheme == .dark ? "Dark-Calendar-Filter" : "Light-Calendar-Filter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            // 필터 적용 중인 상태를 우측 상단 accent 닷으로 시각 표식.
+                            .overlay(alignment: .topTrailing) {
+                                if viewModel.visibilityFilter.isFilterActive {
+                                    Circle()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 7, height: 7)
+                                        .overlay(
+                                            Circle().stroke(Color(.systemBackground), lineWidth: 1.5)
+                                        )
+                                        .offset(x: 3, y: -3)
+                                }
+                            }
+                    }
+                    .accessibilityLabel("캘린더 필터")
+                    .accessibilityIdentifier("btn_calendar_filter")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { viewModel.startCreatingEvent() } label: {
                         Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
@@ -113,6 +136,13 @@ struct CalendarView: View {
             .sheet(isPresented: $showLegend) {
                 CalendarLegendView()
                     .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showFilter) {
+                CalendarFilterSheet(
+                    filter: viewModel.visibilityFilter,
+                    sharedCalendars: viewModel.mySharedCalendars
+                )
+                .presentationDetents([.medium, .large])
             }
             .fullScreenCover(isPresented: $showSearch) {
                 SearchView(container: container)

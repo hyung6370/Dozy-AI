@@ -213,7 +213,7 @@ struct MacSettingsView: View {
         SettingsSection(title: "메뉴바") {
             Toggle(isOn: $menuBarShowBadge) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Label("남은 일정 개수 배지", systemImage: "circle.badge")
+                    Label("남은 일정 개수 배지", systemImage: "app.badge")
                     Text("메뉴바 아이콘 옆에 오늘 남은 일정 수를 표시합니다.")
                         .font(.caption)
                         .foregroundStyle(.secondary)

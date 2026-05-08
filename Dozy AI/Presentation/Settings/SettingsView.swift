@@ -244,7 +244,8 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             #endif
 
-            // Google 로그인
+            // Google 로그인 — 다크모드에서 systemGray6 배경이 페이지와 거의 동일한
+            // 어두운 회색이라 경계가 묻히는 문제. separator 색 stroke 으로 윤곽 확보.
             Button { authViewModel.signInWithGoogle() } label: {
                 HStack(spacing: 10) {
                     Image("google")
@@ -258,6 +259,10 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color(.separator), lineWidth: 1)
+                }
             }
             .buttonStyle(.plain)
 
@@ -329,7 +334,7 @@ struct SettingsView: View {
                     .textInputAutocapitalization(.never)
                     .keyboardType(.emailAddress)
                     .disableAutocorrection(true)
-                    .textFieldStyle(.roundedBorder)
+                    .dozyAuthFieldStyle()
                     .submitLabel(.next)
                     .disabled(isOTPMode && activeStep != .idle)
                     .onSubmit {
@@ -388,7 +393,7 @@ struct SettingsView: View {
                 HStack(spacing: 6) {
                     TextField("인증 코드 (6자리)", text: $loginOTPCode)
                         .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
+                        .dozyAuthFieldStyle()
                         .disabled(otpExpired)
                         .onSubmit { verifyOTPIfReady() }
 
@@ -440,7 +445,7 @@ struct SettingsView: View {
                     emailLoginMode == .signIn ? "비밀번호" : "새 비밀번호 (\(PasswordPolicy.minLength)자 이상)",
                     text: $loginPassword
                 )
-                .textFieldStyle(.roundedBorder)
+                .dozyAuthFieldStyle()
                 .textContentType(emailLoginMode == .signIn ? .password : .newPassword)
                 .submitLabel(emailLoginMode == .signIn ? .go : .next)
                 .onSubmit { submitEmailLogin() }
@@ -475,7 +480,7 @@ struct SettingsView: View {
 
                 if emailLoginMode != .signIn {
                     SecureField("비밀번호 확인", text: $loginPasswordConfirm)
-                        .textFieldStyle(.roundedBorder)
+                        .dozyAuthFieldStyle()
                         .textContentType(.newPassword)
                         .submitLabel(.join)
                         .onSubmit { submitEmailLogin() }
@@ -728,5 +733,24 @@ struct SettingsView: View {
         } header: {
             Text("캘린더")
         }
+    }
+}
+
+// MARK: - Auth Field Style
+
+/// 로그인/회원가입 화면의 이메일·OTP·비밀번호 필드 공통 스타일.
+/// 기본 .textFieldStyle(.roundedBorder) 는 모서리 radius 가 작고 다크모드에서
+/// 경계가 흐릿해서, Apple/Google 로그인 버튼과 일관된 cornerRadius 10 + separator
+/// stroke 로 통일.
+private extension View {
+    func dozyAuthFieldStyle() -> some View {
+        self
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color(.separator), lineWidth: 1)
+            }
     }
 }

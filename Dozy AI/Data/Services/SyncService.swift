@@ -92,6 +92,8 @@ final class SyncService {
                             endDate: event.endDate,
                             isAllDay: event.isAllDay,
                             location: event.location,
+                            latitude: event.latitude,
+                            longitude: event.longitude,
                             notes: event.notes,
                             colorHex: event.colorHex,
                             recurrenceRule: event.recurrenceRule,
@@ -278,6 +280,8 @@ final class SyncService {
                                 endDate: row.endDate,
                                 isAllDay: row.isAllDay,
                                 location: row.location,
+                                latitude: row.latitude,
+                                longitude: row.longitude,
                                 notes: row.notes,
                                 colorHex: row.colorHex,
                                 recurrenceRule: row.recurrenceRule,
@@ -495,7 +499,10 @@ final class SyncService {
             { try self.modelContext.delete(model: EventCompletion.self) },
             { try self.modelContext.delete(model: EventDisplaySettings.self) },
             { try self.modelContext.delete(model: UserCategory.self) },
-            { try self.modelContext.delete(model: DozyEvent.self) }
+            { try self.modelContext.delete(model: DozyEvent.self) },
+            // 알림 카드도 계정 종속이라 로그아웃 / 탈퇴 시 같이 정리.
+            // 빠지면 다음 미로그인 진입 시 알림 페이지에 이전 사용자 카드가 남음.
+            { try self.modelContext.delete(model: NotificationRecord.self) }
         ]
         for deletion in deletions { try? deletion() }
         try? modelContext.save()
@@ -512,6 +519,8 @@ private struct DozyEventRow: Codable {
     let endDate: Date
     let isAllDay: Bool
     let location: String?
+    let latitude: Double?
+    let longitude: Double?
     let notes: String?
     let colorHex: String
     let recurrenceRule: String
@@ -537,7 +546,7 @@ private struct DozyEventRow: Codable {
         case startDate = "start_date"
         case endDate = "end_date"
         case isAllDay = "is_all_day"
-        case location, notes
+        case location, latitude, longitude, notes
         case colorHex = "color_hex"
         case recurrenceRule = "recurrence_rule"
         case recurrenceEndDate = "recurrence_end_date"
@@ -559,7 +568,8 @@ private struct DozyEventRow: Codable {
     init(
         id: String, userID: String, title: String,
         startDate: Date, endDate: Date, isAllDay: Bool,
-        location: String?, notes: String?, colorHex: String,
+        location: String?, latitude: Double?, longitude: Double?,
+        notes: String?, colorHex: String,
         recurrenceRule: String, recurrenceEndDate: Date?,
         notificationMinutesBefore: Int, memos: [String], isCompleted: Bool,
         priority: Int, isPinned: Bool, category: String,
@@ -575,6 +585,8 @@ private struct DozyEventRow: Codable {
         self.endDate = endDate
         self.isAllDay = isAllDay
         self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
         self.notes = notes
         self.colorHex = colorHex
         self.recurrenceRule = recurrenceRule
@@ -603,6 +615,8 @@ private struct DozyEventRow: Codable {
         endDate = try c.decode(Date.self, forKey: .endDate)
         isAllDay = try c.decode(Bool.self, forKey: .isAllDay)
         location = try c.decodeIfPresent(String.self, forKey: .location)
+        latitude = try c.decodeIfPresent(Double.self, forKey: .latitude)
+        longitude = try c.decodeIfPresent(Double.self, forKey: .longitude)
         notes = try c.decodeIfPresent(String.self, forKey: .notes)
         colorHex = try c.decode(String.self, forKey: .colorHex)
         recurrenceRule = try c.decode(String.self, forKey: .recurrenceRule)

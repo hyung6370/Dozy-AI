@@ -15,6 +15,7 @@ struct MacCalendarView: View {
     @ObservedObject var viewModel: MacCalendarViewModel
     @StateObject private var swipeState = MonthSwipeState()
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var showNewEventSheet = false
     @State private var newEventTimeHint: Date? = nil
@@ -22,6 +23,7 @@ struct MacCalendarView: View {
     @State private var showMonthPicker = false
     @State private var pickerYear = Calendar.current.component(.year, from: Date())
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
+    @State private var showFilterPopover = false
 
     init(viewModel: MacCalendarViewModel) {
         self.viewModel = viewModel
@@ -136,6 +138,35 @@ struct MacCalendarView: View {
         }
         .navigationTitle("캘린더")
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showFilterPopover.toggle()
+                } label: {
+                    Image(colorScheme == .dark ? "Dark-Calendar-Filter" : "Light-Calendar-Filter")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                        // 필터 적용 중일 때 우측 상단 accent 닷으로 표식 — iOS 와 동일.
+                        .overlay(alignment: .topTrailing) {
+                            if viewModel.visibilityFilter.isFilterActive {
+                                Circle()
+                                    .fill(Color.accentColor)
+                                    .frame(width: 6, height: 6)
+                                    .overlay(
+                                        Circle().stroke(Color(nsColor: .windowBackgroundColor), lineWidth: 1)
+                                    )
+                                    .offset(x: 2, y: -2)
+                            }
+                        }
+                }
+                .help("표시할 소스 / 공유 캘린더 선택")
+                .popover(isPresented: $showFilterPopover, arrowEdge: .bottom) {
+                    MacCalendarFilterPopover(
+                        filter: viewModel.visibilityFilter,
+                        sharedCalendars: viewModel.mySharedCalendars
+                    )
+                }
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     showNewEventSheet = true

@@ -300,14 +300,6 @@
 		F67333062FA836E2000A610A /* congratulation.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68872F85EBFE003464E8 /* congratulation.json */; };
 		F67333072FA836F2000A610A /* loading.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68792F85E54A003464E8 /* loading.json */; };
 		F673330A2FA837C5000A610A /* MacLottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333092FA837C5000A610A /* MacLottieView.swift */; };
-		F673330C2FADA047000A610A /* EventLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F673330B2FADA047000A610A /* EventLocation.swift */; };
-		F673330D2FADA047000A610A /* EventLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F673330B2FADA047000A610A /* EventLocation.swift */; };
-		F673330F2FADA064000A610A /* LocationSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F673330E2FADA064000A610A /* LocationSearchService.swift */; };
-		F67333102FADA064000A610A /* LocationSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F673330E2FADA064000A610A /* LocationSearchService.swift */; };
-		F67333132FADA094000A610A /* LocationSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333122FADA094000A610A /* LocationSearchField.swift */; };
-		F67333142FADA094000A610A /* LocationSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333122FADA094000A610A /* LocationSearchField.swift */; };
-		F67333162FADA0A0000A610A /* LocationMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333152FADA0A0000A610A /* LocationMapView.swift */; };
-		F67333172FADA0A0000A610A /* LocationMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333152FADA0A0000A610A /* LocationMapView.swift */; };
 		F68B39B32F83721600FEAFB0 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
 		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
 		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
@@ -339,10 +331,6 @@
 		F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BC59982F739B470090DF3A /* RecentLogRow.swift */; };
 		F6CAFE022FA0000000000001 /* MonthYearPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE012FA0000000000001 /* MonthYearPickerView.swift */; };
 		F6CAFE042FA0000000000002 /* CalendarMonthPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */; };
-		F6CAFE122FA0000000000011 /* CalendarVisibilityFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */; };
-		F6CAFE142FA0000000000013 /* CalendarFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */; };
-		F6CAFE152FA0000000000014 /* CalendarVisibilityFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */; };
-		F6CAFE172FA0000000000016 /* MacCalendarFilterPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE162FA0000000000015 /* MacCalendarFilterPopover.swift */; };
 		F6EC8AA12F9705A300CFFF87 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F6EC8AA02F9705A300CFFF87 /* Kingfisher */; };
 		F6EC8AE22F9896E000CFFF87 /* Dozy_AI__macOS_UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8ADF2F9896E000CFFF87 /* Dozy_AI__macOS_UITests.swift */; };
 		F6EC8AE32F9896E000CFFF87 /* Dozy_AI__macOS_UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8AE02F9896E000CFFF87 /* Dozy_AI__macOS_UITestsLaunchTests.swift */; };
@@ -606,10 +594,6 @@
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
 		F67333092FA837C5000A610A /* MacLottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLottieView.swift; sourceTree = "<group>"; };
-		F673330B2FADA047000A610A /* EventLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLocation.swift; sourceTree = "<group>"; };
-		F673330E2FADA064000A610A /* LocationSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchService.swift; sourceTree = "<group>"; };
-		F67333122FADA094000A610A /* LocationSearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchField.swift; sourceTree = "<group>"; };
-		F67333152FADA0A0000A610A /* LocationMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMapView.swift; sourceTree = "<group>"; };
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
@@ -634,9 +618,6 @@
 		F6BC59982F739B470090DF3A /* RecentLogRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentLogRow.swift; sourceTree = "<group>"; };
 		F6CAFE012FA0000000000001 /* MonthYearPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthYearPickerView.swift; sourceTree = "<group>"; };
 		F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarMonthPageView.swift; sourceTree = "<group>"; };
-		F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityFilter.swift; sourceTree = "<group>"; };
-		F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarFilterSheet.swift; sourceTree = "<group>"; };
-		F6CAFE162FA0000000000015 /* MacCalendarFilterPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarFilterPopover.swift; sourceTree = "<group>"; };
 		F6EC8AB82F9896CE00CFFF87 /* Dozy AI (macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dozy AI (macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6EC8AC42F9896CF00CFFF87 /* Dozy AI (macOS)Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AI (macOS)Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6EC8ACE2F9896CF00CFFF87 /* Dozy AI (macOS)UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AI (macOS)UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -933,7 +914,6 @@
 				F619D96A2F7A344900084C61 /* DozyEvent.swift */,
 				F65068222F7D076200F9C124 /* EventCompletion.swift */,
 				F63C68E32F8642C7003464E8 /* EventDisplaySettings.swift */,
-				F673330B2FADA047000A610A /* EventLocation.swift */,
 				F63C68682F84F481003464E8 /* NotificationRecord.swift */,
 				DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */,
 				DD9F68EF2F6ACD62001952F6 /* TaskItem.swift */,
@@ -1088,14 +1068,12 @@
 				F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */,
 				DD9F690F2F6ACF04001952F6 /* CalendarService.swift */,
 				F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */,
-				F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */,
 				F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */,
 				BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */,
 				F619D97A2F7A3A6000084C61 /* DozyCalendarService.swift */,
 				F619D9572F75219200084C61 /* GoogleCalendarService.swift */,
 				F619D9552F751F7D00084C61 /* GoogleSignInService.swift */,
 				F699C14A2F9F59F4001FBF8F /* HolidayService.swift */,
-				F673330E2FADA064000A610A /* LocationSearchService.swift */,
 				F616DCD02F7B448300FA0476 /* NaverSignInService.swift */,
 				F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */,
 				F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */,
@@ -1204,10 +1182,8 @@
 		F619D97F2F7A3CC200084C61 /* Calendar */ = {
 			isa = PBXGroup;
 			children = (
-				F67333112FADA082000A610A /* Components */,
 				F619D9842F7A43DF00084C61 /* CalendarView.swift */,
 				F63C68E72F864F0B003464E8 /* CalendarLegendView.swift */,
-				F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */,
 				F619D9802F7A3CD100084C61 /* CalendarViewModel.swift */,
 				F619D9822F7A422900084C61 /* DayCell.swift */,
 				F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */,
@@ -1264,15 +1240,6 @@
 				F67333092FA837C5000A610A /* MacLottieView.swift */,
 				F6A780032FB80001000A610A /* AmbientMeshBackgroundView.swift */,
 				F6A780052FB80002000A610A /* MacBackgroundTheme.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		F67333112FADA082000A610A /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				F67333122FADA094000A610A /* LocationSearchField.swift */,
-				F67333152FADA0A0000A610A /* LocationMapView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1406,7 +1373,6 @@
 				F6EC8B112F99C00000CFFF87 /* MacCalendarDayCell.swift */,
 				F6EC8B362F9A200000CFFF87 /* MacCalendarEventBarLayout.swift */,
 				F6EC8B382F9A200000CFFF87 /* MacCalendarWeekRow.swift */,
-				F6CAFE162FA0000000000015 /* MacCalendarFilterPopover.swift */,
 				F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */,
 				F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */,
 				F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */,
@@ -1728,7 +1694,6 @@
 				5B0F554A76C543C39CE91437 /* SharedCalendarDetailView.swift in Sources */,
 				B983D6927F254284838DA052 /* SharedCalendarEditView.swift in Sources */,
 				2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */,
-				F67333132FADA094000A610A /* LocationSearchField.swift in Sources */,
 				807EED356A2F4E5095F4C7F4 /* SharedCalendar.swift in Sources */,
 				C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */,
 				F699C14B2F9F59F4001FBF8F /* HolidayService.swift in Sources */,
@@ -1801,9 +1766,7 @@
 				F63C686E2F84F79B003464E8 /* NotificationViewModel.swift in Sources */,
 				F619D9852F7A43DF00084C61 /* CalendarView.swift in Sources */,
 				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
-				F673330D2FADA047000A610A /* EventLocation.swift in Sources */,
 				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,
-				F67333162FADA0A0000A610A /* LocationMapView.swift in Sources */,
 				DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */,
 				DDA9A5B62F89560300C1572C /* UserCategory.swift in Sources */,
 				F635FD542F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift in Sources */,
@@ -1823,7 +1786,6 @@
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
 				F616DCD72F7B625700FA0476 /* BannerView.swift in Sources */,
 				F6A7A0012FBA0001000A610A /* PrivacyScreenManager.swift in Sources */,
-				F67333102FADA064000A610A /* LocationSearchService.swift in Sources */,
 				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
 				F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */,
 				D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */,
@@ -1877,8 +1839,6 @@
 				F616DCF02F7CB13B00FA0476 /* NotificationService.swift in Sources */,
 				F619D9752F7A371900084C61 /* UpdateDozyEventUseCase.swift in Sources */,
 				F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */,
-				F6CAFE122FA0000000000011 /* CalendarVisibilityFilter.swift in Sources */,
-				F6CAFE142FA0000000000013 /* CalendarFilterSheet.swift in Sources */,
 				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
 				F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */,
 				F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */,
@@ -1937,10 +1897,8 @@
 				FC652980D606704F32887363 /* SharedCalendarServiceProtocol.swift in Sources */,
 				F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */,
 				4817041814F3CAF5B88A863A /* JoinSharedCalendarUseCase.swift in Sources */,
-				F67333142FADA094000A610A /* LocationSearchField.swift in Sources */,
 				AFEECEAA9D38344BFA06A40B /* LeaveSharedCalendarUseCase.swift in Sources */,
 				B8E86AB9FDFB743B45754B63 /* RegenerateSharedCalendarInviteCodeUseCase.swift in Sources */,
-				F67333172FADA0A0000A610A /* LocationMapView.swift in Sources */,
 				F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */,
 				B87AC7D575F27C509602F32F /* UpdateSharedCalendarNicknameUseCase.swift in Sources */,
 				DBFC5E192ECDB68070B57048 /* ReminderServiceProtocol.swift in Sources */,
@@ -2027,17 +1985,14 @@
 				F6EC8B352F9A100000CFFF87 /* SharedCalendarViewModel.swift in Sources */,
 				F6EC8B372F9A200000CFFF87 /* MacCalendarEventBarLayout.swift in Sources */,
 				F6EC8B392F9A200000CFFF87 /* MacCalendarWeekRow.swift in Sources */,
-				F6CAFE172FA0000000000016 /* MacCalendarFilterPopover.swift in Sources */,
 				F6EC8B3B2F9A300000CFFF87 /* MacCalendarViewMode.swift in Sources */,
 				F6EC8B3D2F9A300000CFFF87 /* MacCalendarWeekView.swift in Sources */,
 				F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */,
-				F673330C2FADA047000A610A /* EventLocation.swift in Sources */,
 				F6BC1A0001000000ACCC0001 /* MacEventSourceIcon.swift in Sources */,
 				F6BC1A0001000000DDDD0002 /* MacDailySummaryView.swift in Sources */,
 				F6BC1A0001000000DDDD0005 /* MacCategoryAnalysisView.swift in Sources */,
 				F6EC8AF32F99959C00CFFF87 /* MacAppRootView.swift in Sources */,
 				A5DC3216852FD331CFF379FA /* WorkLogDTO.swift in Sources */,
-				F673330F2FADA064000A610A /* LocationSearchService.swift in Sources */,
 				D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */,
 				118E4E22922D2F814603C4CC /* String+Extensions.swift in Sources */,
 				8BB6A979D5F502ABE0B2E735 /* CalendarEventDTO.swift in Sources */,
@@ -2071,7 +2026,6 @@
 				41711C2ECF8FD688F9018EA8 /* NotificationService.swift in Sources */,
 				F699C14C2F9F59F4001FBF8F /* HolidayService.swift in Sources */,
 				F603DC338A1489D8D11733E3 /* CalendarSourceManager.swift in Sources */,
-				F6CAFE152FA0000000000014 /* CalendarVisibilityFilter.swift in Sources */,
 				7C64594B0B062758DAB886B5 /* SchemaV1.swift in Sources */,
 				D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */,
 				966230045F58049E702E2323 /* WorkLogRepository.swift in Sources */,
@@ -2261,7 +2215,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2282,7 +2236,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -2304,7 +2258,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2325,7 +2279,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

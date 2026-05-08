@@ -293,6 +293,8 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             endDate: event.endDate,
             isAllDay: event.isAllDay,
             location: event.location,
+            latitude: event.latitude,
+            longitude: event.longitude,
             notes: event.notes,
             colorHex: event.colorHex,
             recurrenceRule: event.recurrenceRule,
@@ -343,22 +345,21 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
     }
 
     /// 현재 로그인 계정 기준으로 이벤트 필터링.
+    /// - 로그인 안 된 상태(userID nil): 모든 이벤트 차단. clearAllLocalData
+    ///   가 race 로 못 따라갔거나 일부 잔여가 있어도 그리드엔 안 보이게.
     /// - 개인 이벤트(sharedCalendarID == nil): ownerID 가 현재 userID 와 일치하거나
     ///   nil(아직 서버 업로드 전)일 때만 노출. 다른 계정으로 로그인했을 때
     ///   이전 계정의 SwiftData 잔여 데이터를 차단한다.
-    /// - 공유 이벤트(sharedCalendarID != nil): 활성 공유 캘린더와 일치할 때만.
+    /// - 공유 이벤트(sharedCalendarID != nil): 가입한 모든 공유 캘린더의 이벤트를
+    ///   그대로 통과 (단일 active 제약은 멀티 가시성 필터로 이전됨).
     @MainActor
     private static func filterByCurrentAccount(_ events: [DozyEvent]) async -> [DozyEvent] {
-        let userID = try? await supabase.auth.session.user.id.uuidString.lowercased()
-        let activeID = ActiveSharedCalendarStore.shared.activeCalendarID
+        guard let userID = try? await supabase.auth.session.user.id.uuidString.lowercased()
+        else { return [] }
         return events.filter { event in
-            if event.sharedCalendarID == nil {
-                if let uid = userID, let oid = event.ownerID, oid != uid {
-                    return false
-                }
-                return true
-            }
-            return event.sharedCalendarID == activeID
+            guard event.sharedCalendarID == nil else { return true }
+            if let oid = event.ownerID, oid != userID { return false }
+            return true
         }
     }
 }
@@ -373,6 +374,8 @@ private struct DozyEventRow: Codable {
     let endDate: Date
     let isAllDay: Bool
     let location: String?
+    let latitude: Double?
+    let longitude: Double?
     let notes: String?
     let colorHex: String
     let recurrenceRule: String
@@ -398,7 +401,7 @@ private struct DozyEventRow: Codable {
         case startDate = "start_date"
         case endDate = "end_date"
         case isAllDay = "is_all_day"
-        case location, notes
+        case location, latitude, longitude, notes
         case colorHex = "color_hex"
         case recurrenceRule = "recurrence_rule"
         case recurrenceEndDate = "recurrence_end_date"

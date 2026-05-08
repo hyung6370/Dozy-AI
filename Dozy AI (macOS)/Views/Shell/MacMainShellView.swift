@@ -100,35 +100,39 @@ struct MacMainShellView: View {
                 }
             }
         } detail: {
-            Group {
-                switch coordinator.selectedSection {
-                case .today:
-                    if let vm = coordinator.homeViewModel {
-                        MacTodayView(viewModel: vm)
+            // ZStack 으로 detail child 와 Lottie 를 sibling 으로 배치 — switch 의 case
+            // 가 갈려도 Lottie 는 ZStack 의 두 번째 자식 자리에서 identity 가 유지되어
+            // NSViewRepresentable 가 tear down 되지 않는다. .overlay 를 Group 에 직접
+            // 걸면 case 변경 시 Lottie NSView 가 재생성돼 처음부터 다시 재생되는 버그.
+            ZStack {
+                Group {
+                    switch coordinator.selectedSection {
+                    case .today:
+                        if let vm = coordinator.homeViewModel {
+                            MacTodayView(viewModel: vm)
+                        }
+                    case .calendar:
+                        if let vm = coordinator.calendarViewModel {
+                            MacCalendarView(viewModel: vm)
+                        }
+                    case .insights:
+                        MacInsightDashboardView(container: container)
+                    case .settings:
+                        MacSettingsView()
+                    case nil:
+                        VStack(spacing: 8) {
+                            Image(systemName: "sidebar.left")
+                                .font(.system(size: 40))
+                                .foregroundStyle(.tertiary)
+                            Text("섹션을 선택하세요")
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                case .calendar:
-                    if let vm = coordinator.calendarViewModel {
-                        MacCalendarView(viewModel: vm)
-                    }
-                case .insights:
-                    MacInsightDashboardView(container: container)
-                case .settings:
-                    MacSettingsView()
-                case nil:
-                    VStack(spacing: 8) {
-                        Image(systemName: "sidebar.left")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.tertiary)
-                        Text("섹션을 선택하세요")
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-            }
-            .modifier(ThemedContainerBackground(theme: backgroundTheme))
-            .overlay {
-                // 로그인 직후 축하 애니메이션 — 사이드바를 제외한 detail 영역 정중앙에 표시.
-                // 윈도우 짧은 변의 70% 사이즈로 윈도우 크기에 비례.
+                .modifier(ThemedContainerBackground(theme: backgroundTheme))
+
+                // 로그인 직후 축하 애니메이션 — detail 영역 정중앙. 윈도우 짧은 변의 70%.
                 if authViewModel.showCongratulationAnimation {
                     GeometryReader { proxy in
                         let side = min(proxy.size.width, proxy.size.height) * 0.7
