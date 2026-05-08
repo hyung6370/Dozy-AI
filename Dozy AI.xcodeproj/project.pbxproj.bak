@@ -375,8 +375,6 @@
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
 		FC652980D606704F32887363 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
-		F6CAFE122FA0000000000011 /* CalendarVisibilityFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */; };
-		F6CAFE142FA0000000000013 /* CalendarFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -661,8 +659,6 @@
 		F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarWeekView.swift; sourceTree = "<group>"; };
 		F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarDayView.swift; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
-		F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityFilter.swift; sourceTree = "<group>"; };
-		F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarFilterSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1072,7 +1068,6 @@
 				F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */,
 				DD9F690F2F6ACF04001952F6 /* CalendarService.swift */,
 				F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */,
-				F6CAFE112FA0000000000010 /* CalendarVisibilityFilter.swift */,
 				F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */,
 				BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */,
 				F619D97A2F7A3A6000084C61 /* DozyCalendarService.swift */,
@@ -1189,7 +1184,6 @@
 			children = (
 				F619D9842F7A43DF00084C61 /* CalendarView.swift */,
 				F63C68E72F864F0B003464E8 /* CalendarLegendView.swift */,
-				F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */,
 				F619D9802F7A3CD100084C61 /* CalendarViewModel.swift */,
 				F619D9822F7A422900084C61 /* DayCell.swift */,
 				F619D9862F7A4A1400084C61 /* EventEditViewModel.swift */,
@@ -1845,8 +1839,6 @@
 				F616DCF02F7CB13B00FA0476 /* NotificationService.swift in Sources */,
 				F619D9752F7A371900084C61 /* UpdateDozyEventUseCase.swift in Sources */,
 				F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */,
-				F6CAFE122FA0000000000011 /* CalendarVisibilityFilter.swift in Sources */,
-				F6CAFE142FA0000000000013 /* CalendarFilterSheet.swift in Sources */,
 				DD9F691D2F6ACF7F001952F6 /* SchemaV1.swift in Sources */,
 				F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */,
 				F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */,

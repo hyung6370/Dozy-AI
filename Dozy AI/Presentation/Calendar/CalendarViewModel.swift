@@ -46,6 +46,7 @@ struct EventBarInfo: Identifiable {
     let colorHex: String
     let position: BarPosition
     var isShared: Bool = false
+    let source: CalendarSource
 }
 
 @MainActor
@@ -113,7 +114,8 @@ final class CalendarViewModel: ObservableObject {
     private var monthFetchCancellables: [Date: AnyCancellable] = [:]
     private var monthDozyFetchCancellables: [Date: AnyCancellable] = [:]
     private let displaySettingsRepo: EventDisplaySettingsRepository
-    
+    let visibilityFilter: CalendarVisibilityFilter
+
     init(
         fetchEventsUseCase: FetchCalendarEventUseCase,
         fetchDozyEventsUseCase: FetchDozyEventsUseCase,
@@ -130,7 +132,8 @@ final class CalendarViewModel: ObservableObject {
         fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase,
         fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase,
         mirrorExternalEventUseCase: MirrorExternalEventUseCase,
-        displaySettingsRepo: EventDisplaySettingsRepository
+        displaySettingsRepo: EventDisplaySettingsRepository,
+        visibilityFilter: CalendarVisibilityFilter
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -148,7 +151,24 @@ final class CalendarViewModel: ObservableObject {
         self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
         self.mirrorExternalEventUseCase = mirrorExternalEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
+        self.visibilityFilter = visibilityFilter
         subscribeToActiveSharedCalendarChanges()
+        subscribeToVisibilityFilterChanges()
+    }
+
+    /// 사용자가 소스 필터를 토글하면 현재 월/날짜를 다시 계산해 화면 갱신.
+    /// fetch 자체는 그대로 두고 filter 결과만 다시 publish 하기 위해 force 재fetch.
+    private func subscribeToVisibilityFilterChanges() {
+        visibilityFilter.$hiddenSources
+            .dropFirst()
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth(force: true)
+            }
+            .store(in: &cancellables)
     }
 
     /// 기본 공유 캘린더가 바뀌면 캐시를 비우고 재fetch한다.
@@ -184,7 +204,8 @@ final class CalendarViewModel: ObservableObject {
             fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase,
             fetchCalendarEventsForPeriodUseCase: container.fetchCalendarEventsForPeriodUseCase,
             mirrorExternalEventUseCase: container.mirrorExternalEventUseCase,
-            displaySettingsRepo: container.eventDisplaySettingsRepository
+            displaySettingsRepo: container.eventDisplaySettingsRepository,
+            visibilityFilter: container.calendarVisibilityFilter
         )
         self.calendarService = container.calendarService
         self.sharedCalendarService = container.sharedCalendarService
@@ -654,7 +675,9 @@ final class CalendarViewModel: ObservableObject {
                             Logger.calendar.debug("   ↳ id=\(id.prefix(12)) category=\(s.category)")
                         }
                         self.displaySettingsByID.merge(settings) { _, new in new }
-                        let applied = events.map { $0.applying(self.displaySettingsByID[$0.id]) }
+                        let applied = events
+                            .filter { self.visibilityFilter.isVisible($0.source) }
+                            .map { $0.applying(self.displaySettingsByID[$0.id]) }
                         for e in applied where e.source == .google {
                             Logger.calendar.debug("🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
                         }
@@ -838,11 +861,12 @@ final class CalendarViewModel: ObservableObject {
     private func buildLayouts(from results: [(Date, [CalendarEvent])], forMonth month: Date) {
         let cal = Calendar.current
 
-        // 이벤트별 날짜 집합 구성
+        // 이벤트별 날짜 집합 구성. 사용자 visibility 필터로 숨긴 소스는 여기서 미리
+        // 걸러내어 bar prefix(3) overflow 가 보이는 일정 기준으로 정확히 잡히게 함.
         var eventDatesMap: [String: (CalendarEvent, Set<Date>)] = [:]
         for (date, events) in results {
             let key = cal.startOfDay(for: date)
-            for event in events {
+            for event in events where visibilityFilter.isVisible(event.source) {
                 if eventDatesMap[event.id] == nil {
                     eventDatesMap[event.id] = (event, [key])
                 } else {
@@ -851,7 +875,8 @@ final class CalendarViewModel: ObservableObject {
             }
         }
 
-        // 월 전체 이벤트 캐시 갱신 (pill 탭 → 상세 조회용)
+        // 월 전체 이벤트 캐시 갱신 (pill 탭 → 상세 조회용). 필터로 가린 소스는
+        // bar 도 안 그려져서 탭할 일이 없어 캐시에 빠져 있어도 무해.
         allEventsInMonth.merge(eventDatesMap.mapValues { $0.0 }) { _, new in new }
         
         var barsDict: [Date: [EventBarInfo]] = [:]
@@ -869,7 +894,7 @@ final class CalendarViewModel: ObservableObject {
                 else if date == sorted.last { pos = .end }
                 else { pos = .middle }
                 barsDict[date, default: []].append(
-                    EventBarInfo(id: id, colorHex: event.calendarColorHex, position: pos, isShared: event.isShared)
+                    EventBarInfo(id: id, colorHex: event.calendarColorHex, position: pos, isShared: event.isShared, source: event.source)
                 )
             }
         }

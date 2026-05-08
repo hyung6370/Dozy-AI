@@ -14,6 +14,7 @@ struct CalendarView: View {
     @ObservedObject var viewModel: CalendarViewModel
     @State private var showLegend = false
     @State private var showSearch = false
+    @State private var showFilter = false
     @State private var longPressDate: Date? = nil
     @State private var showLongPressAlert = false
     @State private var pageIndex = 1
@@ -91,6 +92,17 @@ struct CalendarView: View {
                     .accessibilityLabel("검색")
                     .accessibilityIdentifier("btn_calendar_search")
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showFilter = true } label: {
+                        Image(systemName: viewModel.visibilityFilter.isFilterActive
+                              ? "line.3.horizontal.decrease.circle.fill"
+                              : "line.3.horizontal.decrease.circle")
+                            .font(.system(size: 22))
+                            .foregroundStyle(viewModel.visibilityFilter.isFilterActive ? Color.accentColor : .primary)
+                    }
+                    .accessibilityLabel("캘린더 필터")
+                    .accessibilityIdentifier("btn_calendar_filter")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { viewModel.startCreatingEvent() } label: {
                         Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
@@ -112,6 +124,10 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $showLegend) {
                 CalendarLegendView()
+                    .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showFilter) {
+                CalendarFilterSheet(filter: viewModel.visibilityFilter)
                     .presentationDetents([.medium])
             }
             .fullScreenCover(isPresented: $showSearch) {

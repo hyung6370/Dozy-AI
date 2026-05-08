@@ -38,6 +38,7 @@ final class DependencyContainer: ObservableObject {
         notificationRepository: notificationRepository
     )
     lazy var calendarSourceManager = CalendarSourceManager()
+    lazy var calendarVisibilityFilter = CalendarVisibilityFilter()
     lazy var patternAnalysisService = PatternAnalysisService()
 
     private lazy var appleCalendarService = CalendarService()
