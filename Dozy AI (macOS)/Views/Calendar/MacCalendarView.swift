@@ -15,6 +15,7 @@ struct MacCalendarView: View {
     @ObservedObject var viewModel: MacCalendarViewModel
     @StateObject private var swipeState = MonthSwipeState()
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var showNewEventSheet = false
     @State private var newEventTimeHint: Date? = nil
@@ -141,10 +142,22 @@ struct MacCalendarView: View {
                 Button {
                     showFilterPopover.toggle()
                 } label: {
-                    Label("캘린더 필터",
-                          systemImage: viewModel.visibilityFilter.isFilterActive
-                            ? "line.3.horizontal.decrease.circle.fill"
-                            : "line.3.horizontal.decrease.circle")
+                    Image(colorScheme == .dark ? "Dark-Calendar-Filter" : "Light-Calendar-Filter")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                        // 필터 적용 중일 때 우측 상단 accent 닷으로 표식 — iOS 와 동일.
+                        .overlay(alignment: .topTrailing) {
+                            if viewModel.visibilityFilter.isFilterActive {
+                                Circle()
+                                    .fill(Color.accentColor)
+                                    .frame(width: 6, height: 6)
+                                    .overlay(
+                                        Circle().stroke(Color(nsColor: .windowBackgroundColor), lineWidth: 1)
+                                    )
+                                    .offset(x: 2, y: -2)
+                            }
+                        }
                 }
                 .help("표시할 소스 / 공유 캘린더 선택")
                 .popover(isPresented: $showFilterPopover, arrowEdge: .bottom) {

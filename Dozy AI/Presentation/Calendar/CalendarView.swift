@@ -94,11 +94,22 @@ struct CalendarView: View {
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button { showFilter = true } label: {
-                        Image(systemName: viewModel.visibilityFilter.isFilterActive
-                              ? "line.3.horizontal.decrease.circle.fill"
-                              : "line.3.horizontal.decrease.circle")
-                            .font(.system(size: 22))
-                            .foregroundStyle(viewModel.visibilityFilter.isFilterActive ? Color.accentColor : .primary)
+                        Image(colorScheme == .dark ? "Dark-Calendar-Filter" : "Light-Calendar-Filter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            // 필터 적용 중인 상태를 우측 상단 accent 닷으로 시각 표식.
+                            .overlay(alignment: .topTrailing) {
+                                if viewModel.visibilityFilter.isFilterActive {
+                                    Circle()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 7, height: 7)
+                                        .overlay(
+                                            Circle().stroke(Color(.systemBackground), lineWidth: 1.5)
+                                        )
+                                        .offset(x: 3, y: -3)
+                                }
+                            }
                     }
                     .accessibilityLabel("캘린더 필터")
                     .accessibilityIdentifier("btn_calendar_filter")
