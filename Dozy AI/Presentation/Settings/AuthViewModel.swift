@@ -87,6 +87,16 @@ final class AuthViewModel: ObservableObject {
         self.sharedCalendarService = sharedCalendarService
         self.syncService = SyncService(modelContext: modelContext)
         self.realtimeService = realtimeService
+
+        // 사용자가 새 공유 캘린더에 가입/생성한 직후엔 startSharedCalendarRealtime
+        // 가 다시 호출돼야 한다. SharedCalendarRealtimeService.startWatching 은
+        // 같은 ID 면 no-op 이라 idempotent — 새 가입한 ID 만 감시 시작됨.
+        // 이 옵저버 없으면 partner 가 새 캘린더에 INSERT 한 일정의 realtime 이
+        // 도달 안 해서 NotificationRecord 카드가 안 생성됨.
+        NotificationCenter.default.publisher(for: .dozySharedCalendarsChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.startSharedCalendarRealtime() }
+            .store(in: &cancellables)
     }
 
     var isLoggedIn: Bool { currentUser != nil }
