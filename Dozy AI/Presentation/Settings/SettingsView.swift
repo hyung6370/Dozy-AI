@@ -511,13 +511,18 @@ struct SettingsView: View {
                 .disabled(!canSubmitEmailLogin)
 
                 // signIn 에서만 "비밀번호를 잊으셨나요?" 링크.
+                // Form/Section 안의 Button 은 기본적으로 row 전체가 tap 영역이 되므로
+                // .buttonStyle(.borderless) 로 명시해서 텍스트 영역만 hit 되게 한다.
                 if emailLoginMode == .signIn {
-                    Button("비밀번호를 잊으셨나요?") {
-                        switchEmailLoginMode(to: .forgotPassword)
+                    HStack {
+                        Spacer()
+                        Button("비밀번호를 잊으셨나요?") {
+                            switchEmailLoginMode(to: .forgotPassword)
+                        }
+                        .font(.caption)
+                        .foregroundStyle(Color.accentColor)
+                        .buttonStyle(.borderless)
                     }
-                    .font(.caption)
-                    .foregroundStyle(Color.accentColor)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
         }

@@ -86,6 +86,7 @@ struct HomeView: View {
             .safeAreaInset(edge: .top, spacing: 0) {
                 HomeTopBarView(
                     hasNotification: viewModel.hasNotification,
+                    isLoggedIn: authViewModel.isLoggedIn,
                     onSharedCalendarTap: {
                         if authViewModel.isLoggedIn {
                             showSharedCalendar = true
