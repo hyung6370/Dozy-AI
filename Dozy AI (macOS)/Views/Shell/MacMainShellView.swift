@@ -38,14 +38,7 @@ enum MacSection: String, CaseIterable, Hashable, Identifiable {
         case .insights: stem = "Insight"
         case .settings: stem = "Setting"
         }
-        // 일부 에셋의 selected variant 파일명에 오타가 있어서 분기.
-        let suffix: String = {
-            if isSelected {
-                if self == .insights && colorScheme == .dark { return "-selectd" }
-                return "-selected"
-            }
-            return ""
-        }()
+        let suffix = isSelected ? "-selected" : ""
         return "\(prefix)-\(stem)\(suffix)"
     }
 }

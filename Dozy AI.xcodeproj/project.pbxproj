@@ -266,6 +266,8 @@
 		D02ABBBB000000000000B103 /* DozyFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F103 /* DozyFont.swift */; };
 		D02ABBBB000000000000B104 /* DozyRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F104 /* DozyRadius.swift */; };
 		D02ABBBB000000000000B105 /* DozyTokensCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F105 /* DozyTokensCatalog.swift */; };
+		D02ABBBB000000000000B201 /* MainTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F201 /* MainTab.swift */; };
+		D02ABBBB000000000000B202 /* DozyMainTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F202 /* DozyMainTabBar.swift */; };
 		F635FD542F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */; };
 		F63C685E2F84BB70003464E8 /* HomeTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */; };
 		F63C68692F84F481003464E8 /* NotificationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68682F84F481003464E8 /* NotificationRecord.swift */; };
@@ -582,6 +584,8 @@
 		D02AFFFF000000000000F103 /* DozyFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyFont.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F104 /* DozyRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyRadius.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F105 /* DozyTokensCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyTokensCatalog.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F201 /* MainTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTab.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F202 /* DozyMainTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyMainTabBar.swift; sourceTree = "<group>"; };
 		F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
 		F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTopBarView.swift; sourceTree = "<group>"; };
 		F63C68682F84F481003464E8 /* NotificationRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRecord.swift; sourceTree = "<group>"; };
@@ -1005,6 +1009,7 @@
 				F63C68E12F862E87003464E8 /* LoginPromptBannerView.swift */,
 				E1F2E5C2128D432DB7FA7A8C /* WeatherCardView.swift */,
 				F63C687B2F85E569003464E8 /* LottieView.swift */,
+				D02AFFFF000000000000F202 /* DozyMainTabBar.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1235,6 +1240,7 @@
 			children = (
 				F619D97D2F7A3BF600084C61 /* MainTabView.swift */,
 				F63C688C2F85F0D9003464E8 /* RootView.swift */,
+				D02AFFFF000000000000F201 /* MainTab.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -1878,6 +1884,8 @@
 				D02ABBBB000000000000B103 /* DozyFont.swift in Sources */,
 				D02ABBBB000000000000B104 /* DozyRadius.swift in Sources */,
 				D02ABBBB000000000000B105 /* DozyTokensCatalog.swift in Sources */,
+				D02ABBBB000000000000B201 /* MainTab.swift in Sources */,
+				D02ABBBB000000000000B202 /* DozyMainTabBar.swift in Sources */,
 				DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */,
 				F60ADF0A2F7FB007007B8D9F /* SupabaseClient.swift in Sources */,
 				F63C68E82F864F0B003464E8 /* CalendarLegendView.swift in Sources */,

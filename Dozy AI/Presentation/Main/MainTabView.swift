@@ -2,7 +2,8 @@
 //  MainTabView.swift
 //  Dozy AI
 //
-//  Created by Hyungjun KIM on 3/30/26.
+//  v2.0.0: 시스템 탭바를 숨기고 DozyMainTabBar 를 safeAreaInset 으로 올린다.
+//  TabView 자체는 유지 → 탭별 NavigationStack/뷰 lifecycle 을 SwiftUI 가 무료로 보존.
 //
 
 import SwiftUI
@@ -12,37 +13,8 @@ struct MainTabView: View {
     private let container: DependencyContainer
     @StateObject private var calendarViewModel: CalendarViewModel
     @StateObject private var sharedCalendarViewModel: SharedCalendarViewModel
-    @State private var selectedTab = 0
-    @Environment(\.colorScheme) private var colorScheme
+    @State private var selection: MainTab = .home
     @EnvironmentObject private var authViewModel: AuthViewModel
-
-    private var homeIconName: String {
-        let isSelected = selectedTab == 0
-        return colorScheme == .dark
-            ? (isSelected ? "Dark-House-selected" : "Dark-House")
-            : (isSelected ? "Light-House-selected" : "Light-House")
-    }
-
-    private var settingIconName: String {
-        let isSelected = selectedTab == 3
-        return colorScheme == .dark
-            ? (isSelected ? "Dark-Setting-selected" : "Dark-Setting")
-            : (isSelected ? "Light-Setting-selected" : "Light-Setting")
-    }
-
-    private var insightIconName: String {
-        let isSelected = selectedTab == 2
-        return colorScheme == .dark
-            ? (isSelected ? "Dark-Insight-selectd" : "Dark-Insight")
-            : (isSelected ? "Light-Insight-selected" : "Light-Insight")
-    }
-
-    private var calendarIconName: String {
-        let isSelected = selectedTab == 1
-        return colorScheme == .dark
-            ? (isSelected ? "Dark-Calendar-selected" : "Dark-Calendar")
-            : (isSelected ? "Light-Calendar-selected" : "Light-Calendar")
-    }
 
     init(container: DependencyContainer) {
         self.container = container
@@ -57,29 +29,43 @@ struct MainTabView: View {
         ))
     }
 
+    private var selectionBinding: Binding<Int> {
+        Binding(
+            get: { selection.rawValue },
+            set: { newValue in
+                if let tab = MainTab(rawValue: newValue) {
+                    selection = tab
+                }
+            }
+        )
+    }
+
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView(container: container, selectedTab: $selectedTab)
-                .tabItem { Label("홈", image: homeIconName) }
-                .tag(0)
+        TabView(selection: selectionBinding) {
+            HomeView(container: container, selectedTab: selectionBinding)
+                .tag(MainTab.home.rawValue)
+                .toolbar(.hidden, for: .tabBar)
 
             CalendarView(container: container, viewModel: calendarViewModel)
-                .tabItem { Label("캘린더", image: calendarIconName) }
-                .tag(1)
+                .tag(MainTab.calendar.rawValue)
+                .toolbar(.hidden, for: .tabBar)
 
-            InsightDashboardView(container: container, selectedTab: $selectedTab)
-                .tabItem { Label("인사이트", image: insightIconName) }
-                .tag(2)
+            InsightDashboardView(container: container, selectedTab: selectionBinding)
+                .tag(MainTab.insight.rawValue)
+                .toolbar(.hidden, for: .tabBar)
 
             SettingsView(container: container)
-                .tabItem { Label("설정", image: settingIconName) }
-                .tag(3)
+                .tag(MainTab.settings.rawValue)
+                .toolbar(.hidden, for: .tabBar)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            DozyMainTabBar(selection: $selection, onReselect: handleReselect)
         }
         .onAppear {
             calendarViewModel.loadInitialData()
         }
-        .onChange(of: selectedTab) { _, newTab in
-            if newTab == 1 { calendarViewModel.refreshData() }
+        .onChange(of: selection) { _, newTab in
+            if newTab == .calendar { calendarViewModel.refreshData() }
         }
         .sheet(item: Binding(
             get: { authViewModel.pendingInviteCode.map { InviteCodeWrapper(code: $0) } },
@@ -87,6 +73,11 @@ struct MainTabView: View {
         )) { wrapper in
             SharedCalendarJoinView(viewModel: sharedCalendarViewModel, initialCode: wrapper.code)
         }
+    }
+
+    private func handleReselect(_ tab: MainTab) {
+        // 후속 작업: NotificationCenter.default.post(name: .dozyTabReselected, object: tab)
+        // 각 화면이 ScrollViewReader 로 구독하면 더블탭 → 스크롤 투 톱 동작.
     }
 }
 
