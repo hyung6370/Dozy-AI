@@ -113,16 +113,20 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationStack {
-            List {
-                accountSection
-                calendarSection
-                categorySection
-                infoSection
-                if authViewModel.currentUser?.provider == .email {
-                    passwordChangeSection
+            ScrollView {
+                VStack(spacing: DozySpacing.xl) {
+                    accountSection
+                    calendarSection
+                    categorySection
+                    infoSection
+                    if authViewModel.currentUser?.provider == .email {
+                        passwordChangeSection
+                    }
+                    dangerZoneSection
                 }
-                dangerZoneSection
+                .padding(.vertical, DozySpacing.lg)
             }
+            .background(DozyColor.Background.grouped)
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
             .overlay {
@@ -173,18 +177,21 @@ struct SettingsView: View {
     // MARK: - 계정 섹션
     
     private var accountSection: some View {
-        Section {
-            if authViewModel.isLoggedIn {
-                loggedInRow
-            } else {
-                loggedOutRow
+        DozyListSection(
+            header: "계정",
+            footer: authViewModel.isLoggedIn
+                ? "로그인 상태에서는 데이터가 서버에 백업됩니다."
+                : "로그인하면 기기를 바꿔도 데이터를 유지할 수 있어요."
+        ) {
+            Group {
+                if authViewModel.isLoggedIn {
+                    loggedInRow
+                } else {
+                    loggedOutRow
+                }
             }
-        } header: {
-            Text("계정")
-        } footer: {
-            Text(authViewModel.isLoggedIn
-                 ? "로그인 상태에서는 데이터가 서버에 백업됩니다."
-                 : "로그인하면 기기를 바꿔도 데이터를 유지할 수 있어요.")
+            .padding(.horizontal, DozySpacing.md)
+            .padding(.vertical, DozySpacing.sm)
         }
     }
     
@@ -623,46 +630,44 @@ struct SettingsView: View {
     // MARK: - 카테고리 섹션
 
     private var categorySection: some View {
-        Section {
+        DozyListSection(header: "카테고리") {
             NavigationLink {
                 CategoryManagementView()
             } label: {
-                Label { Text("카테고리 관리") } icon: {
+                DozyListRow(title: "카테고리 관리", showsDivider: false) {
                     settingIcon("Light-Management-Category", "Dark-Management-Category")
+                } trailing: {
+                    DozyChevron()
                 }
             }
-        } header: {
-            Text("카테고리")
+            .buttonStyle(.plain)
         }
     }
 
     // MARK: - 앱 정보 섹션
 
     private var infoSection: some View {
-        Section {
+        DozyListSection(header: "앱 정보") {
             Button {
                 guard let url = privacyPolicyURL,
                       let topVC = UIApplication.shared.topViewController else { return }
                 let safari = SFSafariViewController(url: url)
                 topVC.present(safari, animated: true)
             } label: {
-                Label { Text("개인정보 처리방침") } icon: {
+                DozyListRow(title: "개인정보 처리방침") {
                     settingIcon("Light-Privacy", "Dark-Privacy")
+                } trailing: {
+                    DozyChevron()
                 }
             }
-            .foregroundStyle(.primary)
+            .buttonStyle(.plain)
             .disabled(privacyPolicyURL == nil)
 
-            HStack {
-                Label { Text("버전") } icon: {
-                    settingIcon("Light-Version", "Dark-Version")
-                }
-                Spacer()
-                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
-                    .foregroundStyle(.secondary)
+            DozyListRow(title: "버전", showsDivider: false) {
+                settingIcon("Light-Version", "Dark-Version")
+            } trailing: {
+                DozyTrailingValue(text: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
             }
-        } header: {
-            Text("앱 정보")
         }
     }
 
@@ -670,25 +675,20 @@ struct SettingsView: View {
 
     @ViewBuilder
     private var passwordChangeSection: some View {
-        Section {
+        DozyListSection(header: "비밀번호") {
             Button {
                 showPasswordChange = true
             } label: {
-                HStack(spacing: 12) {
+                DozyListRow(title: "비밀번호 변경", showsDivider: false) {
                     Image(systemName: "key.fill")
                         .font(.system(size: 16))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 24)
-                    Text("비밀번호 변경")
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(DozyColor.Text.secondary)
+                        .frame(width: 22)
+                } trailing: {
+                    DozyChevron()
                 }
             }
-        } header: {
-            Text("비밀번호")
+            .buttonStyle(.plain)
         }
     }
 
@@ -697,16 +697,19 @@ struct SettingsView: View {
     @ViewBuilder
     private var dangerZoneSection: some View {
         if authViewModel.isLoggedIn {
-            Section {
-                Button(role: .destructive) {
+            DozyListSection(footer: "탈퇴 시 모든 데이터가 영구 삭제되며 복구할 수 없습니다.") {
+                Button {
                     showDeleteAccountAlert = true
                 } label: {
-                    Label { Text("계정 탈퇴") } icon: {
+                    DozyListRow(
+                        title: "계정 탈퇴",
+                        titleColor: DozyColor.State.danger,
+                        showsDivider: false
+                    ) {
                         settingIcon("Light-Delete-Account", "Dark-Delete-Account")
                     }
                 }
-            } footer: {
-                Text("탈퇴 시 모든 데이터가 영구 삭제되며 복구할 수 없습니다.")
+                .buttonStyle(.plain)
             }
         }
     }
@@ -714,7 +717,7 @@ struct SettingsView: View {
     // MARK: - 캘린더 섹션
 
     private var calendarSection: some View {
-        Section {
+        DozyListSection(header: "캘린더") {
             NavigationLink {
                 CalendarSettingsView(
                     sourceManager: container.calendarSourceManager,
@@ -722,21 +725,29 @@ struct SettingsView: View {
                     naverSignInService: container.naverSignInService
                 )
             } label: {
-                Label { Text("캘린더 연동") } icon: {
+                DozyListRow(
+                    title: "캘린더 연동",
+                    showsDivider: authViewModel.isLoggedIn
+                ) {
                     settingIcon("Light-Integrate-Calendar", "Dark-Integrate-Calendar")
+                } trailing: {
+                    DozyChevron()
                 }
             }
+            .buttonStyle(.plain)
+
             if authViewModel.isLoggedIn {
                 NavigationLink {
                     SharedCalendarListView(container: container)
                 } label: {
-                    Label { Text("공유 캘린더") } icon: {
+                    DozyListRow(title: "공유 캘린더", showsDivider: false) {
                         settingIcon("Light-Share-Calendar", "Dark-Share-Calendar")
+                    } trailing: {
+                        DozyChevron()
                     }
                 }
+                .buttonStyle(.plain)
             }
-        } header: {
-            Text("캘린더")
         }
     }
 }

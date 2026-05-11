@@ -129,6 +129,7 @@
 		D02ABBBB000000000000B203 /* DozyTabBarShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F203 /* DozyTabBarShape.swift */; };
 		D02ABBBB000000000000B204 /* LottiePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F204 /* LottiePlayer.swift */; };
 		D02ABBBB000000000000B205 /* DozyBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F205 /* DozyBottomSheet.swift */; };
+		D02ABBBB000000000000B206 /* DozyListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F206 /* DozyListSection.swift */; };
 		D02ACCCC000000000000C101 /* DozyColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F101 /* DozyColor.swift */; };
 		D02ACCCC000000000000C102 /* DozySpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F102 /* DozySpacing.swift */; };
 		D02ACCCC000000000000C103 /* DozyFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F103 /* DozyFont.swift */; };
@@ -476,6 +477,7 @@
 		D02AFFFF000000000000F203 /* DozyTabBarShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyTabBarShape.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F204 /* LottiePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottiePlayer.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F205 /* DozyBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyBottomSheet.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F206 /* DozyListSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyListSection.swift; sourceTree = "<group>"; };
 		D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarCreateView.swift; sourceTree = "<group>"; };
 		D808CA427DE3411D99E36895 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
@@ -1022,6 +1024,7 @@
 				D02AFFFF000000000000F203 /* DozyTabBarShape.swift */,
 				D02AFFFF000000000000F204 /* LottiePlayer.swift */,
 				D02AFFFF000000000000F205 /* DozyBottomSheet.swift */,
+				D02AFFFF000000000000F206 /* DozyListSection.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1904,6 +1907,7 @@
 				D02ABBBB000000000000B203 /* DozyTabBarShape.swift in Sources */,
 				D02ABBBB000000000000B204 /* LottiePlayer.swift in Sources */,
 				D02ABBBB000000000000B205 /* DozyBottomSheet.swift in Sources */,
+				D02ABBBB000000000000B206 /* DozyListSection.swift in Sources */,
 				DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */,
 				F60ADF0A2F7FB007007B8D9F /* SupabaseClient.swift in Sources */,
 				F63C68E82F864F0B003464E8 /* CalendarLegendView.swift in Sources */,
