@@ -8,11 +8,14 @@
 
 import SwiftUI
 import Combine
+import Lottie
 
 /// 가운데 액션 버튼으로 일정을 만들 때 createDozyEventUseCase 실행 + cancellable 보관.
 /// MainTabView 는 struct 라 Set<AnyCancellable> 를 직접 들 수 없어 별도 owner 가 필요.
 @MainActor
 final class DozyEventCreator: ObservableObject {
+    /// 저장 성공 시 잠깐 표시할 success Lottie 트리거.
+    @Published var showSuccessAnimation = false
     private let createUseCase: CreateDozyEventUseCase
     private let onSaved: () -> Void
     private var cancellables = Set<AnyCancellable>()
@@ -27,6 +30,7 @@ final class DozyEventCreator: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.onSaved()
+                self?.showSuccessAnimation = true
             })
             .store(in: &cancellables)
     }
@@ -112,23 +116,35 @@ struct MainTabView: View {
                     eventToEdit: nil,
                     selectedDate: Date(),
                     onSave: { saved in
+                        // 데이터 저장만. dismiss 는 EventEditView 의 performDismiss → onCancel 이 단일 경로로 처리.
                         eventCreator.save(saved)
-                        showCreateEvent = false
                     },
-                    onCancel: { showCreateEvent = false }
+                    onCancel: {
+                        dismissCreateEventSheet()
+                    }
                 )
             }
 
-            // 3) DozyMainTabBar — 최상위 layer. modal 이 그 뒤에서 올라오게 한다.
+            // 3) DozyMainTabBar — modal 이 그 뒤에서 올라오게 한다.
             DozyMainTabBar(
                 selection: $selection,
                 onReselect: handleReselect,
                 onCreateEvent: {
-                    withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
                         showCreateEvent.toggle()
                     }
                 }
             )
+        }
+        // Success Lottie — ZStack 외부 overlay 로 두어 layout 에 영향 없이 화면 위에만 표시.
+        .overlay {
+            if eventCreator.showSuccessAnimation {
+                LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
+                    eventCreator.showSuccessAnimation = false
+                }
+                .scaleEffect(0.22)
+                .allowsHitTesting(false)
+            }
         }
         .onAppear {
             calendarViewModel.loadInitialData()
@@ -150,6 +166,18 @@ struct MainTabView: View {
     private func handleReselect(_ tab: MainTab) {
         // 후속 작업: NotificationCenter.default.post(name: .dozyTabReselected, object: tab)
         // 각 화면이 ScrollViewReader 로 구독하면 더블탭 → 스크롤 투 톱 동작.
+    }
+
+    /// 일정 생성 시트 닫기 — 키보드를 먼저 hide 한 뒤 시트 dismiss 를 같은 animation 흐름으로 묶음.
+    /// 키보드 hide 가 safeAreaInsets 를 변경하면서 탭바 등 layout 이 들썩이는 걸 줄인다.
+    private func dismissCreateEventSheet() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil, from: nil, for: nil
+        )
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
+            showCreateEvent = false
+        }
     }
 }
 

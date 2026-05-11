@@ -13,12 +13,14 @@ import SwiftUI
 struct DozyBottomSheet<Content: View>: View {
 
     @Binding var isPresented: Bool
-    /// 시트가 화면 bottom 에서 멈추는 안쪽 여백. 탭바 같은 항상 보여야 하는 UI 의 height 를 넘긴다.
+    /// 시트 본체의 bottom 에 추가될 spacer height — 탭바 같은 항상 보여야 하는 UI 의 visual 영역.
+    /// background 가 이 영역까지 채워져 탭바와 시트 사이가 비지 않는다.
+    /// (탭바는 시트 위 layer 라서 spacer 위에 덮여 정상적으로 보임)
     var bottomInset: CGFloat
     /// 시트 상단 라운드 코너.
     var cornerRadius: CGFloat = 20
-    /// 시트의 top padding. 화면 위쪽에서 시트가 시작할 위치.
-    var topInset: CGFloat = 60
+    /// 시트의 top padding. 0 이면 safe area top 까지 채움.
+    var topInset: CGFloat = 0
     /// dismiss 가 발생하면 호출. (드래그/탭/저장 등 어떤 경로든)
     var onDismiss: (() -> Void)? = nil
 
@@ -26,8 +28,10 @@ struct DozyBottomSheet<Content: View>: View {
 
     @State private var dragOffset: CGFloat = 0
 
-    /// 이 값을 넘으면 dismiss 로 처리한다 (시트 height 일부 비율).
+    /// 실제 이동 거리가 이 값을 넘으면 dismiss.
     private let dragDismissThreshold: CGFloat = 120
+    /// 예측 도달점이 이 값을 넘으면 dismiss (빠른 fling 으로 짧게 드래그해도 닫힘).
+    private let predictedDismissThreshold: CGFloat = 220
     /// 위로 드래그할 때 살짝 따라가지만 저항을 준다.
     private let upwardResistance: CGFloat = 0.25
 
@@ -42,21 +46,22 @@ struct DozyBottomSheet<Content: View>: View {
                     .zIndex(0)
 
                 // Sheet body — 배경색 통일 (Form 의 systemGroupedBackground 와 동일).
+                // bottom 에 spacer 를 두어 background 가 탭바 영역까지 채워지게 한다.
                 VStack(spacing: 0) {
                     dragHandle
                     content()
+                    Color.clear.frame(height: bottomInset)
                 }
                 .background(DozyColor.Background.grouped)
                 .clipShape(.rect(topLeadingRadius: cornerRadius, topTrailingRadius: cornerRadius))
                 .padding(.top, topInset)
-                .padding(.bottom, bottomInset)
                 .offset(y: dragOffset)
                 .gesture(dragGesture)
                 .transition(.move(edge: .bottom))
                 .zIndex(1)
             }
         }
-        .animation(.spring(response: 0.42, dampingFraction: 0.86), value: isPresented)
+        .animation(.spring(response: 0.5, dampingFraction: 0.88), value: isPresented)
         .onChange(of: isPresented) { _, newValue in
             // 외부에서 isPresented = false 로 닫히는 경우(예: 탭바 가운데 버튼 toggle)
             // dragOffset 이 누적되어 있을 수 있으니 reset.
@@ -89,7 +94,10 @@ struct DozyBottomSheet<Content: View>: View {
                 }
             }
             .onEnded { value in
-                if value.translation.height > dragDismissThreshold {
+                let actual = value.translation.height
+                let predicted = value.predictedEndTranslation.height
+                // 거리 OR fling 속도 — 둘 중 하나 만족하면 dismiss.
+                if actual > dragDismissThreshold || predicted > predictedDismissThreshold {
                     close()
                 } else {
                     withAnimation(.spring(response: 0.32, dampingFraction: 0.88)) {
@@ -102,7 +110,7 @@ struct DozyBottomSheet<Content: View>: View {
     // MARK: - Actions
 
     private func close() {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
             isPresented = false
             dragOffset = 0
         }
