@@ -7,18 +7,45 @@
 //
 
 import SwiftUI
+import Combine
+
+/// 가운데 액션 버튼으로 일정을 만들 때 createDozyEventUseCase 실행 + cancellable 보관.
+/// MainTabView 는 struct 라 Set<AnyCancellable> 를 직접 들 수 없어 별도 owner 가 필요.
+@MainActor
+final class DozyEventCreator: ObservableObject {
+    private let createUseCase: CreateDozyEventUseCase
+    private let onSaved: () -> Void
+    private var cancellables = Set<AnyCancellable>()
+
+    init(createUseCase: CreateDozyEventUseCase, onSaved: @escaping () -> Void) {
+        self.createUseCase = createUseCase
+        self.onSaved = onSaved
+    }
+
+    func save(_ event: DozyEvent) {
+        createUseCase.execute(event)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                self?.onSaved()
+            })
+            .store(in: &cancellables)
+    }
+}
 
 struct MainTabView: View {
 
     private let container: DependencyContainer
     @StateObject private var calendarViewModel: CalendarViewModel
     @StateObject private var sharedCalendarViewModel: SharedCalendarViewModel
+    @StateObject private var eventCreator: DozyEventCreator
     @State private var selection: MainTab = .home
+    @State private var showCreateEvent = false
     @EnvironmentObject private var authViewModel: AuthViewModel
 
     init(container: DependencyContainer) {
         self.container = container
-        _calendarViewModel = StateObject(wrappedValue: CalendarViewModel(container: container))
+        let calendarVM = CalendarViewModel(container: container)
+        _calendarViewModel = StateObject(wrappedValue: calendarVM)
         _sharedCalendarViewModel = StateObject(wrappedValue: SharedCalendarViewModel(
             createUseCase: container.createSharedCalendarUseCase,
             joinUseCase: container.joinSharedCalendarUseCase,
@@ -26,6 +53,10 @@ struct MainTabView: View {
             regenerateUseCase: container.regenerateSharedCalendarInviteCodeUseCase,
             updateNicknameUseCase: container.updateSharedCalendarNicknameUseCase,
             service: container.sharedCalendarService
+        ))
+        _eventCreator = StateObject(wrappedValue: DozyEventCreator(
+            createUseCase: container.createDozyEventUseCase,
+            onSaved: { [weak calendarVM] in calendarVM?.refreshData() }
         ))
     }
 
@@ -40,26 +71,64 @@ struct MainTabView: View {
         )
     }
 
+    /// 탭바 본체에 마지막 콘텐츠가 가려지지 않도록 각 탭 화면에 두 가지 보정을 같이 건다.
+    /// 1) .contentMargins(.bottom, ..., for: .scrollContent): ScrollView/List/Form 의 contentInset 으로 전파
+    /// 2) .padding(.bottom, ...): contentMargins 가 일부 컨테이너에서 전파 안 될 때를 위한 fallback
+    private let scrollBottomMargin: CGFloat = 80
+
     var body: some View {
-        TabView(selection: selectionBinding) {
-            HomeView(container: container, selectedTab: selectionBinding)
-                .tag(MainTab.home.rawValue)
-                .toolbar(.hidden, for: .tabBar)
+        ZStack(alignment: .bottom) {
+            // 1) Tabs content — safeAreaInset 으로 탭바 자리만큼 transparent spacer.
+            //    탭바 visual 자체는 별도 layer (아래쪽)로 분리한다.
+            TabView(selection: selectionBinding) {
+                HomeView(container: container, selectedTab: selectionBinding)
+                    .tabContentInset(scrollBottomMargin)
+                    .tag(MainTab.home.rawValue)
+                    .toolbar(.hidden, for: .tabBar)
 
-            CalendarView(container: container, viewModel: calendarViewModel)
-                .tag(MainTab.calendar.rawValue)
-                .toolbar(.hidden, for: .tabBar)
+                CalendarView(container: container, viewModel: calendarViewModel)
+                    .tabContentInset(scrollBottomMargin)
+                    .tag(MainTab.calendar.rawValue)
+                    .toolbar(.hidden, for: .tabBar)
 
-            InsightDashboardView(container: container, selectedTab: selectionBinding)
-                .tag(MainTab.insight.rawValue)
-                .toolbar(.hidden, for: .tabBar)
+                InsightDashboardView(container: container, selectedTab: selectionBinding)
+                    .tabContentInset(scrollBottomMargin)
+                    .tag(MainTab.insight.rawValue)
+                    .toolbar(.hidden, for: .tabBar)
 
-            SettingsView(container: container)
-                .tag(MainTab.settings.rawValue)
-                .toolbar(.hidden, for: .tabBar)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            DozyMainTabBar(selection: $selection, onReselect: handleReselect)
+                SettingsView(container: container)
+                    .tabContentInset(scrollBottomMargin)
+                    .tag(MainTab.settings.rawValue)
+                    .toolbar(.hidden, for: .tabBar)
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Color.clear.frame(height: dozyTabBarVisualHeight)
+            }
+
+            // 2) Create-event 커스텀 시트 — DozyBottomSheet 컴포넌트.
+            //    탭바보다 아래 layer 라서 시트가 슬라이드 업할 때 탭바 뒤에서 올라오는 효과.
+            DozyBottomSheet(isPresented: $showCreateEvent, bottomInset: dozyTabBarVisualHeight) {
+                EventEditView(
+                    eventToEdit: nil,
+                    selectedDate: Date(),
+                    onSave: { saved in
+                        eventCreator.save(saved)
+                        showCreateEvent = false
+                    },
+                    onCancel: { showCreateEvent = false }
+                )
+            }
+
+            // 3) DozyMainTabBar — 최상위 layer. modal 이 그 뒤에서 올라오게 한다.
+            DozyMainTabBar(
+                selection: $selection,
+                onReselect: handleReselect,
+                onCreateEvent: {
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                        showCreateEvent.toggle()
+                    }
+                }
+            )
         }
         .onAppear {
             calendarViewModel.loadInitialData()
@@ -75,6 +144,9 @@ struct MainTabView: View {
         }
     }
 
+    /// DozyMainTabBar 가 화면 bottom 에서 차지하는 visual height.
+    private var dozyTabBarVisualHeight: CGFloat { 84 }
+
     private func handleReselect(_ tab: MainTab) {
         // 후속 작업: NotificationCenter.default.post(name: .dozyTabReselected, object: tab)
         // 각 화면이 ScrollViewReader 로 구독하면 더블탭 → 스크롤 투 톱 동작.
@@ -84,4 +156,19 @@ struct MainTabView: View {
 private struct InviteCodeWrapper: Identifiable {
     let code: String
     var id: String { code }
+}
+
+private extension View {
+    /// 탭 화면의 마지막 콘텐츠가 커스텀 탭바에 가려지지 않도록 두 가지 보정을 함께 적용.
+    /// - contentMargins: ScrollView 의 contentInset 으로 전달
+    /// - safeAreaInset (보이지 않는 spacer): List/Form 등 contentMargins 미전파 컨테이너의 fallback.
+    ///   safeAreaInset 으로 추가한 view 의 height 만큼 child 의 safe area bottom 이 늘어나
+    ///   List/Form 의 마지막 셀이 그만큼 위에서 끝남.
+    func tabContentInset(_ amount: CGFloat) -> some View {
+        self
+            .contentMargins(.bottom, amount, for: .scrollContent)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Color.clear.frame(height: amount)
+            }
+    }
 }
