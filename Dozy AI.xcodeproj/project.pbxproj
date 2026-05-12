@@ -204,7 +204,6 @@
 		DD9F69462F6AD21C001952F6 /* DozyAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69452F6AD21C001952F6 /* DozyAppIntents.swift */; };
 		DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */; };
 		DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */; };
-		DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DD9F694D2F6AD2CF001952F6 /* Localizable.strings */; };
 		DDA9A5B62F89560300C1572C /* UserCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B52F89560300C1572C /* UserCategory.swift */; };
 		DDA9A5B92F89564000C1572C /* CategoryEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */; };
 		DDA9A5BA2F89564000C1572C /* CategoryManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */; };
@@ -282,6 +281,14 @@
 		F635FD542F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */; };
 		F63A13732FB190C3006C580D /* new-schedule.json in Resources */ = {isa = PBXBuildFile; fileRef = F63A13722FB190C3006C580D /* new-schedule.json */; };
 		F63A13742FB190C3006C580D /* new-schedule.json in Resources */ = {isa = PBXBuildFile; fileRef = F63A13722FB190C3006C580D /* new-schedule.json */; };
+		F63A13772FB30F00006C580D /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13762FB30F00006C580D /* L10n.swift */; };
+		F63A13782FB30F00006C580D /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13762FB30F00006C580D /* L10n.swift */; };
+		F63A137A2FB30F0D006C580D /* Locale+Dozy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13792FB30F0D006C580D /* Locale+Dozy.swift */; };
+		F63A137B2FB30F0D006C580D /* Locale+Dozy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13792FB30F0D006C580D /* Locale+Dozy.swift */; };
+		F63A137E2FB30FD3006C580D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F63A137D2FB30FD3006C580D /* Localizable.xcstrings */; };
+		F63A137F2FB30FD3006C580D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F63A137D2FB30FD3006C580D /* Localizable.xcstrings */; };
+		F63A13812FB30FE7006C580D /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F63A13802FB30FE7006C580D /* InfoPlist.xcstrings */; };
+		F63A13822FB30FE7006C580D /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F63A13802FB30FE7006C580D /* InfoPlist.xcstrings */; };
 		F63C685E2F84BB70003464E8 /* HomeTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */; };
 		F63C68692F84F481003464E8 /* NotificationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68682F84F481003464E8 /* NotificationRecord.swift */; };
 		F63C686B2F84F4E2003464E8 /* NotificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */; };
@@ -550,7 +557,6 @@
 		DD9F69452F6AD21C001952F6 /* DozyAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyAppIntents.swift; sourceTree = "<group>"; };
 		DD9F69472F6AD22B001952F6 /* LogWorkShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkShortcut.swift; sourceTree = "<group>"; };
 		DD9F69492F6AD239001952F6 /* SummarizeShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarizeShortcut.swift; sourceTree = "<group>"; };
-		DD9F694D2F6AD2CF001952F6 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		DDA9A5B52F89560300C1572C /* UserCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCategory.swift; sourceTree = "<group>"; };
 		DDA9A5B72F89564000C1572C /* CategoryEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditSheet.swift; sourceTree = "<group>"; };
 		DDA9A5B82F89564000C1572C /* CategoryManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryManagementView.swift; sourceTree = "<group>"; };
@@ -610,6 +616,10 @@
 		F619D98A2F7A4C8400084C61 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		F635FD532F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
 		F63A13722FB190C3006C580D /* new-schedule.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "new-schedule.json"; sourceTree = "<group>"; };
+		F63A13762FB30F00006C580D /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		F63A13792FB30F0D006C580D /* Locale+Dozy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+Dozy.swift"; sourceTree = "<group>"; };
+		F63A137D2FB30FD3006C580D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		F63A13802FB30FE7006C580D /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		F63C685D2F84BB70003464E8 /* HomeTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTopBarView.swift; sourceTree = "<group>"; };
 		F63C68682F84F481003464E8 /* NotificationRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRecord.swift; sourceTree = "<group>"; };
 		F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRepository.swift; sourceTree = "<group>"; };
@@ -907,7 +917,8 @@
 				F699C1472F9F5822001FBF8F /* holidays.json */,
 				F63C68742F85E43F003464E8 /* LottieFiles */,
 				DD808EAE2F694B2A00F4956A /* Assets.xcassets */,
-				DD9F694D2F6AD2CF001952F6 /* Localizable.strings */,
+				F63A137D2FB30FD3006C580D /* Localizable.xcstrings */,
+				F63A13802FB30FE7006C580D /* InfoPlist.xcstrings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -960,6 +971,7 @@
 				DD808EC62F694C0300F4956A /* Extensions */,
 				DD9F68E02F6ACCD9001952F6 /* Utilities */,
 				D02AAAAA000000000000DE51 /* DesignSystem */,
+				F63A13752FB30EDC006C580D /* Localization */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -1297,6 +1309,15 @@
 				F6CAFE032FA0000000000002 /* CalendarMonthPageView.swift */,
 			);
 			path = Calendar;
+			sourceTree = "<group>";
+		};
+		F63A13752FB30EDC006C580D /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				F63A13762FB30F00006C580D /* L10n.swift */,
+				F63A13792FB30F0D006C580D /* Locale+Dozy.swift */,
+			);
+			path = Localization;
 			sourceTree = "<group>";
 		};
 		F63C686C2F84F786003464E8 /* Notifications */ = {
@@ -1705,9 +1726,10 @@
 				};
 			};
 			buildConfigurationList = DD808E7F2F694B2100F4956A /* Build configuration list for PBXProject "Dozy AI" */;
-			developmentRegion = en;
+			developmentRegion = ko;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				ko,
 				en,
 				Base,
 			);
@@ -1744,7 +1766,8 @@
 				F63A13742FB190C3006C580D /* new-schedule.json in Resources */,
 				F619D9512F75192800084C61 /* .gitignore in Resources */,
 				F63C687A2F85E54A003464E8 /* loading.json in Resources */,
-				DD9F694E2F6AD2CF001952F6 /* Localizable.strings in Resources */,
+				F63A137E2FB30FD3006C580D /* Localizable.xcstrings in Resources */,
+				F63A13812FB30FE7006C580D /* InfoPlist.xcstrings in Resources */,
 				F699C1482F9F5822001FBF8F /* holidays.json in Resources */,
 				F63C68822F85EA71003464E8 /* success.json in Resources */,
 				F63C68882F85EBFE003464E8 /* congratulation.json in Resources */,
@@ -1776,6 +1799,8 @@
 				F67333062FA836E2000A610A /* congratulation.json in Resources */,
 				F6EC8AED2F9896E000CFFF87 /* Assets.xcassets in Resources */,
 				F67333052FA836DD000A610A /* success.json in Resources */,
+				F63A137F2FB30FD3006C580D /* Localizable.xcstrings in Resources */,
+				F63A13822FB30FE7006C580D /* InfoPlist.xcstrings in Resources */,
 				F67333072FA836F2000A610A /* loading.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1863,6 +1888,7 @@
 				F619D94F2F75122300084C61 /* CalendarSource.swift in Sources */,
 				DD9F69122F6ACF2B001952F6 /* ReminderService.swift in Sources */,
 				F619D9812F7A3CD100084C61 /* CalendarViewModel.swift in Sources */,
+				F63A137B2FB30F0D006C580D /* Locale+Dozy.swift in Sources */,
 				DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */,
 				F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */,
 				F616DCD52F7B49AE00FA0476 /* NaverCalendarService.swift in Sources */,
@@ -1889,6 +1915,7 @@
 				F635FD542F8CDE7E00E4B4D4 /* PrivacyPolicyView.swift in Sources */,
 				F619D9732F7A36C600084C61 /* CreateDozyEventUseCase.swift in Sources */,
 				444FE9C09B264D31BBF541F7 /* MirrorExternalEventUseCase.swift in Sources */,
+				F63A13772FB30F00006C580D /* L10n.swift in Sources */,
 				F65068272F7D07E100F9C124 /* CalendarWriteServiceProtocol.swift in Sources */,
 				F619D9402F73B0A700084C61 /* AIPromptBuilder.swift in Sources */,
 				F619D96F2F7A35BA00084C61 /* FetchCalendarEventUseCase.swift in Sources */,
@@ -2069,6 +2096,7 @@
 				A482739D7B323B2F72208349 /* GenerateDailySummaryUseCase.swift in Sources */,
 				F0E98384934E29E7CDA72AE6 /* FetchEventCompletionsUseCase.swift in Sources */,
 				4BCAA1C0F48BB3E046D7C275 /* AuthUser.swift in Sources */,
+				F63A137A2FB30F0D006C580D /* Locale+Dozy.swift in Sources */,
 				F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */,
 				F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */,
 				0A0622D2248CAC4BC2F685A3 /* SaveWorkLogUseCase.swift in Sources */,
@@ -2175,6 +2203,7 @@
 				F603DC338A1489D8D11733E3 /* CalendarSourceManager.swift in Sources */,
 				F6CAFE152FA0000000000014 /* CalendarVisibilityFilter.swift in Sources */,
 				7C64594B0B062758DAB886B5 /* SchemaV1.swift in Sources */,
+				F63A13782FB30F00006C580D /* L10n.swift in Sources */,
 				D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */,
 				966230045F58049E702E2323 /* WorkLogRepository.swift in Sources */,
 				CD962B22ED55A5E31E4EB388 /* AuthService.swift in Sources */,
