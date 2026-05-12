@@ -1,366 +1,776 @@
 {
-  "sourceLanguage" : "ko",
-  "strings" : {
-    "Dozy 요약 생성에 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to generate Dozy summary."
+  "sourceLanguage": "ko",
+  "strings": {
+    "%@ 로 보낸 6자리 코드를 입력하세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the 6-digit code sent to %@."
           }
         }
       }
     },
-    "Google 로그인에 실패했습니다. 다시 시도해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Google sign-in failed. Please try again."
+    "%lld자 이상": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At least %lld characters"
           }
         }
       }
     },
-    "Google 인증이 만료되었습니다. 다시 로그인해주세요. (401)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Google authentication expired. Please sign in again. (401)"
+    "Apple로 로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Apple"
           }
         }
       }
     },
-    "Google 캘린더 삭제 권한이 없습니다. (403)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No permission to delete this Google Calendar event. (403)"
+    "Dozy on Mac": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dozy on Mac"
           }
         }
       }
     },
-    "Google 캘린더 삭제에 실패했습니다. (HTTP %lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to delete Google Calendar event. (HTTP %lld)"
+    "Dozy 요약 생성에 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to generate Dozy summary."
           }
         }
       }
     },
-    "Google 캘린더를 불러오는 데 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to load Google Calendar."
+    "Google 로그인에 실패했습니다. 다시 시도해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google sign-in failed. Please try again."
           }
         }
       }
     },
-    "공유 캘린더는 최대 4명까지 참여할 수 있습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shared calendars can have up to 4 members."
+    "Google 인증이 만료되었습니다. 다시 로그인해주세요. (401)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google authentication expired. Please sign in again. (401)"
           }
         }
       }
     },
-    "네이버 로그인에 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Naver sign-in failed."
+    "Google 캘린더 삭제 권한이 없습니다. (403)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No permission to delete this Google Calendar event. (403)"
           }
         }
       }
     },
-    "네이버 캘린더를 불러오는 데 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to load Naver Calendar."
+    "Google 캘린더 삭제에 실패했습니다. (HTTP %lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to delete Google Calendar event. (HTTP %lld)"
           }
         }
       }
     },
-    "네트워크에 연결되지 않았습니다. Wi-Fi 또는 셀룰러 연결을 확인해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No network connection. Please check your Wi-Fi or cellular connection."
+    "Google 캘린더를 불러오는 데 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load Google Calendar."
           }
         }
       }
     },
-    "데이터를 찾을 수 없습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Data not found."
+    "Google로 로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Google"
           }
         }
       }
     },
-    "미리알림 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reminders access is required. Please grant permission in Settings."
+    "✓ 사용 가능한 이메일입니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Email is available."
           }
         }
       }
     },
-    "미리알림을 불러오는 데 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to load reminders."
+    "✓ 인증 완료. 새 비밀번호를 설정하세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ Verified. Please set a new password."
           }
         }
       }
     },
-    "비밀번호는 최소 %lld자 이상이어야 합니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Password must be at least %lld characters."
+    "가입 완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete sign-up"
           }
         }
       }
     },
-    "삭제할 Google 일정을 찾을 수 없습니다. (404)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Google event not found for deletion. (404)"
+    "공유 캘린더는 최대 4명까지 참여할 수 있습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared calendars can have up to 4 members."
           }
         }
       }
     },
-    "삭제할 일정을 찾을 수 없습니다. 이미 삭제되었거나 캘린더 접근 권한을 확인해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Event not found for deletion. It may have been removed already, or calendar access is restricted."
+    "기호 포함": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Includes a symbol"
           }
         }
       }
     },
-    "알 수 없는 오류: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unknown error: %@"
+    "네이버 로그인에 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naver sign-in failed."
           }
         }
       }
     },
-    "올바른 이메일 형식을 입력해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please enter a valid email address."
+    "네이버 캘린더를 불러오는 데 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load Naver Calendar."
           }
         }
       }
     },
-    "음성 인식에 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speech recognition failed."
+    "네트워크에 연결되지 않았습니다. Wi-Fi 또는 셀룰러 연결을 확인해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No network connection. Please check your Wi-Fi or cellular connection."
           }
         }
       }
     },
-    "이 동작은 캘린더 소유자만 수행할 수 있습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Only the calendar owner can perform this action."
+    "데이터를 안전하게 보호하고 싶다면 로그인을 해보세요 :)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to keep your data safe :)"
           }
         }
       }
     },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
+    "데이터를 찾을 수 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data not found."
           }
         }
       }
     },
-    "이메일 로그인에 실패했습니다. (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sign-in failed. (%@)"
+    "또는": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OR"
           }
         }
       }
     },
-    "이미 존재하는 이메일입니다. 로그인 탭을 사용해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This email is already registered. Please use the Sign In tab."
+    "로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in"
           }
         }
       }
     },
-    "이미 참여한 공유 캘린더입니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Already a member of this shared calendar."
+    "로그인으로 돌아가기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to sign in"
           }
         }
       }
     },
-    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as your current password. Please choose a new one."
+    "미리알림 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders access is required. Please grant permission in Settings."
           }
         }
       }
     },
-    "인증 정보를 가져올 수 없습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not retrieve authentication info."
+    "미리알림을 불러오는 데 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load reminders."
           }
         }
       }
     },
-    "잘못된 초대 코드입니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid invite code."
+    "변경": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change"
           }
         }
       }
     },
-    "저장에 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save failed."
+    "보안을 위해 이메일 인증 후 비밀번호를 재설정해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For your security, please verify your email and reset your password."
           }
         }
       }
     },
-    "초대 코드 생성에 실패했습니다. 잠시 후 다시 시도해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to generate invite code. Please try again later."
+    "비밀번호": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password"
           }
         }
       }
     },
-    "초대 코드가 만료되었습니다. 초대한 사람에게 새 코드를 요청해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invite code has expired. Please ask the inviter for a new one."
+    "비밀번호 %lld회 틀렸어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password incorrect %lld times."
           }
         }
       }
     },
-    "캘린더 일정 수정/삭제에 실패했습니다. (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to update or delete calendar event. (%@)"
+    "비밀번호 %lld회 틀렸어요. 재설정해보세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password incorrect %lld times. Try resetting it."
           }
         }
       }
     },
-    "캘린더 일정을 불러오는 데 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to load calendar events."
+    "비밀번호 변경": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change password"
           }
         }
       }
     },
-    "캘린더 이름을 입력해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please enter a calendar name."
+    "비밀번호 찾기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forgot password"
           }
         }
       }
     },
-    "캘린더 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calendar access is required. Please grant permission in Settings."
+    "비밀번호 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm password"
           }
         }
       }
     },
-    "현재 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current password is incorrect."
+    "비밀번호가 일치하지 않습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwords do not match."
           }
         }
       }
     },
-    "화면 정보를 가져올 수 없습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not retrieve view controller."
+    "비밀번호는 최소 %lld자 이상이어야 합니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password must be at least %lld characters."
+          }
+        }
+      }
+    },
+    "비밀번호를 %lld회 틀리셨습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password incorrect %lld times"
+          }
+        }
+      }
+    },
+    "비밀번호를 잊으셨나요?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forgot your password?"
+          }
+        }
+      }
+    },
+    "삭제할 Google 일정을 찾을 수 없습니다. (404)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google event not found for deletion. (404)"
+          }
+        }
+      }
+    },
+    "삭제할 일정을 찾을 수 없습니다. 이미 삭제되었거나 캘린더 접근 권한을 확인해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event not found for deletion. It may have been removed already, or calendar access is restricted."
+          }
+        }
+      }
+    },
+    "새 비밀번호 (%lld자 이상)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New password (%lld+ characters)"
+          }
+        }
+      }
+    },
+    "숫자 포함": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Includes a number"
+          }
+        }
+      }
+    },
+    "알 수 없는 오류: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown error: %@"
+          }
+        }
+      }
+    },
+    "영문 대문자 포함": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Includes an uppercase letter"
+          }
+        }
+      }
+    },
+    "올바른 이메일 형식을 입력해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please enter a valid email address."
+          }
+        }
+      }
+    },
+    "음성 인식에 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speech recognition failed."
+          }
+        }
+      }
+    },
+    "이 동작은 캘린더 소유자만 수행할 수 있습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the calendar owner can perform this action."
+          }
+        }
+      }
+    },
+    "이메일": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email"
+          }
+        }
+      }
+    },
+    "이메일 또는 비밀번호가 올바르지 않습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid email or password."
+          }
+        }
+      }
+    },
+    "이메일 로그인에 실패했습니다. (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email sign-in failed. (%@)"
+          }
+        }
+      }
+    },
+    "이메일 인증하기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verify with email"
+          }
+        }
+      }
+    },
+    "이메일로 로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with email"
+          }
+        }
+      }
+    },
+    "이메일을 먼저 입력해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please enter your email first."
+          }
+        }
+      }
+    },
+    "이미 존재하는 이메일입니다. 로그인 탭을 사용해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This email is already registered. Please use the Sign In tab."
+          }
+        }
+      }
+    },
+    "이미 참여한 공유 캘린더입니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already a member of this shared calendar."
+          }
+        }
+      }
+    },
+    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Same as your current password. Please choose a new one."
+          }
+        }
+      }
+    },
+    "인증 정보를 가져올 수 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not retrieve authentication info."
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "입력 시간이 지났어요. 코드를 다시 받아주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time expired. Please request a new code."
+          }
+        }
+      }
+    },
+    "잘못된 초대 코드입니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid invite code."
+          }
+        }
+      }
+    },
+    "저장에 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save failed."
+          }
+        }
+      }
+    },
+    "초대 코드 생성에 실패했습니다. 잠시 후 다시 시도해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to generate invite code. Please try again later."
+          }
+        }
+      }
+    },
+    "초대 코드가 만료되었습니다. 초대한 사람에게 새 코드를 요청해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invite code has expired. Please ask the inviter for a new one."
+          }
+        }
+      }
+    },
+    "취소": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "캘린더 이름을 입력해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please enter a calendar name."
+          }
+        }
+      }
+    },
+    "캘린더 일정 수정/삭제에 실패했습니다. (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to update or delete calendar event. (%@)"
+          }
+        }
+      }
+    },
+    "캘린더 일정을 불러오는 데 실패했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load calendar events."
+          }
+        }
+      }
+    },
+    "캘린더 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar access is required. Please grant permission in Settings."
+          }
+        }
+      }
+    },
+    "코드 다시 받기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resend code"
+          }
+        }
+      }
+    },
+    "코드 받기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get code"
+          }
+        }
+      }
+    },
+    "코드 입력까지 %@ 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time left: %@"
+          }
+        }
+      }
+    },
+    "파트너와 함께 하루를 설계하세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Design your day with your partner"
+          }
+        }
+      }
+    },
+    "현재 비밀번호가 올바르지 않습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current password is incorrect."
+          }
+        }
+      }
+    },
+    "화면 정보를 가져올 수 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not retrieve view controller."
+          }
+        }
+      }
+    },
+    "확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm"
+          }
+        }
+      }
+    },
+    "회원가입": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign up"
+          }
+        }
+      }
+    },
+    "흔하지 않고 이메일과 다른 비밀번호": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uncommon and different from your email"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }
