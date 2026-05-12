@@ -30,6 +30,12 @@ struct SettingsView: View {
     private var backgroundTheme: DozyBackgroundTheme {
         DozyBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
     }
+
+    /// signIn 모드에서 연속 비밀번호 실패 횟수를 관리하는 limiter. 5회 이상이면 안내 banner 노출 +
+    /// "비밀번호를 잊으셨나요?" 링크 강조 + 로그인 버튼 비활성. 로그인 성공/이메일 변경 시 reset.
+    @State private var emailPasswordLimiter = PasswordFailLimiter(threshold: 5)
+    /// limit 도달 시 자동 표시되는 안내 alert.
+    @State private var showFailLimitAlert: Bool = false
     @State private var loginEmail: String = ""
     @State private var loginPassword: String = ""
     @State private var loginPasswordConfirm: String = ""
@@ -91,6 +97,8 @@ struct SettingsView: View {
         guard !authViewModel.isLoading, !loginEmail.isEmpty else { return false }
         switch emailLoginMode {
         case .signIn:
+            // limit 도달 시 비활성 — 사용자는 이메일 인증으로만 진행 가능.
+            guard emailPasswordLimiter.canSubmit else { return false }
             return !loginPassword.isEmpty
         case .signUp, .forgotPassword:
             guard isPasswordStageReady else { return false }
@@ -178,6 +186,30 @@ struct SettingsView: View {
                     showDeleteAccountAlert = false
                     authViewModel.errorMessage = nil
                 }
+            }
+            // signIn 모드에서 에러가 새로 생기면 비밀번호 실패로 간주하고 카운트.
+            .onChange(of: authViewModel.errorMessage) { _, newVal in
+                if newVal != nil, emailLoginMode == .signIn {
+                    emailPasswordLimiter.recordFailure()
+                    if emailPasswordLimiter.justReachedLimit {
+                        showFailLimitAlert = true
+                    }
+                }
+            }
+            // 로그인 성공 / 이메일 변경 시 카운터 reset.
+            .onChange(of: authViewModel.isLoggedIn) { _, newVal in
+                if newVal { emailPasswordLimiter.reset() }
+            }
+            .onChange(of: loginEmail) { _, _ in
+                emailPasswordLimiter.reset()
+            }
+            .alert("비밀번호를 \(emailPasswordLimiter.threshold)회 틀리셨습니다", isPresented: $showFailLimitAlert) {
+                Button("이메일 인증하기") {
+                    switchEmailLoginMode(to: .forgotPassword)
+                }
+                Button("취소", role: .cancel) { }
+            } message: {
+                Text("보안을 위해 이메일 인증 후 비밀번호를 재설정해주세요.")
             }
         }
     }
@@ -456,6 +488,30 @@ struct SettingsView: View {
             // ── 비밀번호 입력 단계 ────────────────────────────
             // signIn 은 항상 노출, signUp/forgotPassword 는 OTP 검증 완료 후에만.
             if emailLoginMode == .signIn || isPasswordStageReady {
+                // 비밀번호 실패 카운트 표시. 1회 이상이면 작은 안내, threshold 이상이면 강조 banner.
+                if emailLoginMode == .signIn && emailPasswordLimiter.count > 0 {
+                    let isReset = emailPasswordLimiter.hasReachedLimit
+                    HStack(spacing: 8) {
+                        Image(systemName: isReset ? "lock.rotation" : "exclamationmark.circle")
+                            .font(.subheadline)
+                        Text(
+                            isReset
+                                ? "비밀번호 \(emailPasswordLimiter.count)회 틀렸어요. 재설정해보세요."
+                                : "비밀번호 \(emailPasswordLimiter.count)회 틀렸어요."
+                        )
+                        .font(.caption)
+                        .multilineTextAlignment(.leading)
+                    }
+                    .foregroundStyle(isReset ? Color.accentColor : Color.red)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        (isReset ? Color.accentColor : Color.red).opacity(0.1),
+                        in: RoundedRectangle(cornerRadius: 8)
+                    )
+                }
+
                 SecureField(
                     emailLoginMode == .signIn ? "비밀번호" : "새 비밀번호 (\(PasswordPolicy.minLength)자 이상)",
                     text: $loginPassword
@@ -526,8 +582,7 @@ struct SettingsView: View {
                 .disabled(!canSubmitEmailLogin)
 
                 // signIn 에서만 "비밀번호를 잊으셨나요?" 링크.
-                // Form/Section 안의 Button 은 기본적으로 row 전체가 tap 영역이 되므로
-                // .buttonStyle(.borderless) 로 명시해서 텍스트 영역만 hit 되게 한다.
+                // 5회 이상 실패 시 굵게 강조해서 시선 끌기.
                 if emailLoginMode == .signIn {
                     HStack {
                         Spacer()
@@ -535,6 +590,7 @@ struct SettingsView: View {
                             switchEmailLoginMode(to: .forgotPassword)
                         }
                         .font(.caption)
+                        .fontWeight(emailPasswordLimiter.hasReachedLimit ? .bold : .regular)
                         .foregroundStyle(Color.accentColor)
                         .buttonStyle(.borderless)
                     }
