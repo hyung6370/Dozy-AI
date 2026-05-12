@@ -12,11 +12,13 @@ import SwiftUI
 // MARK: - DozyListSection
 
 struct DozyListSection<Content: View>: View {
-    let header: String?
-    let footer: String?
+    /// header / footer 는 `LocalizedStringKey` — 호출부의 문자열 리터럴이 String Catalog
+    /// 자동 추출 대상이 되려면 SwiftUI `Text(_:LocalizedStringKey)` 경로를 타야 한다.
+    let header: LocalizedStringKey?
+    let footer: LocalizedStringKey?
     @ViewBuilder var content: () -> Content
 
-    init(header: String? = nil, footer: String? = nil, @ViewBuilder content: @escaping () -> Content) {
+    init(header: LocalizedStringKey? = nil, footer: LocalizedStringKey? = nil, @ViewBuilder content: @escaping () -> Content) {
         self.header = header
         self.footer = footer
         self.content = content
@@ -55,13 +57,14 @@ struct DozyListSection<Content: View>: View {
 /// 단일 리스트 행. 외부에서 NavigationLink / Button 으로 감싸서 tap 처리.
 /// 카드 안 row 사이엔 divider 가 없고 spacing 만으로 분리 (파스텔 컴팩트 톤).
 struct DozyListRow<Icon: View, Trailing: View>: View {
-    let title: String
+    /// title 은 `LocalizedStringKey` — String Catalog 자동 추출 보장.
+    let title: LocalizedStringKey
     let titleColor: Color
     @ViewBuilder var icon: () -> Icon
     @ViewBuilder var trailing: () -> Trailing
 
     init(
-        title: String,
+        title: LocalizedStringKey,
         titleColor: Color = DozyColor.Text.primary,
         showsDivider _: Bool = true,  // 호환: 호출부 인자 유지, 내부적으론 사용 안 함
         @ViewBuilder icon: @escaping () -> Icon = { EmptyView() },

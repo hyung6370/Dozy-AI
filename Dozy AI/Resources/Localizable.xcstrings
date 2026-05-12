@@ -21,6 +21,26 @@
         }
       }
     },
+    "AI 요약 생성": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate AI summary"
+          }
+        }
+      }
+    },
+    "Apple 로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Apple"
+          }
+        }
+      }
+    },
     "Apple로 로그인": {
       "localizations": {
         "en": {
@@ -47,6 +67,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed to generate Dozy summary."
+          }
+        }
+      }
+    },
+    "Google 로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Google"
           }
         }
       }
@@ -141,6 +171,56 @@
         }
       }
     },
+    "개인정보 처리방침": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy Policy"
+          }
+        }
+      }
+    },
+    "계정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account"
+          }
+        }
+      }
+    },
+    "계정 탈퇴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account"
+          }
+        }
+      }
+    },
+    "계정을 탈퇴하시겠습니까?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your account?"
+          }
+        }
+      }
+    },
+    "공유 캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared calendar"
+          }
+        }
+      }
+    },
     "공유 캘린더는 최대 4명까지 참여할 수 있습니다.": {
       "localizations": {
         "en": {
@@ -151,12 +231,32 @@
         }
       }
     },
+    "그 날짜에 새 일정을 바로 만들 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a new event on that date directly."
+          }
+        }
+      }
+    },
     "기호 포함": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Includes a symbol"
+          }
+        }
+      }
+    },
+    "남은 일정 개수 배지": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining events badge"
           }
         }
       }
@@ -191,6 +291,46 @@
         }
       }
     },
+    "다음 기간": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next period"
+          }
+        }
+      }
+    },
+    "단축키 · 사용 팁": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcuts · Tips"
+          }
+        }
+      }
+    },
+    "닫기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "데이터 새로고침": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh data"
+          }
+        }
+      }
+    },
     "데이터를 안전하게 보호하고 싶다면 로그인을 해보세요 :)": {
       "localizations": {
         "en": {
@@ -211,12 +351,42 @@
         }
       }
     },
+    "도구 · 윈도우": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools · Window"
+          }
+        }
+      }
+    },
+    "도움말": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help"
+          }
+        }
+      }
+    },
     "또는": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "OR"
+          }
+        }
+      }
+    },
+    "로그아웃": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out"
           }
         }
       }
@@ -231,12 +401,82 @@
         }
       }
     },
+    "로그인 상태에서는 데이터가 서버에 백업됩니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While signed in, your data is backed up to the server."
+          }
+        }
+      }
+    },
+    "로그인 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in required"
+          }
+        }
+      }
+    },
     "로그인으로 돌아가기": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Back to sign in"
+          }
+        }
+      }
+    },
+    "로그인하면 기기를 바꿔도 데이터를 유지할 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to keep your data across devices."
+          }
+        }
+      }
+    },
+    "메뉴바": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu Bar"
+          }
+        }
+      }
+    },
+    "메뉴바 아이콘 옆에 오늘 남은 일정 수를 표시합니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the number of remaining events today next to the menu bar icon."
+          }
+        }
+      }
+    },
+    "메뉴바 팝오버": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu bar popover"
+          }
+        }
+      }
+    },
+    "모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All events, logs, and categories will be permanently deleted."
           }
         }
       }
@@ -257,6 +497,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed to load reminders."
+          }
+        }
+      }
+    },
+    "배경": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Background"
+          }
+        }
+      }
+    },
+    "버전": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
           }
         }
       }
@@ -381,6 +641,26 @@
         }
       }
     },
+    "사용 팁": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tips"
+          }
+        }
+      }
+    },
+    "사용자": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User"
+          }
+        }
+      }
+    },
     "삭제할 Google 일정을 찾을 수 없습니다. (404)": {
       "localizations": {
         "en": {
@@ -411,6 +691,76 @@
         }
       }
     },
+    "새 일정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New event"
+          }
+        }
+      }
+    },
+    "새 일정 / 오늘로 이동 등 컨텍스트 메뉴가 열려요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens a context menu (new event, jump to today, etc.)."
+          }
+        }
+      }
+    },
+    "선택한 시각에 새 일정을 만들 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a new event at the selected time."
+          }
+        }
+      }
+    },
+    "설정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "설정 → 파트너와 공유에서 초대 코드를 발급해 일정을 함께 볼 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From Settings → Share with partner, issue an invite code to view events together."
+          }
+        }
+      }
+    },
+    "섹션 이동": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navigate sections"
+          }
+        }
+      }
+    },
+    "셀 우클릭": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right-click a cell"
+          }
+        }
+      }
+    },
     "숫자 포함": {
       "localizations": {
         "en": {
@@ -431,12 +781,52 @@
         }
       }
     },
+    "앱 정보": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App info"
+          }
+        }
+      }
+    },
     "영문 대문자 포함": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Includes an uppercase letter"
+          }
+        }
+      }
+    },
+    "오늘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "오늘로 이동": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jump to today"
+          }
+        }
+      }
+    },
+    "오류": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
           }
         }
       }
@@ -487,6 +877,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Invalid email or password."
+          }
+        }
+      }
+    },
+    "이메일 로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email sign-in"
           }
         }
       }
@@ -551,12 +951,32 @@
         }
       }
     },
+    "이전 기간 (월·주·일)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous period (month · week · day)"
+          }
+        }
+      }
+    },
     "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Same as your current password. Please choose a new one."
+          }
+        }
+      }
+    },
+    "인사이트": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insights"
           }
         }
       }
@@ -577,6 +997,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일 뷰 시간 슬롯 더블클릭": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-click a time slot in day view"
+          }
+        }
+      }
+    },
+    "일정 · 새로고침": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events · Refresh"
+          }
+        }
+      }
+    },
+    "일정 행을 누르면 메인 윈도우로 점프하고, 체크 박스로 완료 상태를 토글합니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click an event row to jump to the main window; the checkbox toggles completion."
           }
         }
       }
@@ -611,6 +1061,16 @@
         }
       }
     },
+    "정말로 로그아웃 하시겠습니까?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Are you sure you want to sign out?"
+          }
+        }
+      }
+    },
     "초대 코드 생성에 실패했습니다. 잠시 후 다시 시도해주세요.": {
       "localizations": {
         "en": {
@@ -637,6 +1097,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancel"
+          }
+        }
+      }
+    },
+    "카테고리": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categories"
+          }
+        }
+      }
+    },
+    "카테고리 관리": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage categories"
+          }
+        }
+      }
+    },
+    "캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar"
+          }
+        }
+      }
+    },
+    "캘린더 단독 창 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the calendar in its own window"
+          }
+        }
+      }
+    },
+    "캘린더 셀 더블클릭": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-click a calendar cell"
+          }
+        }
+      }
+    },
+    "캘린더 연동": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar integration"
           }
         }
       }
@@ -681,6 +1201,16 @@
         }
       }
     },
+    "캘린더 탐색": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navigate calendar"
+          }
+        }
+      }
+    },
     "코드 다시 받기": {
       "localizations": {
         "en": {
@@ -711,6 +1241,46 @@
         }
       }
     },
+    "탈퇴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "탈퇴 시 모든 데이터가 영구 삭제되며 복구할 수 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All data will be permanently deleted and cannot be recovered."
+          }
+        }
+      }
+    },
+    "테마": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theme"
+          }
+        }
+      }
+    },
+    "파트너와 공유": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share with partner"
+          }
+        }
+      }
+    },
     "파트너와 함께 하루를 설계하세요": {
       "localizations": {
         "en": {
@@ -727,6 +1297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Current password is incorrect."
+          }
+        }
+      }
+    },
+    "화면": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display"
           }
         }
       }

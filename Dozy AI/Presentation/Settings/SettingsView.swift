@@ -85,12 +85,13 @@ struct SettingsView: View {
         return Date() >= expiresAt
     }
 
-    /// 제출 버튼 라벨.
+    /// 제출 버튼 라벨. `String(localized:)` 로 wrap — `Text(_:String)` 경로로 빠져 추출되지
+    /// 않는 것을 막는다.
     private var submitLabel: String {
         switch emailLoginMode {
-        case .signIn:          return "이메일로 로그인"
-        case .signUp:          return "가입 완료"
-        case .forgotPassword:  return "비밀번호 변경"
+        case .signIn:          return String(localized: "이메일로 로그인")
+        case .signUp:          return String(localized: "가입 완료")
+        case .forgotPassword:  return String(localized: "비밀번호 변경")
         }
     }
 
@@ -248,7 +249,7 @@ struct SettingsView: View {
             providerIcon(for: authViewModel.currentUser?.provider)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(authViewModel.currentUser?.displayName ?? "사용자")
+                Text(authViewModel.currentUser?.displayName ?? String(localized: "사용자"))
                     .font(.subheadline).fontWeight(.medium)
                 Text(authViewModel.currentUser?.email ?? "")
                     .font(.caption).foregroundStyle(.secondary)
@@ -663,7 +664,7 @@ struct SettingsView: View {
     }
 
     /// 비밀번호 정책 체크리스트 한 줄 — 통과 시 초록 ✓, 미통과 시 회색 원.
-    private func passwordRule(_ label: String, passed: Bool) -> some View {
+    private func passwordRule(_ label: LocalizedStringKey, passed: Bool) -> some View {
         HStack(spacing: 6) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .font(.caption)
