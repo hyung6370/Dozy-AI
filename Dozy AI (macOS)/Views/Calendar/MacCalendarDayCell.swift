@@ -19,7 +19,7 @@ struct MacCalendarDayCell: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("\(Calendar.current.component(.day, from: date))")
+                Text(verbatim: "\(Calendar.current.component(.day, from: date))")
                     .font(.title2)
                     .fontWeight(isToday ? .bold : .medium)
                     .foregroundStyle(isToday ? Color.white : dayColor)

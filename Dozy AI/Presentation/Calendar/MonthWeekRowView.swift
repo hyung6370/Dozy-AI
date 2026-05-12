@@ -134,7 +134,7 @@ struct MonthWeekRowView: View {
     private func dayLabel(date: Date) -> some View {
         let day = Calendar.current.component(.day, from: date)
         let inMonth = isInMonth(date)
-        Text("\(day)")
+        Text(verbatim: "\(day)")
             .font(.subheadline)
             .fontWeight(isToday(date) ? .bold : .regular)
             .foregroundStyle(dayLabelColor(date: date, inMonth: inMonth))

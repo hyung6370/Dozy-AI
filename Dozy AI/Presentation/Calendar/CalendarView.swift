@@ -675,9 +675,11 @@ struct CalendarView: View {
 
     private var alertTitle: String {
         if let e = viewModel.pendingDeleteEvent {
-            return e.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제"
+            return e.recurrenceRule != "none"
+                ? String(localized: "반복 일정 삭제")
+                : String(localized: "일정 삭제")
         }
-        return "일정 삭제"
+        return String(localized: "일정 삭제")
     }
 
     private var selectedDateLabel: String {

@@ -26,7 +26,7 @@ struct WeekGridView: View {
                             .font(.caption2)
                             .foregroundStyle(index == 0 ? .red : index == 6 ? .blue : .secondary)
 
-                        Text("\(Calendar.current.component(.day, from: date))")
+                        Text(verbatim: "\(Calendar.current.component(.day, from: date))")
                             .font(.subheadline)
                             .fontWeight(isToday(date) ? .bold : .regular)
                             .foregroundStyle(dayNumberColor(for: date, weekdayIndex: index))

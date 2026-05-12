@@ -40,7 +40,7 @@ struct MacCalendarDayView: View {
                 Text(weekdayName)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("\(cal.component(.day, from: date))")
+                Text(verbatim: "\(cal.component(.day, from: date))")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(cal.isDateInToday(date) ? Color.white : .primary)
                     .frame(width: 52, height: 52)
@@ -53,8 +53,9 @@ struct MacCalendarDayView: View {
     }
 
     private var weekdayName: String {
+        // Locale.current 로 두면 "EEEE" 가 자동으로 "월요일" / "Monday" 등으로 분기됨.
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
+        f.locale = .current
         f.dateFormat = "EEEE"
         return f.string(from: date)
     }

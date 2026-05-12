@@ -21,6 +21,16 @@
         }
       }
     },
+    "%@에 일정을 생성하시겠습니까?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create an event on %@?"
+          }
+        }
+      }
+    },
     "%lld / %lld 완료": {
       "localizations": {
         "en": {
@@ -91,6 +101,16 @@
         }
       }
     },
+    "%lld월": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
     "%lld자 이상": {
       "localizations": {
         "en": {
@@ -117,6 +137,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete '%@'?\nEvents in this category will be moved to 'General'."
+          }
+        }
+      }
+    },
+    "+%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld"
           }
         }
       }
@@ -227,6 +257,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Generate Dozy daily summary"
+          }
+        }
+      }
+    },
+    "Dozy 일정은 카테고리별 색상으로 구분됩니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dozy events are color-coded by category."
           }
         }
       }
@@ -431,12 +471,32 @@
         }
       }
     },
+    "각 플랫폼의 일정은 아래 색상 바로 구분됩니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events from each platform are distinguished by the color bar below."
+          }
+        }
+      }
+    },
     "개인정보 처리방침": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Privacy Policy"
+          }
+        }
+      }
+    },
+    "검색": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
           }
         }
       }
@@ -471,12 +531,42 @@
         }
       }
     },
+    "고정 해제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpin"
+          }
+        }
+      }
+    },
     "공유": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Share"
+          }
+        }
+      }
+    },
+    "공유 실패": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sharing failed"
+          }
+        }
+      }
+    },
+    "공유 완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared"
           }
         }
       }
@@ -511,12 +601,42 @@
         }
       }
     },
+    "공유 캘린더로 공유": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share to shared calendar"
+          }
+        }
+      }
+    },
     "공유 캘린더를 만들어보세요": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Create a shared calendar"
+          }
+        }
+      }
+    },
+    "공유 캘린더에 일정을 추가했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event added to the shared calendar."
+          }
+        }
+      }
+    },
+    "공유할 캘린더를 선택하세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a calendar to share to"
           }
         }
       }
@@ -561,6 +681,16 @@
         }
       }
     },
+    "끈 항목의 일정은 캘린더에 표시되지 않아요. 데이터는 그대로 유지됩니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events from disabled items are hidden from the calendar. Your data is preserved."
+          }
+        }
+      }
+    },
     "날씨 불러오는 중...": {
       "localizations": {
         "en": {
@@ -577,6 +707,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed to load weather"
+          }
+        }
+      }
+    },
+    "날짜 선택": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a date"
+          }
+        }
+      }
+    },
+    "날짜 이동": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to date"
           }
         }
       }
@@ -607,6 +757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Remaining"
+          }
+        }
+      }
+    },
+    "낮음 🔵": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low 🔵"
           }
         }
       }
@@ -647,6 +807,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "No network connection. Please check your Wi-Fi or cellular connection."
+          }
+        }
+      }
+    },
+    "년도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Year"
+          }
+        }
+      }
+    },
+    "높음 🔴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High 🔴"
           }
         }
       }
@@ -891,6 +1071,36 @@
         }
       }
     },
+    "모두 표시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show all"
+          }
+        }
+      }
+    },
+    "모든 반복 일정 삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all recurring events"
+          }
+        }
+      }
+    },
+    "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All recurring events will be deleted. Are you sure?"
+          }
+        }
+      }
+    },
     "모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.": {
       "localizations": {
         "en": {
@@ -917,6 +1127,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed to load reminders."
+          }
+        }
+      }
+    },
+    "반복 일정 삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete recurring event"
           }
         }
       }
@@ -951,6 +1171,16 @@
         }
       }
     },
+    "보기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View"
+          }
+        }
+      }
+    },
     "보안을 위해 이메일 인증 후 비밀번호를 재설정해주세요.": {
       "localizations": {
         "en": {
@@ -967,6 +1197,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "We will send a 6-digit verification code to your registered email to verify your identity."
+          }
+        }
+      }
+    },
+    "뷰 모드": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View mode"
           }
         }
       }
@@ -1111,6 +1351,16 @@
         }
       }
     },
+    "삭제 실패": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete failed"
+          }
+        }
+      }
+    },
     "삭제할 Google 일정을 찾을 수 없습니다. (404)": {
       "localizations": {
         "en": {
@@ -1121,12 +1371,32 @@
         }
       }
     },
+    "삭제할 범위를 선택해주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please choose what to delete."
+          }
+        }
+      }
+    },
     "삭제할 일정을 찾을 수 없습니다. 이미 삭제되었거나 캘린더 접근 권한을 확인해주세요.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Event not found for deletion. It may have been removed already, or calendar access is restricted."
+          }
+        }
+      }
+    },
+    "상단 고정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin to top"
           }
         }
       }
@@ -1231,6 +1501,26 @@
         }
       }
     },
+    "생성": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "선택된 날짜에 새 일정 추가": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a new event on the selected date"
+          }
+        }
+      }
+    },
     "선택한 시각에 새 일정을 만들 수 있어요.": {
       "localizations": {
         "en": {
@@ -1297,6 +1587,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Right-click a cell"
+          }
+        }
+      }
+    },
+    "소스": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sources"
           }
         }
       }
@@ -1387,6 +1687,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "App info"
+          }
+        }
+      }
+    },
+    "없음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
           }
         }
       }
@@ -1581,6 +1891,16 @@
         }
       }
     },
+    "우선순위": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Priority"
+          }
+        }
+      }
+    },
     "우측 상단 + 버튼을 눌러 첫 카테고리를 추가해보세요.": {
       "localizations": {
         "en": {
@@ -1597,6 +1917,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Source removed"
+          }
+        }
+      }
+    },
+    "월": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Month"
           }
         }
       }
@@ -1627,6 +1957,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only the calendar owner can perform this action."
+          }
+        }
+      }
+    },
+    "이 일정만 삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this event only"
+          }
+        }
+      }
+    },
+    "이동": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go"
           }
         }
       }
@@ -1771,6 +2121,16 @@
         }
       }
     },
+    "이후 모든 일정 삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this and all future events"
+          }
+        }
+      }
+    },
     "인사이트": {
       "localizations": {
         "en": {
@@ -1797,6 +2157,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
           }
         }
       }
@@ -1831,12 +2201,62 @@
         }
       }
     },
+    "일정 목록 보기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show event list"
+          }
+        }
+      }
+    },
+    "일정 삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete event"
+          }
+        }
+      }
+    },
+    "일정 삭제 완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event deleted"
+          }
+        }
+      }
+    },
+    "일정 생성": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create event"
+          }
+        }
+      }
+    },
     "일정 없음": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No events"
+          }
+        }
+      }
+    },
+    "일정 추가": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add event"
           }
         }
       }
@@ -1857,6 +2277,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Measure productivity from events, tasks, and memos"
+          }
+        }
+      }
+    },
+    "일정이 성공적으로 삭제되었습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The event was deleted successfully."
+          }
+        }
+      }
+    },
+    "일정이 없습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events"
+          }
+        }
+      }
+    },
+    "일정이 없습니다. 새로 추가해볼까요?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events. Want to add one?"
           }
         }
       }
@@ -1931,6 +2381,16 @@
         }
       }
     },
+    "종일": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All-day"
+          }
+        }
+      }
+    },
     "좋은 아침이에요 ☀️": {
       "localizations": {
         "en": {
@@ -1957,6 +2417,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Good evening 🌙"
+          }
+        }
+      }
+    },
+    "주": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week"
+          }
+        }
+      }
+    },
+    "중간 🟡": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medium 🟡"
           }
         }
       }
@@ -2121,6 +2601,26 @@
         }
       }
     },
+    "캘린더 범례": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar legend"
+          }
+        }
+      }
+    },
+    "캘린더 보기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar view"
+          }
+        }
+      }
+    },
     "캘린더 설정": {
       "localizations": {
         "en": {
@@ -2197,6 +2697,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Navigate calendar"
+          }
+        }
+      }
+    },
+    "캘린더 필터": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar filter"
           }
         }
       }
@@ -2357,6 +2867,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Design your day with your partner"
+          }
+        }
+      }
+    },
+    "표시할 소스 / 공유 캘린더 선택": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select sources / shared calendars to show"
           }
         }
       }
