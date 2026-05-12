@@ -35,7 +35,7 @@ struct WeatherCardView: View {
     private var permissionPromptView: some View {
         Button { service.fetchIfNeeded() } label: {
             HStack(spacing: 14) {
-                Text("🌤️")
+                Text(verbatim: "🌤️")
                     .font(.system(size: 36))
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -88,7 +88,7 @@ struct WeatherCardView: View {
             }
         } label: {
             HStack(spacing: 14) {
-                Text("📍")
+                Text(verbatim: "📍")
                     .font(.system(size: 36))
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -120,7 +120,7 @@ struct WeatherCardView: View {
     private var failedView: some View {
         Button { service.fetchIfNeeded() } label: {
             HStack(spacing: 14) {
-                Text("⚠️")
+                Text(verbatim: "⚠️")
                     .font(.system(size: 36))
 
                 VStack(alignment: .leading, spacing: 4) {

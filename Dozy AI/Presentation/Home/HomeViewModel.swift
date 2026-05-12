@@ -343,7 +343,7 @@ final class HomeViewModel: ObservableObject {
 
     func generateAISummary() {
         guard hasData else {
-            errorMessage = "요약할 데이터가 부족합니다."
+            errorMessage = String(localized: "요약할 데이터가 부족합니다.")
             return
         }
 
@@ -450,12 +450,14 @@ final class HomeViewModel: ObservableObject {
         // 현재 completedCount 기반으로 텍스트 재계산 (DB 저장 텍스트 무시)
         let summaryText: String
         if completedCount == 0 {
-            summaryText = "오늘은 아직 완료된 일정이 없습니다."
+            summaryText = String(localized: "오늘은 아직 완료된 일정이 없습니다.")
         } else {
             let hours = totalMinutes / 60
             let mins  = totalMinutes % 60
-            let timeStr = hours > 0 ? "\(hours)시간 \(mins)분" : "\(mins)분"
-            summaryText = "오늘 \(completedCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다."
+            let timeStr = hours > 0
+                ? String(localized: "\(hours)시간 \(mins)분")
+                : String(localized: "\(mins)분")
+            summaryText = String(localized: "오늘 \(completedCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다.")
         }
 
         let score = todayEvents.isEmpty ? 0.0 : Double(completedCount) / Double(todayEvents.count)

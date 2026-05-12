@@ -147,7 +147,7 @@ struct WeeklyDayRow: View {
 
 struct MonthlyStatCard: View {
     let icon: String
-    let label: String
+    let label: LocalizedStringKey
     let value: String
     let color: Color
 

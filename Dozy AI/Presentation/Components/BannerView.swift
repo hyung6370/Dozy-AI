@@ -10,16 +10,16 @@ import SwiftUI
 // MARK: - BannerItem Model
 struct BannerItem: Identifiable {
     let id: UUID
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let gradientColors: [Color]
     let iconName: String
     let action: (() -> Void)?
 
     init(
         id: UUID = UUID(),
-        title: String,
-        subtitle: String,
+        title: LocalizedStringKey,
+        subtitle: LocalizedStringKey,
         gradientColors: [Color],
         iconName: String,
         action: (() -> Void)? = nil

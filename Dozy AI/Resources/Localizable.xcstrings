@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "ko",
   "strings": {
+    "%@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@"
+          }
+        }
+      }
+    },
     "%@ 로 보낸 6자리 코드를 입력하세요.": {
       "localizations": {
         "en": {
@@ -11,12 +21,92 @@
         }
       }
     },
+    "%lld / %lld 완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld done"
+          }
+        }
+      }
+    },
+    "%lld%%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "%lld개": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
+    "%lld분": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        }
+      }
+    },
+    "%lld분 후": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld min"
+          }
+        }
+      }
+    },
+    "%lld시간 %lld분": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h %lld min"
+          }
+        }
+      }
+    },
+    "%lld시간 후": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld h"
+          }
+        }
+      }
+    },
     "%lld자 이상": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "At least %lld characters"
+          }
+        }
+      }
+    },
+    "%lld점": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pts"
           }
         }
       }
@@ -81,6 +171,26 @@
         }
       }
     },
+    "Dozy 요약": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dozy summary"
+          }
+        }
+      }
+    },
+    "Dozy 요약 생성": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate Dozy summary"
+          }
+        }
+      }
+    },
     "Dozy 요약 생성에 실패했습니다.": {
       "localizations": {
         "en": {
@@ -91,12 +201,72 @@
         }
       }
     },
+    "Dozy 일정 요약": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dozy daily summary"
+          }
+        }
+      }
+    },
+    "Dozy 일정 요약 보기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View Dozy daily summary"
+          }
+        }
+      }
+    },
+    "Dozy 일정 요약 생성": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate Dozy daily summary"
+          }
+        }
+      }
+    },
     "Dozy 캘린더": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Dozy Calendar"
+          }
+        }
+      }
+    },
+    "Dozy가 분석 중입니다...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dozy is analyzing…"
+          }
+        }
+      }
+    },
+    "Dozy가 하루를 분석합니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dozy analyzes your day"
+          }
+        }
+      }
+    },
+    "Google · Apple 캘린더를 한 곳에서": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google · Apple calendars in one place"
           }
         }
       }
@@ -167,6 +337,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed to load Google Calendar."
+          }
+        }
+      }
+    },
+    "Google·Apple 캘린더를 연동하면 더 정확한 분석을 볼 수 있어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect Google · Apple calendars for more accurate insights"
           }
         }
       }
@@ -291,6 +471,16 @@
         }
       }
     },
+    "공유": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
+          }
+        }
+      }
+    },
     "공유 캘린더": {
       "localizations": {
         "en": {
@@ -301,12 +491,42 @@
         }
       }
     },
+    "공유 캘린더 일정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared calendar event"
+          }
+        }
+      }
+    },
     "공유 캘린더는 최대 4명까지 참여할 수 있습니다.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Shared calendars can have up to 4 members."
+          }
+        }
+      }
+    },
+    "공유 캘린더를 만들어보세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a shared calendar"
+          }
+        }
+      }
+    },
+    "권한 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission required"
           }
         }
       }
@@ -341,12 +561,52 @@
         }
       }
     },
+    "날씨 불러오는 중...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading weather…"
+          }
+        }
+      }
+    },
+    "날씨를 불러오지 못했습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load weather"
+          }
+        }
+      }
+    },
     "남은 일정 개수 배지": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Remaining events badge"
+          }
+        }
+      }
+    },
+    "남은 일정이 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No remaining events."
+          }
+        }
+      }
+    },
+    "남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining"
           }
         }
       }
@@ -551,6 +811,16 @@
         }
       }
     },
+    "만들기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
     "메뉴바": {
       "localizations": {
         "en": {
@@ -577,6 +847,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Menu bar popover"
+          }
+        }
+      }
+    },
+    "메모": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memo"
+          }
+        }
+      }
+    },
+    "메모 삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete memo"
+          }
+        }
+      }
+    },
+    "메모 수정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit memo"
+          }
+        }
+      }
+    },
+    "메모를 남겨보세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave a memo"
           }
         }
       }
@@ -821,6 +1131,16 @@
         }
       }
     },
+    "상세 보기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View details"
+          }
+        }
+      }
+    },
     "새 비밀번호 (%lld자 이상)": {
       "localizations": {
         "en": {
@@ -861,12 +1181,52 @@
         }
       }
     },
+    "새 일정 추가": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add new event"
+          }
+        }
+      }
+    },
+    "새로 추가해볼까요?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Want to add one?"
+          }
+        }
+      }
+    },
+    "새로운 일정을 만들어볼까요?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a new event?"
+          }
+        }
+      }
+    },
     "색상": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Color"
+          }
+        }
+      }
+    },
+    "생산성 점수: %lld점": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Productivity score: %lld"
           }
         }
       }
@@ -897,6 +1257,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "From Settings → Share with partner, issue an invite code to view events together."
+          }
+        }
+      }
+    },
+    "설정 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        }
+      }
+    },
+    "설정에서 위치 접근을 허용해주세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please allow location access in Settings"
           }
         }
       }
@@ -941,6 +1321,16 @@
         }
       }
     },
+    "시스템 설정에서 위치 접근을 허용해주세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please allow location access in System Settings"
+          }
+        }
+      }
+    },
     "아직 카테고리가 없어요": {
       "localizations": {
         "en": {
@@ -951,12 +1341,32 @@
         }
       }
     },
+    "안녕하세요 🌟": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hello 🌟"
+          }
+        }
+      }
+    },
     "알 수 없는 오류: %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Unknown error: %@"
+          }
+        }
+      }
+    },
+    "알림": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
           }
         }
       }
@@ -1031,12 +1441,92 @@
         }
       }
     },
+    "오늘 %lld건의 일정을 소화했으며, 총 %@을 사용했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed %lld events today, spent %@ in total."
+          }
+        }
+      }
+    },
+    "오늘 일정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's events"
+          }
+        }
+      }
+    },
+    "오늘 일정이 없습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events today"
+          }
+        }
+      }
+    },
+    "오늘 일정이 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events today."
+          }
+        }
+      }
+    },
+    "오늘 하루를 AI가 분석합니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI analyzes your day"
+          }
+        }
+      }
+    },
     "오늘로 이동": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Jump to today"
+          }
+        }
+      }
+    },
+    "오늘은 아직 완료된 일정이 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No completed events yet today."
+          }
+        }
+      }
+    },
+    "오늘의 날씨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's weather"
+          }
+        }
+      }
+    },
+    "오늘의 진행도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's progress"
           }
         }
       }
@@ -1071,12 +1561,52 @@
         }
       }
     },
+    "외 %lld개": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld more"
+          }
+        }
+      }
+    },
+    "요약할 데이터가 부족합니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not enough data to summarize."
+          }
+        }
+      }
+    },
     "우측 상단 + 버튼을 눌러 첫 카테고리를 추가해보세요.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Tap the + button in the top-right to add your first category."
+          }
+        }
+      }
+    },
+    "원본 삭제됨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source removed"
+          }
+        }
+      }
+    },
+    "위치 권한 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location permission required"
           }
         }
       }
@@ -1281,6 +1811,16 @@
         }
       }
     },
+    "일정 %lld건 · 완료 %lld건": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld events · %lld done"
+          }
+        }
+      }
+    },
     "일정 · 새로고침": {
       "localizations": {
         "en": {
@@ -1291,12 +1831,32 @@
         }
       }
     },
+    "일정 없음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events"
+          }
+        }
+      }
+    },
     "일정 행을 누르면 메인 윈도우로 점프하고, 체크 박스로 완료 상태를 토글합니다.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Click an event row to jump to the main window; the checkbox toggles completion."
+          }
+        }
+      }
+    },
+    "일정·할 일·메모를 기반으로 생산성을 측정해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Measure productivity from events, tasks, and memos"
           }
         }
       }
@@ -1361,12 +1921,62 @@
         }
       }
     },
+    "정말로 삭제하시겠습니까?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Are you sure you want to delete?"
+          }
+        }
+      }
+    },
+    "좋은 아침이에요 ☀️": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good morning ☀️"
+          }
+        }
+      }
+    },
+    "좋은 오후예요 🌤️": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good afternoon 🌤️"
+          }
+        }
+      }
+    },
+    "좋은 저녁이에요 🌙": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good evening 🌙"
+          }
+        }
+      }
+    },
     "직접 선택": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Pick manually"
+          }
+        }
+      }
+    },
+    "진행 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In progress"
           }
         }
       }
@@ -1397,6 +2007,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add"
+          }
+        }
+      }
+    },
+    "추천 다음 할 일": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggested next actions"
           }
         }
       }
@@ -1581,6 +2201,16 @@
         }
       }
     },
+    "캘린더를 연동해보세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect your calendars"
+          }
+        }
+      }
+    },
     "컬러 블롭 — 생동감 있는 ambient.": {
       "localizations": {
         "en": {
@@ -1621,12 +2251,32 @@
         }
       }
     },
+    "클릭 해서 현재 위치 날씨를 확인하세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to check weather for your current location"
+          }
+        }
+      }
+    },
     "클릭하면 이모지 선택 창이 열립니다": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Click to open the emoji picker"
+          }
+        }
+      }
+    },
+    "클릭해서 다시 시도하세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to try again"
           }
         }
       }
@@ -1651,6 +2301,26 @@
         }
       }
     },
+    "탭해서 다시 시도하세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to try again"
+          }
+        }
+      }
+    },
+    "탭해서 현재 위치 날씨를 확인하세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to check weather for your current location"
+          }
+        }
+      }
+    },
     "테마": {
       "localizations": {
         "en": {
@@ -1671,6 +2341,16 @@
         }
       }
     },
+    "파트너와 일정을 함께 관리할 수 있어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage events together with your partner"
+          }
+        }
+      }
+    },
     "파트너와 함께 하루를 설계하세요": {
       "localizations": {
         "en": {
@@ -1681,12 +2361,32 @@
         }
       }
     },
+    "할 일 완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks done"
+          }
+        }
+      }
+    },
     "항상 켜짐": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Always on"
+          }
+        }
+      }
+    },
+    "핵심 하이라이트": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Highlights"
           }
         }
       }

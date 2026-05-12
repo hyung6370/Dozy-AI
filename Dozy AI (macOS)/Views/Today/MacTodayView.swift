@@ -332,10 +332,10 @@ struct MacTodayView: View {
 
     private func timeUntilLabel(_ event: CalendarEvent) -> String {
         let now = Date()
-        if event.startDate <= now { return "진행 중" }
+        if event.startDate <= now { return String(localized: "진행 중") }
         let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
-        if minutes < 60 { return "\(minutes)분 후" }
-        return "\(minutes / 60)시간 후"
+        if minutes < 60 { return String(localized: "\(minutes)분 후") }
+        return String(localized: "\(minutes / 60)시간 후")
     }
 
     private func timeUntilColor(_ event: CalendarEvent) -> Color {
@@ -402,12 +402,13 @@ struct MacTodayView: View {
         .themedCardSurface(cornerRadius: 16)
     }
 
-    private func progressLegend(icon: String, color: Color, value: Int, label: String) -> some View {
+    private func progressLegend(icon: String, color: Color, value: Int, label: LocalizedStringKey) -> some View {
         HStack(spacing: 7) {
             Image(systemName: icon)
                 .font(.subheadline)
                 .foregroundStyle(color)
-            Text("\(value)")
+            // 숫자만 표시 — verbatim 으로 추출 제외 ('%lld' 가 catalog 에 들어가는 노이즈 방지).
+            Text(verbatim: "\(value)")
                 .font(.body)
                 .fontWeight(.bold)
             Text(label)
@@ -549,7 +550,7 @@ struct MacTodayView: View {
             if let log = viewModel.todayLog {
                 ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
                     HStack(alignment: .top, spacing: 10) {
-                        Text("📝").font(.body)
+                        Text(verbatim: "📝").font(.body)
                         Text(memo)
                             .font(.body)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -645,7 +646,7 @@ struct MacTodayView: View {
 
 private struct MacStatCard: View {
     let value: String
-    let label: String
+    let label: LocalizedStringKey
     let icon: String
     let color: Color
     var progress: Double? = nil

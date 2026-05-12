@@ -247,10 +247,10 @@ struct HomeView: View {
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
-        case 5..<12: return "좋은 아침이에요 ☀️"
-        case 12..<18: return "좋은 오후예요 🌤️"
-        case 18..<21: return "좋은 저녁이에요 🌙"
-        default: return "안녕하세요 🌟"
+        case 5..<12: return String(localized: "좋은 아침이에요 ☀️")
+        case 12..<18: return String(localized: "좋은 오후예요 🌤️")
+        case 18..<21: return String(localized: "좋은 저녁이에요 🌙")
+        default: return String(localized: "안녕하세요 🌟")
         }
     }
 
@@ -366,10 +366,10 @@ struct HomeView: View {
 
     private func timeUntilLabel(_ event: CalendarEvent) -> String {
         let now = Date()
-        if event.startDate <= now { return "진행 중" }
+        if event.startDate <= now { return String(localized: "진행 중") }
         let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
-        if minutes < 60 { return "\(minutes)분 후" }
-        return "\(minutes / 60)시간 후"
+        if minutes < 60 { return String(localized: "\(minutes)분 후") }
+        return String(localized: "\(minutes / 60)시간 후")
     }
 
     private func timeUntilColor(_ event: CalendarEvent) -> Color {
@@ -514,7 +514,7 @@ struct HomeView: View {
             if let log = viewModel.todayLog {
                 ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
                     HStack(alignment: .top, spacing: 8) {
-                        Text("📝").font(.subheadline)
+                        Text(verbatim: "📝").font(.subheadline)
                         Text(memo)
                             .font(.subheadline)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -654,7 +654,7 @@ struct HomeView: View {
 
 private struct HomeStatCard: View {
     let value: String
-    let label: String
+    let label: LocalizedStringKey
     let icon: String
     let color: Color
 
