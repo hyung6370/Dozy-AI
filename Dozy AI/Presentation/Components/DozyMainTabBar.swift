@@ -68,7 +68,9 @@ struct DozyMainTabBar: View {
             )
             .stroke(borderColor, lineWidth: borderWidth)
         )
-        .shadow(color: .black.opacity(colorScheme == .dark ? 0.35 : 0.06), radius: 10, y: -2)
+        // 입체감을 위해 두 단계 그림자 — 먼 거리 큰 blur + 가까운 거리 또렷한 blur
+        .shadow(color: .black.opacity(colorScheme == .dark ? 0.4 : 0.12), radius: 14, y: -3)
+        .shadow(color: .black.opacity(colorScheme == .dark ? 0.25 : 0.05), radius: 4, y: -1)
         .padding(.top, actionButtonLift)
         .ignoresSafeArea(edges: .bottom)
     }
