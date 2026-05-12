@@ -18,6 +18,22 @@ final class MacMenuBarViewModel: ObservableObject {
     @Published var completionsByID: [String: Bool] = [:]
     @Published var isLoading = false
 
+    /// 로그인 상태. coordinator 가 authViewModel.state 를 mirror 해서 설정.
+    /// false 가 되면 fetch 를 막고 즉시 캐시 비움 — 메뉴바에 이전 사용자 일정이 남지 않게.
+    @Published var isSignedIn: Bool = false {
+        didSet {
+            guard oldValue != isSignedIn else { return }
+            if isSignedIn {
+                loadTodayData()
+            } else {
+                todayEvents = []
+                dozyEventsByID = [:]
+                completionsByID = [:]
+                isLoading = false
+            }
+        }
+    }
+
     private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
     private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
@@ -102,6 +118,14 @@ final class MacMenuBarViewModel: ObservableObject {
     // MARK: - Load
 
     func loadTodayData() {
+        // 로그아웃 상태에선 fetch 자체를 막고 빈 상태 유지.
+        guard isSignedIn else {
+            todayEvents = []
+            dozyEventsByID = [:]
+            completionsByID = [:]
+            isLoading = false
+            return
+        }
         isLoading = true
         let today = Date()
 

@@ -270,6 +270,8 @@ final class MacAppCoordinator: ObservableObject {
             .removeDuplicates()
             .sink { [weak self] signedIn in
                 self?.isSignedIn = signedIn
+                // 로그아웃 시 메뉴바도 즉시 빈 상태가 되도록 mirror.
+                self?.menuBarViewModel?.isSignedIn = signedIn
             }
 
         // Apple 캘린더 토글이 ON 인 경우 — 시스템 권한 다이얼로그를 미리 띄우거나

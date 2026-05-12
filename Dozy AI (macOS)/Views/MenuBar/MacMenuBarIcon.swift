@@ -14,9 +14,9 @@ struct MacMenuBarIcon: View {
 
     var body: some View {
         if showBadge && viewModel.remainingCount > 0 {
-            Label("\(viewModel.remainingCount)", systemImage: "calendar")
+            Label("\(viewModel.remainingCount)", image: "MenuBarIcon")
         } else {
-            Image(systemName: "calendar")
+            Image("MenuBarIcon")
         }
     }
 }
