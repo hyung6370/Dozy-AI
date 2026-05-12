@@ -113,7 +113,7 @@ struct SharedCalendarEditView: View {
                             .frame(width: 72, height: 72)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     } else {
-                        Image(systemName: "calendar.badge.person.crop")
+                        Image(systemName: "person.2.fill")
                             .font(.system(size: 28))
                             .foregroundStyle(Color.accentColor)
                     }

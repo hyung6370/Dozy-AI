@@ -36,6 +36,8 @@ struct SettingsView: View {
     @State private var emailPasswordLimiter = PasswordFailLimiter(threshold: 5)
     /// limit 도달 시 자동 표시되는 안내 alert.
     @State private var showFailLimitAlert: Bool = false
+    /// 이메일 로그인 제출이 진행 중인지 — Apple/Google 등 다른 경로의 errorMessage 는 카운트에서 제외.
+    @State private var emailSignInInFlight: Bool = false
     @State private var loginEmail: String = ""
     @State private var loginPassword: String = ""
     @State private var loginPasswordConfirm: String = ""
@@ -187,14 +189,20 @@ struct SettingsView: View {
                     authViewModel.errorMessage = nil
                 }
             }
-            // signIn 모드에서 에러가 새로 생기면 비밀번호 실패로 간주하고 카운트.
+            // signIn 모드 + 이메일 로그인 제출이 in-flight 일 때만 비밀번호 실패로 간주.
+            // (Apple/Google 취소 등으로 errorMessage 가 생기는 경우는 카운트 제외)
             .onChange(of: authViewModel.errorMessage) { _, newVal in
-                if newVal != nil, emailLoginMode == .signIn {
+                if newVal != nil, emailLoginMode == .signIn, emailSignInInFlight {
                     emailPasswordLimiter.recordFailure()
                     if emailPasswordLimiter.justReachedLimit {
                         showFailLimitAlert = true
                     }
+                    emailSignInInFlight = false
                 }
+            }
+            // 로딩 종료 시 in-flight 해제 (성공 / 다른 경로 종료 둘 다).
+            .onChange(of: authViewModel.isLoading) { _, newVal in
+                if !newVal { emailSignInInFlight = false }
             }
             // 로그인 성공 / 이메일 변경 시 카운터 reset.
             .onChange(of: authViewModel.isLoggedIn) { _, newVal in
@@ -643,6 +651,9 @@ struct SettingsView: View {
         authViewModel.errorMessage = nil
         switch emailLoginMode {
         case .signIn:
+            // 이메일 로그인 제출만 표시 — onChange(errorMessage) 가 이걸 보고
+            // 비밀번호 실패만 카운트하고 Apple/Google 등은 무시한다.
+            emailSignInInFlight = true
             authViewModel.signInWithEmail(email: loginEmail, password: loginPassword)
         case .signUp:
             authViewModel.completeEmailSignUp(password: loginPassword)

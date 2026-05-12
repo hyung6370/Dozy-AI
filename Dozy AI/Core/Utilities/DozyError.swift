@@ -99,9 +99,9 @@ enum DozyError: LocalizedError {
         case .sharedCalendarInvalidCode:
             return "잘못된 초대 코드입니다."
         case .sharedCalendarExpiredCode:
-            return "초대 코드가 만료되었습니다. 상대에게 새 코드를 요청해주세요."
+            return "초대 코드가 만료되었습니다. 초대한 사람에게 새 코드를 요청해주세요."
         case .sharedCalendarFull:
-            return "공유 캘린더는 최대 2명까지 참여할 수 있습니다."
+            return "공유 캘린더는 최대 4명까지 참여할 수 있습니다."
         case .sharedCalendarAlreadyMember:
             return "이미 참여한 공유 캘린더입니다."
         case .sharedCalendarNotOwner:

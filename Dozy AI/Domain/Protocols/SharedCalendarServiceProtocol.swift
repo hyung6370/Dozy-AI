@@ -10,7 +10,7 @@ protocol SharedCalendarServiceProtocol {
     /// 공유 캘린더 생성 (RPC: create_shared_calendar). 생성자는 owner로 자동 등록.
     func create(name: String) -> AnyPublisher<SharedCalendarCreationResult, DozyError>
 
-    /// 초대 코드로 참여 (RPC: join_shared_calendar). 2인 제한 + 만료 검증.
+    /// 초대 코드로 참여 (RPC: join_shared_calendar). 최대 4인 제한 + 만료 검증.
     func join(inviteCode: String) -> AnyPublisher<SharedCalendarJoinResult, DozyError>
 
     /// 초대 코드 재발급 (RPC: regenerate_shared_calendar_invite_code). owner만 가능.
