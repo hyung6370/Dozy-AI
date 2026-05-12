@@ -149,12 +149,16 @@ struct MacLoginView: View {
                 .frame(width: 280, height: 44)
                 .background(
                     colorScheme == .dark ? Color.white : Color.black,
-                    in: RoundedRectangle(cornerRadius: 8)
+                    in: Capsule()
                 )
             }
             .buttonStyle(.plain)
             .disabled(authViewModel.isSigningIn)
 
+            // Google 로그인 — Apple 버튼과 동일한 frame/cornerRadius/.plain 사용해 모양을 맞춤.
+            // .bordered 시스템 스타일은 macOS 가 윈도우 inactive 상태에서 자체 desaturate 를
+            // 적용해 Apple 버튼과 톤이 어긋남. 명시 background + stroke 로 두 버튼이 항상
+            // 같은 outline 으로 보이게 한다.
             Button {
                 authViewModel.signInWithGoogle()
             } label: {
@@ -166,10 +170,18 @@ struct MacLoginView: View {
                     Text("Google로 로그인")
                         .fontWeight(.medium)
                 }
+                .foregroundStyle(Color.primary)
                 .frame(width: 280, height: 44)
+                .background(
+                    Color(nsColor: .controlBackgroundColor),
+                    in: Capsule()
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Color.primary.opacity(0.15), lineWidth: 1)
+                )
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(.plain)
             .disabled(authViewModel.isSigningIn)
 
             if authViewModel.isSigningIn {
