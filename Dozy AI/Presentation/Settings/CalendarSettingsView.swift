@@ -133,7 +133,7 @@ struct CalendarSettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(hex: "#03C75A") ?? .green)
                     .frame(width: 34, height: 34)
-                Text("N")
+                Text(verbatim: "N")
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
             }

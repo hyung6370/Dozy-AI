@@ -245,7 +245,7 @@ struct PasswordChangeSheet: View {
         return String(format: "%d:%02d", m, s)
     }
 
-    private func rule(_ label: String, passed: Bool) -> some View {
+    private func rule(_ label: LocalizedStringKey, passed: Bool) -> some View {
         HStack(spacing: 8) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .font(.subheadline)

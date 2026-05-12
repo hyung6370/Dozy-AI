@@ -20,7 +20,7 @@ enum DozyBackgroundTheme: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .system:       return "기본"
+        case .system:       return String(localized: "기본")
         case .ambientMesh:  return "Ambient"
         case .blob:         return "Blob"
         }
@@ -28,9 +28,9 @@ enum DozyBackgroundTheme: String, CaseIterable, Identifiable {
 
     var summary: String {
         switch self {
-        case .system:       return "iOS 표준 배경 — 어떤 ambient 도 깔지 않습니다."
-        case .ambientMesh:  return "저채도 메시 그라디언트 — 가장 차분한 무드."
-        case .blob:         return "컬러 블롭 — 생동감 있는 ambient."
+        case .system:       return String(localized: "iOS 표준 배경 — 어떤 ambient 도 깔지 않습니다.")
+        case .ambientMesh:  return String(localized: "저채도 메시 그라디언트 — 가장 차분한 무드.")
+        case .blob:         return String(localized: "컬러 블롭 — 생동감 있는 ambient.")
         }
     }
 

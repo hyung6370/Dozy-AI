@@ -21,6 +21,16 @@
         }
       }
     },
+    "'%@'을(를) 삭제하시겠습니까?\n해당 카테고리의 일정은 '일반'으로 변경됩니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete '%@'?\nEvents in this category will be moved to 'General'."
+          }
+        }
+      }
+    },
     "AI 요약 생성": {
       "localizations": {
         "en": {
@@ -37,6 +47,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sign in with Apple"
+          }
+        }
+      }
+    },
+    "Apple 캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Calendar"
           }
         }
       }
@@ -71,6 +91,16 @@
         }
       }
     },
+    "Dozy 캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dozy Calendar"
+          }
+        }
+      }
+    },
     "Google 로그인": {
       "localizations": {
         "en": {
@@ -97,6 +127,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Google authentication expired. Please sign in again. (401)"
+          }
+        }
+      }
+    },
+    "Google 캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google Calendar"
           }
         }
       }
@@ -137,6 +177,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sign in with Google"
+          }
+        }
+      }
+    },
+    "iOS 표준 배경 — 어떤 ambient 도 깔지 않습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard iOS background — no ambient overlay."
+          }
+        }
+      }
+    },
+    "iPhone 기본 캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default iPhone calendar"
+          }
+        }
+      }
+    },
+    "macOS 기본 캘린더 일정을 Dozy 에서 함께 봅니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View macOS default calendar events alongside Dozy."
+          }
+        }
+      }
+    },
+    "macOS 표준 배경 — 사이드바 머티리얼 그대로.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard macOS background — sidebar material as-is."
           }
         }
       }
@@ -241,6 +321,16 @@
         }
       }
     },
+    "기본": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default"
+          }
+        }
+      }
+    },
     "기호 포함": {
       "localizations": {
         "en": {
@@ -267,6 +357,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Naver sign-in failed."
+          }
+        }
+      }
+    },
+    "네이버 캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naver Calendar"
           }
         }
       }
@@ -411,6 +511,16 @@
         }
       }
     },
+    "로그인 실패": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in failed"
+          }
+        }
+      }
+    },
     "로그인 필요": {
       "localizations": {
         "en": {
@@ -541,6 +651,16 @@
         }
       }
     },
+    "본인 확인을 위해 가입 이메일로 6자리 인증 코드를 보냅니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We will send a 6-digit verification code to your registered email to verify your identity."
+          }
+        }
+      }
+    },
     "비밀번호": {
       "localizations": {
         "en": {
@@ -597,6 +717,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Confirm password"
+          }
+        }
+      }
+    },
+    "비밀번호가 변경되었어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password changed"
           }
         }
       }
@@ -661,6 +791,16 @@
         }
       }
     },
+    "삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
     "삭제할 Google 일정을 찾을 수 없습니다. (404)": {
       "localizations": {
         "en": {
@@ -691,6 +831,16 @@
         }
       }
     },
+    "새 비밀번호 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm new password"
+          }
+        }
+      }
+    },
     "새 일정": {
       "localizations": {
         "en": {
@@ -707,6 +857,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Opens a context menu (new event, jump to today, etc.)."
+          }
+        }
+      }
+    },
+    "색상": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color"
           }
         }
       }
@@ -761,12 +921,32 @@
         }
       }
     },
+    "수정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
     "숫자 포함": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Includes a number"
+          }
+        }
+      }
+    },
+    "아직 카테고리가 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No categories yet"
           }
         }
       }
@@ -781,12 +961,52 @@
         }
       }
     },
+    "앱 내 직접 생성한 일정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events created within Dozy"
+          }
+        }
+      }
+    },
     "앱 정보": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "App info"
+          }
+        }
+      }
+    },
+    "연결": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect"
+          }
+        }
+      }
+    },
+    "연결 해제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect"
+          }
+        }
+      }
+    },
+    "연결된 캘린더": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected calendars"
           }
         }
       }
@@ -841,6 +1061,26 @@
         }
       }
     },
+    "완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "우측 상단 + 버튼을 눌러 첫 카테고리를 추가해보세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the + button in the top-right to add your first category."
+          }
+        }
+      }
+    },
     "음성 인식에 실패했습니다.": {
       "localizations": {
         "en": {
@@ -857,6 +1097,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only the calendar owner can perform this action."
+          }
+        }
+      }
+    },
+    "이름": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
           }
         }
       }
@@ -927,6 +1177,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Please enter your email first."
+          }
+        }
+      }
+    },
+    "이모지": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emoji"
+          }
+        }
+      }
+    },
+    "이모지 선택": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick an emoji"
           }
         }
       }
@@ -1051,6 +1321,16 @@
         }
       }
     },
+    "저장": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
     "저장에 실패했습니다.": {
       "localizations": {
         "en": {
@@ -1061,12 +1341,32 @@
         }
       }
     },
+    "저채도 메시 그라디언트 — 가장 차분한 무드.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low-saturation mesh gradient — the calmest mood."
+          }
+        }
+      }
+    },
     "정말로 로그아웃 하시겠습니까?": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Are you sure you want to sign out?"
+          }
+        }
+      }
+    },
+    "직접 선택": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick manually"
           }
         }
       }
@@ -1087,6 +1387,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Invite code has expired. Please ask the inviter for a new one."
+          }
+        }
+      }
+    },
+    "추가": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
           }
         }
       }
@@ -1121,6 +1431,56 @@
         }
       }
     },
+    "카테고리 명": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category name"
+          }
+        }
+      }
+    },
+    "카테고리 삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete category"
+          }
+        }
+      }
+    },
+    "카테고리 수정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit category"
+          }
+        }
+      }
+    },
+    "카테고리 이름": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category name"
+          }
+        }
+      }
+    },
+    "카테고리 추가": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add category"
+          }
+        }
+      }
+    },
     "캘린더": {
       "localizations": {
         "en": {
@@ -1137,6 +1497,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open the calendar in its own window"
+          }
+        }
+      }
+    },
+    "캘린더 설정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar settings"
           }
         }
       }
@@ -1211,6 +1581,16 @@
         }
       }
     },
+    "컬러 블롭 — 생동감 있는 ambient.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color blobs — vivid ambient."
+          }
+        }
+      }
+    },
     "코드 다시 받기": {
       "localizations": {
         "en": {
@@ -1237,6 +1617,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Time left: %@"
+          }
+        }
+      }
+    },
+    "클릭하면 이모지 선택 창이 열립니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to open the emoji picker"
           }
         }
       }
@@ -1291,6 +1681,16 @@
         }
       }
     },
+    "항상 켜짐": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always on"
+          }
+        }
+      }
+    },
     "현재 비밀번호가 올바르지 않습니다.": {
       "localizations": {
         "en": {
@@ -1327,6 +1727,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Confirm"
+          }
+        }
+      }
+    },
+    "활성화된 캘린더의 일정이 Dozy AI 분석에 포함됩니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events from enabled calendars are included in Dozy AI analysis."
           }
         }
       }
