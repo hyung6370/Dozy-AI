@@ -135,6 +135,8 @@
 		D02ABBBB000000000000B209 /* AmbientMeshBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F209 /* AmbientMeshBackgroundView.swift */; };
 		D02ABBBB000000000000B20A /* PasswordFailLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F20A /* PasswordFailLimiter.swift */; };
 		D02ABBBB000000000000B20B /* PasswordFailLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */; };
+		D02ABBBB000000000000B20C /* PasswordFailLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F20A /* PasswordFailLimiter.swift */; };
+		D02ABBBB000000000000B20D /* PasswordFailLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */; };
 		D02ACCCC000000000000C101 /* DozyColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F101 /* DozyColor.swift */; };
 		D02ACCCC000000000000C102 /* DozySpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F102 /* DozySpacing.swift */; };
 		D02ACCCC000000000000C103 /* DozyFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F103 /* DozyFont.swift */; };
@@ -2179,6 +2181,7 @@
 				E4571C8B9C92069B411F031C /* DependencyContainer.swift in Sources */,
 				F6BC1A0001000000DDDD0001 /* DailySummaryViewModel.swift in Sources */,
 				F6EC8AFB2F9995D700CFFF87 /* MacAuthViewModel.swift in Sources */,
+				D02ABBBB000000000000B20C /* PasswordFailLimiter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2192,6 +2195,7 @@
 				1F9D251C83B3008BE74D4257 /* UseCaseTests.swift in Sources */,
 				575318062BF53B9AAE0ABBEE /* Mocks.swift in Sources */,
 				D4667C311D34F971A24D66FD /* TestHelpers.swift in Sources */,
+				D02ABBBB000000000000B20D /* PasswordFailLimiterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
