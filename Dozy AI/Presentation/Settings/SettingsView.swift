@@ -24,6 +24,12 @@ struct SettingsView: View {
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showPasswordChange = false
+    @AppStorage(DozyBackgroundTheme.storageKey)
+    private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
+
+    private var backgroundTheme: DozyBackgroundTheme {
+        DozyBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
+    }
     @State private var loginEmail: String = ""
     @State private var loginPassword: String = ""
     @State private var loginPasswordConfirm: String = ""
@@ -116,6 +122,7 @@ struct SettingsView: View {
             ScrollView {
                 VStack(spacing: DozySpacing.xl) {
                     accountSection
+                    appearanceSection
                     calendarSection
                     categorySection
                     infoSection
@@ -126,7 +133,8 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, DozySpacing.lg)
             }
-            .background(DozyColor.Background.grouped)
+            // system 일 때는 grouped, ambient/blob 일 땐 themed bg — modifier 가 단일 layer 로 처리.
+            .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
             .overlay {
@@ -627,6 +635,29 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - 화면 (테마) 섹션
+
+    private var appearanceSection: some View {
+        DozyListSection(header: "화면") {
+            NavigationLink {
+                BackgroundThemePickerView()
+            } label: {
+                DozyListRow(title: "테마") {
+                    Image(systemName: "paintpalette.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(DozyColor.Brand.primary)
+                        .frame(width: 22, height: 22)
+                } trailing: {
+                    HStack(spacing: DozySpacing.xs) {
+                        DozyTrailingValue(text: backgroundTheme.displayName)
+                        DozyChevron()
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     // MARK: - 카테고리 섹션
 
     private var categorySection: some View {
@@ -634,7 +665,7 @@ struct SettingsView: View {
             NavigationLink {
                 CategoryManagementView()
             } label: {
-                DozyListRow(title: "카테고리 관리", showsDivider: false) {
+                DozyListRow(title: "카테고리 관리") {
                     settingIcon("Light-Management-Category", "Dark-Management-Category")
                 } trailing: {
                     DozyChevron()
@@ -663,7 +694,7 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .disabled(privacyPolicyURL == nil)
 
-            DozyListRow(title: "버전", showsDivider: false) {
+            DozyListRow(title: "버전") {
                 settingIcon("Light-Version", "Dark-Version")
             } trailing: {
                 DozyTrailingValue(text: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
@@ -679,11 +710,11 @@ struct SettingsView: View {
             Button {
                 showPasswordChange = true
             } label: {
-                DozyListRow(title: "비밀번호 변경", showsDivider: false) {
+                DozyListRow(title: "비밀번호 변경") {
                     Image(systemName: "key.fill")
                         .font(.system(size: 16))
                         .foregroundStyle(DozyColor.Text.secondary)
-                        .frame(width: 22)
+                        .frame(width: 22, height: 22)
                 } trailing: {
                     DozyChevron()
                 }
@@ -703,8 +734,7 @@ struct SettingsView: View {
                 } label: {
                     DozyListRow(
                         title: "계정 탈퇴",
-                        titleColor: DozyColor.State.danger,
-                        showsDivider: false
+                        titleColor: DozyColor.State.danger
                     ) {
                         settingIcon("Light-Delete-Account", "Dark-Delete-Account")
                     }
@@ -725,10 +755,7 @@ struct SettingsView: View {
                     naverSignInService: container.naverSignInService
                 )
             } label: {
-                DozyListRow(
-                    title: "캘린더 연동",
-                    showsDivider: authViewModel.isLoggedIn
-                ) {
+                DozyListRow(title: "캘린더 연동") {
                     settingIcon("Light-Integrate-Calendar", "Dark-Integrate-Calendar")
                 } trailing: {
                     DozyChevron()
@@ -740,7 +767,7 @@ struct SettingsView: View {
                 NavigationLink {
                     SharedCalendarListView(container: container)
                 } label: {
-                    DozyListRow(title: "공유 캘린더", showsDivider: false) {
+                    DozyListRow(title: "공유 캘린더") {
                         settingIcon("Light-Share-Calendar", "Dark-Share-Calendar")
                     } trailing: {
                         DozyChevron()

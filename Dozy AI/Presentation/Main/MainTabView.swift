@@ -46,6 +46,13 @@ struct MainTabView: View {
     @State private var showCreateEvent = false
     @EnvironmentObject private var authViewModel: AuthViewModel
 
+    @AppStorage(DozyBackgroundTheme.storageKey)
+    private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
+
+    private var backgroundTheme: DozyBackgroundTheme {
+        DozyBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
+    }
+
     init(container: DependencyContainer) {
         self.container = container
         let calendarVM = CalendarViewModel(container: container)
@@ -82,6 +89,10 @@ struct MainTabView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            // 0) Themed shell background — system 은 grouped 색, ambient/blob 은 해당 view.
+            //    카드는 자체 solid groupedRow + tint 로 시인성 보장되므로 themed bg 위에서도 잘 보임.
+            DozyShellBackgroundView(theme: backgroundTheme)
+
             // 1) Tabs content — safeAreaInset 으로 탭바 자리만큼 transparent spacer.
             //    탭바 visual 자체는 별도 layer (아래쪽)로 분리한다.
             TabView(selection: selectionBinding) {
@@ -187,14 +198,12 @@ private struct InviteCodeWrapper: Identifiable {
 }
 
 private extension View {
-    /// 탭 화면의 마지막 콘텐츠가 커스텀 탭바에 가려지지 않도록 두 가지 보정을 함께 적용.
-    /// - contentMargins: ScrollView 의 contentInset 으로 전달
-    /// - safeAreaInset (보이지 않는 spacer): List/Form 등 contentMargins 미전파 컨테이너의 fallback.
-    ///   safeAreaInset 으로 추가한 view 의 height 만큼 child 의 safe area bottom 이 늘어나
-    ///   List/Form 의 마지막 셀이 그만큼 위에서 끝남.
+    /// 탭 화면의 마지막 콘텐츠가 커스텀 탭바에 가려지지 않도록 + List/Form 의 시스템 배경을
+    /// 숨겨 themed shell background 가 비치게 한다.
     func tabContentInset(_ amount: CGFloat) -> some View {
         self
             .contentMargins(.bottom, amount, for: .scrollContent)
+            .scrollContentBackground(.hidden)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 Color.clear.frame(height: amount)
             }

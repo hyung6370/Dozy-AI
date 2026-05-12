@@ -53,6 +53,7 @@ struct InsightDashboardView: View {
                 }
                 .padding()
             }
+            .dozyThemedShellBackground()
             .navigationTitle("인사이트")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -101,6 +102,7 @@ struct InsightDashboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
 
     // MARK: - Empty State
@@ -178,6 +180,7 @@ struct InsightDashboardView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
     
     private func trendIcon(for change: Double) -> String {
@@ -289,6 +292,8 @@ struct InsightDashboardView: View {
             }
             .padding()
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .dozyThemedCardBorder(cornerRadius: 14)
+        .dozyThemedCardBorder(cornerRadius: 14)
         }
     }
 
@@ -347,6 +352,7 @@ struct InsightDashboardView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
     
     // MARK: - 시간대별 집중도
@@ -378,6 +384,7 @@ struct InsightDashboardView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
     
     // MARK: - 요일별 평균
@@ -401,6 +408,7 @@ struct InsightDashboardView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
     
     // MARK: - 반복 vs 단발성
@@ -445,6 +453,7 @@ struct InsightDashboardView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
     
     // MARK: - 생산성 점수 추이
@@ -469,6 +478,7 @@ struct InsightDashboardView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
 
     // MARK: - 카테고리 분포
@@ -493,5 +503,6 @@ struct InsightDashboardView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
 }

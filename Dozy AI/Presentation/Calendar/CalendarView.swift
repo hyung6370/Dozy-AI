@@ -57,6 +57,8 @@ struct CalendarView: View {
                         eventListSection
                             .id("eventList")
                     }
+                    // floatingScrollButton(높이 ~44 + bottom padding 100) 위에서 마지막 콘텐츠가 가려지지 않도록 여유.
+                    Color.clear.frame(height: 80)
                 }
             }
             .overlay(alignment: .bottom) {
@@ -79,6 +81,7 @@ struct CalendarView: View {
             .onChange(of: viewModel.viewMode) { _, _ in
                 isShowingEventList = false
             }
+            .dozyThemedShellBackground()
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -645,7 +648,8 @@ struct CalendarView: View {
             .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
-        .padding(.bottom, 20)
+        // 커스텀 탭바(84pt) 위로 떠 있도록 충분한 bottom padding.
+        .padding(.bottom, 100)
     }
 
     @ViewBuilder

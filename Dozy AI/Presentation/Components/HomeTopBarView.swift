@@ -16,6 +16,13 @@ struct HomeTopBarView: View {
     let onNotificationTap: () -> Void
     let onProfileTap: () -> Void
 
+    @AppStorage(DozyBackgroundTheme.storageKey)
+    private var themeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
+
+    private var theme: DozyBackgroundTheme {
+        DozyBackgroundTheme(rawValue: themeRaw) ?? .defaultTheme
+    }
+
     private var todayString: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -70,6 +77,17 @@ struct HomeTopBarView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(Color(.systemBackground))
+        .background(topBarBackground)
+    }
+
+    @ViewBuilder
+    private var topBarBackground: some View {
+        if theme == .system {
+            // 기본 테마는 원래대로 systemBackground.
+            Color(.systemBackground)
+        } else {
+            // ambient/blob: 투명 — themed shell bg 가 상단바 영역까지 자연스럽게 이어진다.
+            Color.clear
+        }
     }
 }

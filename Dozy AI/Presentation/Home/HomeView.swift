@@ -99,6 +99,7 @@ struct HomeView: View {
                 )
             }
             .scrollDismissesKeyboard(.interactively)
+            .dozyThemedShellBackground()
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
@@ -360,6 +361,7 @@ struct HomeView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
 
     private func timeUntilLabel(_ event: CalendarEvent) -> String {
@@ -599,6 +601,7 @@ struct HomeView: View {
             }
             .padding(14)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .dozyThemedCardBorder(cornerRadius: 14)
         }
         .buttonStyle(.plain)
         .disabled(!viewModel.hasData || viewModel.isSummarizing)
@@ -674,5 +677,6 @@ private struct HomeStatCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .dozyThemedCardBorder(cornerRadius: 12)
     }
 }

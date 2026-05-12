@@ -23,10 +23,11 @@ struct DozyListSection<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DozySpacing.xs) {
+        VStack(alignment: .leading, spacing: DozySpacing.sm) {
             if let header {
                 Text(header)
-                    .font(DozyFont.footnote)
+                    .font(DozyFont.title3)
+                    .fontWeight(.bold)
                     .foregroundStyle(DozyColor.Text.secondary)
                     .padding(.horizontal, DozySpacing.md)
             }
@@ -34,8 +35,8 @@ struct DozyListSection<Content: View>: View {
             VStack(spacing: 0) {
                 content()
             }
-            .background(DozyColor.Background.groupedRow)
-            .clipShape(RoundedRectangle(cornerRadius: DozyRadius.md, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DozyRadius.lg, style: .continuous))
+            .dozyThemedCardSurface(cornerRadius: DozyRadius.lg)
 
             if let footer {
                 Text(footer)
@@ -52,47 +53,81 @@ struct DozyListSection<Content: View>: View {
 // MARK: - DozyListRow
 
 /// 단일 리스트 행. 외부에서 NavigationLink / Button 으로 감싸서 tap 처리.
-/// - `showsDivider`: 마지막 행은 false 로 두어 아래 구분선이 안 보이게.
+/// 카드 안 row 사이엔 divider 가 없고 spacing 만으로 분리 (파스텔 컴팩트 톤).
 struct DozyListRow<Icon: View, Trailing: View>: View {
     let title: String
     let titleColor: Color
-    let showsDivider: Bool
     @ViewBuilder var icon: () -> Icon
     @ViewBuilder var trailing: () -> Trailing
 
     init(
         title: String,
         titleColor: Color = DozyColor.Text.primary,
-        showsDivider: Bool = true,
+        showsDivider _: Bool = true,  // 호환: 호출부 인자 유지, 내부적으론 사용 안 함
         @ViewBuilder icon: @escaping () -> Icon = { EmptyView() },
         @ViewBuilder trailing: @escaping () -> Trailing = { EmptyView() }
     ) {
         self.title = title
         self.titleColor = titleColor
-        self.showsDivider = showsDivider
         self.icon = icon
         self.trailing = trailing
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: DozySpacing.sm) {
-                icon()
-                Text(title)
-                    .font(DozyFont.body)
-                    .foregroundStyle(titleColor)
-                Spacer(minLength: DozySpacing.sm)
-                trailing()
-            }
-            .padding(.horizontal, DozySpacing.md)
-            .padding(.vertical, DozySpacing.sm)
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
+        HStack(spacing: DozySpacing.md) {
+            icon()
+            Text(title)
+                .font(DozyFont.bodyEmphasized)
+                .foregroundStyle(titleColor)
+            Spacer(minLength: DozySpacing.sm)
+            trailing()
+        }
+        .padding(.horizontal, DozySpacing.md)
+        .padding(.vertical, DozySpacing.md)
+        .frame(minHeight: 56)
+        .contentShape(Rectangle())
+    }
+}
 
-            if showsDivider {
-                Divider()
-                    .padding(.leading, DozySpacing.md)
-            }
+/// Brand color 가 칠해진 원 안에 system icon. row 의 icon 으로 사용.
+struct DozyTintedIcon: View {
+    let systemName: String?
+    let imageName: String?
+    let tint: Color
+
+    init(systemName: String, tint: Color = DozyColor.Brand.primary) {
+        self.systemName = systemName
+        self.imageName = nil
+        self.tint = tint
+    }
+
+    init(imageName: String, tint: Color = DozyColor.Brand.primary) {
+        self.systemName = nil
+        self.imageName = imageName
+        self.tint = tint
+    }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(tint.opacity(0.14))
+                .frame(width: 32, height: 32)
+            iconView
+                .foregroundStyle(tint)
+        }
+    }
+
+    @ViewBuilder
+    private var iconView: some View {
+        if let systemName {
+            Image(systemName: systemName)
+                .font(.system(size: 15, weight: .semibold))
+        } else if let imageName {
+            Image(imageName)
+                .resizable()
+                .renderingMode(.template)
+                .scaledToFit()
+                .frame(width: 18, height: 18)
         }
     }
 }
