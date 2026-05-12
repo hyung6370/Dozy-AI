@@ -93,13 +93,21 @@ struct DozyMainTabBar: View {
 
         return HStack(spacing: 0) {
             ForEach(leftTabs) { tab in
-                tabButton(for: tab)
+                TabBarItemView(
+                    tab: tab,
+                    isSelected: selection == tab,
+                    onTap: { handleTap(tab, isReselect: selection == tab) }
+                )
             }
             // 가운데 액션 슬롯 자리비움 (실제 버튼은 ZStack 상위에서 overlay).
             Color.clear
                 .frame(width: notchDiameter)
             ForEach(rightTabs) { tab in
-                tabButton(for: tab)
+                TabBarItemView(
+                    tab: tab,
+                    isSelected: selection == tab,
+                    onTap: { handleTap(tab, isReselect: selection == tab) }
+                )
             }
         }
         .frame(height: barHeight)
@@ -126,7 +134,7 @@ struct DozyMainTabBar: View {
             .padding(.vertical, DozySpacing.xxs)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TabIconBounceStyle())
         .accessibilityLabel(tab.accessibilityLabel)
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
     }
@@ -145,7 +153,7 @@ struct DozyMainTabBar: View {
             .frame(width: actionButtonDiameter, height: actionButtonDiameter)
             .contentShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TabIconBounceStyle())
         .accessibilityLabel("새 일정 만들기")
         .accessibilityAddTraits(.isButton)
     }
@@ -183,6 +191,79 @@ struct DozyMainTabBar: View {
     }
 
     private enum HapticStyle { case light, soft, medium }
+}
+
+// MARK: - Tap-bounce ButtonStyle
+
+/// 누르는 동안 살짝 작아지고 어두워졌다가 떼면 spring 으로 복귀. 탭바 아이콘에 적용.
+private struct TabIconBounceStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.85 : 1.0)
+            .opacity(configuration.isPressed ? 0.45 : 1.0)
+            .animation(.spring(response: 0.28, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}
+
+// MARK: - TabBarItemView (선택 시 keyframe 바운스 + 라벨 색 페이드)
+
+private struct TabBarItemView: View {
+    let tab: MainTab
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var bounceTrigger: Int = 0
+
+    private let selectedColor: Color = DozyColor.Text.primary
+    private let unselectedColor: Color = DozyColor.Text.secondary
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: DozySpacing.xxs) {
+                Image(tab.iconName(colorScheme: colorScheme, isSelected: isSelected))
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 26, height: 26)
+                    .keyframeAnimator(initialValue: 1.0, trigger: bounceTrigger) { view, scale in
+                        view.scaleEffect(scale)
+                    } keyframes: { _ in
+                        bounceTrack
+                    }
+
+                Text(tab.title)
+                    .font(DozyFont.caption2)
+                    .fontWeight(isSelected ? .semibold : .regular)
+                    .foregroundStyle(isSelected ? selectedColor : unselectedColor)
+                    .animation(.easeInOut(duration: 0.5), value: isSelected)
+                    .keyframeAnimator(initialValue: 1.0, trigger: bounceTrigger) { view, scale in
+                        view.scaleEffect(scale)
+                    } keyframes: { _ in
+                        bounceTrack
+                    }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, DozySpacing.xxs)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(TabIconBounceStyle())
+        .accessibilityLabel(tab.accessibilityLabel)
+        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
+        .onChange(of: isSelected) { _, newValue in
+            if newValue { bounceTrigger &+= 1 }
+        }
+    }
+
+    // 원본 UIKit CAKeyframeAnimation 의 [0.95, 1.15, 0.95, 1.05, 1.0] / keyTimes [0, .2, .4, .6, 1.0] 재현 (총 0.5초).
+    @KeyframeTrackContentBuilder<Double>
+    private var bounceTrack: some KeyframeTrackContent<Double> {
+        CubicKeyframe(0.95, duration: 0.0)
+        CubicKeyframe(1.15, duration: 0.1)
+        CubicKeyframe(0.95, duration: 0.1)
+        CubicKeyframe(1.05, duration: 0.1)
+        CubicKeyframe(1.00, duration: 0.2)
+    }
 }
 
 // MARK: - Preview
