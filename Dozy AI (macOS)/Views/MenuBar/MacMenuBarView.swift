@@ -152,9 +152,9 @@ struct MacMenuBarView: View {
     }
 
     private func focusLabel(isNow: Bool, isUpcoming: Bool) -> String {
-        if isNow { return "지금 일정" }
-        if isUpcoming { return "다음 일정" }
-        return "오늘 일정"
+        if isNow { return String(localized: "지금 일정") }
+        if isUpcoming { return String(localized: "다음 일정") }
+        return String(localized: "오늘 일정")
     }
 
     // MARK: - Event List

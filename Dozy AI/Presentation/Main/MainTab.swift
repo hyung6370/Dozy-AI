@@ -19,10 +19,10 @@ enum MainTab: Int, CaseIterable, Hashable, Identifiable {
 
     var title: String {
         switch self {
-        case .home:     return "홈"
-        case .calendar: return "캘린더"
-        case .insight:  return "인사이트"
-        case .settings: return "설정"
+        case .home:     return String(localized: "홈")
+        case .calendar: return String(localized: "캘린더")
+        case .insight:  return String(localized: "인사이트")
+        case .settings: return String(localized: "설정")
         }
     }
 

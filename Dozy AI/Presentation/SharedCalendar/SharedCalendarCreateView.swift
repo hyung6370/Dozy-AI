@@ -176,6 +176,6 @@ struct SharedCalendarCreateView: View {
     }
 
     private func shareText(code: String) -> String {
-        "Dozy AI 공유 캘린더에 초대됐어요! 📅\n코드: \(code)\n\n앱에서 '초대 코드로 참여하기'를 눌러 입력하세요."
+        String(localized: "Dozy AI 공유 캘린더에 초대됐어요! 📅\n코드: \(code)\n\n앱에서 '초대 코드로 참여하기'를 눌러 입력하세요.")
     }
 }
