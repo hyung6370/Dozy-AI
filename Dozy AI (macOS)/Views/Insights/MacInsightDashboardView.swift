@@ -274,8 +274,11 @@ struct MacInsightDashboardView: View {
     }
 
     private func trendLabel(for change: Double) -> String {
-        if abs(change) < 0.02 { return "이전과 동일" }
-        return "\(Int(abs(change) * 100))% \(change >= 0 ? "개선" : "감소")"
+        if abs(change) < 0.02 { return String(localized: "이전과 동일") }
+        let pct = Int(abs(change) * 100)
+        return change >= 0
+            ? String(localized: "\(pct)% 개선")
+            : String(localized: "\(pct)% 감소")
     }
 
     private func trendColor(for change: Double) -> Color {
@@ -290,7 +293,7 @@ struct MacInsightDashboardView: View {
         let isQuarter = viewModel.selectedPeriod == .quarter
         let useWeekly = isQuarter && !viewModel.weeklyCompletionRates.isEmpty
         let data = useWeekly ? viewModel.weeklyCompletionRates : viewModel.dailyCompletionRates
-        let title = useWeekly ? "주간 평균 완료율" : "일별 완료율"
+        let title: LocalizedStringKey = useWeekly ? "주간 평균 완료율" : "일별 완료율"
 
         return InsightCard(title: title, systemImage: "chart.line.uptrend.xyaxis", accent: .green) {
             if data.isEmpty {
@@ -485,7 +488,7 @@ struct MacInsightDashboardView: View {
 
     // MARK: - Helpers
 
-    private func cardEmpty(message: String) -> some View {
+    private func cardEmpty(message: LocalizedStringKey) -> some View {
         VStack(spacing: 8) {
             Image(systemName: "tray")
                 .font(.title2)
@@ -508,7 +511,7 @@ private extension Array {
 // MARK: - InsightCard Container
 
 private struct InsightCard<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let systemImage: String
     var accent: Color = .secondary
     @ViewBuilder let content: () -> Content

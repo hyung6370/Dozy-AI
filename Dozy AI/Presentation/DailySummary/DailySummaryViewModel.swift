@@ -68,12 +68,12 @@ final class DailySummaryViewModel: ObservableObject {
     var scoreBreakdown: [(label: String, value: Double, maxValue: Double)] {
         guard summary != nil else { return [] }
         let total = events.isEmpty ? 2.0 : Double(events.count)
-        return [("일정 완료율", Double(completedEventCount), total)]
+        return [(String(localized: "일정 완료율"), Double(completedEventCount), total)]
     }
 
     var peakHourLabel: String {
         guard let peak = hourlyActivities.max(by: { $0.totalCount < $1.totalCount }) else {
-            return "데이터 없음"
+            return String(localized: "데이터 없음")
         }
         return peak.label
     }
@@ -234,7 +234,9 @@ final class DailySummaryViewModel: ObservableObject {
 
             if task.priority == 1 || isOverdue {
                 priority = .critical
-                reason = isOverdue ? "마감일 초과" : "높은 우선순위"
+                reason = isOverdue
+                    ? String(localized: "마감일 초과")
+                    : String(localized: "높은 우선순위")
             } else if isDueSoon {
                 priority = .high
                 reason = "마감 임박 (\(task.dueDate?.formattedKorean ?? ""))"

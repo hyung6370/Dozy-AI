@@ -39,7 +39,7 @@ struct CategoryAnalysisView: View {
         }
         var peakHourLabel: String? {
             guard let h = peakHour else { return nil }
-            let p = h < 12 ? "오전" : "오후"
+            let p = h < 12 ? String(localized: "오전") : String(localized: "오후")
             let display = h == 0 ? 12 : (h > 12 ? h - 12 : h)
             return "\(p) \(display)시"
         }
@@ -168,7 +168,7 @@ struct CategoryAnalysisView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 
-    private func statCell(value: String, label: String, small: Bool = false) -> some View {
+    private func statCell(value: String, label: LocalizedStringKey, small: Bool = false) -> some View {
         VStack(spacing: 4) {
             Text(value)
                 .font(small ? .subheadline : .title2)
@@ -416,8 +416,12 @@ struct CategoryAnalysisView: View {
 
     private func minuteLabel(_ minutes: Int) -> String {
         let h = minutes / 60, m = minutes % 60
-        if h > 0 { return m > 0 ? "\(h)시간 \(m)분" : "\(h)시간" }
-        return "\(m)분"
+        if h > 0 {
+            return m > 0
+                ? String(localized: "\(h)시간 \(m)분")
+                : String(localized: "\(h)시간")
+        }
+        return String(localized: "\(m)분")
     }
 
     private func completionColor(_ rate: Double) -> Color {

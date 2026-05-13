@@ -122,7 +122,13 @@ struct InsightDashboardView: View {
     
     // MARK: - 요약 3종 카드
     private var summaryRow: some View {
-        let periodLabel = viewModel.selectedPeriod == .week ? "지난 7일" : viewModel.selectedPeriod == .month ? "지난 30일" : "지난 90일"
+        let periodLabel: String = {
+            switch viewModel.selectedPeriod {
+            case .week:    return String(localized: "지난 7일")
+            case .month:   return String(localized: "지난 30일")
+            case .quarter: return String(localized: "지난 90일")
+            }
+        }()
         return VStack(alignment: .leading, spacing: 8) {
             Text(periodLabel)
                 .font(.subheadline).fontWeight(.semibold)
@@ -190,8 +196,11 @@ struct InsightDashboardView: View {
     }
     
     private func trendLabel(for change: Double) -> String {
-        if abs(change) < 0.02 { return "이전과 동일" }
-        return "\(Int(abs(change) * 100))% \(change >= 0 ? "개선" : "감소")"
+        if abs(change) < 0.02 { return String(localized: "이전과 동일") }
+        let pct = Int(abs(change) * 100)
+        return change >= 0
+            ? String(localized: "\(pct)% 개선")
+            : String(localized: "\(pct)% 감소")
     }
     
     private func trendColor(for change: Double) -> Color {
@@ -298,7 +307,7 @@ struct InsightDashboardView: View {
     }
 
     // MARK: - 카드 Empty State 공통
-    private func cardEmptyState(icon: String = "tray", message: String) -> some View {
+    private func cardEmptyState(icon: String = "tray", message: LocalizedStringKey) -> some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 28))
@@ -316,7 +325,7 @@ struct InsightDashboardView: View {
         let isQuarter = viewModel.selectedPeriod == .quarter
         let useWeekly = isQuarter && !viewModel.weeklyCompletionRates.isEmpty
         let chartData = useWeekly ? viewModel.weeklyCompletionRates : viewModel.dailyCompletionRates
-        let chartTitle = useWeekly ? "주간 평균 완료율" : "일별 완료율"
+        let chartTitle: LocalizedStringKey = useWeekly ? "주간 평균 완료율" : "일별 완료율"
         let xUnit: Calendar.Component = useWeekly ? .weekOfYear : .day
         let xStride: Calendar.Component = viewModel.selectedPeriod == .week ? .day : .day
         let xStrideCount = viewModel.selectedPeriod == .week ? 1 : viewModel.selectedPeriod == .month ? 5 : 7
