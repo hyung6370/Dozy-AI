@@ -1,6 +1,7 @@
 {
   "sourceLanguage": "ko",
   "strings": {
+    "": {},
     "%@ %@": {
       "localizations": {
         "en": {
@@ -181,12 +182,42 @@
         }
       }
     },
+    "%lld개의 할 일을 완료했습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed %lld tasks"
+          }
+        }
+      }
+    },
+    "%lld개의 할 일을 완료했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed %lld tasks."
+          }
+        }
+      }
+    },
     "%lld건": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld events"
+          }
+        }
+      }
+    },
+    "%lld건의 회의에 참석했습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attended %lld meetings"
           }
         }
       }
@@ -331,6 +362,26 @@
         }
       }
     },
+    "'%@' 등 %lld건을 완료했습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed %1$@ and %2$lld more"
+          }
+        }
+      }
+    },
+    "'%@'에 %lld분을 사용했습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spent %2$lld min on '%1$@'"
+          }
+        }
+      }
+    },
     "'%@'에서 나가시겠습니까?\n소유자인 경우 캘린더 자체가 삭제됩니다.": {
       "localizations": {
         "en": {
@@ -347,6 +398,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete '%@'?\nEvents in this category will be moved to 'General'."
+          }
+        }
+      }
+    },
+    "(장소: %@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(Location: %@)"
           }
         }
       }
@@ -429,6 +490,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "30 days"
+          }
+        }
+      }
+    },
+    "4시간 이상 일정에 투입되어 바쁜 하루였습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A busy day — over 4 hours of events"
           }
         }
       }
@@ -998,6 +1069,16 @@
         }
       }
     },
+    "[우선순위: %@]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Priority: %@]"
+          }
+        }
+      }
+    },
     "a h:mm": {
       "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
       "localizations": {
@@ -1102,6 +1183,16 @@
         }
       }
     },
+    "⏰ %@ (마감 임박)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⏰ %@ (due soon)"
+          }
+        }
+      }
+    },
     "⚪ 낮음": {
       "localizations": {
         "en": {
@@ -1148,6 +1239,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Most time"
+          }
+        }
+      }
+    },
+    "가장 긴 일정은 '%@'(%lld분)이었습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The longest event was '%@' (%lld min)."
           }
         }
       }
@@ -1712,6 +1813,16 @@
         }
       }
     },
+    "낮음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low"
+          }
+        }
+      }
+    },
     "낮음 🔵": {
       "localizations": {
         "en": {
@@ -1808,6 +1919,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "High priority"
+          }
+        }
+      }
+    },
+    "높음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High"
           }
         }
       }
@@ -3368,6 +3489,16 @@
         }
       }
     },
+    "아직 %lld개의 할 일이 남아있습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tasks still remaining."
+          }
+        }
+      }
+    },
     "아직 분석할 데이터가 없어요": {
       "localizations": {
         "en": {
@@ -3638,6 +3769,16 @@
         }
       }
     },
+    "오늘 %lld건의 일정을 소화했습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Handled %lld events today"
+          }
+        }
+      }
+    },
     "오늘 %lld건의 일정을 소화했으며, 총 %@을 사용했습니다.": {
       "localizations": {
         "en": {
@@ -3728,12 +3869,32 @@
         }
       }
     },
+    "오늘: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today: %@"
+          }
+        }
+      }
+    },
     "오늘로 이동": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Jump to today"
+          }
+        }
+      }
+    },
+    "오늘은 기록된 활동이 없습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No activity recorded today."
           }
         }
       }
@@ -3834,6 +3995,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Done"
+          }
+        }
+      }
+    },
+    "완료 %lld건": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld done"
           }
         }
       }
@@ -4384,6 +4555,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Events"
+          }
+        }
+      }
+    },
+    "일정 %lld건": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld events"
           }
         }
       }
@@ -4958,6 +5139,26 @@
         }
       }
     },
+    "주요 키워드: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top keywords: %@"
+          }
+        }
+      }
+    },
+    "중간": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medium"
+          }
+        }
+      }
+    },
     "중간 🟡": {
       "localizations": {
         "en": {
@@ -5194,6 +5395,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld categories total"
+          }
+        }
+      }
+    },
+    "총 %lld건의 메모를 기록했습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded %lld memos."
           }
         }
       }
@@ -5969,6 +6180,7 @@
       }
     },
     "표시할 일정이 없습니다 ": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -6004,6 +6216,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Highlights"
+          }
+        }
+      }
+    },
+    "할 일 %lld개를 완료하여 생산적인 하루였습니다": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A productive day — completed %lld tasks"
           }
         }
       }
@@ -6164,6 +6386,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Uncommon and different from your email"
+          }
+        }
+      }
+    },
+    "📋 오늘 회의 내용 정리 및 액션 아이템 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📋 Review today's meetings and follow up on action items"
+          }
+        }
+      }
+    },
+    "📌 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📌 %@"
+          }
+        }
+      }
+    },
+    "📌 %@ 관련 일정 %lld건": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📌 %1$@: %2$lld events"
+          }
+        }
+      }
+    },
+    "📌 %@ 관련 일정 %lld건 (총 %lld분)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📌 %1$@: %2$lld events (%3$lld min total)"
+          }
+        }
+      }
+    },
+    "🔴 %@ (높은 우선순위)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔴 %@ (high priority)"
           }
         }
       }
