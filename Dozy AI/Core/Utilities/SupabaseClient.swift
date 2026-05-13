@@ -44,7 +44,14 @@ private func buildSupabaseClient() -> SupabaseClient {
         supabaseURL: url,
         supabaseKey: key,
         options: .init(
-            auth: .init(emitLocalSessionAsInitialSession: true)
+            auth: .init(
+                // ⚠️ macOS 리뷰 리젝 (4e056eac) 해결 — 기본 KeychainLocalStorage 가
+                // macOS legacy file-based keychain 사용해 첫 실행 시 user 의 login
+                // keychain password prompt 가 떴음. DozyAuthLocalStorage 는
+                // `kSecUseDataProtectionKeychain` 으로 modern keychain 사용 → prompt 없음.
+                storage: DozyAuthLocalStorage(),
+                emitLocalSessionAsInitialSession: true
+            )
         )
     )
 }

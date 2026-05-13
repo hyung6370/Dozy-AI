@@ -30,6 +30,8 @@
 		2F16FD3572FB995C65234361 /* PatternAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69172F6ACF52001952F6 /* PatternAnalysisService.swift */; };
 		2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */; };
 		39A4996D001E00D247983089 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E74C13AD0E4860A1AE7875 /* KeychainService.swift */; };
+		D02ABBBB000000000000B30A /* SupabaseAuthLocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */; };
+		D02ABBBB000000000000B30B /* SupabaseAuthLocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */; };
 		39E750FF5E4697B62A014898 /* EventDisplaySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68E32F8642C7003464E8 /* EventDisplaySettings.swift */; };
 		3C6B0B259D5341C0BD01E8CA /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52E9135FC4F4C559A927798 /* WeatherService.swift */; };
 		3DFD22C6D26E2AA1F6EA12D4 /* ActiveSharedCalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */; };
@@ -466,6 +468,7 @@
 		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
 		672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthLocalStorage.swift; sourceTree = "<group>"; };
 		6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorExternalEventUseCase.swift; sourceTree = "<group>"; };
 		741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarMember.swift; sourceTree = "<group>"; };
 		81F2A847B998470E88E165D7 /* Production.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Production.xcconfig; sourceTree = "<group>"; };
@@ -1094,6 +1097,7 @@
 				DD9F68E92F6ACD2E001952F6 /* Logger.swift */,
 				F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */,
 				68E74C13AD0E4860A1AE7875 /* KeychainService.swift */,
+				D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */,
 				3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */,
 			);
 			path = Utilities;
@@ -1934,6 +1938,7 @@
 				F619D9442F74AF0100084C61 /* MetaChip.swift in Sources */,
 				F60ADF102F7FB29C007B8D9F /* AuthError.swift in Sources */,
 				D7D381B161C94627AA0D0479 /* KeychainService.swift in Sources */,
+				D02ABBBB000000000000B30A /* SupabaseAuthLocalStorage.swift in Sources */,
 				60321A7CA4214E30AD5EA56A /* NetworkMonitor.swift in Sources */,
 				F616DCD92F7B83DD00FA0476 /* HomeTabBar.swift in Sources */,
 				F65068352F7DFB6600F9C124 /* MonthWeekRowView.swift in Sources */,
@@ -2175,6 +2180,7 @@
 				9B076DE9625C6E9E584D4664 /* AIPromptBuilder.swift in Sources */,
 				8D90C92C9BDAC78D208FDC0E /* AuthError.swift in Sources */,
 				39A4996D001E00D247983089 /* KeychainService.swift in Sources */,
+				D02ABBBB000000000000B30B /* SupabaseAuthLocalStorage.swift in Sources */,
 				F6EC8AF72F9995BF00CFFF87 /* MacLoginView.swift in Sources */,
 				21266466DFC04FD2BB5E0CFB /* NetworkMonitor.swift in Sources */,
 				50EC191D983750D6731F17D8 /* Color+Hex.swift in Sources */,

@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dozy"
+          }
+        }
+      }
+    },
     "CFBundleName" : {
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
@@ -8,7 +20,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dozy AI"
+            "value" : "Dozy AI (macOS)"
           }
         }
       }
@@ -48,18 +60,6 @@
         }
       }
     },
-    "NSFaceIDUsageDescription" : {
-      "comment" : "Privacy - Face ID Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "편리한 인증을 위해 필요합니다."
-          }
-        }
-      }
-    },
     "NSLocationWhenInUseUsageDescription" : {
       "comment" : "Location access prompt — used by the weather card on the Today tab.",
       "localizations" : {
@@ -79,6 +79,7 @@
     },
     "NSMicrophoneUsageDescription" : {
       "comment" : "Microphone prompt — used alongside speech recognition for voice memos.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -96,6 +97,7 @@
     },
     "NSRemindersFullAccessUsageDescription" : {
       "comment" : "Reminders access prompt.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -113,6 +115,7 @@
     },
     "NSSpeechRecognitionUsageDescription" : {
       "comment" : "Speech recognition prompt — used by the voice memo / voice input feature.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

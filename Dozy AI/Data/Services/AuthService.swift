@@ -550,11 +550,27 @@ final class AppleSignInDelegate: NSObject,
 
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         #if os(iOS)
+        // 활성 foreground scene 의 key window 를 우선 반환. nil 이면 새 UIWindow() 가
+        // 시스템 시트 attach 대상이 없는 phantom anchor 가 되므로 ASPresentationAnchor()
+        // 빈 객체 대신 가능한 실제 표시 중인 window 를 찾는다.
+        let scenes = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .filter { $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive }
+        if let key = scenes.flatMap({ $0.windows }).first(where: { $0.isKeyWindow }) { return key }
+        if let any = scenes.flatMap({ $0.windows }).first(where: { !$0.isHidden }) { return any }
         return UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first?.windows.first ?? UIWindow()
         #elseif os(macOS)
-        return NSApplication.shared.keyWindow ?? NSApplication.shared.windows.first ?? NSWindow()
+        // App Store 리뷰 리젝 원인 — 기존 fallback `NSWindow()` 가 화면에 attach 되지 않은
+        // phantom window 를 반환해 Sign-In-with-Apple 시트가 보이지 않거나 콜백이 유실됐다.
+        // visible 한 실제 window 만 반환하도록 강화.
+        if let key = NSApplication.shared.keyWindow, key.isVisible { return key }
+        if let main = NSApplication.shared.mainWindow, main.isVisible { return main }
+        if let visible = NSApplication.shared.windows.first(where: { $0.isVisible }) { return visible }
+        // 모든 window 가 invisible 인 비정상 상황 — 그래도 phantom NSWindow 보다는
+        // 첫 등록 window 가 안전. 보통 이 분기까지 오지 않음.
+        return NSApplication.shared.windows.first ?? NSWindow()
         #endif
     }
 }
