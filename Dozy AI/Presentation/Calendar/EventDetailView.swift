@@ -147,7 +147,7 @@ struct EventDetailView: View {
                     Text(event.calendarName)
                         .font(.caption).foregroundStyle(.secondary)
                     if let partnerTag {
-                        Text("·").font(.caption).foregroundStyle(.tertiary)
+                        Text(verbatim: "·").font(.caption).foregroundStyle(.tertiary)
                         Label(partnerTag, systemImage: "person.fill")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
@@ -225,7 +225,7 @@ struct EventDetailView: View {
             
             ForEach(Array(memos.enumerated()), id: \.offset) { index, memo in
                 HStack(alignment: .top, spacing: 8) {
-                    Text("📝").font(.subheadline)
+                    Text(verbatim: "📝").font(.subheadline)
                     Text(memo)
                         .font(.subheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -352,7 +352,7 @@ struct EventDetailView: View {
                 Label("상단 고정", systemImage: dozyEvent.isPinned ? "pin.fill" : "pin")
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text(dozyEvent.isPinned ? "ON" : "OFF")
+                Text(verbatim: dozyEvent.isPinned ? "ON" : "OFF")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -386,10 +386,10 @@ struct EventDetailView: View {
 
     private func priorityLabel(_ value: Int) -> String {
         switch value {
-        case 1: return "높음 🔴"
-        case 2: return "중간 🟡"
-        case 3: return "낮음 🔵"
-        default: return "없음"
+        case 1: return String(localized: "높음 🔴")
+        case 2: return String(localized: "중간 🟡")
+        case 3: return String(localized: "낮음 🔵")
+        default: return String(localized: "없음")
         }
     }
 
@@ -604,7 +604,8 @@ struct EventDetailView: View {
     // MARK: - Helpers
     
     private var timeString: String {
-        if event.isAllDay { return "종일" }
+        if event.isAllDay { return String(localized: "종일") }
+        // DateFormatter 패턴 자체가 한글 literal 을 포함 — locale-aware 포맷팅은 PR #7 에서 마이그레이션.
         let fmt = DateFormatter()
         fmt.dateFormat = "M월 d일 (E) HH:mm"
         fmt.locale = Locale(identifier: "ko_KR")
@@ -626,19 +627,19 @@ struct EventDetailView: View {
     
     private func recurrenceLabel(_ rule: String) -> String {
         switch rule {
-        case "daily": return "매일"
-        case "weekly": return "매주"
-        case "monthly": return "매월"
-        case "yearly": return "매년"
+        case "daily": return String(localized: "매일")
+        case "weekly": return String(localized: "매주")
+        case "monthly": return String(localized: "매월")
+        case "yearly": return String(localized: "매년")
         default: return ""
         }
     }
-    
+
     private func notificationLabel(_ minutes: Int) -> String {
         switch minutes {
-        case 0: return "정시"
-        case 60: return "1시간 전"
-        default: return "\(minutes)분 전"
+        case 0: return String(localized: "정시")
+        case 60: return String(localized: "1시간 전")
+        default: return String(localized: "\(minutes)분 전")
         }
     }
 }
@@ -647,7 +648,7 @@ struct EventDetailView: View {
 
 private struct DetailRow: View {
     let icon: String
-    let label: String
+    let label: LocalizedStringKey
     let value: String
     
     var body: some View {

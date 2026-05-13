@@ -340,7 +340,7 @@ struct MacEventDetailView: View {
 
     @ViewBuilder
     private func timeSubRow(
-        label: String,
+        label: LocalizedStringKey,
         date: Binding<Date>,
         components: DatePickerComponents,
         lowerBound: Date?
@@ -578,7 +578,7 @@ struct MacEventDetailView: View {
 
 private struct EditRow<Content: View>: View {
     let icon: String
-    let label: String
+    let label: LocalizedStringKey
     @ViewBuilder var content: () -> Content
 
     var body: some View {
@@ -612,7 +612,7 @@ private struct MacMemoRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            Text("📝").font(.subheadline)
+            Text(verbatim: "📝").font(.subheadline)
             Text(memo)
                 .font(.subheadline)
                 .frame(maxWidth: .infinity, alignment: .leading)
