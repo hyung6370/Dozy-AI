@@ -252,8 +252,8 @@ final class CalendarViewModel: ObservableObject {
     
     var currentMonthString: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy년 M월"
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.dateFormat = String(localized: "yyyy년 M월")
+        fmt.locale = .current
         return fmt.string(from: currentMonth)
     }
     
@@ -266,19 +266,19 @@ final class CalendarViewModel: ObservableObject {
     
     var currentPeriodString: String {
         let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.locale = .current
         switch viewMode {
         case .month:
-            fmt.dateFormat = "yyyy년 M월"
+            fmt.dateFormat = String(localized: "yyyy년 M월")
             return fmt.string(from: currentMonth)
         case .week:
-            fmt.dateFormat = "M월 d일"
+            fmt.dateFormat = String(localized: "M월 d일")
             let dates = currentWeekDates
             let start = fmt.string(from: dates.first ?? selectedDate)
             let end = fmt.string(from: dates.last ?? selectedDate)
             return "\(start) - \(end)"
         case .day:
-            fmt.dateFormat = "yyyy년 M월 d일 (E)"
+            fmt.dateFormat = String(localized: "yyyy년 M월 d일 (E)")
             return fmt.string(from: selectedDate)
         }
     }

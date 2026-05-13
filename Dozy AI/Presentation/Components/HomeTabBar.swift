@@ -84,7 +84,7 @@ struct WeeklyDayRow: View {
 
     private var dayString: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
+        f.locale = .current
         f.dateFormat = "E M/d"
         return f.string(from: date)
     }

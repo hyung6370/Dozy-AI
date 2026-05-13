@@ -25,8 +25,8 @@ struct HomeTopBarView: View {
 
     private var todayString: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "M월 d일 EEEE"
+        formatter.locale = .current
+        formatter.dateFormat = String(localized: "M월 d일 EEEE")
         return formatter.string(from: Date())
     }
 

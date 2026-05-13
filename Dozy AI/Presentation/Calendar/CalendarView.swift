@@ -668,7 +668,7 @@ struct CalendarView: View {
     private func longPressAlertMessage() -> some View {
         if let date = longPressDate {
             let formatter = DateFormatter()
-            let _ = { formatter.locale = Locale(identifier: "ko_KR"); formatter.dateFormat = "M월 d일(E)" }()
+            let _ = { formatter.locale = .current; formatter.dateFormat = String(localized: "M월 d일(E)") }()
             Text("\(formatter.string(from: date))에 일정을 생성하시겠습니까?")
         }
     }
@@ -684,8 +684,8 @@ struct CalendarView: View {
 
     private var selectedDateLabel: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "M월 d일 (E)"
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.dateFormat = String(localized: "M월 d일 (E)")
+        fmt.locale = .current
         return fmt.string(from: viewModel.selectedDate)
     }
     
@@ -713,7 +713,7 @@ private struct DatePickerSheetView: View {
         NavigationStack {
             DatePicker("날짜 선택", selection: $selectedDate, displayedComponents: .date)
                 .datePickerStyle(.graphical)
-                .environment(\.locale, Locale(identifier: "ko_KR"))
+                .environment(\.locale, .current)
                 .padding(.horizontal)
             .navigationTitle("날짜 이동")
             .navigationBarTitleDisplayMode(.inline)

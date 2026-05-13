@@ -61,24 +61,24 @@ final class MacCalendarViewModel: ObservableObject {
 
     var monthTitle: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
+        f.locale = .current
         switch viewMode {
-        case .month: f.dateFormat = "yyyy년 M월"
+        case .month: f.dateFormat = String(localized: "yyyy년 M월")
         case .week:
             let weekStart = Self.startOfWeek(for: currentMonth)
             let weekEnd = Calendar.current.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
-            f.dateFormat = "M월 d일"
+            f.dateFormat = String(localized: "M월 d일")
             return "\(f.string(from: weekStart)) - \(f.string(from: weekEnd))"
         case .day:
-            f.dateFormat = "yyyy년 M월 d일 EEEE"
+            f.dateFormat = String(localized: "yyyy년 M월 d일 EEEE")
         }
         return f.string(from: currentMonth)
     }
 
     var selectedDateTitle: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "M월 d일 EEEE"
+        f.locale = .current
+        f.dateFormat = String(localized: "M월 d일 EEEE")
         return f.string(from: selectedDate)
     }
 

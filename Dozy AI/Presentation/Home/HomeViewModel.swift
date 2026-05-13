@@ -91,8 +91,8 @@ final class HomeViewModel: ObservableObject {
     
     var currentMonthString: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "yyyy년 M월"
+        formatter.locale = .current
+        formatter.dateFormat = String(localized: "yyyy년 M월")
         return formatter.string(from: Date())
     }
     

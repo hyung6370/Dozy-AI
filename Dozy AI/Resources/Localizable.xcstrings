@@ -184,9 +184,21 @@
     "1시간 전": {
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1 hour before"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 hour before"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hours before"
+                }
+              }
+            }
           }
         }
       }
@@ -471,6 +483,61 @@
         }
       }
     },
+    "M월 d일": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MMM d"
+          }
+        }
+      }
+    },
+    "M월 d일 (E)": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MMM d (EEE)"
+          }
+        }
+      }
+    },
+    "M월 d일 (E) HH:mm": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MMM d (EEE) HH:mm"
+          }
+        }
+      }
+    },
+    "M월 d일 EEEE": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EEEE, MMM d"
+          }
+        }
+      }
+    },
+    "M월 d일(E)": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MMM d (EEE)"
+          }
+        }
+      }
+    },
     "OFF": {
       "localizations": {
         "en": {
@@ -487,6 +554,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "ON"
+          }
+        }
+      }
+    },
+    "a h:mm": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "h:mm a"
           }
         }
       }
@@ -527,6 +605,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Standard macOS background — sidebar material as-is."
+          }
+        }
+      }
+    },
+    "yyyy년 M월": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MMMM yyyy"
+          }
+        }
+      }
+    },
+    "yyyy년 M월 d일 (E)": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EEE, MMM d, yyyy"
+          }
+        }
+      }
+    },
+    "yyyy년 M월 d일 EEEE": {
+      "comment": "ICU date format pattern — must produce a date string, not user-facing text.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EEEE, MMM d, yyyy"
           }
         }
       }
@@ -1454,9 +1565,21 @@
     "비밀번호 %lld회 틀렸어요.": {
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Password incorrect %lld times."
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Password incorrect %lld time."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Password incorrect %lld times."
+                }
+              }
+            }
           }
         }
       }
@@ -1464,9 +1587,21 @@
     "비밀번호 %lld회 틀렸어요. 재설정해보세요.": {
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Password incorrect %lld times. Try resetting it."
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Password incorrect %lld time. Try resetting it."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Password incorrect %lld times. Try resetting it."
+                }
+              }
+            }
           }
         }
       }
@@ -1534,9 +1669,21 @@
     "비밀번호를 %lld회 틀리셨습니다": {
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Password incorrect %lld times"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Password incorrect %lld time"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Password incorrect %lld times"
+                }
+              }
+            }
           }
         }
       }

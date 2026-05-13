@@ -15,7 +15,7 @@ extension Locale {
     /// 한국어 + 24시간 hourCycle 강제. DatePicker 가 시스템 12/24h 설정과 무관하게
     /// 24시간으로 동작 — 시작/종료 시각에 18 입력 시 자동 18:00 으로 인식됨.
     static let koreanForce24h: Locale = {
-        var components = Locale.Components(locale: Locale(identifier: "ko_KR"))
+        var components = Locale.Components(locale: .current)
         components.hourCycle = .zeroToTwentyThree
         return Locale(components: components)
     }()

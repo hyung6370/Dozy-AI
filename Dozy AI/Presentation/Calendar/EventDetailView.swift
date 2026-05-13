@@ -607,8 +607,8 @@ struct EventDetailView: View {
         if event.isAllDay { return String(localized: "종일") }
         // DateFormatter 패턴 자체가 한글 literal 을 포함 — locale-aware 포맷팅은 PR #7 에서 마이그레이션.
         let fmt = DateFormatter()
-        fmt.dateFormat = "M월 d일 (E) HH:mm"
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.dateFormat = String(localized: "M월 d일 (E) HH:mm")
+        fmt.locale = .current
         let start = fmt.string(from: event.startDate)
         fmt.dateFormat = "HH:mm"
         let end = fmt.string(from: event.endDate)
