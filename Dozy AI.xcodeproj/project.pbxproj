@@ -658,6 +658,12 @@
 		F63A13F02FB60003006C580D /* WidgetTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13EF2FB60003006C580D /* WidgetTheme.swift */; };
 		D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleEventCompletionIntent.swift; sourceTree = "<group>"; };
 		D02ATOGGLE000000000000A02 /* ToggleEventCompletionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */; };
+		D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryCircularView.swift; sourceTree = "<group>"; };
+		D02AACCESS000000000000B02 /* TodayEventsAccessoryCircularView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */; };
+		D02AACCESS000000000000B03 /* TodayEventsAccessoryRectangularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryRectangularView.swift; sourceTree = "<group>"; };
+		D02AACCESS000000000000B04 /* TodayEventsAccessoryRectangularView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AACCESS000000000000B03 /* TodayEventsAccessoryRectangularView.swift */; };
+		D02AACCESS000000000000B05 /* TodayEventsAccessoryInlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryInlineView.swift; sourceTree = "<group>"; };
+		D02AACCESS000000000000B06 /* TodayEventsAccessoryInlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AACCESS000000000000B05 /* TodayEventsAccessoryInlineView.swift */; };
 		F619D96C2F7A355C00084C61 /* DozyEventRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyEventRepositoryProtocol.swift; sourceTree = "<group>"; };
 		F619D96E2F7A35BA00084C61 /* FetchCalendarEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventUseCase.swift; sourceTree = "<group>"; };
 		F619D9702F7A360D00084C61 /* FetchDozyEventsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchDozyEventsUseCase.swift; sourceTree = "<group>"; };
@@ -1440,6 +1446,9 @@
 				F63A13BA2FB5537A006C580D /* TodayEventsSmallView.swift */,
 				F63A13BC2FB55388006C580D /* TodayEventsMediumView.swift */,
 				F63A13BE2FB55393006C580D /* TodayEventsLargeView.swift */,
+				D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */,
+				D02AACCESS000000000000B03 /* TodayEventsAccessoryRectangularView.swift */,
+				D02AACCESS000000000000B05 /* TodayEventsAccessoryInlineView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2228,6 +2237,9 @@
 				D02ABBBB000000000000C50B /* DozyBackgroundTheme.swift in Sources */,
 				F63A13F02FB60003006C580D /* WidgetTheme.swift in Sources */,
 				D02ATOGGLE000000000000A02 /* ToggleEventCompletionIntent.swift in Sources */,
+				D02AACCESS000000000000B02 /* TodayEventsAccessoryCircularView.swift in Sources */,
+				D02AACCESS000000000000B04 /* TodayEventsAccessoryRectangularView.swift in Sources */,
+				D02AACCESS000000000000B06 /* TodayEventsAccessoryInlineView.swift in Sources */,
 				F63A13B42FB55331006C580D /* TodayEventsProvider.swift in Sources */,
 				F63A13BB2FB5537A006C580D /* TodayEventsSmallView.swift in Sources */,
 				F63A13AB2FB551E7006C580D /* UserCategory.swift in Sources */,

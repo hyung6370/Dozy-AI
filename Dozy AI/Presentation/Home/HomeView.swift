@@ -30,6 +30,8 @@ struct HomeView: View {
     @State private var showCreateFromEmptyAlert = false
     @State private var showNewEventSheet = false
     @State private var showSharedCalendar = false
+    /// 위젯 (accessoryRectangular) 탭으로 받은 eventID — todayEvents 가 아직 로드 전이면 보류.
+    @State private var pendingWidgetEventID: String? = nil
 
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
@@ -129,6 +131,24 @@ struct HomeView: View {
             }
             .onChange(of: selectedTab) { _, newTab in
                 if newTab == 0 { viewModel.loadTodayData() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenEventDetail)) { notification in
+                // 위젯 accessoryRectangular 탭 → 해당 eventID 의 상세 시트 오픈.
+                // todayEvents 가 이미 로드돼 있으면 즉시 표시, 아니면 보류했다가 로드 후 시도.
+                guard let id = notification.object as? String else { return }
+                if let event = viewModel.todayEvents.first(where: { $0.id == id }) {
+                    selectedEvent = event
+                } else {
+                    pendingWidgetEventID = id
+                    viewModel.loadTodayData()
+                }
+            }
+            .onChange(of: viewModel.todayEvents.count) { _, _ in
+                // todayEvents 가 새로 로드된 직후, 보류된 widget eventID 가 있으면 해소.
+                guard let id = pendingWidgetEventID,
+                      let event = viewModel.todayEvents.first(where: { $0.id == id }) else { return }
+                selectedEvent = event
+                pendingWidgetEventID = nil
             }
             .alert("권한 필요", isPresented: $viewModel.showPermissionAlert) {
                 Button("설정 열기") {

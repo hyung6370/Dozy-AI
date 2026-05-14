@@ -163,6 +163,22 @@ struct MainTabView: View {
         .onChange(of: selection) { _, newTab in
             if newTab == .calendar { calendarViewModel.refreshData() }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenAddEvent)) { _ in
+            // 잠금화면 위젯 accessoryCircular 의 widgetURL 탭으로 들어옴 →
+            // 홈 탭으로 이동 후 일정 생성 바텀시트 오픈.
+            selection = .home
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
+                showCreateEvent = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenCalendar)) { _ in
+            // systemLarge 위젯의 미니 캘린더 / 하단 일정 리스트 탭 → 캘린더 탭으로 이동.
+            selection = .calendar
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenEventDetail)) { _ in
+            // accessoryRectangular 탭 → 홈 탭으로 먼저 이동. 상세 시트 띄우기는 HomeView 가 처리.
+            selection = .home
+        }
         .sheet(item: Binding(
             get: { authViewModel.pendingInviteCode.map { InviteCodeWrapper(code: $0) } },
             set: { if $0 == nil { authViewModel.pendingInviteCode = nil } }

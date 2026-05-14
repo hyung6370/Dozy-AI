@@ -25,18 +25,27 @@ struct TodayEventsLargeView: View {
                 .padding(.bottom, 6)
 
             // 미니 월간 캘린더 — vertical 공간을 모두 차지.
-            MonthGrid(
-                referenceDate: entry.date,
-                eventDates: entry.monthEventDates
-            )
-            .frame(maxHeight: .infinity)
+            // Link 로 감싸 탭 시 메인 앱의 캘린더 탭으로 deep link.
+            Link(destination: URL(string: "dozy-ai://calendar")!) {
+                MonthGrid(
+                    referenceDate: entry.date,
+                    eventDates: entry.monthEventDates
+                )
+                .frame(maxHeight: .infinity)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
 
             // Divider — 캘린더와 일정 리스트 시각 분리.
             Divider()
                 .padding(.vertical, 6)
 
-            // 하단 일정 리스트 — 다음 일정 최대 3개.
-            eventsFooter
+            // 하단 일정 리스트 — 다음 일정 최대 3개. 탭 시 캘린더 탭으로 deep link.
+            Link(destination: URL(string: "dozy-ai://calendar")!) {
+                eventsFooter
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(14)

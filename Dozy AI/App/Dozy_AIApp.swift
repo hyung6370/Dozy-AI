@@ -50,6 +50,7 @@ struct Dozy_AIApp: App {
                 GIDSignIn.sharedInstance.handle(url)
                 _ = container.naverSignInService.handle(url: url)
                 handleUniversalLink(url, authViewModel: authViewModel)
+                handleWidgetDeepLink(url)
             }
             .onAppear {
                 Task {
@@ -60,6 +61,29 @@ struct Dozy_AIApp: App {
             .environmentObject(authViewModel)
     }
 
+    /// 위젯의 widgetURL/Link 탭으로 들어온 deep link 처리.
+    /// 지원 URL:
+    /// - `dozy-ai://add-event` → 일정 추가 시트
+    /// - `dozy-ai://calendar` → 캘린더 탭
+    /// - `dozy-ai://event-detail?id=<id>` → 해당 일정 상세 시트
+    private func handleWidgetDeepLink(_ url: URL) {
+        guard url.scheme == "dozy-ai" else { return }
+        let host = url.host?.lowercased() ?? url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/")).lowercased()
+        switch host {
+        case "add-event":
+            NotificationCenter.default.post(name: .dozyWidgetOpenAddEvent, object: nil)
+        case "calendar":
+            NotificationCenter.default.post(name: .dozyWidgetOpenCalendar, object: nil)
+        case "event-detail":
+            let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            if let id = components?.queryItems?.first(where: { $0.name == "id" })?.value, !id.isEmpty {
+                NotificationCenter.default.post(name: .dozyWidgetOpenEventDetail, object: id)
+            }
+        default:
+            break
+        }
+    }
+
     private func handleUniversalLink(_ url: URL, authViewModel: AuthViewModel) {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
               ["dozyapp.kr", "www.dozyapp.kr"].contains(components.host),
@@ -68,6 +92,24 @@ struct Dozy_AIApp: App {
               !code.isEmpty else { return }
         authViewModel.pendingInviteCode = code
     }
+}
+
+// MARK: - Widget Deep Link Notifications
+
+extension Notification.Name {
+    /// 위젯 (accessoryCircular) 에서 일정 추가 시트 오픈 요청.
+    /// `Dozy_AIApp.handleWidgetDeepLink` 가 `dozy-ai://add-event` 수신 시 post.
+    /// `MainTabView` 가 observe 해서 홈 탭으로 이동 + `showCreateEvent = true`.
+    static let dozyWidgetOpenAddEvent = Notification.Name("dozyWidgetOpenAddEvent")
+
+    /// 위젯 (systemLarge 의 미니 캘린더, 하단 일정 리스트) 탭으로 들어옴 → 캘린더 탭으로 이동.
+    /// `dozy-ai://calendar` 수신 시 post.
+    static let dozyWidgetOpenCalendar = Notification.Name("dozyWidgetOpenCalendar")
+
+    /// 위젯 (accessoryRectangular 잠금화면) 탭으로 들어옴 → 해당 일정 상세 시트 오픈.
+    /// `dozy-ai://event-detail?id=<id>` 수신 시 eventID 를 `object` 로 post.
+    /// `MainTabView` 가 홈 탭으로 이동시키고, `HomeView` 가 events 목록에서 찾아 selectedEvent 설정.
+    static let dozyWidgetOpenEventDetail = Notification.Name("dozyWidgetOpenEventDetail")
 }
 
 // MARK: - AppCoordinator

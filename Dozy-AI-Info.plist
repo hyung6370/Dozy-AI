@@ -16,6 +16,14 @@
 				<string>naverlogin-$(NAVER_CLIENT_ID)</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.dozy-ai.Dozy-AI</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dozy-ai</string>
+			</array>
+		</dict>
 	</array>
 	<key>GIDClientID</key>
 	<string>$(GOOGLE_CLIENT_ID)</string>

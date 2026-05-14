@@ -22,6 +22,15 @@ struct TodayEventsMediumView: View {
         )
     }
 
+    /// 헤더 타이틀 — "5월 14일 (오늘 일정)" 형태. 로케일에 따라 date 부분만 자동 포맷.
+    private var headerTitle: String {
+        let f = DateFormatter()
+        f.locale = .current
+        f.dateFormat = String(localized: "M월 d일")
+        let dateString = f.string(from: entry.date)
+        return "\(dateString) (\(String(localized: "오늘 일정")))"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
@@ -30,7 +39,7 @@ struct TodayEventsMediumView: View {
                     .interpolation(.high)
                     .frame(width: 20, height: 20)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-                Text("오늘 일정")
+                Text(verbatim: headerTitle)
                     .font(.headline)
                 Spacer()
                 Text(verbatim: "\(entry.completedCount) / \(entry.totalCount)")
@@ -78,12 +87,12 @@ struct TodayEventsMediumView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(ev.title)
-                    .font(.subheadline.weight(ev.isCompleted ? .regular : .medium))
+                    .font(.footnote.weight(ev.isCompleted ? .regular : .medium))
                     .foregroundStyle(ev.isCompleted ? .secondary : .primary)
                     .strikethrough(ev.isCompleted, color: .secondary)
                     .lineLimit(1)
                 Text(ev.timeRangeString)
-                    .font(.caption2)
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
             }
