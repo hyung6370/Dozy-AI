@@ -126,6 +126,11 @@ final class HomeViewModel: ObservableObject {
     private var todayDataCancellable: AnyCancellable?
     private var completionFetchCancellable: AnyCancellable?
 
+    /// `loadTodayData()` 호출은 짧은 시간에 여러 트리거 (onAppear + selectedTab + dozyEventChanged
+    /// + 위젯 deep link 등) 가 거의 동시에 발화될 수 있음. PassthroughSubject 로 우회시켜
+    /// throttle 로 burst 를 1회 fetch 로 합친다. latest:true 라 마지막 요청도 보장.
+    private let loadTodaySubject = PassthroughSubject<Void, Never>()
+
     // MARK: - Init
 
     init(
@@ -166,7 +171,16 @@ final class HomeViewModel: ObservableObject {
         self.displaySettingsRepo = displaySettingsRepo
         self.notificationRepository = notificationRepository
         self.modelContainer = modelContainer
-        
+
+        // throttle 구독 — 첫 호출은 즉시, 같은 윈도우(300ms) 안의 burst 는 1회로 합친 뒤
+        // 마지막 호출 시점에 한 번 더 실행 (latest: true).
+        loadTodaySubject
+            .throttle(for: .milliseconds(300), scheduler: DispatchQueue.main, latest: true)
+            .sink { [weak self] _ in
+                self?.performLoadTodayData()
+            }
+            .store(in: &cancellables)
+
         googleSignInService.$isSignedIn
             .removeDuplicates()
             .dropFirst()
@@ -244,7 +258,13 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - 데이터 로드
 
+    /// 외부에서 호출하는 공개 진입점 — 실제 fetch 는 throttle 거쳐 `performLoadTodayData` 에서 실행.
+    /// 같은 trigger 가 burst 로 들어와도 (onAppear + 위젯 deep link + 탭 전환 등) 1회로 합쳐짐.
     func loadTodayData() {
+        loadTodaySubject.send(())
+    }
+
+    private func performLoadTodayData() {
         isLoading = true
         errorMessage = nil
 
@@ -279,14 +299,17 @@ final class HomeViewModel: ObservableObject {
                     )
                     // Large 위젯의 미니 캘린더에서 일정 있는 날 dot 표시용 — 이번 달
                     // 일정 전체를 별도 fetch 해 dates Set 을 App Group UserDefaults 에 캐싱.
+                    // 자체 reload 는 생략 — loadCompletions 의 최종 reload 1회로 통합 (line 372).
                     self.refreshMonthEventDatesForWidget()
+                    // 1차 reload — 일정 리스트 자체를 즉시 보여주기 위함. 완료 상태는 곧
+                    // 이어지는 loadCompletions 의 2차 reload 에서 반영.
                     WidgetCenter.shared.reloadAllTimelines()
                 }
             )
 
-        loadRecentLogs()
-        loadWeeklyData()
-        loadMonthlyData()
+        // recentLogs / weeklyData / monthlyData 는 홈 화면에서 표시하지 않으므로 매번 호출하지 않음.
+        // (이전: loadTodayData 마다 28 + α 의 추가 fetch 가 발생했음)
+        // 인사이트 탭이 실제로 이 데이터를 쓰는 시점에 직접 호출하도록 변경.
     }
 
     /// Large 위젯의 미니 캘린더 dot indicator 용 — 이번 달 일정 전체를 fetch 해
@@ -316,8 +339,8 @@ final class HomeViewModel: ObservableObject {
                     print("✅ [Home] month fetch 완료: \(events.count) events")
                     #endif
                     TodayEventCacheWriter.updateMonthEventDates(events)
-                    // dates 만 바뀐 경우에도 위젯 reload — 작은 dot 변화도 즉시 반영.
-                    WidgetCenter.shared.reloadAllTimelines()
+                    // dot 만 갱신용 — 명시적으로 reload 는 안 부름. 같은 loadTodayData 사이클의
+                    // 1차/2차 reload 가 다음 timeline 에서 새 dates 도 같이 읽음 (file-based 캐시).
                 }
             )
     }
