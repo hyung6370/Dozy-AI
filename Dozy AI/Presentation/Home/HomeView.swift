@@ -72,7 +72,7 @@ struct HomeView: View {
                         memoSection
                     }
                     WeatherCardView()
-                    // aiGenerateButton
+                    aiGenerateButton
                 }
                 .padding()
             }
