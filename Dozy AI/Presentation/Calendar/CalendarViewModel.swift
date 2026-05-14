@@ -116,6 +116,14 @@ final class CalendarViewModel: ObservableObject {
     private let displaySettingsRepo: EventDisplaySettingsRepository
     let visibilityFilter: CalendarVisibilityFilter
 
+    /// `loadInitialData()` 호출 throttle — onAppear / selectedTab / 노티 등 다수 트리거가
+    /// 짧은 시간에 burst 로 발화돼도 1~2회로 합쳐서 Supabase `/shared_calendars` 요청 누적 방지.
+    private let loadInitialDataSubject = PassthroughSubject<Void, Never>()
+
+    /// `loadMySharedCalendars()` 의 Supabase 요청이 진행 중일 때 또 다른 요청이 동시에
+    /// 시작돼 timeout 들이 stacking 되는 걸 막기 위한 inFlight 가드.
+    private var loadCalendarsCancellable: AnyCancellable?
+
     init(
         fetchEventsUseCase: FetchCalendarEventUseCase,
         fetchDozyEventsUseCase: FetchDozyEventsUseCase,
@@ -212,6 +220,15 @@ final class CalendarViewModel: ObservableObject {
         self.calendarService = container.calendarService
         self.sharedCalendarService = container.sharedCalendarService
         self.externalMirrorSyncService = container.externalMirrorSyncService
+
+        // throttle 구독 — 첫 호출은 즉시, 같은 윈도우(300ms) 안의 burst 는 1회로 합친 뒤
+        // 마지막 호출 시점에 한 번 더 실행 (latest: true).
+        loadInitialDataSubject
+            .throttle(for: .milliseconds(300), scheduler: DispatchQueue.main, latest: true)
+            .sink { [weak self] _ in
+                self?.performLoadInitialData()
+            }
+            .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
@@ -564,7 +581,13 @@ final class CalendarViewModel: ObservableObject {
     
     // MARK: - Fetch
     
+    /// 외부에서 호출하는 공개 진입점 — 실제 fetch 는 throttle 거쳐 `performLoadInitialData` 에서 실행.
+    /// 8개 트리거 (onAppear / selectedTab / scenePhase / 노티 등) 가 burst 로 발화돼도 1~2회로 합쳐짐.
     func loadInitialData() {
+        loadInitialDataSubject.send(())
+    }
+
+    private func performLoadInitialData() {
         // displaySettings를 먼저 로드한 뒤 fetch — buildLayouts에서 설정이 반영되도록
         displaySettingsRepo.fetchAll()
             .receive(on: DispatchQueue.main)
@@ -634,10 +657,18 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func loadMySharedCalendars() {
-        sharedCalendarService?.fetchMyCalendars()
+        // 이미 Supabase 요청이 진행 중이면 새로 요청하지 않음 — timeout (60s) 이 stack 되며
+        // pending NSURLSessionTask 누적으로 메모리/소켓 폭증하던 문제 방지.
+        guard loadCalendarsCancellable == nil else {
+            Logger.calendar.debug("⏭ loadMySharedCalendars — 이미 진행 중, 스킵")
+            return
+        }
+        loadCalendarsCancellable = sharedCalendarService?.fetchMyCalendars()
             .receive(on: DispatchQueue.main)
             .sink(
-                receiveCompletion: { _ in },
+                receiveCompletion: { [weak self] _ in
+                    self?.loadCalendarsCancellable = nil
+                },
                 receiveValue: { [weak self] calendars in
                     self?.mySharedCalendars = calendars
                     ActiveSharedCalendarStore.shared.reconcile(with: calendars)
@@ -645,7 +676,6 @@ final class CalendarViewModel: ObservableObject {
                     self?.visibilityFilter.reconcileSharedCalendars(with: calendars)
                 }
             )
-            .store(in: &cancellables)
     }
 
     func refreshData() {

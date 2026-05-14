@@ -37,7 +37,9 @@ struct CalendarSettingsView: View {
                         Divider().padding(.leading, DozySpacing.md)
                         appleRow
                             .padding(.horizontal, DozySpacing.md)
-//                        googleRow  // Google Calendar API 심사 중 — 완료 후 재활성화
+                        Divider().padding(.leading, DozySpacing.md)
+                        googleRow
+                            .padding(.horizontal, DozySpacing.md)
 //                        naverRow
                     }
                 }

@@ -18,8 +18,6 @@ final class CalendarSourceManager: ObservableObject {
     init() {
         if let raw = defaults.array(forKey: storageKey) as? [String] {
             var sources = Set(raw.compactMap { CalendarSource(rawValue: $0) })
-            // Google Calendar API 심사 완료 전까지 강제 비활성화
-            sources.remove(.google)
             // .holiday 는 사용자 토글 없이 CompositeCalendarSerivce 에서 항상 ON 으로 처리.
             // enabledSources 에 들어있어도 무해하지만 의미 없으므로 정리.
             sources.remove(.holiday)
