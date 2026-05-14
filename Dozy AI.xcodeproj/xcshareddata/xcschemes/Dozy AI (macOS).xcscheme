@@ -47,6 +47,17 @@
                ReferencedContainer = "container:Dozy AI.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F6EC8ACD2F9896CF00CFFF87"
+               BuildableName = "Dozy AI (macOS)UITests.xctest"
+               BlueprintName = "Dozy AI (macOS)UITests"
+               ReferencedContainer = "container:Dozy AI.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

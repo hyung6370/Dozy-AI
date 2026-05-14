@@ -24,7 +24,7 @@ struct SettingsView: View {
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showPasswordChange = false
-    @AppStorage(DozyBackgroundTheme.storageKey)
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
     private var backgroundTheme: DozyBackgroundTheme {

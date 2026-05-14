@@ -10,7 +10,7 @@ import SwiftUI
 
 struct BackgroundThemePickerView: View {
 
-    @AppStorage(DozyBackgroundTheme.storageKey)
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var themeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
     private var currentTheme: DozyBackgroundTheme {

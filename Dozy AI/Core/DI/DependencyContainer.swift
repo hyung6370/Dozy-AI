@@ -129,7 +129,8 @@ final class DependencyContainer: ObservableObject {
         let schema = Schema([
             WorkLog.self, UserPattern.self, DozyEvent.self,
             EventCompletion.self, NotificationRecord.self,
-            EventDisplaySettings.self, UserCategory.self
+            EventDisplaySettings.self, UserCategory.self,
+            TodayEventCache.self
         ])
 
         // 위젯 / 메인 앱이 동일 SwiftData store 를 보도록 App Group container 안에 저장.

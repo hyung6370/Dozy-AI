@@ -2,72 +2,18 @@
 //  DozyAppearance.swift
 //  Dozy AI
 //
-//  iOS 앱의 ambient 배경 테마 선택. macOS 의 MacBackgroundTheme 와 동일 패턴이며,
-//  iOS 별도 AppStorage key "iosBackgroundTheme" 로 저장된다.
+//  iOS 앱의 ambient 배경 ViewModifier 모음. enum 정의 자체는 DozyBackgroundTheme.swift
+//  로 분리 — widget extension 이 무거운 ambient view 의존성 없이 enum 만 import 할 수 있도록.
 //
 
 import SwiftUI
-
-enum DozyBackgroundTheme: String, CaseIterable, Identifiable {
-    /// 시스템 기본 — 어떤 ambient 배경도 깔지 않는다.
-    case system
-    /// 저채도 MeshGradient — 차분한 라벤더 ↔ 쿨 그레이.
-    case ambientMesh
-    /// 컬러 블롭 — 생동감 있는 ambient.
-    case blob
-
-    var id: String { rawValue }
-
-    var displayName: String {
-        switch self {
-        case .system:       return String(localized: "기본")
-        case .ambientMesh:  return "Ambient"
-        case .blob:         return "Blob"
-        }
-    }
-
-    var summary: String {
-        switch self {
-        case .system:       return String(localized: "iOS 표준 배경 — 어떤 ambient 도 깔지 않습니다.")
-        case .ambientMesh:  return String(localized: "저채도 메시 그라디언트 — 가장 차분한 무드.")
-        case .blob:         return String(localized: "컬러 블롭 — 생동감 있는 ambient.")
-        }
-    }
-
-    static let storageKey = "iosBackgroundTheme"
-    static let defaultTheme: DozyBackgroundTheme = .system
-
-    // MARK: - Card surface
-
-    /// 카드 색조. groupedRow solid 위에 얹어 명확한 시각 차이를 만든다.
-    /// Ambient = 쿨 라벤더 / Blob = 따뜻한 핑크 — hue 자체를 분리해서 두 테마가 한눈에 구분.
-    var cardTint: Color {
-        switch self {
-        case .system:
-            return .clear
-        case .ambientMesh:
-            return Color(hex: "#7C8AE0").opacity(0.22)  // cool lavender
-        case .blob:
-            return Color(hex: "#FF6B9D").opacity(0.22)  // warm pink
-        }
-    }
-
-    /// 카드 외곽 stroke.
-    var cardStroke: Color {
-        switch self {
-        case .system:       return Color.primary.opacity(0.05)
-        case .ambientMesh:  return Color(hex: "#7C8AE0").opacity(0.4)
-        case .blob:         return Color(hex: "#FF6B9D").opacity(0.45)
-        }
-    }
-}
 
 /// macOS 의 ThemedCardSurfaceModifier 와 동일 패턴 — material + tint + stroke 를 한 번에 적용.
 /// AppStorage 의 "iosBackgroundTheme" 를 직접 읽어 호출처는 인자 없이 사용 가능.
 struct DozyThemedCardSurface: ViewModifier {
     let cornerRadius: CGFloat
 
-    @AppStorage(DozyBackgroundTheme.storageKey)
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var themeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
     private var theme: DozyBackgroundTheme {
@@ -107,7 +53,7 @@ extension View {
 private struct DozyThemedCardBorderModifier: ViewModifier {
     let cornerRadius: CGFloat
 
-    @AppStorage(DozyBackgroundTheme.storageKey)
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var themeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
     private var theme: DozyBackgroundTheme {
@@ -125,7 +71,7 @@ private struct DozyThemedCardBorderModifier: ViewModifier {
 private struct DozyThemedShellBackgroundModifier: ViewModifier {
     let systemBackground: Color?
 
-    @AppStorage(DozyBackgroundTheme.storageKey)
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var themeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
     private var theme: DozyBackgroundTheme {

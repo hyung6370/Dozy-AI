@@ -90,6 +90,10 @@ final class AppCoordinator: ObservableObject {
         #if DEBUG
         rebuildSupabaseClient()
         #endif
+        // 위젯과 공유할 App Group UserDefaults 로 테마 storage 일회성 이전.
+        // 기존 사용자의 UserDefaults.standard 값이 App Group 쪽에 복사됨.
+        DozyBackgroundTheme.migrateThemeStorageIfNeeded()
+
         let c = DependencyContainer()
         authViewModel = AuthViewModel(
             modelContext: c.modelContainer.mainContext,

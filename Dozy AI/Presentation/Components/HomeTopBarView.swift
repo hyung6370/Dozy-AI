@@ -16,7 +16,7 @@ struct HomeTopBarView: View {
     let onNotificationTap: () -> Void
     let onProfileTap: () -> Void
 
-    @AppStorage(DozyBackgroundTheme.storageKey)
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var themeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
     private var theme: DozyBackgroundTheme {

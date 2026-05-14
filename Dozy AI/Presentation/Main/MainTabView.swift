@@ -46,7 +46,7 @@ struct MainTabView: View {
     @State private var showCreateEvent = false
     @EnvironmentObject private var authViewModel: AuthViewModel
 
-    @AppStorage(DozyBackgroundTheme.storageKey)
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
     private var backgroundTheme: DozyBackgroundTheme {
