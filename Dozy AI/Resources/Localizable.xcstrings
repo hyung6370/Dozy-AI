@@ -4394,12 +4394,52 @@
         }
       }
     },
+    "이름" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "이메일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        }
+      }
+    },
+    "이메일 또는 비밀번호가 올바르지 않습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
+          }
+        }
+      }
+    },
     "이메일 로그인" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email sign-in"
+          }
+        }
+      }
+    },
+    "이메일 로그인에 실패했습니다. (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sign-in failed. (%@)"
           }
         }
       }
@@ -4420,6 +4460,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sign in with email"
+          }
+        }
+      }
+    },
+    "이메일을 먼저 입력해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please enter your email first."
+          }
+        }
+      }
+    },
+    "이모지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
           }
         }
       }
@@ -4454,6 +4514,36 @@
         }
       }
     },
+    "이미지 업로드 실패" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image upload failed"
+          }
+        }
+      }
+    },
+    "이벤트 수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events"
+          }
+        }
+      }
+    },
+    "이전 기간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period"
+          }
+        }
+      }
+    },
     "이전 기간 (월·주·일)" : {
       "localizations" : {
         "en" : {
@@ -4480,6 +4570,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Same as your current password. Please choose a new one."
+          }
+        }
+      }
+    },
+    "이후 모든 일정 삭제" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this and all future events"
           }
         }
       }
@@ -4520,106 +4620,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Day"
-          }
-        }
-      }
-    },
-    "이름" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        }
-      }
-    },
-    "이메일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email"
-          }
-        }
-      }
-    },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
-          }
-        }
-      }
-    },
-    "이메일 로그인에 실패했습니다. (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sign-in failed. (%@)"
-          }
-        }
-      }
-    },
-    "이메일을 먼저 입력해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please enter your email first."
-          }
-        }
-      }
-    },
-    "이모지" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emoji"
-          }
-        }
-      }
-    },
-    "이미지 업로드 실패" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Image upload failed"
-          }
-        }
-      }
-    },
-    "이벤트 수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
-          }
-        }
-      }
-    },
-    "이전 기간" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous period"
-          }
-        }
-      }
-    },
-    "이후 모든 일정 삭제" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete this and all future events"
           }
         }
       }
@@ -4954,6 +4954,26 @@
         }
       }
     },
+    "전체" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
+          }
+        }
+      }
+    },
     "저장" : {
       "localizations" : {
         "en" : {
@@ -4980,26 +5000,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low-saturation mesh gradient — the calmest mood."
-          }
-        }
-      }
-    },
-    "전체" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
           }
         }
       }
@@ -5555,6 +5555,7 @@
       }
     },
     "추천 다음 할 일" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

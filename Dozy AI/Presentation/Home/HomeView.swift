@@ -50,15 +50,13 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     headerSection
                     bannerSection
+                    aiGenerateButton
                     if !authViewModel.isLoggedIn {
                         loginPromptBanner
                     }
                     if !viewModel.isLoading {
                         if let summary = viewModel.dailySummary {
                             aiSummaryPreview(summary)
-                        }
-                        if let log = viewModel.todayLog, !log.aiSummary.isEmpty {
-                            aiSummaryDetail(log)
                         }
                     }
                     focusCard
@@ -74,7 +72,6 @@ struct HomeView: View {
                         memoSection
                     }
                     WeatherCardView()
-                    aiGenerateButton
                 }
                 .padding()
             }
@@ -630,46 +627,6 @@ struct HomeView: View {
         .opacity(viewModel.hasData ? 1.0 : 0.5)
     }
 
-    // MARK: - AI Summary Detail
-
-    private func aiSummaryDetail(_ log: WorkLog) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Dozy 일정 요약")
-                .font(.footnote)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .padding(.leading, 2)
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text(viewModel.dailySummary?.summaryText ?? log.aiSummary)
-                    .font(.subheadline)
-                    .lineSpacing(4)
-
-                if !log.highlights.isEmpty {
-                    Divider()
-                    Text("핵심 하이라이트")
-                        .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
-                    ForEach(log.highlights, id: \.self) { highlight in
-                        Label(highlight, systemImage: "star.fill")
-                            .font(.caption).foregroundStyle(.orange)
-                    }
-                }
-                if !log.nextActions.isEmpty {
-                    Divider()
-                    Text("추천 다음 할 일")
-                        .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
-                    ForEach(log.nextActions, id: \.self) { action in
-                        Label(action, systemImage: "arrow.right.circle")
-                            .font(.caption).foregroundStyle(.blue)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(Color.blue.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.blue.opacity(0.1), lineWidth: 1))
-        }
-    }
 }
 
 // MARK: - HomeStatCard
