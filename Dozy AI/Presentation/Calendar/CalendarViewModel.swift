@@ -121,6 +121,12 @@ final class CalendarViewModel: ObservableObject {
     /// 짧은 시간에 burst 로 발화돼도 1~2회로 합쳐서 Supabase `/shared_calendars` 요청 누적 방지.
     private let loadInitialDataSubject = PassthroughSubject<Void, Never>()
 
+    /// performLoadInitialData 의 최소 호출 간격 가드 — throttle 만으로 못 막는
+    /// "300ms 보다 길게 띄워진 반복 트리거" 케이스를 차단한다. CalendarView.onAppear
+    /// 가 SwiftUI 의 view 신원 변동으로 자가 반복 발화하던 폭주 사례 (#53) 의 안전망.
+    private var lastPerformLoadAt: Date = .distantPast
+    private let minPerformLoadInterval: TimeInterval = 5.0
+
     /// `loadMySharedCalendars()` 의 Supabase 요청이 진행 중일 때 또 다른 요청이 동시에
     /// 시작돼 timeout 들이 stacking 되는 걸 막기 위한 inFlight 가드.
     private var loadCalendarsCancellable: AnyCancellable?
@@ -241,17 +247,17 @@ final class CalendarViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                Logger.calendar.info("🔔 dozyDataSyncCompleted 수신 → loadInitialData 재실행")
+                Logger.calendar.info("[알림] 🔔 dozyDataSyncCompleted → loadInitialData 재실행")
                 self?.loadedMonthKeys.removeAll()
-                self?.loadInitialData()
+                self?.loadInitialData(source: "notif:dozyDataSyncCompleted")
             }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .googleSignInRestored)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                Logger.calendar.info("🔔 googleSignInRestored 수신 → 구글 캘린더 새로고침")
-                self?.refreshData()
+                Logger.calendar.info("[알림] 🔔 googleSignInRestored → 구글 캘린더 새로고침")
+                self?.refreshData(source: "notif:googleSignInRestored")
             }
             .store(in: &cancellables)
 
@@ -266,7 +272,7 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                Logger.calendar.info("🔔 dozyEventListChanged 수신 → 월/날짜 재fetch")
+                Logger.calendar.info("[알림] 🔔 dozyEventListChanged → 월/날짜 재fetch")
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
             }
@@ -599,11 +605,22 @@ final class CalendarViewModel: ObservableObject {
     
     /// 외부에서 호출하는 공개 진입점 — 실제 fetch 는 throttle 거쳐 `performLoadInitialData` 에서 실행.
     /// 8개 트리거 (onAppear / selectedTab / scenePhase / 노티 등) 가 burst 로 발화돼도 1~2회로 합쳐짐.
-    func loadInitialData() {
+    /// source/file/line 은 호출자 자동 캡처 — 폭주 진단용 임시 로그.
+    func loadInitialData(source: String = #function, file: String = #file, line: Int = #line) {
+        let filename = (file as NSString).lastPathComponent
+        Logger.calendar.info("[데이터] 🔵 loadInitialData ← \(source) (\(filename):\(line))")
         loadInitialDataSubject.send(())
     }
 
     private func performLoadInitialData() {
+        let now = Date()
+        let elapsed = now.timeIntervalSince(lastPerformLoadAt)
+        if elapsed < minPerformLoadInterval {
+            Logger.calendar.info("[데이터] ⏭ performLoadInitialData skipped — \(String(format: "%.1f", elapsed))s 경과 (< \(self.minPerformLoadInterval)s)")
+            return
+        }
+        lastPerformLoadAt = now
+        Logger.calendar.info("[데이터] ⚡️ performLoadInitialData fire (throttle pass)")
         // displaySettings를 먼저 로드한 뒤 fetch — buildLayouts에서 설정이 반영되도록
         displaySettingsRepo.fetchAll()
             .receive(on: DispatchQueue.main)
@@ -666,7 +683,7 @@ final class CalendarViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] _ in
                     self?.showShareSuccess = true
-                    self?.refreshData()
+                    self?.refreshData(source: "performShare.success")
                 }
             )
             .store(in: &cancellables)
@@ -676,7 +693,7 @@ final class CalendarViewModel: ObservableObject {
         // 이미 Supabase 요청이 진행 중이면 새로 요청하지 않음 — timeout (60s) 이 stack 되며
         // pending NSURLSessionTask 누적으로 메모리/소켓 폭증하던 문제 방지.
         guard loadCalendarsCancellable == nil else {
-            Logger.calendar.debug("⏭ loadMySharedCalendars — 이미 진행 중, 스킵")
+            Logger.calendar.debug("[데이터] ⏭ loadMySharedCalendars — 이미 진행 중, 스킵")
             return
         }
         loadCalendarsCancellable = sharedCalendarService?.fetchMyCalendars()
@@ -694,10 +711,12 @@ final class CalendarViewModel: ObservableObject {
             )
     }
 
-    func refreshData() {
+    func refreshData(source: String = #function, file: String = #file, line: Int = #line) {
+        let filename = (file as NSString).lastPathComponent
+        Logger.calendar.info("[데이터] 🟣 refreshData ← \(source) (\(filename):\(line))")
         calendarService?.invalidateGoogleCache()
         loadedMonthKeys.removeAll()
-        loadInitialData()
+        loadInitialData(source: "refreshData<-\(source)", file: file, line: line)
     }
     
     private func fetchEventsForDate(_ date: Date, showLoading: Bool = true) {
@@ -731,13 +750,13 @@ final class CalendarViewModel: ObservableObject {
                 }
 
                 // Apple/Google 이벤트에 display settings 오버라이드 적용 후 정렬
-                Logger.calendar.debug("🔄 fetchEventsForDate → fetchAll(for: \(nonDozyIDs.count)건)")
+                Logger.calendar.debug("[데이터] 🔄 fetchEventsForDate → fetchAll(for: \(nonDozyIDs.count)건)")
                 // 전용 cancellable 사용 → 새 날짜 선택 시 이전 settings fetch 자동 취소
                 self.fetchDateSettingsCancellable = self.displaySettingsRepo.fetchAll(for: nonDozyIDs)
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self] settings in
                         guard let self else { return }
-                        Logger.calendar.debug("🔄 fetchAll 결과: \(settings.count)건")
+                        Logger.calendar.debug("[데이터] 🔄 fetchAll 결과: \(settings.count)건")
                         for (id, s) in settings {
                             Logger.calendar.debug("   ↳ id=\(id.prefix(12)) category=\(s.category)")
                         }
@@ -746,7 +765,7 @@ final class CalendarViewModel: ObservableObject {
                             .filter { self.passesVisibility($0) }
                             .map { $0.applying(self.displaySettingsByID[$0.id]) }
                         for e in applied where e.source == .google {
-                            Logger.calendar.debug("🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
+                            Logger.calendar.debug("[데이터] 🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
                         }
                         withAnimation(.easeInOut(duration: 0.25)) {
                             self.eventsForSelectedDate = applied.sorted { a, b in

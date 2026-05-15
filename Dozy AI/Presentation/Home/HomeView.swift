@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 import Lottie
+import OSLog
 
 struct HomeView: View {
 
@@ -125,9 +126,11 @@ struct HomeView: View {
                 }
             }
             .onAppear {
+                Logger.nav.info("[화면: 홈] 🧭 onAppear")
                 viewModel.loadTodayData()
                 viewModel.refreshNotificationBadge()
             }
+            .onDisappear { Logger.nav.info("[화면: 홈] 🧭 onDisappear") }
             .onChange(of: selectedTab) { _, newTab in
                 if newTab == 0 { viewModel.loadTodayData() }
             }

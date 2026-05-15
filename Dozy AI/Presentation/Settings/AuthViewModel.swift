@@ -652,17 +652,17 @@ final class AuthViewModel: ObservableObject {
     }
 
     private func syncAfterLogin(userID: String) {
-        Logger.auth.info("🔄 syncAfterLogin 시작 userID=\(userID)")
+        Logger.auth.info("[동기화] 🔄 syncAfterLogin 시작 userID=\(userID)")
         syncService.syncAll(userID: userID)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
-                        Logger.auth.error("❌ syncAll 실패: \(error.localizedDescription)")
+                        Logger.auth.error("[동기화] ❌ syncAll 실패: \(error.localizedDescription)")
                     }
                 },
                 receiveValue: { _ in
-                    Logger.auth.info("✅ syncAll 완료 → dozyDataSyncCompleted 전송")
+                    Logger.auth.info("[동기화] ✅ syncAll 완료 → dozyDataSyncCompleted 전송")
                     NotificationCenter.default.post(name: .dozyDataSyncCompleted, object: nil)
                 }
             )

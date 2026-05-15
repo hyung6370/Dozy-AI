@@ -9,27 +9,34 @@
 import SwiftUI
 import Combine
 import Lottie
+import OSLog
 
 /// 가운데 액션 버튼으로 일정을 만들 때 createDozyEventUseCase 실행 + cancellable 보관.
 /// MainTabView 는 struct 라 Set<AnyCancellable> 를 직접 들 수 없어 별도 owner 가 필요.
+///
+/// `onSaved` 는 init 이 아니라 onAppear 단계에서 외부가 set 한다. 이 패턴이 필요한 이유:
+/// MainTabView.init 이 SwiftUI 의 body re-eval 마다 호출돼도 @StateObject autoclosure 가
+/// VM 들을 최초 1회만 생성하도록 하려면, init 단계에서 cross-VM 강한/약한 캡처를 안 만들어야
+/// 한다. 이전 패턴은 매 init 마다 transient CalendarViewModel 을 생성해 NotificationCenter
+/// 구독이 중복 발화되던 폭주 원인이었음 (#53).
 @MainActor
 final class DozyEventCreator: ObservableObject {
     /// 저장 성공 시 잠깐 표시할 success Lottie 트리거.
     @Published var showSuccessAnimation = false
     private let createUseCase: CreateDozyEventUseCase
-    private let onSaved: () -> Void
+    /// onAppear 에서 wire 됨. nil 이면 save 후 콜백 없음 (시각 피드백만).
+    var onSaved: (() -> Void)?
     private var cancellables = Set<AnyCancellable>()
 
-    init(createUseCase: CreateDozyEventUseCase, onSaved: @escaping () -> Void) {
+    init(createUseCase: CreateDozyEventUseCase) {
         self.createUseCase = createUseCase
-        self.onSaved = onSaved
     }
 
     func save(_ event: DozyEvent) {
         createUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.onSaved()
+                self?.onSaved?()
                 self?.showSuccessAnimation = true
             })
             .store(in: &cancellables)
@@ -59,8 +66,12 @@ struct MainTabView: View {
 
     init(container: DependencyContainer) {
         self.container = container
-        let calendarVM = CalendarViewModel(container: container)
-        _calendarViewModel = StateObject(wrappedValue: calendarVM)
+        // ⚠️ autoclosure 형식 — `_calendarViewModel = StateObject(wrappedValue: CalendarViewModel(...))`
+        // 는 SwiftUI 가 처음 view 를 만들 때 한 번만 평가된다. 이전엔 init 안에서 `let vm = CalendarViewModel(...)`
+        // 으로 eager 하게 만든 뒤 StateObject 에 넘겼는데, 그러면 init 이 호출될 때마다 transient
+        // VM 이 새로 생성되고 그 convenience init 이 NotificationCenter 구독을 등록 → 정리 타이밍이
+        // 어긋나며 같은 알림이 2회 이상 수신되던 폭주 원인이었음 (#53).
+        _calendarViewModel = StateObject(wrappedValue: CalendarViewModel(container: container))
         _sharedCalendarViewModel = StateObject(wrappedValue: SharedCalendarViewModel(
             createUseCase: container.createSharedCalendarUseCase,
             joinUseCase: container.joinSharedCalendarUseCase,
@@ -70,8 +81,7 @@ struct MainTabView: View {
             service: container.sharedCalendarService
         ))
         _eventCreator = StateObject(wrappedValue: DozyEventCreator(
-            createUseCase: container.createDozyEventUseCase,
-            onSaved: { [weak calendarVM] in calendarVM?.refreshData() }
+            createUseCase: container.createDozyEventUseCase
         ))
         _homeViewModel = StateObject(wrappedValue: HomeViewModel(container: container))
     }
@@ -163,18 +173,30 @@ struct MainTabView: View {
             }
         }
         .onAppear {
-            calendarViewModel.loadInitialData()
+            Logger.nav.info("[앱] 🧭 MainTabView 진입 (현재 탭: \(selection.title))")
+            // DozyEventCreator 의 onSaved 를 init 이 아니라 여기서 wire — init 에서 cross-VM 캡처를
+            // 피해 @StateObject autoclosure 가 VM 들을 최초 1회만 생성하도록 보장 (#53).
+            // onAppear 가 여러 번 발화돼도 같은 클로저를 재할당하는 것이라 부작용 없음.
+            eventCreator.onSaved = { [weak calendarViewModel] in
+                calendarViewModel?.refreshData(source: "DozyEventCreator.onSaved")
+            }
+            calendarViewModel.loadInitialData(source: "MainTabView.onAppear")
             // 콜드 스타트에서 어떤 탭으로 진입하든 위젯 TodayEventCache 가 Apple/Google
             // 머지본으로 채워지도록 home VM 의 fetch+미러 파이프라인을 한 번 트리거.
             // HomeViewModel.loadTodayData 자체에 throttle 이 있어 burst 호출은 안전.
             homeViewModel.loadTodayData()
         }
-        .onChange(of: selection) { _, newTab in
-            if newTab == .calendar { calendarViewModel.refreshData() }
+        .onChange(of: selection) { old, newTab in
+            Logger.nav.info("[탭 전환] 🧭 \(old.title) → \(newTab.title)")
+            if newTab == .calendar { calendarViewModel.refreshData(source: "MainTabView.selection→calendar") }
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { old, phase in
+            Logger.nav.info("[앱 상태] 🌅 \(String(describing: old)) → \(String(describing: phase))")
             // 웜 포그라운드 — 캘린더 탭에 머물고 있어도 위젯 캐시가 최신 머지본으로 갱신되도록.
             if phase == .active { homeViewModel.loadTodayData() }
+        }
+        .onChange(of: showCreateEvent) { _, isOpen in
+            Logger.nav.info("[시트: 일정 생성] 📋 \(isOpen ? "OPEN" : "CLOSE")")
         }
         .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenAddEvent)) { _ in
             // 잠금화면 위젯 accessoryCircular 의 widgetURL 탭으로 들어옴 →
