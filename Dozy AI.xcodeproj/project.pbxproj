@@ -548,6 +548,10 @@
 		D02AFFFF000000000000F209 /* AmbientMeshBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientMeshBackgroundView.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F20A /* PasswordFailLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordFailLimiter.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordFailLimiterTests.swift; sourceTree = "<group>"; };
+		D02ACCWT000000000000A01 /* TodayEventCacheWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventCacheWriterTests.swift; sourceTree = "<group>"; };
+		D02ACCWT000000000000A02 /* TodayEventCacheWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ACCWT000000000000A01 /* TodayEventCacheWriterTests.swift */; };
+		D02ACQET000000000000A01 /* CreateQuickEventIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateQuickEventIntentTests.swift; sourceTree = "<group>"; };
+		D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ACQET000000000000A01 /* CreateQuickEventIntentTests.swift */; };
 		D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthLocalStorage.swift; sourceTree = "<group>"; };
 		D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarCreateView.swift; sourceTree = "<group>"; };
@@ -992,6 +996,8 @@
 				AA1100010000000000000004 /* TestHelpers.swift */,
 				AA1100010000000000000005 /* ViewModelTests.swift */,
 				D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */,
+				D02ACCWT000000000000A01 /* TodayEventCacheWriterTests.swift */,
+				D02ACQET000000000000A01 /* CreateQuickEventIntentTests.swift */,
 			);
 			path = "Dozy AITests";
 			sourceTree = "<group>";
@@ -2214,6 +2220,8 @@
 				AA1100020000000000000004 /* TestHelpers.swift in Sources */,
 				AA1100020000000000000005 /* ViewModelTests.swift in Sources */,
 				D02ABBBB000000000000B20B /* PasswordFailLimiterTests.swift in Sources */,
+				D02ACCWT000000000000A02 /* TodayEventCacheWriterTests.swift in Sources */,
+				D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

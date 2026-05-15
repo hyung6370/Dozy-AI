@@ -10,6 +10,7 @@ import SwiftUI
 
 // MARK: - EventEditViewModel Tests
 
+@MainActor
 final class EventEditViewModelTests: XCTestCase {
 
     // 테스트 기준일: 2026년 4월 11일 토요일
@@ -206,6 +207,7 @@ final class EventEditViewModelTests: XCTestCase {
 
 // MARK: - DailySummaryViewModel Tests
 
+@MainActor
 final class DailySummaryViewModelTests: XCTestCase {
 
     private var aiService: MockAIService!
