@@ -23,6 +23,9 @@ struct LottiePlayer: UIViewRepresentable {
         view.contentMode = .scaleAspectFit
         view.loopMode = .playOnce
         view.animationSpeed = animationSpeed
+        // 기본값(.pause)으로는 백그라운드 진입 시 멈춘 채 복귀 후에도 재생이 재개되지 않아
+        // 마지막 프레임에서 박제되는 현상이 발생함.
+        view.backgroundBehavior = .pauseAndRestore
         // intrinsic content size 가 SwiftUI .frame 을 무시하지 않도록 우선순위를 낮춤.
         view.setContentHuggingPriority(.defaultLow, for: .horizontal)
         view.setContentHuggingPriority(.defaultLow, for: .vertical)
