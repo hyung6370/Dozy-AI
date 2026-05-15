@@ -658,6 +658,9 @@
 		F63A13F02FB60003006C580D /* WidgetTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13EF2FB60003006C580D /* WidgetTheme.swift */; };
 		D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleEventCompletionIntent.swift; sourceTree = "<group>"; };
 		D02ATOGGLE000000000000A02 /* ToggleEventCompletionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */; };
+		D02ACQEI000000000000A01 /* CreateQuickEventIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateQuickEventIntent.swift; sourceTree = "<group>"; };
+		D02ACQEI000000000000A02 /* CreateQuickEventIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ACQEI000000000000A01 /* CreateQuickEventIntent.swift */; };
+		D02ACQEI000000000000A03 /* CreateQuickEventIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ACQEI000000000000A01 /* CreateQuickEventIntent.swift */; };
 		D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryCircularView.swift; sourceTree = "<group>"; };
 		D02AACCESS000000000000B02 /* TodayEventsAccessoryCircularView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */; };
 		D02AACCESS000000000000B03 /* TodayEventsAccessoryRectangularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryRectangularView.swift; sourceTree = "<group>"; };
@@ -1421,6 +1424,7 @@
 				F63A13A02FB54F2C006C580D /* DozyWidgetsBundle.swift */,
 				F63A13EF2FB60003006C580D /* WidgetTheme.swift */,
 				D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */,
+				D02ACQEI000000000000A01 /* CreateQuickEventIntent.swift */,
 				F63A13A22FB54F2C006C580D /* Info.plist */,
 				F63A139E2FB54F2C006C580D /* Assets.xcassets */,
 				F63A13B02FB552FF006C580D /* TodayEvents */,
@@ -1994,6 +1998,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D02ACQEI000000000000A03 /* CreateQuickEventIntent.swift in Sources */,
 				7AA956AF8C3141189744783D /* SharedCalendarViewModel.swift in Sources */,
 				2984E159921D4484ACDA83E9 /* SharedCalendarListView.swift in Sources */,
 				CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */,
@@ -2237,6 +2242,7 @@
 				D02ABBBB000000000000C50B /* DozyBackgroundTheme.swift in Sources */,
 				F63A13F02FB60003006C580D /* WidgetTheme.swift in Sources */,
 				D02ATOGGLE000000000000A02 /* ToggleEventCompletionIntent.swift in Sources */,
+				D02ACQEI000000000000A02 /* CreateQuickEventIntent.swift in Sources */,
 				D02AACCESS000000000000B02 /* TodayEventsAccessoryCircularView.swift in Sources */,
 				D02AACCESS000000000000B04 /* TodayEventsAccessoryRectangularView.swift in Sources */,
 				D02AACCESS000000000000B06 /* TodayEventsAccessoryInlineView.swift in Sources */,

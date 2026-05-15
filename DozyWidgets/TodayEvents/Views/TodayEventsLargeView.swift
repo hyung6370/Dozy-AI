@@ -5,6 +5,7 @@
 //  systemLarge — 정사각형 큰 위젯. 미니 월간 캘린더 (메인) + 오늘 일정 리스트 (하단).
 //
 
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -66,7 +67,19 @@ struct TodayEventsLargeView: View {
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
             }
+            createEventButton
         }
+    }
+
+    /// 헤더 우측의 "+ 새 일정" 버튼. CreateQuickEventIntent 가 메인 앱 활성화 + 생성 시트 트리거.
+    private var createEventButton: some View {
+        Button(intent: CreateQuickEventIntent()) {
+            Image(systemName: "plus.circle.fill")
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .symbolRenderingMode(.hierarchical)
+        }
+        .buttonStyle(.plain)
     }
 
     private var monthYearTitle: String {

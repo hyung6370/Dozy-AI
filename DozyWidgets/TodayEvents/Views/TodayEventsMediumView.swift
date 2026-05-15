@@ -45,6 +45,7 @@ struct TodayEventsMediumView: View {
                 Text(verbatim: "\(entry.completedCount) / \(entry.totalCount)")
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
+                createEventButton
             }
 
             if upcomingEvents.isEmpty {
@@ -111,6 +112,18 @@ struct TodayEventsMediumView: View {
             Image(systemName: ev.isCompleted ? "checkmark.circle.fill" : "circle")
                 .font(.title3)
                 .foregroundStyle(ev.isCompleted ? Color.green : Color.secondary)
+                .symbolRenderingMode(.hierarchical)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// 헤더 우측의 "+ 새 일정" 버튼. openAppWhenRun=true 이므로 탭 시 메인 앱이 활성화되고
+    /// CreateQuickEventIntent.perform 이 메인 앱에서 실행되어 생성 시트가 열림.
+    private var createEventButton: some View {
+        Button(intent: CreateQuickEventIntent()) {
+            Image(systemName: "plus.circle.fill")
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
                 .symbolRenderingMode(.hierarchical)
         }
         .buttonStyle(.plain)

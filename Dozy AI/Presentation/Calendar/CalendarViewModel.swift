@@ -10,6 +10,7 @@ import Combine
 import SwiftUI
 import SwiftData
 import OSLog
+import WidgetKit
 
 enum CalendarViewMode: CaseIterable {
     case month, week, day
@@ -124,6 +125,10 @@ final class CalendarViewModel: ObservableObject {
     /// 시작돼 timeout 들이 stacking 되는 걸 막기 위한 inFlight 가드.
     private var loadCalendarsCancellable: AnyCancellable?
 
+    /// 위젯 TodayEventCache 미러용. HomeViewModel 과 같은 패턴으로 일정 변경 시점에
+    /// 바로 캐시를 upsert/remove 하기 위해 컨테이너를 보관.
+    private let modelContainer: ModelContainer
+
     init(
         fetchEventsUseCase: FetchCalendarEventUseCase,
         fetchDozyEventsUseCase: FetchDozyEventsUseCase,
@@ -141,7 +146,8 @@ final class CalendarViewModel: ObservableObject {
         fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase,
         mirrorExternalEventUseCase: MirrorExternalEventUseCase,
         displaySettingsRepo: EventDisplaySettingsRepository,
-        visibilityFilter: CalendarVisibilityFilter
+        visibilityFilter: CalendarVisibilityFilter,
+        modelContainer: ModelContainer
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -160,6 +166,7 @@ final class CalendarViewModel: ObservableObject {
         self.mirrorExternalEventUseCase = mirrorExternalEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
         self.visibilityFilter = visibilityFilter
+        self.modelContainer = modelContainer
         subscribeToVisibilityFilterChanges()
     }
 
@@ -215,7 +222,8 @@ final class CalendarViewModel: ObservableObject {
             fetchCalendarEventsForPeriodUseCase: container.fetchCalendarEventsForPeriodUseCase,
             mirrorExternalEventUseCase: container.mirrorExternalEventUseCase,
             displaySettingsRepo: container.eventDisplaySettingsRepository,
-            visibilityFilter: container.calendarVisibilityFilter
+            visibilityFilter: container.calendarVisibilityFilter,
+            modelContainer: container.modelContainer
         )
         self.calendarService = container.calendarService
         self.sharedCalendarService = container.sharedCalendarService
@@ -449,6 +457,10 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.fetchEventsForDate(self?.selectedDate ?? Date())
                 self?.fetchEventsForMonth(force: true)
+                // HomeViewModel 이 .dozyEventChanged 를 구독해 loadTodayData → TodayEventCache 갱신.
+                // 위젯은 그 직후 reload 에서 새 데이터를 본다.
+                NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                WidgetCenter.shared.reloadAllTimelines()
             })
             .store(in: &cancellables)
     }
@@ -488,6 +500,10 @@ final class CalendarViewModel: ObservableObject {
                         self?.fetchEventsForDate(self?.selectedDate ?? Date())
                         self?.fetchEventsForMonth(force: true)
                     }
+                    // HomeViewModel 이 .dozyEventChanged → loadTodayData 로 TodayEventCache 를 갱신.
+                    // 위젯은 그 직후 reload 에서 새 상태 반영.
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
             )
             .store(in: &cancellables)
@@ -1113,7 +1129,7 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
-                
+
                 // 신규 등록 시: 일정 시작일로 포커스 이동
                 if self.eventToEdit == nil {
                     let cal = Calendar.current
@@ -1124,7 +1140,11 @@ final class CalendarViewModel: ObservableObject {
                     }
                     self.showSuccessAnimation = true
                 }
-                
+
+                // 위젯 즉시 반영 — TodayEventCache 에 새/수정 일정 mirror 후 timeline reload.
+                TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
                 NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
@@ -1146,13 +1166,19 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func deleteEvent(_ event: DozyEvent) {
-        cancelNotificationUseCase.execute(identifier: event.id)
+        let eventID = event.id
+        cancelNotificationUseCase.execute(identifier: eventID)
         deleteEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
+
+                // 위젯 즉시 반영 — TodayEventCache 에서 해당 id 제거 후 timeline reload.
+                TodayEventCacheWriter.removeSingleEvent(id: eventID, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)
@@ -1169,6 +1195,11 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
+
+                // 위젯 캐시 재미러 + reload — excludedDates 변경이 즉시 반영되도록.
+                TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)
@@ -1186,6 +1217,11 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
+
+                // 위젯 캐시 재미러 + reload — 반복 종료일 변경이 즉시 반영되도록.
+                TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)

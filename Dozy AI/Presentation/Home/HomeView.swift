@@ -13,7 +13,9 @@ struct HomeView: View {
 
     private let container: DependencyContainer
     @Binding var selectedTab: Int
-    @StateObject private var viewModel: HomeViewModel
+    // ViewModel 은 MainTabView 에서 소유 — 캘린더 탭으로 진입한 사용자도 scenePhase active
+    // 시 widget cache 가 갱신되도록 하기 위해 owner 를 상위로 hoist 함.
+    @ObservedObject var viewModel: HomeViewModel
     @State private var memoText = ""
     @State private var showSummarySheet = false
     @State private var editingMemoIndex: Int? = nil
@@ -36,10 +38,10 @@ struct HomeView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
 
-    init(container: DependencyContainer, selectedTab: Binding<Int>) {
+    init(container: DependencyContainer, selectedTab: Binding<Int>, viewModel: HomeViewModel) {
         self.container = container
         self._selectedTab = selectedTab
-        _viewModel = StateObject(wrappedValue: HomeViewModel(container: container))
+        self.viewModel = viewModel
     }
 
     var body: some View {

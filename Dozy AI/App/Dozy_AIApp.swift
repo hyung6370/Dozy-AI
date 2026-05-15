@@ -15,6 +15,7 @@ import OSLog
 struct Dozy_AIApp: App {
 
     @StateObject private var coordinator = AppCoordinator()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -57,8 +58,26 @@ struct Dozy_AIApp: App {
                     await authViewModel.clearSessionIfReinstalled()
                     authViewModel.startAuthListener()
                 }
+                // 콜드 스타트 시점에 이미 플래그가 set 되어 있을 수 있음 (CreateQuickEventIntent
+                // 가 launch 를 트리거한 경우). scenePhase 콜백이 항상 active 로 떨어진다는
+                // 보장이 없어 onAppear 에서도 한 번 소비.
+                consumePendingCreateEventFlag()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                // 위젯의 CreateQuickEventIntent 가 perform 에서 App Group 플래그를 set 함.
+                // 메인 앱이 foreground 로 돌아온 시점에 플래그를 소비해 일정 생성 시트를 띄움.
+                if phase == .active { consumePendingCreateEventFlag() }
             }
             .environmentObject(authViewModel)
+    }
+
+    /// App Group UserDefaults 의 `pendingCreateEvent` 플래그를 읽고, 켜져 있으면
+    /// 끄고 `dozyWidgetOpenAddEvent` 알림을 게시 → `MainTabView` 가 홈 탭 + 생성 시트 오픈.
+    private func consumePendingCreateEventFlag() {
+        let defaults = UserDefaults(suiteName: CreateQuickEventIntent.appGroupID)
+        guard defaults?.bool(forKey: CreateQuickEventIntent.pendingFlagKey) == true else { return }
+        defaults?.set(false, forKey: CreateQuickEventIntent.pendingFlagKey)
+        NotificationCenter.default.post(name: .dozyWidgetOpenAddEvent, object: nil)
     }
 
     /// 위젯의 widgetURL/Link 탭으로 들어온 deep link 처리.
