@@ -34,24 +34,31 @@ struct InsightDashboardView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if viewModel.isLoading {
-                        ProgressView().frame(maxWidth: .infinity).padding(.top, 80)
-                    } else if !viewModel.hasDozyData && !viewModel.hasWorkLogData {
-                        emptyState
-                    } else {
-                        if !viewModel.insights.isEmpty {
-                            insightCard
+            Group {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if !viewModel.hasDozyData && !viewModel.hasWorkLogData {
+                    // 빈 상태는 ScrollView 를 두르지 않고 화면 전체를 채워 themed 배경이
+                    // 자연스럽게 한 장으로 보이도록. (이전: ScrollView 가 컨텐츠 크기로만
+                    // 늘어나 상위 shell bg 와 두 겹 패턴이 어긋나 보이던 문제 #53)
+                    emptyState
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            if !viewModel.insights.isEmpty {
+                                insightCard
+                            }
+                            summaryRow
+                            categoryAnalysisLink
+                            InsightBannerView { showCalendarSettings = true }
+                            chartSectionPager
+                                .padding(.top, -16)
                         }
-                        summaryRow
-                        categoryAnalysisLink
-                        InsightBannerView { showCalendarSettings = true }
-                        chartSectionPager
-                            .padding(.top, -16)
+                        .padding()
                     }
                 }
-                .padding()
             }
             .dozyThemedShellBackground()
             .navigationTitle("인사이트")
@@ -107,6 +114,8 @@ struct InsightDashboardView: View {
 
     // MARK: - Empty State
     private var emptyState: some View {
+        // 상위에서 maxHeight: .infinity 로 화면 전체에 펼쳐주므로 padding(.top:) 으로
+        // 위치를 잡지 않고 VStack 의 자체 centering 에 맡긴다.
         VStack(spacing: 16) {
             Image(systemName: "chart.bar.xaxis")
                 .font(.system(size: 60))
@@ -117,7 +126,7 @@ struct InsightDashboardView: View {
                 .font(.subheadline).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(.top, 100)
+        .padding(.horizontal, 32)
     }
     
     // MARK: - 요약 3종 카드
