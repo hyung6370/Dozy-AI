@@ -211,7 +211,7 @@ struct SearchView: View {
             Text("일지").font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
             ForEach(matchedWorkLogs) { log in
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(log.date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ko_KR"))))
+                    Text(log.date.formatted(.dateTime.year().month().day().locale(.current)))
                         .font(.caption).foregroundStyle(.secondary)
                     if !log.aiSummary.isEmpty {
                         Text(log.aiSummary).font(.subheadline).lineLimit(3)
@@ -242,7 +242,7 @@ struct SearchView: View {
             Text("일정").font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
             ForEach(eventsByDate, id: \.date) { group in
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(group.date.formatted(.dateTime.year().month().day().weekday().locale(Locale(identifier: "ko_KR"))))
+                    Text(group.date.formatted(.dateTime.year().month().day().weekday().locale(.current)))
                         .font(.caption).foregroundStyle(.secondary)
                     ForEach(group.events) { ev in
                         VStack(alignment: .leading, spacing: 4) {

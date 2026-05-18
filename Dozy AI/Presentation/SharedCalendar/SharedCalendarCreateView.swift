@@ -33,13 +33,13 @@ struct SharedCalendarCreateView: View {
         VStack(spacing: 0) {
             Form {
                 Section {
-                    TextField("예: 우리 커플 캘린더", text: $calendarName)
+                    TextField("예: 우리 가족 캘린더", text: $calendarName)
                         .focused($isNameFocused)
                         .onSubmit { if isNameValid { submit() } }
                 } header: {
                     Text("캘린더 이름")
                 } footer: {
-                    Text("파트너와 함께 사용할 캘린더 이름을 입력하세요.")
+                    Text("함께 사용할 캘린더 이름을 입력하세요. 최대 4명까지 참여 가능합니다.")
                 }
             }
             .scrollDisabled(true)
@@ -92,7 +92,7 @@ struct SharedCalendarCreateView: View {
                             .foregroundStyle(.green)
                         Text("캘린더가 만들어졌어요!")
                             .font(.title3).fontWeight(.bold)
-                        Text("아래 초대 코드를 파트너에게 공유하세요.")
+                        Text("아래 초대 코드를 함께할 사람에게 공유하세요.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -176,6 +176,6 @@ struct SharedCalendarCreateView: View {
     }
 
     private func shareText(code: String) -> String {
-        "Dozy AI 공유 캘린더에 초대됐어요! 📅\n코드: \(code)\n\n앱에서 '초대 코드로 참여하기'를 눌러 입력하세요."
+        String(localized: "Dozy AI 공유 캘린더에 초대됐어요! 📅\n코드: \(code)\n\n앱에서 '초대 코드로 참여하기'를 눌러 입력하세요.")
     }
 }

@@ -9,6 +9,7 @@
 import Foundation
 import Combine
 import SwiftData
+import SwiftUI
 
 @MainActor
 final class MacHomeViewModel: ObservableObject {
@@ -189,13 +190,26 @@ final class MacHomeViewModel: ObservableObject {
                 guard let self else { return }
                 var byID: [String: DozyEvent] = [:]
                 for d in dozyEvents { byID[d.id] = d }
-                self.dozyEventsByID = byID
 
+                // id tiebreaker — Publishers.MergeMany 가 source 간 emit 순서를 보장하지 않아
+                // 같은 startDate 이벤트들의 상대 위치가 fetch 마다 흔들렸다. id 까지 비교해
+                // 결정적 ordering 을 강제 → ForEach diff 가 move 로 인식하지 않음.
                 let events = allEvents.sorted { a, b in
                     if a.isPinned != b.isPinned { return a.isPinned }
-                    return a.startDate < b.startDate
+                    if a.startDate != b.startDate { return a.startDate < b.startDate }
+                    return a.id < b.id
                 }
-                self.todayEvents = events
+
+                // 두 @Published 를 한 transaction 으로 묶고 implicit animation 차단.
+                // 안 묶으면 SwiftUI 가 row diff 를 move 애니메이션으로 표현해서
+                // 사용자 눈에 카드가 "섞이는" 것처럼 보였다.
+                var txn = Transaction()
+                txn.disablesAnimations = true
+                withTransaction(txn) {
+                    self.dozyEventsByID = byID
+                    self.todayEvents = events
+                }
+
                 self.loadCompletions(for: events.map(\.id), on: today)
                 self.persistTodayLog(events: events)
             }
@@ -486,7 +500,12 @@ final class MacHomeViewModel: ObservableObject {
                     for (id, dozy) in self.dozyEventsByID where dozy.recurrenceRule == "none" && dozy.isCompleted {
                         simple[id] = true
                     }
-                    self.completionsByEventID = simple
+                    // 완료 상태 변경이 row reorder 처럼 애니메이션되지 않도록 차단.
+                    var txn = Transaction()
+                    txn.disablesAnimations = true
+                    withTransaction(txn) {
+                        self.completionsByEventID = simple
+                    }
                 }
             )
             .store(in: &cancellables)

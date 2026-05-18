@@ -16,9 +16,9 @@ enum MacCalendarViewMode: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .month: return "월"
-        case .week:  return "주"
-        case .day:   return "일"
+        case .month: return String(localized: "월")
+        case .week:  return String(localized: "주")
+        case .day:   return String(localized: "일")
         }
     }
 }

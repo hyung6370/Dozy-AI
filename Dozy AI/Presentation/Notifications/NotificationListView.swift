@@ -144,9 +144,10 @@ private struct NotificationRowView: View {
 
     private func remainingTimeLabel(for eventStart: Date) -> String {
         let diff = eventStart.timeIntervalSince(Date())
+        let title = record.eventTitle
 
         if diff <= 0 {
-            return "\(record.eventTitle) 일정이 시작됐어요"
+            return String(localized: "\(title) 일정이 시작됐어요")
         }
 
         let minutes = Int(diff / 60)
@@ -154,11 +155,11 @@ private struct NotificationRowView: View {
         let days = Int(diff / 86400)
 
         if days >= 1 {
-            return "\(record.eventTitle)까지 \(days)일 남았습니다"
+            return String(localized: "\(title)까지 \(days)일 남았습니다")
         } else if hours >= 1 {
-            return "\(record.eventTitle)까지 \(hours)시간 전입니다"
+            return String(localized: "\(title)까지 \(hours)시간 전입니다")
         } else {
-            return "\(record.eventTitle)까지 \(minutes)분 남았습니다"
+            return String(localized: "\(title)까지 \(minutes)분 남았습니다")
         }
     }
 }

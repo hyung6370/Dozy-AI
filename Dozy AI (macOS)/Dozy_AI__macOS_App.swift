@@ -15,7 +15,7 @@ extension Locale {
     /// 한국어 + 24시간 hourCycle 강제. DatePicker 가 시스템 12/24h 설정과 무관하게
     /// 24시간으로 동작 — 시작/종료 시각에 18 입력 시 자동 18:00 으로 인식됨.
     static let koreanForce24h: Locale = {
-        var components = Locale.Components(locale: Locale(identifier: "ko_KR"))
+        var components = Locale.Components(locale: .current)
         components.hourCycle = .zeroToTwentyThree
         return Locale(components: components)
     }()
@@ -270,6 +270,8 @@ final class MacAppCoordinator: ObservableObject {
             .removeDuplicates()
             .sink { [weak self] signedIn in
                 self?.isSignedIn = signedIn
+                // 로그아웃 시 메뉴바도 즉시 빈 상태가 되도록 mirror.
+                self?.menuBarViewModel?.isSignedIn = signedIn
             }
 
         // Apple 캘린더 토글이 ON 인 경우 — 시스템 권한 다이얼로그를 미리 띄우거나

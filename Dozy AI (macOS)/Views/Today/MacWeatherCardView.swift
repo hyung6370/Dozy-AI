@@ -36,7 +36,7 @@ struct MacWeatherCardView: View {
     private var permissionPromptView: some View {
         Button { service.fetchIfNeeded() } label: {
             HStack(spacing: 14) {
-                Text("🌤️").font(.system(size: 36))
+                Text(verbatim: "🌤️").font(.system(size: 36))
                 VStack(alignment: .leading, spacing: 4) {
                     Text("오늘의 날씨")
                         .font(.subheadline)
@@ -82,7 +82,7 @@ struct MacWeatherCardView: View {
             }
         } label: {
             HStack(spacing: 14) {
-                Text("📍").font(.system(size: 36))
+                Text(verbatim: "📍").font(.system(size: 36))
                 VStack(alignment: .leading, spacing: 4) {
                     Text("위치 권한 필요")
                         .font(.subheadline)
@@ -114,7 +114,7 @@ struct MacWeatherCardView: View {
     private var failedView: some View {
         Button { service.fetchIfNeeded() } label: {
             HStack(spacing: 14) {
-                Text("⚠️").font(.system(size: 36))
+                Text(verbatim: "⚠️").font(.system(size: 36))
                 VStack(alignment: .leading, spacing: 4) {
                     Text("날씨를 불러오지 못했습니다")
                         .font(.subheadline)

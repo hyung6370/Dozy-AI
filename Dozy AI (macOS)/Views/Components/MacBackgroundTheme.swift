@@ -20,7 +20,7 @@ enum MacBackgroundTheme: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .system:       return "기본"
+        case .system:       return String(localized: "기본")
         case .ambientMesh:  return "Ambient"
         case .blob:         return "Blob"
         }
@@ -28,9 +28,9 @@ enum MacBackgroundTheme: String, CaseIterable, Identifiable {
 
     var summary: String {
         switch self {
-        case .system:       return "macOS 표준 배경 — 사이드바 머티리얼 그대로."
-        case .ambientMesh:  return "저채도 메시 그라디언트 — 가장 차분한 무드."
-        case .blob:         return "컬러 블롭 — 생동감 있는 ambient."
+        case .system:       return String(localized: "macOS 표준 배경 — 사이드바 머티리얼 그대로.")
+        case .ambientMesh:  return String(localized: "저채도 메시 그라디언트 — 가장 차분한 무드.")
+        case .blob:         return String(localized: "컬러 블롭 — 생동감 있는 ambient.")
         }
     }
 

@@ -24,6 +24,20 @@ struct SettingsView: View {
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showPasswordChange = false
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
+    private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
+
+    private var backgroundTheme: DozyBackgroundTheme {
+        DozyBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
+    }
+
+    /// signIn 모드에서 연속 비밀번호 실패 횟수를 관리하는 limiter. 5회 이상이면 안내 banner 노출 +
+    /// "비밀번호를 잊으셨나요?" 링크 강조 + 로그인 버튼 비활성. 로그인 성공/이메일 변경 시 reset.
+    @State private var emailPasswordLimiter = PasswordFailLimiter(threshold: 5)
+    /// limit 도달 시 자동 표시되는 안내 alert.
+    @State private var showFailLimitAlert: Bool = false
+    /// 이메일 로그인 제출이 진행 중인지 — Apple/Google 등 다른 경로의 errorMessage 는 카운트에서 제외.
+    @State private var emailSignInInFlight: Bool = false
     @State private var loginEmail: String = ""
     @State private var loginPassword: String = ""
     @State private var loginPasswordConfirm: String = ""
@@ -71,12 +85,13 @@ struct SettingsView: View {
         return Date() >= expiresAt
     }
 
-    /// 제출 버튼 라벨.
+    /// 제출 버튼 라벨. `String(localized:)` 로 wrap — `Text(_:String)` 경로로 빠져 추출되지
+    /// 않는 것을 막는다.
     private var submitLabel: String {
         switch emailLoginMode {
-        case .signIn:          return "이메일로 로그인"
-        case .signUp:          return "가입 완료"
-        case .forgotPassword:  return "비밀번호 변경"
+        case .signIn:          return String(localized: "이메일로 로그인")
+        case .signUp:          return String(localized: "가입 완료")
+        case .forgotPassword:  return String(localized: "비밀번호 변경")
         }
     }
 
@@ -85,6 +100,8 @@ struct SettingsView: View {
         guard !authViewModel.isLoading, !loginEmail.isEmpty else { return false }
         switch emailLoginMode {
         case .signIn:
+            // limit 도달 시 비활성 — 사용자는 이메일 인증으로만 진행 가능.
+            guard emailPasswordLimiter.canSubmit else { return false }
             return !loginPassword.isEmpty
         case .signUp, .forgotPassword:
             guard isPasswordStageReady else { return false }
@@ -113,16 +130,22 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationStack {
-            List {
-                accountSection
-                calendarSection
-                categorySection
-                infoSection
-                if authViewModel.currentUser?.provider == .email {
-                    passwordChangeSection
+            ScrollView {
+                VStack(spacing: DozySpacing.xl) {
+                    accountSection
+                    appearanceSection
+                    calendarSection
+                    categorySection
+                    infoSection
+                    if authViewModel.currentUser?.provider == .email {
+                        passwordChangeSection
+                    }
+                    dangerZoneSection
                 }
-                dangerZoneSection
+                .padding(.vertical, DozySpacing.lg)
             }
+            // system 일 때는 grouped, ambient/blob 일 땐 themed bg — modifier 가 단일 layer 로 처리.
+            .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
             .overlay {
@@ -167,24 +190,57 @@ struct SettingsView: View {
                     authViewModel.errorMessage = nil
                 }
             }
+            // signIn 모드 + 이메일 로그인 제출이 in-flight 일 때만 비밀번호 실패로 간주.
+            // (Apple/Google 취소 등으로 errorMessage 가 생기는 경우는 카운트 제외)
+            .onChange(of: authViewModel.errorMessage) { _, newVal in
+                if newVal != nil, emailLoginMode == .signIn, emailSignInInFlight {
+                    emailPasswordLimiter.recordFailure()
+                    if emailPasswordLimiter.justReachedLimit {
+                        showFailLimitAlert = true
+                    }
+                    emailSignInInFlight = false
+                }
+            }
+            // 로딩 종료 시 in-flight 해제 (성공 / 다른 경로 종료 둘 다).
+            .onChange(of: authViewModel.isLoading) { _, newVal in
+                if !newVal { emailSignInInFlight = false }
+            }
+            // 로그인 성공 / 이메일 변경 시 카운터 reset.
+            .onChange(of: authViewModel.isLoggedIn) { _, newVal in
+                if newVal { emailPasswordLimiter.reset() }
+            }
+            .onChange(of: loginEmail) { _, _ in
+                emailPasswordLimiter.reset()
+            }
+            .alert("비밀번호를 \(emailPasswordLimiter.threshold)회 틀리셨습니다", isPresented: $showFailLimitAlert) {
+                Button("이메일 인증하기") {
+                    switchEmailLoginMode(to: .forgotPassword)
+                }
+                Button("취소", role: .cancel) { }
+            } message: {
+                Text("보안을 위해 이메일 인증 후 비밀번호를 재설정해주세요.")
+            }
         }
     }
     
     // MARK: - 계정 섹션
     
     private var accountSection: some View {
-        Section {
-            if authViewModel.isLoggedIn {
-                loggedInRow
-            } else {
-                loggedOutRow
+        DozyListSection(
+            header: "계정",
+            footer: authViewModel.isLoggedIn
+                ? "로그인 상태에서는 데이터가 서버에 백업됩니다."
+                : "로그인하면 기기를 바꿔도 데이터를 유지할 수 있어요."
+        ) {
+            Group {
+                if authViewModel.isLoggedIn {
+                    loggedInRow
+                } else {
+                    loggedOutRow
+                }
             }
-        } header: {
-            Text("계정")
-        } footer: {
-            Text(authViewModel.isLoggedIn
-                 ? "로그인 상태에서는 데이터가 서버에 백업됩니다."
-                 : "로그인하면 기기를 바꿔도 데이터를 유지할 수 있어요.")
+            .padding(.horizontal, DozySpacing.md)
+            .padding(.vertical, DozySpacing.sm)
         }
     }
     
@@ -193,7 +249,7 @@ struct SettingsView: View {
             providerIcon(for: authViewModel.currentUser?.provider)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(authViewModel.currentUser?.displayName ?? "사용자")
+                Text(authViewModel.currentUser?.displayName ?? String(localized: "사용자"))
                     .font(.subheadline).fontWeight(.medium)
                 Text(authViewModel.currentUser?.email ?? "")
                     .font(.caption).foregroundStyle(.secondary)
@@ -441,6 +497,30 @@ struct SettingsView: View {
             // ── 비밀번호 입력 단계 ────────────────────────────
             // signIn 은 항상 노출, signUp/forgotPassword 는 OTP 검증 완료 후에만.
             if emailLoginMode == .signIn || isPasswordStageReady {
+                // 비밀번호 실패 카운트 표시. 1회 이상이면 작은 안내, threshold 이상이면 강조 banner.
+                if emailLoginMode == .signIn && emailPasswordLimiter.count > 0 {
+                    let isReset = emailPasswordLimiter.hasReachedLimit
+                    HStack(spacing: 8) {
+                        Image(systemName: isReset ? "lock.rotation" : "exclamationmark.circle")
+                            .font(.subheadline)
+                        Text(
+                            isReset
+                                ? "비밀번호 \(emailPasswordLimiter.count)회 틀렸어요. 재설정해보세요."
+                                : "비밀번호 \(emailPasswordLimiter.count)회 틀렸어요."
+                        )
+                        .font(.caption)
+                        .multilineTextAlignment(.leading)
+                    }
+                    .foregroundStyle(isReset ? Color.accentColor : Color.red)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        (isReset ? Color.accentColor : Color.red).opacity(0.1),
+                        in: RoundedRectangle(cornerRadius: 8)
+                    )
+                }
+
                 SecureField(
                     emailLoginMode == .signIn ? "비밀번호" : "새 비밀번호 (\(PasswordPolicy.minLength)자 이상)",
                     text: $loginPassword
@@ -511,13 +591,18 @@ struct SettingsView: View {
                 .disabled(!canSubmitEmailLogin)
 
                 // signIn 에서만 "비밀번호를 잊으셨나요?" 링크.
+                // 5회 이상 실패 시 굵게 강조해서 시선 끌기.
                 if emailLoginMode == .signIn {
-                    Button("비밀번호를 잊으셨나요?") {
-                        switchEmailLoginMode(to: .forgotPassword)
+                    HStack {
+                        Spacer()
+                        Button("비밀번호를 잊으셨나요?") {
+                            switchEmailLoginMode(to: .forgotPassword)
+                        }
+                        .font(.caption)
+                        .fontWeight(emailPasswordLimiter.hasReachedLimit ? .bold : .regular)
+                        .foregroundStyle(Color.accentColor)
+                        .buttonStyle(.borderless)
                     }
-                    .font(.caption)
-                    .foregroundStyle(Color.accentColor)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
         }
@@ -567,6 +652,9 @@ struct SettingsView: View {
         authViewModel.errorMessage = nil
         switch emailLoginMode {
         case .signIn:
+            // 이메일 로그인 제출만 표시 — onChange(errorMessage) 가 이걸 보고
+            // 비밀번호 실패만 카운트하고 Apple/Google 등은 무시한다.
+            emailSignInInFlight = true
             authViewModel.signInWithEmail(email: loginEmail, password: loginPassword)
         case .signUp:
             authViewModel.completeEmailSignUp(password: loginPassword)
@@ -576,7 +664,7 @@ struct SettingsView: View {
     }
 
     /// 비밀번호 정책 체크리스트 한 줄 — 통과 시 초록 ✓, 미통과 시 회색 원.
-    private func passwordRule(_ label: String, passed: Bool) -> some View {
+    private func passwordRule(_ label: LocalizedStringKey, passed: Bool) -> some View {
         HStack(spacing: 6) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .font(.caption)
@@ -615,49 +703,70 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - 화면 (테마) 섹션
+
+    private var appearanceSection: some View {
+        DozyListSection(header: "화면") {
+            NavigationLink {
+                BackgroundThemePickerView()
+            } label: {
+                DozyListRow(title: "테마") {
+                    Image(systemName: "paintpalette.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(DozyColor.Brand.primary)
+                        .frame(width: 22, height: 22)
+                } trailing: {
+                    HStack(spacing: DozySpacing.xs) {
+                        DozyTrailingValue(text: backgroundTheme.displayName)
+                        DozyChevron()
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     // MARK: - 카테고리 섹션
 
     private var categorySection: some View {
-        Section {
+        DozyListSection(header: "카테고리") {
             NavigationLink {
                 CategoryManagementView()
             } label: {
-                Label { Text("카테고리 관리") } icon: {
+                DozyListRow(title: "카테고리 관리") {
                     settingIcon("Light-Management-Category", "Dark-Management-Category")
+                } trailing: {
+                    DozyChevron()
                 }
             }
-        } header: {
-            Text("카테고리")
+            .buttonStyle(.plain)
         }
     }
 
     // MARK: - 앱 정보 섹션
 
     private var infoSection: some View {
-        Section {
+        DozyListSection(header: "앱 정보") {
             Button {
                 guard let url = privacyPolicyURL,
                       let topVC = UIApplication.shared.topViewController else { return }
                 let safari = SFSafariViewController(url: url)
                 topVC.present(safari, animated: true)
             } label: {
-                Label { Text("개인정보 처리방침") } icon: {
+                DozyListRow(title: "개인정보 처리방침") {
                     settingIcon("Light-Privacy", "Dark-Privacy")
+                } trailing: {
+                    DozyChevron()
                 }
             }
-            .foregroundStyle(.primary)
+            .buttonStyle(.plain)
             .disabled(privacyPolicyURL == nil)
 
-            HStack {
-                Label { Text("버전") } icon: {
-                    settingIcon("Light-Version", "Dark-Version")
-                }
-                Spacer()
-                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
-                    .foregroundStyle(.secondary)
+            DozyListRow(title: "버전") {
+                settingIcon("Light-Version", "Dark-Version")
+            } trailing: {
+                DozyTrailingValue(text: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
             }
-        } header: {
-            Text("앱 정보")
         }
     }
 
@@ -665,25 +774,20 @@ struct SettingsView: View {
 
     @ViewBuilder
     private var passwordChangeSection: some View {
-        Section {
+        DozyListSection(header: "비밀번호") {
             Button {
                 showPasswordChange = true
             } label: {
-                HStack(spacing: 12) {
+                DozyListRow(title: "비밀번호 변경") {
                     Image(systemName: "key.fill")
                         .font(.system(size: 16))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 24)
-                    Text("비밀번호 변경")
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(DozyColor.Text.secondary)
+                        .frame(width: 22, height: 22)
+                } trailing: {
+                    DozyChevron()
                 }
             }
-        } header: {
-            Text("비밀번호")
+            .buttonStyle(.plain)
         }
     }
 
@@ -692,16 +796,18 @@ struct SettingsView: View {
     @ViewBuilder
     private var dangerZoneSection: some View {
         if authViewModel.isLoggedIn {
-            Section {
-                Button(role: .destructive) {
+            DozyListSection(footer: "탈퇴 시 모든 데이터가 영구 삭제되며 복구할 수 없습니다.") {
+                Button {
                     showDeleteAccountAlert = true
                 } label: {
-                    Label { Text("계정 탈퇴") } icon: {
+                    DozyListRow(
+                        title: "계정 탈퇴",
+                        titleColor: DozyColor.State.danger
+                    ) {
                         settingIcon("Light-Delete-Account", "Dark-Delete-Account")
                     }
                 }
-            } footer: {
-                Text("탈퇴 시 모든 데이터가 영구 삭제되며 복구할 수 없습니다.")
+                .buttonStyle(.plain)
             }
         }
     }
@@ -709,7 +815,7 @@ struct SettingsView: View {
     // MARK: - 캘린더 섹션
 
     private var calendarSection: some View {
-        Section {
+        DozyListSection(header: "캘린더") {
             NavigationLink {
                 CalendarSettingsView(
                     sourceManager: container.calendarSourceManager,
@@ -717,21 +823,26 @@ struct SettingsView: View {
                     naverSignInService: container.naverSignInService
                 )
             } label: {
-                Label { Text("캘린더 연동") } icon: {
+                DozyListRow(title: "캘린더 연동") {
                     settingIcon("Light-Integrate-Calendar", "Dark-Integrate-Calendar")
+                } trailing: {
+                    DozyChevron()
                 }
             }
+            .buttonStyle(.plain)
+
             if authViewModel.isLoggedIn {
                 NavigationLink {
                     SharedCalendarListView(container: container)
                 } label: {
-                    Label { Text("공유 캘린더") } icon: {
+                    DozyListRow(title: "공유 캘린더") {
                         settingIcon("Light-Share-Calendar", "Dark-Share-Calendar")
+                    } trailing: {
+                        DozyChevron()
                     }
                 }
+                .buttonStyle(.plain)
             }
-        } header: {
-            Text("캘린더")
         }
     }
 }

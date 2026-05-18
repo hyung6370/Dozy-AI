@@ -68,14 +68,14 @@ struct MacMenuBarQuickAddView: View {
             if isAllDay {
                 DatePicker("날짜", selection: $startDate, displayedComponents: .date)
                     .datePickerStyle(.compact)
-                    .environment(\.locale, Locale(identifier: "ko_KR"))
+                    .environment(\.locale, .current)
             } else {
                 DatePicker("시작", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.compact)
-                    .environment(\.locale, Locale(identifier: "ko_KR"))
+                    .environment(\.locale, .current)
                 DatePicker("종료", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.compact)
-                    .environment(\.locale, Locale(identifier: "ko_KR"))
+                    .environment(\.locale, .current)
             }
 
             if let errorMessage {

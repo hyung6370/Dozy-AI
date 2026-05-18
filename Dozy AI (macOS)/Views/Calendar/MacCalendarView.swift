@@ -272,8 +272,10 @@ struct MacCalendarView: View {
     private var deleteDialogTitle: String {
         guard let event = eventPendingDelete,
               let dozy = viewModel.dozyEventsByID[event.id]
-        else { return "일정 삭제" }
-        return dozy.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제"
+        else { return String(localized: "일정 삭제") }
+        return dozy.recurrenceRule != "none"
+            ? String(localized: "반복 일정 삭제")
+            : String(localized: "일정 삭제")
     }
 
     // MARK: - Month Header

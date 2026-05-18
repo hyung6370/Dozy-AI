@@ -11,6 +11,7 @@
 import Foundation
 import Combine
 import SwiftData
+import WidgetKit
 
 @MainActor
 final class HomeViewModel: ObservableObject {
@@ -91,8 +92,8 @@ final class HomeViewModel: ObservableObject {
     
     var currentMonthString: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "yyyy년 M월"
+        formatter.locale = .current
+        formatter.dateFormat = String(localized: "yyyy년 M월")
         return formatter.string(from: Date())
     }
     
@@ -108,6 +109,10 @@ final class HomeViewModel: ObservableObject {
     private let fetchCalendarEventUseCase: FetchCalendarEventUseCase
     private let fetchDozyEventsUseCase: FetchDozyEventsUseCase
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
+    /// 위젯의 미니 캘린더 dot 표시용 — 이번 달 일정 전체를 별도 fetch 할 때 사용.
+    private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
+    /// 메인 fetch 와 분리된 cancellable — 월간 fetch 가 매번 새로 시작.
+    private var widgetMonthFetchCancellable: AnyCancellable?
     private let deleteDozyEventUseCase: DeleteDozyEventUseCase
     private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
     private let createDozyEventUseCase: CreateDozyEventUseCase
@@ -115,9 +120,16 @@ final class HomeViewModel: ObservableObject {
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let displaySettingsRepo: EventDisplaySettingsRepository
     private let notificationRepository: NotificationRepository
+    /// 위젯 캐시 쓰기용. App Group container 가리키므로 위젯 extension 이 같은 store 를 본다.
+    private let modelContainer: ModelContainer
     var cancellables = Set<AnyCancellable>()
     private var todayDataCancellable: AnyCancellable?
     private var completionFetchCancellable: AnyCancellable?
+
+    /// `loadTodayData()` 호출은 짧은 시간에 여러 트리거 (onAppear + selectedTab + dozyEventChanged
+    /// + 위젯 deep link 등) 가 거의 동시에 발화될 수 있음. PassthroughSubject 로 우회시켜
+    /// throttle 로 burst 를 1회 fetch 로 합친다. latest:true 라 마지막 요청도 보장.
+    private let loadTodaySubject = PassthroughSubject<Void, Never>()
 
     // MARK: - Init
 
@@ -131,13 +143,15 @@ final class HomeViewModel: ObservableObject {
         fetchCalendarEventUseCase: FetchCalendarEventUseCase,
         fetchDozyEventsUseCase: FetchDozyEventsUseCase,
         fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
+        fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase,
         deleteDozyEventUseCase: DeleteDozyEventUseCase,
         deleteCalendarEventUseCase: DeleteCalendarEventUseCase,
         createDozyEventUseCase: CreateDozyEventUseCase,
         updateDozyEventUseCase: UpdateDozyEventUseCase,
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
         displaySettingsRepo: EventDisplaySettingsRepository,
-        notificationRepository: NotificationRepository
+        notificationRepository: NotificationRepository,
+        modelContainer: ModelContainer
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
@@ -148,6 +162,7 @@ final class HomeViewModel: ObservableObject {
         self.fetchCalendarEventUseCase = fetchCalendarEventUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
+        self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
         self.deleteDozyEventUseCase = deleteDozyEventUseCase
         self.deleteCalendarEventUseCase = deleteCalendarEventUseCase
         self.createDozyEventUseCase = createDozyEventUseCase
@@ -155,7 +170,17 @@ final class HomeViewModel: ObservableObject {
         self.updateCalendarEventUseCase = updateCalendarEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
         self.notificationRepository = notificationRepository
-        
+        self.modelContainer = modelContainer
+
+        // throttle 구독 — 첫 호출은 즉시, 같은 윈도우(300ms) 안의 burst 는 1회로 합친 뒤
+        // 마지막 호출 시점에 한 번 더 실행 (latest: true).
+        loadTodaySubject
+            .throttle(for: .milliseconds(300), scheduler: DispatchQueue.main, latest: true)
+            .sink { [weak self] _ in
+                self?.performLoadTodayData()
+            }
+            .store(in: &cancellables)
+
         googleSignInService.$isSignedIn
             .removeDuplicates()
             .dropFirst()
@@ -212,13 +237,15 @@ final class HomeViewModel: ObservableObject {
             fetchCalendarEventUseCase: container.fetchCalendarEventUseCase,
             fetchDozyEventsUseCase: container.fetchDozyEventsUseCase,
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
+            fetchCalendarEventsForPeriodUseCase: container.fetchCalendarEventsForPeriodUseCase,
             deleteDozyEventUseCase: container.deleteDozyEventUseCase,
             deleteCalendarEventUseCase: container.deleteCalendarEventUseCase,
             createDozyEventUseCase: container.createDozyEventUseCase,
             updateDozyEventUseCase: container.updateDozyEventUseCase,
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
             displaySettingsRepo: container.eventDisplaySettingsRepository,
-            notificationRepository: container.notificationRepository
+            notificationRepository: container.notificationRepository,
+            modelContainer: container.modelContainer
         )
     }
 
@@ -231,7 +258,13 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - 데이터 로드
 
+    /// 외부에서 호출하는 공개 진입점 — 실제 fetch 는 throttle 거쳐 `performLoadTodayData` 에서 실행.
+    /// 같은 trigger 가 burst 로 들어와도 (onAppear + 위젯 deep link + 탭 전환 등) 1회로 합쳐짐.
     func loadTodayData() {
+        loadTodaySubject.send(())
+    }
+
+    private func performLoadTodayData() {
         isLoading = true
         errorMessage = nil
 
@@ -253,12 +286,63 @@ final class HomeViewModel: ObservableObject {
                     self.pendingTasks = result.pendingTasks
                     self.persistTodayLog(events: result.events, tasks: result.completedTasks)
                     self.loadCompletions(for: result.events)
+
+                    // 위젯 캐시 즉시 갱신 (완료 상태는 default false). 이어 loadCompletions
+                    // 가 끝나면 완료 상태 반영된 캐시로 재갱신 — 2단계 update.
+                    // 즉시 갱신 이유: completion fetch 가 실패하거나 늦어도 위젯이 최소한
+                    // 일정 list 자체는 즉시 표시할 수 있도록.
+                    TodayEventCacheWriter.upsert(
+                        events: result.events,
+                        completions: [:],
+                        dozyEventsByID: self.dozyEventsByID,
+                        container: self.modelContainer
+                    )
+                    // Large 위젯의 미니 캘린더에서 일정 있는 날 dot 표시용 — 이번 달
+                    // 일정 전체를 별도 fetch 해 dates Set 을 App Group UserDefaults 에 캐싱.
+                    // 자체 reload 는 생략 — loadCompletions 의 최종 reload 1회로 통합 (line 372).
+                    self.refreshMonthEventDatesForWidget()
+                    // 1차 reload — 일정 리스트 자체를 즉시 보여주기 위함. 완료 상태는 곧
+                    // 이어지는 loadCompletions 의 2차 reload 에서 반영.
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
             )
 
-        loadRecentLogs()
-        loadWeeklyData()
-        loadMonthlyData()
+        // recentLogs / weeklyData / monthlyData 는 홈 화면에서 표시하지 않으므로 매번 호출하지 않음.
+        // (이전: loadTodayData 마다 28 + α 의 추가 fetch 가 발생했음)
+        // 인사이트 탭이 실제로 이 데이터를 쓰는 시점에 직접 호출하도록 변경.
+    }
+
+    /// Large 위젯의 미니 캘린더 dot indicator 용 — 이번 달 일정 전체를 fetch 해
+    /// 일정 있는 날짜들 (startOfDay) 을 App Group UserDefaults 에 저장.
+    /// Today fetch 와 병렬로 동작. 실패해도 위젯 dot 만 안 보이고 다른 동작엔 영향 없음.
+    private func refreshMonthEventDatesForWidget() {
+        let cal = Calendar.current
+        guard let interval = cal.dateInterval(of: .month, for: Date()) else { return }
+
+        #if DEBUG
+        print("🔄 [Home] refreshMonthEventDatesForWidget 시작: \(interval.start) ~ \(interval.end)")
+        #endif
+
+        widgetMonthFetchCancellable = fetchCalendarEventsForPeriodUseCase
+            .execute(from: interval.start, to: interval.end)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { completion in
+                    #if DEBUG
+                    if case .failure(let err) = completion {
+                        print("❌ [Home] month fetch 실패: \(err)")
+                    }
+                    #endif
+                },
+                receiveValue: { events in
+                    #if DEBUG
+                    print("✅ [Home] month fetch 완료: \(events.count) events")
+                    #endif
+                    TodayEventCacheWriter.updateMonthEventDates(events)
+                    // dot 만 갱신용 — 명시적으로 reload 는 안 부름. 같은 loadTodayData 사이클의
+                    // 1차/2차 reload 가 다음 timeline 에서 새 dates 도 같이 읽음 (file-based 캐시).
+                }
+            )
     }
 
     private func loadCompletions(for events: [CalendarEvent]) {
@@ -298,6 +382,17 @@ final class HomeViewModel: ObservableObject {
             if let log = self.todayLog, !log.aiSummary.isEmpty {
                 self.restoreSummaryFromLog(log)
             }
+
+            // 위젯 캐시 갱신 — Apple/Google/Dozy/Holiday 머지된 오늘 일정 + 완료 상태를
+            // SwiftData 의 TodayEventCache 로 mirror. 위젯이 다음 reloadAllTimelines() 에서
+            // 새 데이터를 읽음.
+            TodayEventCacheWriter.upsert(
+                events: events,
+                completions: merged,
+                dozyEventsByID: dict,
+                container: self.modelContainer
+            )
+            WidgetCenter.shared.reloadAllTimelines()
         })
     }
 
@@ -343,7 +438,7 @@ final class HomeViewModel: ObservableObject {
 
     func generateAISummary() {
         guard hasData else {
-            errorMessage = "요약할 데이터가 부족합니다."
+            errorMessage = String(localized: "요약할 데이터가 부족합니다.")
             return
         }
 
@@ -450,12 +545,14 @@ final class HomeViewModel: ObservableObject {
         // 현재 completedCount 기반으로 텍스트 재계산 (DB 저장 텍스트 무시)
         let summaryText: String
         if completedCount == 0 {
-            summaryText = "오늘은 아직 완료된 일정이 없습니다."
+            summaryText = String(localized: "오늘은 아직 완료된 일정이 없습니다.")
         } else {
             let hours = totalMinutes / 60
             let mins  = totalMinutes % 60
-            let timeStr = hours > 0 ? "\(hours)시간 \(mins)분" : "\(mins)분"
-            summaryText = "오늘 \(completedCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다."
+            let timeStr = hours > 0
+                ? String(localized: "\(hours)시간 \(mins)분")
+                : String(localized: "\(mins)분")
+            summaryText = String(localized: "오늘 \(completedCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다.")
         }
 
         let score = todayEvents.isEmpty ? 0.0 : Double(completedCount) / Double(todayEvents.count)
@@ -492,8 +589,14 @@ final class HomeViewModel: ObservableObject {
         publisher
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadTodayData()
-                if isNew { self?.showSuccessAnimation = true }
+                guard let self else { return }
+                // 위젯에 즉시 시각 피드백 — loadTodayData 의 async fetch 체인 (Apple/Google
+                // merge) 을 기다리지 않고 새로 만든 Dozy 일정을 캐시에 곧장 추가.
+                TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+                // 이어서 full sync — Apple/Google 머지된 결과로 cache 재정렬.
+                self.loadTodayData()
+                if isNew { self.showSuccessAnimation = true }
             })
             .store(in: &cancellables)
     }
@@ -515,10 +618,15 @@ final class HomeViewModel: ObservableObject {
     }
 
     func deleteDozyEvent(_ dozyEvent: DozyEvent) {
+        let id = dozyEvent.id
         deleteDozyEventUseCase.execute(dozyEvent)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
-                self?.loadTodayData()
+                guard let self else { return }
+                // 위젯 캐시에서 해당 id 즉시 제거 — UI 즉시 반영.
+                TodayEventCacheWriter.removeSingleEvent(id: id, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+                self.loadTodayData()
             })
             .store(in: &cancellables)
     }

@@ -18,7 +18,7 @@ struct DayCell: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 2) {
-                Text("\(Calendar.current.component(.day, from: date))")
+                Text(verbatim: "\(Calendar.current.component(.day, from: date))")
                     .font(.subheadline)
                     .fontWeight(isToday ? .bold : .regular)
                     .foregroundStyle((isSelected || isToday) ? .white : .primary)

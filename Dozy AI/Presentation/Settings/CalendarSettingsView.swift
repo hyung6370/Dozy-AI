@@ -26,26 +26,28 @@ struct CalendarSettingsView: View {
     
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    dozyRow
-                    appleRow
-//                    googleRow  // Google Calendar API 심사 중 — 완료 후 재활성화
-//                    naverRow
-                } header: {
-                    Text("연결된 캘린더")
-                } footer: {
-                    Text("활성화된 캘린더의 일정이 Dozy AI 분석에 포함됩니다.")
+            ScrollView {
+                VStack(spacing: DozySpacing.xl) {
+                    DozyListSection(
+                        header: "연결된 캘린더",
+                        footer: "활성화된 캘린더의 일정이 Dozy AI 분석에 포함됩니다."
+                    ) {
+                        dozyRow
+                            .padding(.horizontal, DozySpacing.md)
+                        Divider().padding(.leading, DozySpacing.md)
+                        appleRow
+                            .padding(.horizontal, DozySpacing.md)
+                        Divider().padding(.leading, DozySpacing.md)
+                        googleRow
+                            .padding(.horizontal, DozySpacing.md)
+//                        naverRow
+                    }
                 }
+                .padding(.vertical, DozySpacing.lg)
             }
+            .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("캘린더 설정")
             .navigationBarTitleDisplayMode(.inline)
-//            .toolbar {
-//                ToolbarItem(placement: .topBarTrailing) {
-//                    Button("완료") { dismiss() }
-//                        .fontWeight(.semibold)
-//                }
-//            }
             .alert("로그인 실패", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }
@@ -64,22 +66,22 @@ struct CalendarSettingsView: View {
                 .font(.title2)
                 .foregroundStyle(.primary)
                 .frame(width: 34)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("Apple 캘린더")
                     .font(.subheadline).fontWeight(.medium)
                 Text("iPhone 기본 캘린더")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             Toggle("", isOn: Binding(
                 get: { viewModel.sourceManager.isEnabled(.apple) },
                 set: { _ in viewModel.toggleApple() }
             )).labelsHidden()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DozySpacing.sm)
     }
     
     // MARK: - Google Row
@@ -133,7 +135,7 @@ struct CalendarSettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(hex: "#03C75A") ?? .green)
                     .frame(width: 34, height: 34)
-                Text("N")
+                Text(verbatim: "N")
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
             }
@@ -176,20 +178,20 @@ struct CalendarSettingsView: View {
                 .scaledToFit()
                 .frame(width: 24, height: 24)
                 .frame(width: 34)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("Dozy 캘린더")
                     .font(.subheadline).fontWeight(.medium)
                 Text("앱 내 직접 생성한 일정")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             Text("항상 켜짐")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DozySpacing.sm)
     }
 }

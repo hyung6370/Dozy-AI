@@ -10,6 +10,7 @@ import Combine
 import SwiftData
 import Supabase
 import OSLog
+import WidgetKit
 
 final class DozyEventRepository: DozyEventRepositoryProtocol {
     
@@ -217,6 +218,11 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 guard !touched.isEmpty else { promise(.success(())); return }
                 do {
                     try context.save()
+                    // Apple/Google reconcile 경로 — VM 을 거치지 않고 sync 가 직접 mirror DozyEvent
+                    // 를 갱신하므로, TodayEventCache 가 stale 해질 수 있다. HomeViewModel 이
+                    // 다음 loadTodayData 에서 cache 를 갱신하지만, 위젯에는 즉시 reload 힌트만
+                    // 미리 던져 둔다 (OS 가 적당히 coalesce).
+                    WidgetCenter.shared.reloadAllTimelines()
                     for event in touched {
                         await Self.upsertToSupabase(event)
                     }
@@ -242,6 +248,8 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                 for event in events { context.delete(event) }
                 do {
                     try context.save()
+                    // 외부 미러 영구 삭제 — sync 경로. 위젯에 reload 힌트.
+                    WidgetCenter.shared.reloadAllTimelines()
                     Task {
                         // Supabase 배치 delete — Realtime DELETE가 파트너 기기로 전파됨.
                         try? await supabase.from("dozy_events")

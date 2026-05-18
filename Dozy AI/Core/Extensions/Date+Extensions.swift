@@ -29,25 +29,28 @@ extension Date {
         Calendar.current.component(.weekday, from: self)
     }
     
-    /// 한국어 요일 문자열
+    /// 짧은 요일 — 현재 locale 의 1글자 심볼 (ko: "일/월/...", en: "S/M/...").
     var weekdayString: String {
-        let weekdays = ["", "일", "월", "화", "수", "목", "금", "토"]
-        return weekdays[weekdayNumber]
+        var cal = Calendar.current
+        cal.locale = .current
+        // weekdayNumber 는 1=Sun ~ 7=Sat, veryShortWeekdaySymbols 는 0-indexed 라 -1.
+        return cal.veryShortWeekdaySymbols[weekdayNumber - 1]
     }
-    
-    /// "3월 18일 (화)" 형태
+
+    /// 현재 locale 의 짧은 날짜 — ko: "3월 18일 (화)" / en: "Mar 18 (Tue)".
+    /// dateFormat 자체를 catalog 키로 등록해 locale 별 ICU 패턴을 분기시킨다.
     var formattedKorean: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "M월 d일 (E)"
+        f.locale = .current
+        f.dateFormat = String(localized: "M월 d일 (E)")
         return f.string(from: self)
     }
-    
-    /// "오후 2:30" 형태
+
+    /// 현재 locale 의 12시간제 시각 — ko: "오후 2:30" / en: "2:30 PM".
     var formattedTime: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "a h:mm"
+        f.locale = .current
+        f.dateFormat = String(localized: "a h:mm")
         return f.string(from: self)
     }
     

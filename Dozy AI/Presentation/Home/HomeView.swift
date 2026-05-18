@@ -8,12 +8,15 @@
 import SwiftUI
 import Combine
 import Lottie
+import OSLog
 
 struct HomeView: View {
 
     private let container: DependencyContainer
     @Binding var selectedTab: Int
-    @StateObject private var viewModel: HomeViewModel
+    // ViewModel 은 MainTabView 에서 소유 — 캘린더 탭으로 진입한 사용자도 scenePhase active
+    // 시 widget cache 가 갱신되도록 하기 위해 owner 를 상위로 hoist 함.
+    @ObservedObject var viewModel: HomeViewModel
     @State private var memoText = ""
     @State private var showSummarySheet = false
     @State private var editingMemoIndex: Int? = nil
@@ -30,14 +33,16 @@ struct HomeView: View {
     @State private var showCreateFromEmptyAlert = false
     @State private var showNewEventSheet = false
     @State private var showSharedCalendar = false
+    /// 위젯 (accessoryRectangular) 탭으로 받은 eventID — todayEvents 가 아직 로드 전이면 보류.
+    @State private var pendingWidgetEventID: String? = nil
 
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
 
-    init(container: DependencyContainer, selectedTab: Binding<Int>) {
+    init(container: DependencyContainer, selectedTab: Binding<Int>, viewModel: HomeViewModel) {
         self.container = container
         self._selectedTab = selectedTab
-        _viewModel = StateObject(wrappedValue: HomeViewModel(container: container))
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -46,15 +51,13 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     headerSection
                     bannerSection
+                    aiGenerateButton
                     if !authViewModel.isLoggedIn {
                         loginPromptBanner
                     }
                     if !viewModel.isLoading {
                         if let summary = viewModel.dailySummary {
                             aiSummaryPreview(summary)
-                        }
-                        if let log = viewModel.todayLog, !log.aiSummary.isEmpty {
-                            aiSummaryDetail(log)
                         }
                     }
                     focusCard
@@ -70,7 +73,6 @@ struct HomeView: View {
                         memoSection
                     }
                     WeatherCardView()
-                    // aiGenerateButton
                 }
                 .padding()
             }
@@ -86,6 +88,7 @@ struct HomeView: View {
             .safeAreaInset(edge: .top, spacing: 0) {
                 HomeTopBarView(
                     hasNotification: viewModel.hasNotification,
+                    isLoggedIn: authViewModel.isLoggedIn,
                     onSharedCalendarTap: {
                         if authViewModel.isLoggedIn {
                             showSharedCalendar = true
@@ -98,6 +101,7 @@ struct HomeView: View {
                 )
             }
             .scrollDismissesKeyboard(.interactively)
+            .dozyThemedShellBackground()
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
@@ -122,11 +126,31 @@ struct HomeView: View {
                 }
             }
             .onAppear {
+                Logger.nav.info("[화면: 홈] 🧭 onAppear")
                 viewModel.loadTodayData()
                 viewModel.refreshNotificationBadge()
             }
+            .onDisappear { Logger.nav.info("[화면: 홈] 🧭 onDisappear") }
             .onChange(of: selectedTab) { _, newTab in
                 if newTab == 0 { viewModel.loadTodayData() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenEventDetail)) { notification in
+                // 위젯 accessoryRectangular 탭 → 해당 eventID 의 상세 시트 오픈.
+                // todayEvents 가 이미 로드돼 있으면 즉시 표시, 아니면 보류했다가 로드 후 시도.
+                guard let id = notification.object as? String else { return }
+                if let event = viewModel.todayEvents.first(where: { $0.id == id }) {
+                    selectedEvent = event
+                } else {
+                    pendingWidgetEventID = id
+                    viewModel.loadTodayData()
+                }
+            }
+            .onChange(of: viewModel.todayEvents.count) { _, _ in
+                // todayEvents 가 새로 로드된 직후, 보류된 widget eventID 가 있으면 해소.
+                guard let id = pendingWidgetEventID,
+                      let event = viewModel.todayEvents.first(where: { $0.id == id }) else { return }
+                selectedEvent = event
+                pendingWidgetEventID = nil
             }
             .alert("권한 필요", isPresented: $viewModel.showPermissionAlert) {
                 Button("설정 열기") {
@@ -245,10 +269,10 @@ struct HomeView: View {
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
-        case 5..<12: return "좋은 아침이에요 ☀️"
-        case 12..<18: return "좋은 오후예요 🌤️"
-        case 18..<21: return "좋은 저녁이에요 🌙"
-        default: return "안녕하세요 🌟"
+        case 5..<12: return String(localized: "좋은 아침이에요 ☀️")
+        case 12..<18: return String(localized: "좋은 오후예요 🌤️")
+        case 18..<21: return String(localized: "좋은 저녁이에요 🌙")
+        default: return String(localized: "안녕하세요 🌟")
         }
     }
 
@@ -359,14 +383,15 @@ struct HomeView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
     }
 
     private func timeUntilLabel(_ event: CalendarEvent) -> String {
         let now = Date()
-        if event.startDate <= now { return "진행 중" }
+        if event.startDate <= now { return String(localized: "진행 중") }
         let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
-        if minutes < 60 { return "\(minutes)분 후" }
-        return "\(minutes / 60)시간 후"
+        if minutes < 60 { return String(localized: "\(minutes)분 후") }
+        return String(localized: "\(minutes / 60)시간 후")
     }
 
     private func timeUntilColor(_ event: CalendarEvent) -> Color {
@@ -511,7 +536,7 @@ struct HomeView: View {
             if let log = viewModel.todayLog {
                 ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
                     HStack(alignment: .top, spacing: 8) {
-                        Text("📝").font(.subheadline)
+                        Text(verbatim: "📝").font(.subheadline)
                         Text(memo)
                             .font(.subheadline)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -598,59 +623,20 @@ struct HomeView: View {
             }
             .padding(14)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .dozyThemedCardBorder(cornerRadius: 14)
         }
         .buttonStyle(.plain)
         .disabled(!viewModel.hasData || viewModel.isSummarizing)
         .opacity(viewModel.hasData ? 1.0 : 0.5)
     }
 
-    // MARK: - AI Summary Detail
-
-    private func aiSummaryDetail(_ log: WorkLog) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Dozy 일정 요약")
-                .font(.footnote)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .padding(.leading, 2)
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text(viewModel.dailySummary?.summaryText ?? log.aiSummary)
-                    .font(.subheadline)
-                    .lineSpacing(4)
-
-                if !log.highlights.isEmpty {
-                    Divider()
-                    Text("핵심 하이라이트")
-                        .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
-                    ForEach(log.highlights, id: \.self) { highlight in
-                        Label(highlight, systemImage: "star.fill")
-                            .font(.caption).foregroundStyle(.orange)
-                    }
-                }
-                if !log.nextActions.isEmpty {
-                    Divider()
-                    Text("추천 다음 할 일")
-                        .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
-                    ForEach(log.nextActions, id: \.self) { action in
-                        Label(action, systemImage: "arrow.right.circle")
-                            .font(.caption).foregroundStyle(.blue)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(Color.blue.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.blue.opacity(0.1), lineWidth: 1))
-        }
-    }
 }
 
 // MARK: - HomeStatCard
 
 private struct HomeStatCard: View {
     let value: String
-    let label: String
+    let label: LocalizedStringKey
     let icon: String
     let color: Color
 
@@ -673,5 +659,6 @@ private struct HomeStatCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .dozyThemedCardBorder(cornerRadius: 12)
     }
 }

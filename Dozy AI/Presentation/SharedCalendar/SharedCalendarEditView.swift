@@ -113,7 +113,7 @@ struct SharedCalendarEditView: View {
                             .frame(width: 72, height: 72)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     } else {
-                        Image(systemName: "calendar.badge.person.crop")
+                        Image(systemName: "person.2.fill")
                             .font(.system(size: 28))
                             .foregroundStyle(Color.accentColor)
                     }
@@ -250,20 +250,20 @@ struct SharedCalendarEditView: View {
             do {
                 guard let loaded = try await item.loadTransferable(type: Data.self) else {
                     editLogger.error("loadTransferable returned nil")
-                    imageErrorMessage = "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요."
+                    imageErrorMessage = String(localized: "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요.")
                     return
                 }
                 data = loaded
                 editLogger.debug("loaded \(data.count) bytes")
             } catch {
                 editLogger.error("loadTransferable error: \(error)")
-                imageErrorMessage = "사진 로딩 실패: \(error.localizedDescription)"
+                imageErrorMessage = String(localized: "사진 로딩 실패: \(error.localizedDescription)")
                 return
             }
 
             guard let jpegData = Self.resizedJPEGData(from: data) else {
                 editLogger.error("resize/JPEG encoding failed")
-                imageErrorMessage = "이 사진은 처리할 수 없습니다. (포맷 문제)"
+                imageErrorMessage = String(localized: "이 사진은 처리할 수 없습니다. (포맷 문제)")
                 return
             }
             editLogger.debug("resized JPEG \(jpegData.count) bytes, uploading…")

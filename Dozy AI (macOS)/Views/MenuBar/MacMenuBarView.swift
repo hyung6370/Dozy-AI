@@ -30,9 +30,13 @@ struct MacMenuBarView: View {
                 )
             } else {
                 header
-                focusCard
-                Divider()
-                eventList
+                if viewModel.isSignedIn {
+                    focusCard
+                    Divider()
+                    eventList
+                } else {
+                    signInPrompt
+                }
                 Divider()
                 actions
             }
@@ -52,6 +56,40 @@ struct MacMenuBarView: View {
             Text(viewModel.greeting)
                 .font(.headline)
         }
+    }
+
+    // MARK: - Sign-in Prompt
+
+    private var signInPrompt: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "person.crop.circle.badge.questionmark")
+                .font(.title2)
+                .foregroundStyle(.secondary)
+            Text("로그인 해서 일정을 확인하세요")
+                .font(.subheadline)
+                .fontWeight(.medium)
+            Text("앱을 열어 로그인하면 메뉴바에서도 오늘 일정을 볼 수 있어요.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Button {
+                openMainWindow()
+            } label: {
+                Text("앱 열기")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 6)
+                    .background(Color.accentColor, in: Capsule())
+                    .foregroundStyle(.white)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 4)
+        }
+        .padding(.vertical, 16)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
     }
 
     // MARK: - Focus Card
@@ -114,9 +152,9 @@ struct MacMenuBarView: View {
     }
 
     private func focusLabel(isNow: Bool, isUpcoming: Bool) -> String {
-        if isNow { return "지금 일정" }
-        if isUpcoming { return "다음 일정" }
-        return "오늘 일정"
+        if isNow { return String(localized: "지금 일정") }
+        if isUpcoming { return String(localized: "다음 일정") }
+        return String(localized: "오늘 일정")
     }
 
     // MARK: - Event List
@@ -225,6 +263,8 @@ struct MacMenuBarView: View {
                 Label("새 일정", systemImage: "plus.circle")
             }
             .keyboardShortcut("n")
+            // 로그인 안 한 상태에선 새 일정 만들기 비활성 — 데이터 저장 / 동기화 대상이 없음.
+            .disabled(!viewModel.isSignedIn)
 
             Button {
                 openMainWindow()

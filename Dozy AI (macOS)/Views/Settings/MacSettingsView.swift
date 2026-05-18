@@ -106,7 +106,7 @@ struct MacSettingsView: View {
             HStack(spacing: 16) {
                 providerIcon(for: authViewModel.currentUser?.provider)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(authViewModel.currentUser?.email ?? "사용자")
+                    Text(authViewModel.currentUser?.email ?? String(localized: "사용자"))
                         .font(.body)
                         .fontWeight(.semibold)
                     Text(providerLabel(for: authViewModel.currentUser?.provider))
@@ -162,10 +162,10 @@ struct MacSettingsView: View {
 
     private func providerLabel(for provider: AuthProvider?) -> String {
         switch provider {
-        case .apple:  return "Apple 로그인"
-        case .google: return "Google 로그인"
-        case .email:  return "이메일 로그인"
-        case nil:     return "로그인 필요"
+        case .apple:  return String(localized: "Apple 로그인")
+        case .google: return String(localized: "Google 로그인")
+        case .email:  return String(localized: "이메일 로그인")
+        case nil:     return String(localized: "로그인 필요")
         }
     }
 
@@ -354,7 +354,7 @@ struct MacSettingsView: View {
 
     /// 공통 설정 행 — 좌측 커스텀 에셋 아이콘 + 제목 + 우측 chevron.
     /// frame + contentShape 로 행 전체(여백·chevron 포함)가 클릭 가능하도록.
-    private func settingsRow(asset: String, title: String) -> some View {
+    private func settingsRow(asset: String, title: LocalizedStringKey) -> some View {
         HStack(spacing: 10) {
             Image(asset)
                 .resizable()
@@ -446,7 +446,7 @@ private struct MacShortcutsHelpSheet: View {
 }
 
 private struct HelpGroup<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -467,7 +467,7 @@ private struct HelpGroup<Content: View>: View {
 
 private struct ShortcutRow: View {
     let keys: [String]
-    let label: String
+    let label: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 10) {
@@ -494,8 +494,8 @@ private struct ShortcutRow: View {
 
 private struct TipRow: View {
     let icon: String
-    let title: String
-    let detail: String
+    let title: LocalizedStringKey
+    let detail: LocalizedStringKey
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -519,7 +519,7 @@ private struct TipRow: View {
 // MARK: - SettingsSection
 
 private struct SettingsSection<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     @ViewBuilder let content: () -> Content
 
     var body: some View {

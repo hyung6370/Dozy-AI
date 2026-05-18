@@ -101,7 +101,7 @@ struct SharedCalendarListView: View {
             VStack(spacing: 8) {
                 Text("공유 캘린더가 없어요")
                     .font(.headline)
-                Text("파트너와 일정을 함께 관리해보세요")
+                Text("최대 4명까지 일정을 함께 관리해보세요")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -174,7 +174,7 @@ struct SharedCalendarListView: View {
                         .frame(width: 44, height: 44)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else {
-                    Image(systemName: "calendar.badge.person.crop")
+                    Image(systemName: "person.2.fill")
                         .font(.system(size: 20))
                         .foregroundStyle(Color.accentColor)
                 }

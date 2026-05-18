@@ -142,7 +142,7 @@ struct SharedCalendarJoinView: View {
             VStack(spacing: 8) {
                 Text("참여 완료!")
                     .font(.title2).fontWeight(.bold)
-                Text("공유 캘린더에 참여했어요.\n이제 파트너의 일정을 함께 볼 수 있어요.")
+                Text("공유 캘린더에 참여했어요.\n이제 구성원의 일정을 함께 볼 수 있어요.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

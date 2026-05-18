@@ -102,16 +102,18 @@ private struct BlobItemView: View {
             .scaleEffect(scale)
             .offset(x: offsetX, y: offsetY)
             .position(x: blob.x, y: blob.y)
-            .onAppear {
-                withAnimation(
-                    .easeInOut(duration: blob.animDuration)
+            // .animation(_:value:) 로 scope 을 이 view 안으로 한정.
+            // 기존 withAnimation 은 transaction 으로 ancestor 까지 전파되어 UI 가 흔들림.
+            .animation(
+                .easeInOut(duration: blob.animDuration)
                     .repeatForever(autoreverses: true)
-                    .delay(blob.animDelay)
-                ) {
-                    scale = CGFloat.random(in: 1.1...1.3)
-                    offsetX = CGFloat.random(in: -25...25)
-                    offsetY = CGFloat.random(in: -25...25)
-                }
+                    .delay(blob.animDelay),
+                value: scale
+            )
+            .onAppear {
+                scale = CGFloat.random(in: 1.1...1.3)
+                offsetX = CGFloat.random(in: -25...25)
+                offsetY = CGFloat.random(in: -25...25)
             }
     }
 }

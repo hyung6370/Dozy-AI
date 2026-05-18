@@ -10,14 +10,23 @@ import SwiftUI
 struct HomeTopBarView: View {
 
     let hasNotification: Bool
+    /// 로그아웃 상태에서는 공유 캘린더 진입 아이콘을 숨긴다.
+    let isLoggedIn: Bool
     let onSharedCalendarTap: () -> Void
     let onNotificationTap: () -> Void
     let onProfileTap: () -> Void
 
+    @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
+    private var themeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
+
+    private var theme: DozyBackgroundTheme {
+        DozyBackgroundTheme(rawValue: themeRaw) ?? .defaultTheme
+    }
+
     private var todayString: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "M월 d일 EEEE"
+        formatter.locale = .current
+        formatter.dateFormat = String(localized: "M월 d일 EEEE")
         return formatter.string(from: Date())
     }
 
@@ -39,11 +48,13 @@ struct HomeTopBarView: View {
             Spacer()
 
             HStack(spacing: 16) {
-                Button { onSharedCalendarTap() } label: {
-                    Image(colorScheme == .dark ? "Dark-Home-Share-Calendar" : "Light-Home-Share-Calendar")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 28, height: 28)
+                if isLoggedIn {
+                    Button { onSharedCalendarTap() } label: {
+                        Image(colorScheme == .dark ? "Dark-Home-Share-Calendar" : "Light-Home-Share-Calendar")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 28, height: 28)
+                    }
                 }
 
                 Button { onNotificationTap() } label: {
@@ -66,6 +77,17 @@ struct HomeTopBarView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(Color(.systemBackground))
+        .background(topBarBackground)
+    }
+
+    @ViewBuilder
+    private var topBarBackground: some View {
+        if theme == .system {
+            // 기본 테마는 원래대로 systemBackground.
+            Color(.systemBackground)
+        } else {
+            // ambient/blob: 투명 — themed shell bg 가 상단바 영역까지 자연스럽게 이어진다.
+            Color.clear
+        }
     }
 }

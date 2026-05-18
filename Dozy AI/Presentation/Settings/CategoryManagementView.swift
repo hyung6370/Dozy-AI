@@ -19,29 +19,53 @@ struct CategoryManagementView: View {
     @State private var deletingCategory: UserCategory? = nil
 
     var body: some View {
-        List {
-            ForEach(categories) { cat in
-                HStack(spacing: 14) {
-                    Text(cat.emoji).font(.title2)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(cat.name).font(.subheadline).fontWeight(.medium)
-                    }
-                    Spacer()
-                    Circle()
-                        .fill(Color(hex: cat.colorHex) ?? .gray)
-                        .frame(width: 20, height: 20)
-                }
-                .contentShape(Rectangle())
-                .onTapGesture { editingCategory = cat }
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button(role: .destructive) {
-                        deletingCategory = cat
+        Group {
+            if categories.isEmpty {
+                ContentUnavailableView {
+                    Label("아직 카테고리가 없어요", systemImage: "tag")
+                } description: {
+                    Text("우측 상단 + 버튼을 눌러 첫 카테고리를 추가해보세요.")
+                } actions: {
+                    Button {
+                        showAddSheet = true
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Text("카테고리 추가")
+                            .fontWeight(.semibold)
                     }
+                    .buttonStyle(.borderedProminent)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
+            } else {
+                List {
+                    ForEach(categories) { cat in
+                        HStack(spacing: 14) {
+                            Text(cat.emoji).font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(cat.name).font(.subheadline).fontWeight(.medium)
+                            }
+                            Spacer()
+                            Circle()
+                                .fill(Color(hex: cat.colorHex) ?? .gray)
+                                .frame(width: 20, height: 20)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture { editingCategory = cat }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                deletingCategory = cat
+                            } label: {
+                                Label("삭제", systemImage: "trash")
+                            }
+                        }
+                    }
+                    .onMove(perform: move)
+                }
+                // List 유지 (swipeActions/onMove 보존). themed shell bg 가 비치도록 투명.
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             }
-            .onMove(perform: move)
         }
         .navigationTitle("카테고리 관리")
         .navigationBarTitleDisplayMode(.inline)

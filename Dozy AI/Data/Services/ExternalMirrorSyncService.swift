@@ -40,11 +40,11 @@ final class ExternalMirrorSyncService {
     /// completion은 실패/성공 무관하게 한 번 호출되며, 호출자는 이 시점에 UI를 refresh하면 된다.
     func reconcile(completion: (() -> Void)? = nil) {
         guard inFlight == nil else {
-            Logger.mirrorSync.debug("⏭ 이미 reconcile 진행 중 — 스킵")
+            Logger.mirrorSync.debug("[동기화] ⏭ 이미 reconcile 진행 중 — 스킵")
             completion?()
             return
         }
-        Logger.mirrorSync.info("🔄 외부 미러 reconcile 시작")
+        Logger.mirrorSync.info("[동기화] 🔄 외부 미러 reconcile 시작")
         inFlight = repository.fetchMyExternalMirrors()
             .flatMap { [weak self] mirrors -> AnyPublisher<ReconcileResult, DozyError> in
                 guard let self else {
@@ -56,7 +56,7 @@ final class ExternalMirrorSyncService {
                 guard let self else {
                     return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
                 }
-                Logger.mirrorSync.info("📝 업데이트 \(result.updates.count)건 / 삭제 마킹 \(result.deletedIDs.count)건 / 영구 삭제 \(result.permanentDeleteIDs.count)건")
+                Logger.mirrorSync.info("[동기화] 📝 업데이트 \(result.updates.count)건 / 삭제 마킹 \(result.deletedIDs.count)건 / 영구 삭제 \(result.permanentDeleteIDs.count)건")
                 // 먼저 flag/필드 반영 → 그 다음 유예 지난 스냅샷 영구 삭제.
                 // 순서를 뒤집으면 방금 삭제한 id에 대해 apply 단계에서 no-op이 되므로 결과적으로는 같지만, 의미상 마킹 먼저가 자연스러움.
                 return self.repository.applyExternalMirrorReconcile(
@@ -77,9 +77,9 @@ final class ExternalMirrorSyncService {
             .sink(
                 receiveCompletion: { [weak self] result in
                     if case .failure(let error) = result {
-                        Logger.mirrorSync.error("❌ reconcile 실패: \(error.localizedDescription)")
+                        Logger.mirrorSync.error("[동기화] ❌ reconcile 실패: \(error.localizedDescription)")
                     } else {
-                        Logger.mirrorSync.info("✅ reconcile 완료")
+                        Logger.mirrorSync.info("[동기화] ✅ reconcile 완료")
                     }
                     self?.inFlight = nil
                     completion?()

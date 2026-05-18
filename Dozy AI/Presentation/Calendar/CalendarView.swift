@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Lottie
+import OSLog
 
 struct CalendarView: View {
 
@@ -57,6 +58,8 @@ struct CalendarView: View {
                         eventListSection
                             .id("eventList")
                     }
+                    // floatingScrollButton(높이 ~44 + bottom padding 100) 위에서 마지막 콘텐츠가 가려지지 않도록 여유.
+                    Color.clear.frame(height: 80)
                 }
             }
             .overlay(alignment: .bottom) {
@@ -65,7 +68,7 @@ struct CalendarView: View {
                 }
             }
             .refreshable {
-                viewModel.refreshData()
+                viewModel.refreshData(source: "CalendarView.refreshable")
             }
             .onChange(of: triggerScrollToList) { _, newVal in
                 if newVal {
@@ -79,6 +82,7 @@ struct CalendarView: View {
             .onChange(of: viewModel.viewMode) { _, _ in
                 isShowingEventList = false
             }
+            .dozyThemedShellBackground()
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -198,7 +202,14 @@ struct CalendarView: View {
                     }
                 }
             }
-            .onAppear { viewModel.loadInitialData() }
+            .onAppear {
+                // ⚠️ 여기서 loadInitialData 를 부르지 않는다. MainTabView.onAppear 와 tab
+                // switch 경로가 이미 초기 로드를 트리거하고, CalendarView 가 SwiftUI
+                // TabView 안에서 신원이 갈리며 onAppear 가 반복 발화하던 케이스가
+                // 폭주의 직접 원인이었다 (#53). 로그만 남긴다.
+                Logger.nav.info("[화면: 캘린더] 🧭 onAppear")
+            }
+            .onDisappear { Logger.nav.info("[화면: 캘린더] 🧭 onDisappear") }
             .overlay {
                 if viewModel.showSuccessAnimation {
                     LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
@@ -645,7 +656,8 @@ struct CalendarView: View {
             .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
-        .padding(.bottom, 20)
+        // 커스텀 탭바(84pt) 위로 떠 있도록 충분한 bottom padding.
+        .padding(.bottom, 100)
     }
 
     @ViewBuilder
@@ -664,22 +676,24 @@ struct CalendarView: View {
     private func longPressAlertMessage() -> some View {
         if let date = longPressDate {
             let formatter = DateFormatter()
-            let _ = { formatter.locale = Locale(identifier: "ko_KR"); formatter.dateFormat = "M월 d일(E)" }()
+            let _ = { formatter.locale = .current; formatter.dateFormat = String(localized: "M월 d일(E)") }()
             Text("\(formatter.string(from: date))에 일정을 생성하시겠습니까?")
         }
     }
 
     private var alertTitle: String {
         if let e = viewModel.pendingDeleteEvent {
-            return e.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제"
+            return e.recurrenceRule != "none"
+                ? String(localized: "반복 일정 삭제")
+                : String(localized: "일정 삭제")
         }
-        return "일정 삭제"
+        return String(localized: "일정 삭제")
     }
 
     private var selectedDateLabel: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "M월 d일 (E)"
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.dateFormat = String(localized: "M월 d일 (E)")
+        fmt.locale = .current
         return fmt.string(from: viewModel.selectedDate)
     }
     
@@ -707,7 +721,7 @@ private struct DatePickerSheetView: View {
         NavigationStack {
             DatePicker("날짜 선택", selection: $selectedDate, displayedComponents: .date)
                 .datePickerStyle(.graphical)
-                .environment(\.locale, Locale(identifier: "ko_KR"))
+                .environment(\.locale, .current)
                 .padding(.horizontal)
             .navigationTitle("날짜 이동")
             .navigationBarTitleDisplayMode(.inline)

@@ -95,7 +95,7 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     var contextString: String {
         var text = "[\(timeRangeString)] \(title)"
         if let location, !location.isEmpty {
-            text += " (장소: \(location))"
+            text += " " + String(localized: "(장소: \(location))")
         }
         return text
     }

@@ -183,7 +183,7 @@ private extension DailySummaryView {
         }
     }
 
-    private func tabSectionHeader(title: String, icon: String, color: Color) -> some View {
+    private func tabSectionHeader(title: LocalizedStringKey, icon: String, color: Color) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.subheadline)
@@ -342,7 +342,7 @@ private extension DailySummaryView {
         }
     }
 
-    private func metaCell(icon: String, label: String, value: String) -> some View {
+    private func metaCell(icon: String, label: LocalizedStringKey, value: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.subheadline)
@@ -744,10 +744,10 @@ private extension DailySummaryView {
 
     private func priorityLabel(_ priority: RecommendedAction.ActionPriority) -> String {
         switch priority {
-        case .critical: return "🔴 긴급"
-        case .high:     return "🟠 중요"
-        case .normal:   return "🔵 보통"
-        case .low:      return "⚪ 낮음"
+        case .critical: return String(localized: "🔴 긴급")
+        case .high:     return String(localized: "🟠 중요")
+        case .normal:   return String(localized: "🔵 보통")
+        case .low:      return String(localized: "⚪ 낮음")
         }
     }
 }
@@ -1248,16 +1248,18 @@ private extension DailySummaryView {
         if minutes >= 60 {
             let h = minutes / 60
             let m = minutes % 60
-            return m > 0 ? "\(h)시간 \(m)분" : "\(h)시간"
+            return m > 0
+                ? String(localized: "\(h)시간 \(m)분")
+                : String(localized: "\(h)시간")
         }
-        return "\(minutes)분"
+        return String(localized: "\(minutes)분")
     }
 
     func focusDescription(_ categoryCount: Int) -> String {
         switch categoryCount {
-        case 1: return "오늘 하나의 카테고리에 집중했어요"
-        case 2: return "두 가지 영역에 균형 있게 시간을 썼어요"
-        default: return "\(categoryCount)개 카테고리에 걸쳐 다양하게 활동했어요"
+        case 1: return String(localized: "오늘 하나의 카테고리에 집중했어요")
+        case 2: return String(localized: "두 가지 영역에 균형 있게 시간을 썼어요")
+        default: return String(localized: "\(categoryCount)개 카테고리에 걸쳐 다양하게 활동했어요")
         }
     }
 }

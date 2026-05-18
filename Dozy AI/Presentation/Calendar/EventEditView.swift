@@ -14,14 +14,22 @@ struct EventEditView: View {
     @StateObject private var viewModel: EventEditViewModel
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
     @State private var showAddCategory = false
-    
-    init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [], onSave: @escaping (DozyEvent) -> Void) {
+    /// ZStack overlay 같이 @Environment(\.dismiss) 가 안 동작하는 컨텍스트에서 명시적 dismiss 콜백.
+    /// nil 이면 기본 dismiss() 호출.
+    private let onCancel: (() -> Void)?
+
+    init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [], onSave: @escaping (DozyEvent) -> Void, onCancel: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: eventToEdit,
             selectedDate: selectedDate,
             sharedCalendars: sharedCalendars,
             onSave: onSave
         ))
+        self.onCancel = onCancel
+    }
+
+    private func performDismiss() {
+        if let onCancel { onCancel() } else { dismiss() }
     }
     
     var body: some View {
@@ -33,15 +41,15 @@ struct EventEditView: View {
 
                     if viewModel.isAllDay {
                         DatePicker("날짜", selection: $viewModel.startDate, displayedComponents: .date)
-                            .environment(\.locale, Locale(identifier: "ko_KR"))
+                            .environment(\.locale, .current)
                     } else {
                         DatePicker("시작", selection: $viewModel.startDate, displayedComponents: [.date, .hourAndMinute])
-                            .environment(\.locale, Locale(identifier: "ko_KR"))
+                            .environment(\.locale, .current)
                         DatePicker("종료",
                                    selection: $viewModel.endDate,
                                    in: viewModel.startDate...,
                                    displayedComponents: [.date, .hourAndMinute])
-                            .environment(\.locale, Locale(identifier: "ko_KR"))
+                            .environment(\.locale, .current)
                     }
                 }
 
@@ -109,7 +117,7 @@ struct EventEditView: View {
                             selection: $viewModel.recurrenceEndDate,
                             displayedComponents: .date
                         )
-                        .environment(\.locale, Locale(identifier: "ko_KR"))
+                        .environment(\.locale, .current)
                     }
                 }
 
@@ -137,12 +145,12 @@ struct EventEditView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("취소") { dismiss() }
+                    Button("취소") { performDismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("저장") {
                         viewModel.save()
-                        dismiss()
+                        performDismiss()
                     }
                     .fontWeight(.semibold)
                     .disabled(!viewModel.isSavable)

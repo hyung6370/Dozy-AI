@@ -10,16 +10,16 @@ import SwiftUI
 // MARK: - BannerItem Model
 struct BannerItem: Identifiable {
     let id: UUID
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let gradientColors: [Color]
     let iconName: String
     let action: (() -> Void)?
 
     init(
         id: UUID = UUID(),
-        title: String,
-        subtitle: String,
+        title: LocalizedStringKey,
+        subtitle: LocalizedStringKey,
         gradientColors: [Color],
         iconName: String,
         action: (() -> Void)? = nil
@@ -52,7 +52,7 @@ extension BannerItem {
             title: "공유 캘린더를 만들어보세요",
             subtitle: "파트너와 일정을 함께 관리할 수 있어요",
             gradientColors: [.teal, .green],
-            iconName: "calendar.badge.person.crop"
+            iconName: "person.2.fill"
         ),
     ]
 }

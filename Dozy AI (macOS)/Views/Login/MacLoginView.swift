@@ -17,6 +17,16 @@ struct MacLoginView: View {
     @State private var otpCode: String = ""
     @State private var mode: Mode = .signIn
 
+    /// signIn 모드 연속 비밀번호 실패 카운트. 5회 도달 시 안내 alert + 로그인 버튼 비활성 +
+    /// "비밀번호를 잊으셨나요?" 강조. 로그인 성공 또는 이메일 변경 시 reset.
+    @State private var emailPasswordLimiter = PasswordFailLimiter(threshold: 5)
+    /// limit 도달 시 자동으로 표시되는 안내 alert.
+    @State private var showFailLimitAlert: Bool = false
+    /// 이메일 로그인 제출 in-flight 플래그. errorMessage 가 발생했을 때 그것이
+    /// 이메일 비밀번호 실패에서 온 것인지 (= count 대상) vs Apple/Google 취소·실패 (= 무시)
+    /// 인지를 구분하기 위해 사용. submit() 시 true 로, isSigningIn 가 false 로 떨어지면 해제.
+    @State private var emailSignInInFlight: Bool = false
+
     enum Mode { case signIn, signUp, forgotPassword }
 
     /// 비밀번호 단계 (signUp 또는 forgotPassword) 에서 confirm 이 password 와 다르면 true.
@@ -60,6 +70,8 @@ struct MacLoginView: View {
         guard !authViewModel.isSigningIn, !email.isEmpty else { return false }
         switch mode {
         case .signIn:
+            // limit 도달 시 비활성 — 사용자는 "이메일 인증하기" 경로로만 진행 가능.
+            guard emailPasswordLimiter.canSubmit else { return false }
             return !password.isEmpty
         case .signUp, .forgotPassword:
             guard isPasswordStageReady else { return false }
@@ -86,7 +98,9 @@ struct MacLoginView: View {
     }
 
     /// 비밀번호 정책 체크리스트 한 줄 — 통과 시 초록 ✓, 미통과 시 회색 원.
-    private func passwordRule(_ label: String, passed: Bool) -> some View {
+    /// label 은 `LocalizedStringKey` — 호출부에서 문자열 리터럴(보간 포함)을 그대로 넘기면
+    /// SwiftUI 가 `Text(_:LocalizedStringKey)` 경로로 추출해 catalog 에 들어간다.
+    private func passwordRule(_ label: LocalizedStringKey, passed: Bool) -> some View {
         HStack(spacing: 6) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .font(.caption)
@@ -137,12 +151,16 @@ struct MacLoginView: View {
                 .frame(width: 280, height: 44)
                 .background(
                     colorScheme == .dark ? Color.white : Color.black,
-                    in: RoundedRectangle(cornerRadius: 8)
+                    in: Capsule()
                 )
             }
             .buttonStyle(.plain)
             .disabled(authViewModel.isSigningIn)
 
+            // Google 로그인 — Apple 버튼과 동일한 frame/cornerRadius/.plain 사용해 모양을 맞춤.
+            // .bordered 시스템 스타일은 macOS 가 윈도우 inactive 상태에서 자체 desaturate 를
+            // 적용해 Apple 버튼과 톤이 어긋남. 명시 background + stroke 로 두 버튼이 항상
+            // 같은 outline 으로 보이게 한다.
             Button {
                 authViewModel.signInWithGoogle()
             } label: {
@@ -154,10 +172,18 @@ struct MacLoginView: View {
                     Text("Google로 로그인")
                         .fontWeight(.medium)
                 }
+                .foregroundStyle(Color.primary)
                 .frame(width: 280, height: 44)
+                .background(
+                    Color(nsColor: .controlBackgroundColor),
+                    in: Capsule()
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Color.primary.opacity(0.15), lineWidth: 1)
+                )
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(.plain)
             .disabled(authViewModel.isSigningIn)
 
             if authViewModel.isSigningIn {
@@ -179,6 +205,41 @@ struct MacLoginView: View {
         .background {
             BlobBackgroundView(intensity: 0.6)
                 .ignoresSafeArea()
+        }
+        // signIn 모드 + 이메일 로그인 제출이 in-flight 일 때만 비밀번호 실패로 간주.
+        // Apple/Google 취소·실패는 같은 errorMessage 채널을 쓰지만 emailSignInInFlight 가
+        // false 이므로 카운트되지 않음. signUp/forgotPassword 의 에러(이메일 중복·OTP 만료 등) 도 동일하게 제외.
+        .onChange(of: authViewModel.errorMessage) { _, newVal in
+            if newVal != nil, mode == .signIn, emailSignInInFlight {
+                emailPasswordLimiter.recordFailure()
+                if emailPasswordLimiter.justReachedLimit {
+                    showFailLimitAlert = true
+                }
+                emailSignInInFlight = false
+            }
+        }
+        // isSigningIn 가 끝나면 (성공이든 실패든) in-flight 해제 — 다음 시도에 대비.
+        .onChange(of: authViewModel.isSigningIn) { _, newVal in
+            if !newVal { emailSignInInFlight = false }
+        }
+        // 로그인 성공 시 카운터 reset — currentUser?.id 가 nil 에서 값으로 전환되는 시점.
+        .onChange(of: authViewModel.currentUser?.id) { _, newID in
+            if newID != nil { emailPasswordLimiter.reset() }
+        }
+        // 이메일 필드 변경 시 reset — 다른 계정으로 시도하는 흐름을 막지 않기 위해.
+        .onChange(of: email) { _, _ in
+            emailPasswordLimiter.reset()
+        }
+        .alert(
+            "비밀번호를 \(emailPasswordLimiter.threshold)회 틀리셨습니다",
+            isPresented: $showFailLimitAlert
+        ) {
+            Button("이메일 인증하기") {
+                switchTo(.forgotPassword)
+            }
+            Button("취소", role: .cancel) { }
+        } message: {
+            Text("보안을 위해 이메일 인증 후 비밀번호를 재설정해주세요.")
         }
     }
 
@@ -337,6 +398,31 @@ struct MacLoginView: View {
             // ── 비밀번호 입력 단계 ────────────────────────────
             // signIn 은 항상 노출, signUp/forgotPassword 는 OTP 검증 완료 후에만.
             if mode == .signIn || isPasswordStageReady {
+                // 비밀번호 실패 카운트 표시 — 1~4 회는 빨강 톤, threshold 도달 시 accent 톤 +
+                // 재설정 안내. iOS SettingsView 와 동일한 시각 언어.
+                if mode == .signIn && emailPasswordLimiter.count > 0 {
+                    let isReset = emailPasswordLimiter.hasReachedLimit
+                    HStack(spacing: 8) {
+                        Image(systemName: isReset ? "lock.rotation" : "exclamationmark.circle")
+                            .font(.subheadline)
+                        Text(
+                            isReset
+                                ? "비밀번호 \(emailPasswordLimiter.count)회 틀렸어요. 재설정해보세요."
+                                : "비밀번호 \(emailPasswordLimiter.count)회 틀렸어요."
+                        )
+                        .font(.caption)
+                        .multilineTextAlignment(.leading)
+                    }
+                    .foregroundStyle(isReset ? Color.accentColor : Color.red)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .frame(width: 280, alignment: .leading)
+                    .background(
+                        (isReset ? Color.accentColor : Color.red).opacity(0.1),
+                        in: RoundedRectangle(cornerRadius: 8)
+                    )
+                }
+
                 SecureField(
                     mode == .signIn ? "비밀번호" : "새 비밀번호 (\(PasswordPolicy.minLength)자 이상)",
                     text: $password
@@ -402,12 +488,14 @@ struct MacLoginView: View {
                 .disabled(!canSubmit)
 
                 // signIn 모드에서만 "비밀번호를 잊으셨나요?" 링크.
+                // 5회 이상 실패 시 굵게 강조해서 시선을 끈다.
                 if mode == .signIn {
                     Button("비밀번호를 잊으셨나요?") {
                         switchTo(.forgotPassword)
                     }
                     .buttonStyle(.link)
                     .font(.caption)
+                    .fontWeight(emailPasswordLimiter.hasReachedLimit ? .bold : .regular)
                     .frame(width: 280, alignment: .trailing)
                 }
             }
@@ -419,12 +507,13 @@ struct MacLoginView: View {
         mode == .signUp || mode == .forgotPassword
     }
 
-    /// 제출 버튼 라벨.
+    /// 제출 버튼 라벨. `String(localized:)` 로 감싸야 SwiftUI `Text(_:String)` 경로에서도
+    /// catalog 가 작동. wrapping 없이 raw 문자열을 넘기면 localized 키로 추출되지 않는다.
     private var submitLabel: String {
         switch mode {
-        case .signIn:          return "이메일로 로그인"
-        case .signUp:          return "가입 완료"
-        case .forgotPassword:  return "비밀번호 변경"
+        case .signIn:          return String(localized: "이메일로 로그인")
+        case .signUp:          return String(localized: "가입 완료")
+        case .forgotPassword:  return String(localized: "비밀번호 변경")
         }
     }
 
@@ -473,6 +562,9 @@ struct MacLoginView: View {
         authViewModel.errorMessage = nil
         switch mode {
         case .signIn:
+            // 이메일 로그인 제출만 표시 — onChange(errorMessage) 가 이걸 보고
+            // 비밀번호 실패만 카운트하고 Apple/Google 취소 등은 무시한다.
+            emailSignInInFlight = true
             authViewModel.signInWithEmail(email: email, password: password)
         case .signUp:
             authViewModel.completeEmailSignUp(password: password)

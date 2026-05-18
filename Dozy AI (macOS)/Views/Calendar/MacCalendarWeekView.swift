@@ -54,7 +54,7 @@ struct MacCalendarWeekView: View {
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundStyle(weekdayColor(idx))
-                    Text("\(cal.component(.day, from: date))")
+                    Text(verbatim: "\(cal.component(.day, from: date))")
                         .font(.body)
                         .fontWeight(cal.isDateInToday(date) ? .bold : .medium)
                         .foregroundStyle(cal.isDateInToday(date) ? Color.white : .primary)
@@ -80,7 +80,10 @@ struct MacCalendarWeekView: View {
     }
 
     private func weekdayLabel(_ idx: Int) -> String {
-        ["일", "월", "화", "수", "목", "금", "토"][idx]
+        // 현재 locale 의 짧은 요일 심볼 — Calendar 가 Sunday=0 기준이라 그대로 매핑.
+        var cal = Calendar.current
+        cal.locale = .current
+        return cal.veryShortWeekdaySymbols[idx]
     }
 
     private func weekdayColor(_ idx: Int) -> Color {
