@@ -36,6 +36,10 @@ struct HomeView: View {
     /// 위젯 (accessoryRectangular) 탭으로 받은 eventID — todayEvents 가 아직 로드 전이면 보류.
     @State private var pendingWidgetEventID: String? = nil
 
+    // 토스 스타일 Pull-to-Refresh 상태 — 상단바 내부 요소의 scale/인디케이터를 구동한다.
+    @State private var pullProgress: Double = 0
+    @State private var isRefreshing: Bool = false
+
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
 
@@ -47,7 +51,12 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            TossPullToRefreshScroll(
+                threshold: 70,
+                pullProgress: $pullProgress,
+                isRefreshing: $isRefreshing,
+                onRefresh: { await runRefresh() }
+            ) {
                 VStack(spacing: 20) {
                     headerSection
                     bannerSection
@@ -97,7 +106,9 @@ struct HomeView: View {
                         }
                     },
                     onNotificationTap: { showNotificationSheet = true },
-                    onProfileTap: { selectedTab = 3 }
+                    onProfileTap: { selectedTab = 3 },
+                    pullProgress: pullProgress,
+                    isRefreshing: isRefreshing
                 )
             }
             .scrollDismissesKeyboard(.interactively)
@@ -112,7 +123,6 @@ struct HomeView: View {
                     .fontWeight(.semibold)
                 }
             }
-            .refreshable { viewModel.loadTodayData() }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .inactive || newPhase == .background {
                     showSummarySheet = false
@@ -583,6 +593,21 @@ struct HomeView: View {
         memoText = ""
     }
 
+    // MARK: - Pull to Refresh
+
+    /// 토스 스타일 Pull-to-Refresh 의 실제 데이터 reload.
+    /// `loadTodayData()` 는 동기 함수지만 내부적으로 Combine 체인을 띄우고 `isLoading`
+    /// 을 즉시 true 로 세팅하므로, 그 flag 가 false 로 떨어질 때까지 폴링한다.
+    private func runRefresh() async {
+        viewModel.loadTodayData()
+        // isLoading 가 즉시 true 로 바뀌지 않는 경로를 대비해 한 틱 대기.
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        let deadline = Date().addingTimeInterval(5)
+        while viewModel.isLoading && Date() < deadline {
+            try? await Task.sleep(nanoseconds: 60_000_000)
+        }
+    }
+
     // MARK: - AI Generate Button
 
     private var aiGenerateButton: some View {
@@ -632,6 +657,208 @@ struct HomeView: View {
 
 }
 
+// MARK: - Toss-style Pull-to-Refresh
+
+/// 토스 앱 스타일의 커스텀 Pull-to-Refresh 스크롤뷰.
+///
+/// 책임:
+/// - 내부에 SwiftUI `ScrollView` 를 띄우고, 그 안에 UIKit 인트로스펙터 뷰를
+///   심어 ancestor `UIScrollView` 의 `contentOffset` 과 `panGestureRecognizer`
+///   state 를 직접 관찰한다.
+/// - 결과로 얻는 당김 거리/release 시점을 `pullProgress` / `isRefreshing`
+///   바인딩으로 외부에 노출한다.
+///
+/// 왜 PreferenceKey + DragGesture 가 아닌가:
+/// - `safeAreaInset` 과 결합된 SwiftUI ScrollView 에서 GeometryReader-기반
+///   offset 측정이 불안정 (변화가 누락되거나 처음 한 번만 fire).
+/// - `simultaneousGesture(DragGesture(minimumDistance: 0))` 는 iOS 17 에서
+///   ScrollView 의 pan 인식을 가로채는 케이스가 있음.
+/// - 토스 자체가 UIKit 기반인 이유이기도 함 — UIScrollView 의 contentOffset/
+///   panGesture 를 직접 들여다보는 게 가장 안정적.
+private struct TossPullToRefreshScroll<Content: View>: View {
+    let threshold: CGFloat
+    @Binding var pullProgress: Double
+    @Binding var isRefreshing: Bool
+    let onRefresh: () async -> Void
+    @ViewBuilder var content: () -> Content
+
+    @State private var hapticArmed = false
+    private let hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
+
+    /// 인디케이터의 alpha — 로딩 중이면 1.0, 아니면 진행도와 동일하게 등장.
+    private var indicatorOpacity: Double {
+        if isRefreshing { return 1.0 }
+        return min(max(pullProgress, 0), 1)
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                // 0-높이 인트로스펙터 — superview chain 을 타고 올라가
+                // ancestor UIScrollView 를 찾아 contentOffset / panGesture 를 관찰.
+                TossScrollIntrospector(
+                    onPullUpdate: handle(pull:),
+                    onRelease: handleRelease
+                )
+                .frame(width: 0, height: 0)
+
+                content()
+            }
+        }
+        // 인디케이터는 ScrollView 의 visible top 에 고정 — 상단바 바로 아래,
+        // iOS 기본 Pull-to-Refresh 가 스피너를 띄우는 그 위치. ScrollView 의
+        // 콘텐츠가 당겨져 내려갈 때 그 영역이 드러나면서 자연스럽게 등장한다.
+        .overlay(alignment: .top) {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .controlSize(.regular)
+                .tint(.secondary)
+                .padding(.top, 16)
+                .opacity(indicatorOpacity)
+                .allowsHitTesting(false)
+        }
+        .task { hapticGenerator.prepare() }
+    }
+
+    private func handle(pull: CGFloat) {
+        // 로딩 중에는 진행도를 외부에서 minScale 로 고정해 두므로 건드리지 않는다.
+        guard !isRefreshing else { return }
+
+        let progress = Double(pull / threshold)
+        pullProgress = progress
+
+        // 임계점 도달 — "지금 놓으면 refresh 됩니다" 햅틱 (1회/사이클).
+        if progress >= 1.0 && !hapticArmed {
+            hapticArmed = true
+            hapticGenerator.impactOccurred()
+            hapticGenerator.prepare()
+        } else if progress < 0.5 {
+            // 같은 제스처 안에서 사용자가 다시 위로 끌어올렸다 다시 내릴 수 있도록 재무장.
+            hapticArmed = false
+        }
+    }
+
+    private func handleRelease() {
+        guard !isRefreshing else { return }
+        guard pullProgress >= 1.0 else { return }
+
+        isRefreshing = true
+        hapticArmed = false
+
+        Task {
+            let start = Date()
+            await onRefresh()
+            // 너무 빠른 완료 (캐시 hit 등) 는 스피너가 깜빡이는 인상을 줘서
+            // 최소 표시 시간을 보장한다.
+            let minDuration: TimeInterval = 0.6
+            let elapsed = Date().timeIntervalSince(start)
+            if elapsed < minDuration {
+                let remaining = minDuration - elapsed
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+            }
+            await MainActor.run { finishRefresh() }
+        }
+    }
+
+    private func finishRefresh() {
+        // 핵심 탄성 복원 — dampingFraction 0.45 로 통통 1~2회 오버슈트.
+        // pullProgress = 0 과 isRefreshing = false 를 같은 트랜잭션에 묶어서
+        // 상단바의 scale 1.0 복귀 + indicator 페이드아웃이 한 번에 일어난다.
+        withAnimation(.spring(response: 0.55, dampingFraction: 0.45)) {
+            isRefreshing = false
+            pullProgress = 0
+        }
+    }
+}
+
+/// UIKit 인트로스펙터 — superview chain 에서 첫 번째 `UIScrollView` 를 찾아
+/// `contentOffset` KVO + pan gesture state 콜백을 hook 한다.
+private struct TossScrollIntrospector: UIViewRepresentable {
+    let onPullUpdate: (CGFloat) -> Void
+    let onRelease: () -> Void
+
+    func makeUIView(context: Context) -> TossIntrospectorView {
+        let view = TossIntrospectorView()
+        context.coordinator.onPullUpdate = onPullUpdate
+        context.coordinator.onRelease = onRelease
+        view.onAttached = { [weak coordinator = context.coordinator] hostView in
+            coordinator?.attach(from: hostView)
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: TossIntrospectorView, context: Context) {
+        // 부모가 closure 를 새로 만들어 전달해도 같은 동작을 유지.
+        context.coordinator.onPullUpdate = onPullUpdate
+        context.coordinator.onRelease = onRelease
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator: NSObject {
+        var onPullUpdate: ((CGFloat) -> Void)?
+        var onRelease: (() -> Void)?
+        private weak var scrollView: UIScrollView?
+        private var offsetObservation: NSKeyValueObservation?
+
+        func attach(from view: UIView) {
+            guard let sv = view.findAncestorScrollView() else { return }
+            guard sv !== scrollView else { return }
+            scrollView = sv
+
+            // contentOffset.y 가 -adjustedContentInset.top 보다 더 작아질 때 (= 위로 끌려 내려갔을 때)
+            // 그 차이가 곧 당김 거리.
+            offsetObservation = sv.observe(\.contentOffset, options: [.new]) { [weak self] scroll, _ in
+                let pull = max(0, -scroll.contentOffset.y - scroll.adjustedContentInset.top)
+                self?.onPullUpdate?(pull)
+            }
+
+            // pan gesture state 변화 — .ended / .cancelled / .failed 가 곧 release.
+            sv.panGestureRecognizer.addTarget(self, action: #selector(panChanged(_:)))
+        }
+
+        @objc private func panChanged(_ gr: UIPanGestureRecognizer) {
+            switch gr.state {
+            case .ended, .cancelled, .failed:
+                onRelease?()
+            default:
+                break
+            }
+        }
+
+        deinit {
+            offsetObservation?.invalidate()
+        }
+    }
+}
+
+/// `didMoveToWindow` 시점에 introspection 을 트리거하는 호스트 뷰.
+/// 첫 호출 시점에는 superview chain 이 완성됐다고 보장되지만, 안전을 위해
+/// 한 runloop 미뤄서 ancestor 탐색 (auto layout 완료 후) 한다.
+private final class TossIntrospectorView: UIView {
+    var onAttached: ((UIView) -> Void)?
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.onAttached?(self)
+        }
+    }
+}
+
+private extension UIView {
+    func findAncestorScrollView() -> UIScrollView? {
+        var current: UIView? = self.superview
+        while let v = current {
+            if let sv = v as? UIScrollView { return sv }
+            current = v.superview
+        }
+        return nil
+    }
+}
+
 // MARK: - HomeStatCard
 
 private struct HomeStatCard: View {
@@ -662,3 +889,4 @@ private struct HomeStatCard: View {
         .dozyThemedCardBorder(cornerRadius: 12)
     }
 }
+

@@ -59,16 +59,21 @@ final class NotificationRepository {
                 predicate: #Predicate<NotificationRecord> { !$0.isRead }
             )
             let records = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+            guard !records.isEmpty else { return }
             records.forEach { $0.isRead = true }
             try? modelContainer.mainContext.save()
+            // HomeViewModel 이 이 알림을 구독해 hasNotification 배지를 즉시 끈다.
+            // 안 쏘면 사용자가 알림 화면을 보고 나와도 종 아이콘이 "on" 상태로 남음.
+            NotificationCenter.default.post(name: .dozyNotificationsChanged, object: nil)
         }
     }
-    
+
     // 단건 삭제
     func delete(_ record: NotificationRecord) {
         Task { @MainActor in
             modelContainer.mainContext.delete(record)
             try? modelContainer.mainContext.save()
+            NotificationCenter.default.post(name: .dozyNotificationsChanged, object: nil)
         }
     }
     

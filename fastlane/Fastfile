@@ -18,15 +18,29 @@ platform :ios do
   desc "TestFlight에 베타 빌드 배포"
   lane :beta do
     latest = latest_testflight_build_number(api_key: api_key)
+    next_build = (latest + 1).to_s
     increment_build_number_in_xcodeproj(
       xcodeproj: "Dozy AI.xcodeproj",
       target: "Dozy AI",
-      build_number: (latest + 1).to_s
+      build_number: next_build
     )
+    # App Store 는 extension 의 CFBundleVersion / CFBundleShortVersionString 이
+    # 호스트 앱과 정확히 일치해야 archive export 통과. macOS 타겟까지 끌려가지 않도록
+    # target 명시.
+    increment_build_number_in_xcodeproj(
+      xcodeproj: "Dozy AI.xcodeproj",
+      target: "DozyWidgetsExtension",
+      build_number: next_build
+    )
+    # `-allowProvisioningUpdates` 를 archive + export 양쪽 단계에 넘겨, App Group
+    # 추가 / 위젯 extension 신규 App ID 같은 capability 변경 후 distribution
+    # provisioning profile 까지 xcodebuild 가 자동 발급/갱신하도록 한다.
     build_app(
       scheme: "Dozy AI",
       configuration: "Release",
-      export_method: "app-store"
+      export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates",
+      export_xcargs: "-allowProvisioningUpdates"
     )
     upload_to_testflight(
       api_key: api_key,
@@ -38,15 +52,23 @@ platform :ios do
   desc "App Store에 릴리즈 빌드 배포"
   lane :release do
     latest = latest_testflight_build_number(api_key: api_key)
+    next_build = (latest + 1).to_s
     increment_build_number_in_xcodeproj(
       xcodeproj: "Dozy AI.xcodeproj",
       target: "Dozy AI",
-      build_number: (latest + 1).to_s
+      build_number: next_build
+    )
+    increment_build_number_in_xcodeproj(
+      xcodeproj: "Dozy AI.xcodeproj",
+      target: "DozyWidgetsExtension",
+      build_number: next_build
     )
     build_app(
       scheme: "Dozy AI",
       configuration: "Release",
-      export_method: "app-store"
+      export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates",
+      export_xcargs: "-allowProvisioningUpdates"
     )
     upload_to_app_store(
       api_key: api_key,
