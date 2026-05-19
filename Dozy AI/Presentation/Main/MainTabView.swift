@@ -54,6 +54,9 @@ struct MainTabView: View {
     @StateObject private var homeViewModel: HomeViewModel
     @State private var selection: MainTab = .home
     @State private var showCreateEvent = false
+    /// 캘린더 탭에서 아래로 스크롤하면 true → DozyMainTabBar 를 화면 밖으로 슬라이드.
+    /// 다른 탭으로 이동하거나 다시 캘린더에 진입하면 false 로 리셋.
+    @State private var calendarTabBarHidden = false
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
 
@@ -116,7 +119,11 @@ struct MainTabView: View {
                     .tag(MainTab.home.rawValue)
                     .toolbar(.hidden, for: .tabBar)
 
-                CalendarView(container: container, viewModel: calendarViewModel)
+                CalendarView(
+                    container: container,
+                    viewModel: calendarViewModel,
+                    tabBarHidden: $calendarTabBarHidden
+                )
                     .tabContentInset(scrollBottomMargin)
                     .tag(MainTab.calendar.rawValue)
                     .toolbar(.hidden, for: .tabBar)
@@ -152,6 +159,7 @@ struct MainTabView: View {
             }
 
             // 3) DozyMainTabBar — modal 이 그 뒤에서 올라오게 한다.
+            //    캘린더 탭에서 아래로 스크롤 시 화면 밖으로 슬라이드.
             DozyMainTabBar(
                 selection: $selection,
                 onReselect: handleReselect,
@@ -161,6 +169,8 @@ struct MainTabView: View {
                     }
                 }
             )
+            .offset(y: shouldHideTabBar ? dozyTabBarHideOffset : 0)
+            .animation(.spring(response: 0.55, dampingFraction: 0.9), value: shouldHideTabBar)
         }
         // Success Lottie — ZStack 외부 overlay 로 두어 layout 에 영향 없이 화면 위에만 표시.
         .overlay {
@@ -189,6 +199,8 @@ struct MainTabView: View {
         .onChange(of: selection) { old, newTab in
             Logger.nav.info("[탭 전환] 🧭 \(old.title) → \(newTab.title)")
             if newTab == .calendar { calendarViewModel.refreshData(source: "MainTabView.selection→calendar") }
+            // 다른 탭에서 캘린더 진입 시 — 직전 세션의 hide 상태가 남아있으면 안 되니 리셋.
+            if newTab != old { calendarTabBarHidden = false }
         }
         .onChange(of: scenePhase) { old, phase in
             Logger.nav.info("[앱 상태] 🌅 \(String(describing: old)) → \(String(describing: phase))")
@@ -224,6 +236,14 @@ struct MainTabView: View {
 
     /// DozyMainTabBar 가 화면 bottom 에서 차지하는 visual height.
     private var dozyTabBarVisualHeight: CGFloat { 84 }
+
+    /// 탭바를 화면 밖으로 밀어내는 offset — visual height + 홈 인디케이터 safe area 여유 포함.
+    private var dozyTabBarHideOffset: CGFloat { dozyTabBarVisualHeight + 60 }
+
+    /// 캘린더 탭에서 스크롤로 hide 신호가 켜졌을 때만 슬라이드. 다른 탭은 항상 표시.
+    private var shouldHideTabBar: Bool {
+        selection == .calendar && calendarTabBarHidden
+    }
 
     private func handleReselect(_ tab: MainTab) {
         // 후속 작업: NotificationCenter.default.post(name: .dozyTabReselected, object: tab)
