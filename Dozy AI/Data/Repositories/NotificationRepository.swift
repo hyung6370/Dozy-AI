@@ -77,7 +77,10 @@ final class NotificationRepository {
         }
     }
     
-    // 읽지 않은 알림 존재 여부
+    // 읽지 않은 알림 존재 여부.
+    // ⚠️ deliveryDate <= now 조건 필수 — 일정 생성 시 예약된 미래 알림은 record 가 미리 저장되는데
+    // (isRead=false 로 시작), 이걸 그대로 unread 로 세면 알림 발생 전부터 종 아이콘이 "on" 으로
+    // 표시되는 버그가 생긴다. 실제로 도착한 알림만 카운트.
     func hasUnread() -> AnyPublisher<Bool, Never> {
         Future { [modelContainer, weak self] promise in
             Task { @MainActor in
@@ -85,8 +88,11 @@ final class NotificationRepository {
                     promise(.success(false))
                     return
                 }
+                let now = Date()
                 let descriptor = FetchDescriptor<NotificationRecord>(
-                    predicate: #Predicate<NotificationRecord> { !$0.isRead }
+                    predicate: #Predicate<NotificationRecord> {
+                        !$0.isRead && $0.deliveryDate <= now
+                    }
                 )
                 let count = (try? modelContainer.mainContext.fetchCount(descriptor)) ?? 0
                 promise(.success(count > 0))
