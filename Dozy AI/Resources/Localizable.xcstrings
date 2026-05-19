@@ -2809,6 +2809,7 @@
       }
     },
     "뷰 모드" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4514,6 +4515,16 @@
         }
       }
     },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "이미지 업로드 실패" : {
       "localizations" : {
         "en" : {
@@ -4610,16 +4621,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verification code (6 digits)"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
           }
         }
       }
@@ -4954,16 +4955,6 @@
         }
       }
     },
-    "전체" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
-          }
-        }
-      }
-    },
     "점" : {
       "localizations" : {
         "en" : {
@@ -5000,6 +4991,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low-saturation mesh gradient — the calmest mood."
+          }
+        }
+      }
+    },
+    "전체" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
           }
         }
       }

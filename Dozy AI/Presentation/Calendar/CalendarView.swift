@@ -40,7 +40,6 @@ struct CalendarView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     Color.clear.frame(height: 0).id("calendarTop")
-                    viewModePicker
                     monthHeader
                     if viewModel.viewMode != .week {
                         weekdayHeader
@@ -327,79 +326,93 @@ struct CalendarView: View {
 
     private var monthHeader: some View {
         HStack {
-            HStack(spacing: 16) {
-                Button {
-                    isForward = viewModel.selectedDate < Date()
-                    if viewModel.viewMode == .month {
-                        let cal = Calendar.current
-                        let todayStart = cal.date(from: cal.dateComponents([.year, .month], from: Date()))!
-                        isForward = viewModel.currentMonth < todayStart
-                        viewModel.setCurrentMonth(Date())
-                    }
-                    viewModel.selectDate(Date())
-                } label: {
-                    Image(systemName: "arrow.uturn.left")
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.orange)
+            Button {
+                isForward = viewModel.selectedDate < Date()
+                if viewModel.viewMode == .month {
+                    let cal = Calendar.current
+                    let todayStart = cal.date(from: cal.dateComponents([.year, .month], from: Date()))!
+                    isForward = viewModel.currentMonth < todayStart
+                    viewModel.setCurrentMonth(Date())
                 }
-                .opacity(isOnToday ? 0 : 1)
-                .disabled(isOnToday)
+                viewModel.selectDate(Date())
+            } label: {
+                Image(systemName: "arrow.uturn.left")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.orange)
+            }
+            .opacity(isOnToday ? 0 : 1)
+            .disabled(isOnToday)
 
+            Spacer()
+
+            HStack(spacing: 12) {
                 Button {
                     isForward = false
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
                 } label: {
                     Image(systemName: "chevron.left").fontWeight(.semibold)
                 }
-            }
 
-            Group {
-                if viewModel.viewMode == .month {
-                    Button {
-                        let cal = Calendar.current
-                        pickerYear = cal.component(.year, from: viewModel.currentMonth)
-                        pickerMonth = cal.component(.month, from: viewModel.currentMonth)
-                        showMonthPicker = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(viewModel.currentPeriodString)
-                                .font(.title2).fontWeight(.bold)
-                            Image(systemName: "chevron.down")
-                                .font(.caption).fontWeight(.semibold)
+                Group {
+                    if viewModel.viewMode == .month {
+                        Button {
+                            let cal = Calendar.current
+                            pickerYear = cal.component(.year, from: viewModel.currentMonth)
+                            pickerMonth = cal.component(.month, from: viewModel.currentMonth)
+                            showMonthPicker = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(viewModel.currentPeriodString)
+                                    .font(.title2).fontWeight(.bold)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption).fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.primary)
                         }
-                        .foregroundStyle(.primary)
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    Button {
-                        pickerDate = viewModel.selectedDate
-                        showDatePicker = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(viewModel.currentPeriodString)
-                                .font(.title2).fontWeight(.bold)
-                            Image(systemName: "chevron.down")
-                                .font(.caption).fontWeight(.semibold)
+                        .buttonStyle(.plain)
+                    } else {
+                        Button {
+                            pickerDate = viewModel.selectedDate
+                            showDatePicker = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(viewModel.currentPeriodString)
+                                    .font(.title2).fontWeight(.bold)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption).fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.primary)
                         }
-                        .foregroundStyle(.primary)
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
-            }
-            .frame(maxWidth: .infinity)
 
-            HStack {
                 Button {
                     isForward = true
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
                 } label: {
                     Image(systemName: "chevron.right").fontWeight(.semibold)
                 }
-                // 왼쪽 오늘로 돌아가기 버튼과 너비 대칭 맞춤
-                Image(systemName: "arrow.uturn.left")
-                    .fontWeight(.semibold)
-                    .hidden()
             }
+
+            Spacer()
+
+            Button {
+                let modes = CalendarViewMode.allCases
+                let idx = modes.firstIndex(of: viewModel.viewMode) ?? 0
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.viewMode = modes[(idx + 1) % modes.count]
+                }
+            } label: {
+                Text(viewModel.viewMode.title)
+                    .font(.callout)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Color.secondary.opacity(0.15)))
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -697,16 +710,6 @@ struct CalendarView: View {
         return fmt.string(from: viewModel.selectedDate)
     }
     
-    private var viewModePicker: some View {
-        Picker("뷰 모드", selection: $viewModel.viewMode) {
-            ForEach(CalendarViewMode.allCases, id: \.self) { mode in
-                Text(mode.title).tag(mode)
-            }
-        }
-        .pickerStyle(.segmented)
-        .padding(.horizontal)
-        .padding(.bottom, 4)
-    }
 }
 
 // MARK: - DatePickerSheetView
