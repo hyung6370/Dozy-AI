@@ -2995,6 +2995,9 @@
         }
       }
     },
+    "사진 앨범 권한 필요" : {
+
+    },
     "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요." : {
       "localizations" : {
         "en" : {
@@ -3335,6 +3338,9 @@
         }
       }
     },
+    "설정으로 이동" : {
+
+    },
     "세션 만료" : {
       "localizations" : {
         "en" : {
@@ -3474,6 +3480,9 @@
           }
         }
       }
+    },
+    "스크린샷이 앨범에 저장되었습니다." : {
+
     },
     "시" : {
       "localizations" : {
@@ -4415,6 +4424,26 @@
         }
       }
     },
+    "이전과 동일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as before"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "이메일 또는 비밀번호가 올바르지 않습니다." : {
       "localizations" : {
         "en" : {
@@ -4515,16 +4544,6 @@
         }
       }
     },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
     "이미지 업로드 실패" : {
       "localizations" : {
         "en" : {
@@ -4561,16 +4580,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Previous period (month · week · day)"
-          }
-        }
-      }
-    },
-    "이전과 동일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as before"
           }
         }
       }
@@ -4806,6 +4815,7 @@
       }
     },
     "일정 추가" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4955,6 +4965,26 @@
         }
       }
     },
+    "저장에 실패했습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save failed."
+          }
+        }
+      }
+    },
+    "전체" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
     "점" : {
       "localizations" : {
         "en" : {
@@ -4975,15 +5005,8 @@
         }
       }
     },
-    "저장에 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save failed."
-          }
-        }
-      }
+    "저장 완료" : {
+
     },
     "저채도 메시 그라디언트 — 가장 차분한 무드." : {
       "localizations" : {
@@ -4991,16 +5014,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low-saturation mesh gradient — the calmest mood."
-          }
-        }
-      }
-    },
-    "전체" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
           }
         }
       }
@@ -5825,6 +5838,12 @@
           }
         }
       }
+    },
+    "캘린더 스크린샷" : {
+
+    },
+    "캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요." : {
+
     },
     "캘린더 연동" : {
       "localizations" : {

@@ -2626,6 +2626,7 @@
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "업무 일정을 분석하여 자동 일지를 생성하기 위해 캘린더 접근이 필요합니다.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "편리한 인증을 위해 필요합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 입력을 위해 마이크 접근이 필요합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "캡쳐한 캘린더 이미지를 사진 앨범에 저장하기 위해 사진 접근이 필요합니다.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "완료한 할 일을 수집하여 업무 보고서에 포함하기 위해 필요합니다.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성으로 업무를 기록하기 위해 음성 인식이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -2669,6 +2670,7 @@
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "업무 일정을 분석하여 자동 일지를 생성하기 위해 캘린더 접근이 필요합니다.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "편리한 인증을 위해 필요합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 입력을 위해 마이크 접근이 필요합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "캡쳐한 캘린더 이미지를 사진 앨범에 저장하기 위해 사진 접근이 필요합니다.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "완료한 할 일을 수집하여 업무 보고서에 포함하기 위해 필요합니다.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성으로 업무를 기록하기 위해 음성 인식이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
