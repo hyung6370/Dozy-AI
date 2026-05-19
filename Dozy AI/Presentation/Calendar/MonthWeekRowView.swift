@@ -22,7 +22,7 @@ struct MonthWeekRowView: View {
     let onOverflowTap: (Date) -> Void
     
     private let headerH: CGFloat = 42
-    private let rowH: CGFloat = 20
+    private let rowH: CGFloat = 17
     private let rowGap: CGFloat = 2
     private let maxRows = 3
     
@@ -187,10 +187,10 @@ struct EventPill: View {
 
     private var shape: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
-            topLeadingRadius: layout.isActualStart ? 8 : 0,
-            bottomLeadingRadius: layout.isActualStart ? 8 : 0,
-            bottomTrailingRadius: layout.isActualEnd ? 8 : 0,
-            topTrailingRadius: layout.isActualEnd ? 8 : 0
+            topLeadingRadius: layout.isActualStart ? 6 : 0,
+            bottomLeadingRadius: layout.isActualStart ? 6 : 0,
+            bottomTrailingRadius: layout.isActualEnd ? 6 : 0,
+            topTrailingRadius: layout.isActualEnd ? 6 : 0
         )
     }
 
@@ -211,20 +211,20 @@ struct EventPill: View {
                     HStack(spacing: 2) {
                         if layout.isPinned {
                             Image(systemName: "pin.fill")
-                                .font(.system(size: 7, weight: .bold))
+                                .font(.system(size: 6, weight: .bold))
                                 .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : isHoliday ? holidayTextColor : .white)
                         }
                         if let pc = priorityColor {
                             Circle()
                                 .fill(pc)
-                                .frame(width: 5, height: 5)
+                                .frame(width: 4, height: 4)
                         }
                         Text(layout.title)
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 9, weight: .medium))
                             .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : isHoliday ? holidayTextColor : .white)
                             .lineLimit(1)
                     }
-                    .padding(.leading, 5)
+                    .padding(.leading, 4)
                     .padding(.trailing, 2)
                 }
             }
