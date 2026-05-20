@@ -99,5 +99,8 @@ struct EventBarView: View {
                 }
             }
             .clipped()
+            // 단일 일정만 좌우 여유. 다일(start/middle/end) 는 컬럼 경계에서 끊김 없이 이어져야 해
+            // 패딩을 주지 않는다.
+            .padding(.horizontal, bar.position == .single ? 3 : 0)
     }
 }
