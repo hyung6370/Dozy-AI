@@ -3487,8 +3487,26 @@
         }
       }
     },
+    "스크린샷 편집" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Screenshot"
+          }
+        }
+      }
+    },
     "스크린샷이 앨범에 저장되었습니다." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screenshot saved to Photos."
+          }
+        }
+      }
     },
     "시" : {
       "localizations" : {
@@ -4426,6 +4444,36 @@
         }
       }
     },
+    "이메일 로그인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sign-in"
+          }
+        }
+      }
+    },
+    "이후 모든 일정 삭제" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this and all future events"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "이메일" : {
       "localizations" : {
         "en" : {
@@ -4442,16 +4490,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invalid email or password."
-          }
-        }
-      }
-    },
-    "이메일 로그인" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sign-in"
           }
         }
       }
@@ -4596,16 +4634,6 @@
         }
       }
     },
-    "이후 모든 일정 삭제" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete this and all future events"
-          }
-        }
-      }
-    },
     "인사이트" : {
       "localizations" : {
         "en" : {
@@ -4632,16 +4660,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verification code (6 digits)"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
           }
         }
       }
@@ -4990,6 +5008,9 @@
         }
       }
     },
+    "저장 완료" : {
+
+    },
     "저채도 메시 그라디언트 — 가장 차분한 무드." : {
       "localizations" : {
         "en" : {
@@ -5019,9 +5040,6 @@
           }
         }
       }
-    },
-    "저장 완료" : {
-
     },
     "저장에 실패했습니다." : {
       "localizations" : {
@@ -5820,6 +5838,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Calendar view"
+          }
+        }
+      }
+    },
+    "캘린더 분류" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar"
           }
         }
       }

@@ -1,0 +1,219 @@
+{
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "(장소: %@)" : {
+
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%lld / %lld 완료" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld 완료"
+          }
+        }
+      }
+    },
+    "a h:mm" : {
+
+    },
+    "Dozy 위젯에서 빠르게 새 일정을 추가합니다." : {
+
+    },
+    "Event Date" : {
+
+    },
+    "Event ID" : {
+
+    },
+    "iOS 표준 배경 — 어떤 ambient 도 깔지 않습니다." : {
+
+    },
+    "M월 d일" : {
+
+    },
+    "M월 d일 (E)" : {
+
+    },
+    "yyyy년 M월" : {
+
+    },
+    "기본" : {
+
+    },
+    "남은 일정 없음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No upcoming events"
+          }
+        }
+      }
+    },
+    "다음" : {
+
+    },
+    "데이터 접근 실패" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load data"
+          }
+        }
+      }
+    },
+    "런치 & 1:1" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lunch & 1:1"
+          }
+        }
+      }
+    },
+    "분기 리포트 작성" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write quarterly report"
+          }
+        }
+      }
+    },
+    "새 일정 추가" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new event"
+          }
+        }
+      }
+    },
+    "스탠드업 미팅" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standup meeting"
+          }
+        }
+      }
+    },
+    "오늘 남은 Dozy 일정을 한 눈에 확인하세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See your remaining Dozy events for today at a glance."
+          }
+        }
+      }
+    },
+    "오늘 일정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Events"
+          }
+        }
+      }
+    },
+    "오늘 일정 모두 완료!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All done for today!"
+          }
+        }
+      }
+    },
+    "오늘 일정 없음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No events today"
+          }
+        }
+      }
+    },
+    "위젯에서 오늘 일정의 완료 상태를 토글합니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle today's event completion from the widget."
+          }
+        }
+      }
+    },
+    "일정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event"
+          }
+        }
+      }
+    },
+    "일정 완료 토글" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Event Completion"
+          }
+        }
+      }
+    },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+
+    },
+    "종일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All-day"
+          }
+        }
+      }
+    },
+    "컬러 블롭 — 생동감 있는 ambient." : {
+
+    },
+    "현재" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

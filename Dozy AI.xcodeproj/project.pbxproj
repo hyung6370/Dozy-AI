@@ -310,6 +310,7 @@
 		F63A13892FB54F12006C580D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F63A13882FB54F12006C580D /* WidgetKit.framework */; };
 		F63A138B2FB54F12006C580D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F63A138A2FB54F12006C580D /* SwiftUI.framework */; };
 		F63A13982FB54F14006C580D /* DozyWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F63A13872FB54F12006C580D /* DozyWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F6FCFCFC2FBD000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */; };
 		F63A13A52FB54F2C006C580D /* DozyWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13A02FB54F2C006C580D /* DozyWidgetsBundle.swift */; };
 		F63A13A72FB54F2C006C580D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F63A139E2FB54F2C006C580D /* Assets.xcassets */; };
 		F63A13AA2FB551D9006C580D /* DozyEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96A2F7A344900084C61 /* DozyEvent.swift */; };
@@ -693,6 +694,7 @@
 		F63A137D2FB30FD3006C580D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F63A13802FB30FE7006C580D /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		F63A13872FB54F12006C580D /* DozyWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DozyWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F63A13882FB54F12006C580D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		F63A138A2FB54F12006C580D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		F63A139E2FB54F2C006C580D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -1435,6 +1437,7 @@
 				D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */,
 				D02ACQEI000000000000A01 /* CreateQuickEventIntent.swift */,
 				F63A13A22FB54F2C006C580D /* Info.plist */,
+				F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */,
 				F63A139E2FB54F2C006C580D /* Assets.xcassets */,
 				F63A13B02FB552FF006C580D /* TodayEvents */,
 			);
@@ -1966,6 +1969,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F63A13A72FB54F2C006C580D /* Assets.xcassets in Resources */,
+				F6FCFCFC2FBD000000000002 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

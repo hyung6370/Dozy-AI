@@ -839,6 +839,9 @@ struct CalendarView: View {
     }
 
     /// 캡처용 SwiftUI 뷰 — 화면의 캘린더 영역과 시각 1:1.
+    /// month: monthHeader + weekday header + month grid
+    /// week:  monthHeader + WeekGridView + Divider + 일정 목록
+    /// day:   monthHeader + weekday header + Divider + DayTimelineView + Divider + 일정 목록
     @ViewBuilder
     private var calendarCaptureContent: some View {
         VStack(spacing: 0) {
@@ -846,7 +849,8 @@ struct CalendarView: View {
             if viewModel.viewMode != .week {
                 weekdayHeader
             }
-            if viewModel.viewMode == .month {
+            switch viewModel.viewMode {
+            case .month:
                 let weeksCount = viewModel.weeksFor(month: viewModel.currentMonth).count
                 MonthGridContent(
                     month: viewModel.currentMonth,
@@ -862,8 +866,27 @@ struct CalendarView: View {
                 )
                 // 빈 주 없이 실제 주 수 × MonthWeekRowView totalH (126pt) + bottom padding 8.
                 .frame(height: CGFloat(weeksCount) * 126 + 8)
-            } else {
-                calendarGrid
+            case .week:
+                WeekGridView(
+                    weekDates: viewModel.currentWeekDates,
+                    selectedDate: viewModel.selectedDate,
+                    eventBars: { viewModel.eventBars(for: $0) },
+                    isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
+                    onSelectDate: { _ in }
+                )
+                Divider().padding(.horizontal)
+                eventListSection
+            case .day:
+                Divider().padding(.horizontal)
+                DayTimelineView(
+                    events: viewModel.eventsForSelectedDate,
+                    date: viewModel.selectedDate,
+                    onTapEvent: { _ in },
+                    captureMode: true
+                )
+                .padding(.horizontal)
+                Divider().padding(.horizontal)
+                eventListSection
             }
         }
         .background(Color(.systemBackground))

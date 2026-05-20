@@ -12,6 +12,9 @@ struct DayTimelineView: View {
     let events: [CalendarEvent]
     let date: Date
     let onTapEvent: (String) -> Void
+    /// 캡쳐(ImageRenderer)용 — ScrollView 가 ImageRenderer 안에서 content 를 안 펼치는 이슈가 있어,
+    /// 캡쳐 시에는 ScrollView 없이 24시간 전체를 VStack 으로 평탄하게 깔아 렌더한다.
+    var captureMode: Bool = false
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -47,49 +50,58 @@ struct DayTimelineView: View {
                 Divider()
             }
 
-            ScrollViewReader { proxy in
-                ScrollView {
-                    ZStack(alignment: .topLeading) {
-                        // 시간 눈금
-                        VStack(spacing: 0) {
-                            ForEach(hours, id: \.self) { hour in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Text(String(format: "%02d:00", hour))
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .frame(width: 40, alignment: .trailing)
-                                    Rectangle()
-                                        .fill(Color(.systemGray5))
-                                        .frame(height: 0.5)
-                                        .padding(.top, 8)
-                                }
-                                .frame(height: hourHeight)
-                                .id(hour)
-                            }
-                        }
-
-                        // 이벤트 카드 (너비 측정 후 겹침 레이아웃 적용)
-                        Color.clear.overlay(
-                            GeometryReader { geo in
-                                let totalW = geo.size.width
-                                ForEach(eventLayouts, id: \.event.id) { item in
-                                    eventCard(
-                                        item.event,
-                                        col: item.col,
-                                        totalCols: item.totalCols,
-                                        totalWidth: totalW
-                                    )
-                                }
-                            }
-                        )
-                    }
+            if captureMode {
+                // 캡쳐 모드: ScrollView 없이 평탄하게 → ImageRenderer 가 24시간 전체를 onscreen 으로 렌더.
+                timelineContent
                     .padding(.vertical, 8)
-                }
-                .onAppear {
-                    let hour = Calendar.current.component(.hour, from: Date())
-                    proxy.scrollTo(max(0, hour - 1), anchor: .top)
+            } else {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        timelineContent
+                            .padding(.vertical, 8)
+                    }
+                    .onAppear {
+                        let hour = Calendar.current.component(.hour, from: Date())
+                        proxy.scrollTo(max(0, hour - 1), anchor: .top)
+                    }
                 }
             }
+        }
+    }
+
+    /// 시간 눈금 + 이벤트 카드 — ScrollView 안/밖 모두 동일 레이아웃 (캡쳐 호환).
+    private var timelineContent: some View {
+        ZStack(alignment: .topLeading) {
+            VStack(spacing: 0) {
+                ForEach(hours, id: \.self) { hour in
+                    HStack(alignment: .top, spacing: 8) {
+                        Text(String(format: "%02d:00", hour))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 40, alignment: .trailing)
+                        Rectangle()
+                            .fill(Color(.systemGray5))
+                            .frame(height: 0.5)
+                            .padding(.top, 8)
+                    }
+                    .frame(height: hourHeight)
+                    .id(hour)
+                }
+            }
+
+            Color.clear.overlay(
+                GeometryReader { geo in
+                    let totalW = geo.size.width
+                    ForEach(eventLayouts, id: \.event.id) { item in
+                        eventCard(
+                            item.event,
+                            col: item.col,
+                            totalCols: item.totalCols,
+                            totalWidth: totalW
+                        )
+                    }
+                }
+            )
         }
     }
 
