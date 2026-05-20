@@ -164,7 +164,14 @@ struct EventPill: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
-    private var color: Color { Color(hex: layout.colorHex) ?? .blue }
+    /// 카테고리 색 (다크모드에서 너무 어두우면 자동으로 살짝 끌어올림 — fill 용 보수적 보정).
+    private var color: Color {
+        (Color(hex: layout.colorHex) ?? .blue).eventDisplayColor(in: colorScheme)
+    }
+    /// Dozy 일정 텍스트에 쓰는 색 — fill 보다 더 적극적으로 끌어올려 다크모드 가독성 확보.
+    private var dozyTextColor: Color {
+        (Color(hex: layout.colorHex) ?? .blue).eventTextColor(in: colorScheme)
+    }
     private var isDozy: Bool { layout.source == .dozy }
     private var isGoogle: Bool { layout.source == .google }
     private var isHoliday: Bool { layout.source == .holiday }
@@ -212,7 +219,7 @@ struct EventPill: View {
                         if layout.isPinned {
                             Image(systemName: "pin.fill")
                                 .font(.system(size: 7, weight: .bold))
-                                .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : isHoliday ? holidayTextColor : .white)
+                                .foregroundStyle(isDozy ? dozyTextColor : isGoogle ? googleTextColor : isHoliday ? holidayTextColor : .white)
                         }
                         if let pc = priorityColor {
                             Circle()

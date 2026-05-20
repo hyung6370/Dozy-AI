@@ -50,12 +50,20 @@ struct DayCell: View {
 struct EventBarView: View {
 
     let bar: EventBarInfo
+    @Environment(\.colorScheme) private var colorScheme
 
-    private var color: Color { Color(hex: bar.colorHex) ?? .blue }
+    /// 카테고리 색 (다크모드에서 너무 어두우면 자동으로 살짝 끌어올림 — fill 용 보수적 보정).
+    private var color: Color {
+        (Color(hex: bar.colorHex) ?? .blue).eventDisplayColor(in: colorScheme)
+    }
+    /// Dozy 일정 텍스트에 쓰는 색 — fill 보다 더 적극적으로 끌어올려 다크모드 가독성 확보.
+    private var dozyTextColor: Color {
+        (Color(hex: bar.colorHex) ?? .blue).eventTextColor(in: colorScheme)
+    }
     private var isDozy: Bool { bar.source == .dozy }
 
     private var bgFill: Color { isDozy ? color.opacity(0.2) : color.opacity(0.75) }
-    private var textColor: Color { isDozy ? color : .white }
+    private var textColor: Color { isDozy ? dozyTextColor : .white }
 
     private var shape: UnevenRoundedRectangle {
         let leftRounded = bar.position == .single || bar.position == .start

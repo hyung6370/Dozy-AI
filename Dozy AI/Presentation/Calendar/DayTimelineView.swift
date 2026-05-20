@@ -13,6 +13,8 @@ struct DayTimelineView: View {
     let date: Date
     let onTapEvent: (String) -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
     private let hours = Array(0..<24)
     private let hourHeight: CGFloat = 60
     /// 이벤트의 시각적 최소 점유 분 수.
@@ -29,6 +31,11 @@ struct DayTimelineView: View {
 
     private var timedEvents: [CalendarEvent] {
         events.filter { !$0.isAllDay }
+    }
+
+    /// 카테고리 색 (다크모드에서 너무 어두우면 자동으로 살짝 끌어올림).
+    private func eventColor(_ event: CalendarEvent) -> Color {
+        (Color(hex: event.calendarColorHex) ?? .blue).eventDisplayColor(in: colorScheme)
     }
 
     // MARK: - Body
@@ -97,9 +104,10 @@ struct DayTimelineView: View {
                 .padding(.top, 4)
             VStack(alignment: .leading, spacing: 3) {
                 ForEach(allDayEvents) { event in
+                    let c = eventColor(event)
                     HStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                            .fill(c)
                             .frame(width: 3)
                         Text(event.title)
                             .font(.caption)
@@ -111,7 +119,7 @@ struct DayTimelineView: View {
                     .padding(.vertical, 4)
                     .background(
                         RoundedRectangle(cornerRadius: 6)
-                            .fill((Color(hex: event.calendarColorHex) ?? .blue).opacity(0.15))
+                            .fill(c.opacity(0.15))
                     )
                     .onTapGesture { onTapEvent(event.id) }
                 }
@@ -137,10 +145,11 @@ struct DayTimelineView: View {
         let colW = available / CGFloat(totalCols)
         let xOffset = leftPad + colW * CGFloat(col)
 
+        let c = eventColor(event)
         return VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                    .fill(c)
                     .frame(width: 3)
                 Text(event.title)
                     .font(.caption)
@@ -150,7 +159,7 @@ struct DayTimelineView: View {
                 if event.isShared {
                     Image(systemName: "person.2.fill")
                         .font(.system(size: 8))
-                        .foregroundStyle((Color(hex: event.calendarColorHex) ?? .blue).opacity(0.8))
+                        .foregroundStyle(c.opacity(0.8))
                 }
             }
             if height > 36 {
@@ -164,7 +173,7 @@ struct DayTimelineView: View {
         .frame(width: max(colW - 2, 0), height: max(height, 24), alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill((Color(hex: event.calendarColorHex) ?? .blue).opacity(0.15))
+                .fill(c.opacity(0.15))
         )
         .onTapGesture { onTapEvent(event.id) }
         .offset(x: xOffset, y: top)
