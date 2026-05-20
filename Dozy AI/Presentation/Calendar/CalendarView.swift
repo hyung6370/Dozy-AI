@@ -39,6 +39,8 @@ struct CalendarView: View {
     @State private var showCapturePermissionAlert = false
     /// 사진 앨범 저장 성공 시 띄우는 확인 alert.
     @State private var showCaptureSavedAlert = false
+    /// 캡쳐 후 사용자에게 편집 시트를 띄울 이미지 wrapper. nil 이면 시트 안 띄움.
+    @State private var screenshotEditItem: ScreenshotEditItem?
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var authViewModel: AuthViewModel
@@ -111,6 +113,13 @@ struct CalendarView: View {
                 showPermissionAlert: $showCapturePermissionAlert,
                 showSavedAlert: $showCaptureSavedAlert
             ))
+            .fullScreenCover(item: $screenshotEditItem) { item in
+                CalendarScreenshotEditView(
+                    image: item.image,
+                    onSave: { composed in saveComposedImage(composed) },
+                    onCancel: { screenshotEditItem = nil }
+                )
+            }
             .sheet(isPresented: $showFilter) {
                 CalendarFilterSheet(
                     filter: viewModel.visibilityFilter,
@@ -808,11 +817,22 @@ struct CalendarView: View {
             withAnimation(.easeIn(duration: 0.25)) { captureFlashOpacity = 0 }
         }
 
+        // 바로 저장하지 않고 편집 화면 띄우기
+        // 플래시 페이드 아웃이 끝난 직후 자연스럽게 띄우기 위해 약간 지연
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.33) {
+            self.screenshotEditItem = ScreenshotEditItem(image: image)
+        }
+    }
+    
+    /// 편집 화면 "저장" 탭 → 합성된 이미지를 사진 앨범에 저장.
+    @MainActor
+    private func saveComposedImage(_ image: UIImage) {
         // PHPhotoLibrary 로 저장 — completion 으로 성공 여부 받아 alert 트리거.
         PHPhotoLibrary.shared().performChanges {
             PHAssetCreationRequest.creationRequestForAsset(from: image)
         } completionHandler: { success, _ in
             DispatchQueue.main.async {
+                self.screenshotEditItem = nil  // 시트 닫기
                 if success { self.showCaptureSavedAlert = true }
             }
         }
@@ -850,6 +870,11 @@ struct CalendarView: View {
     }
 }
 
+/// fullScreenCover(item:) 식별자.
+private struct ScreenshotEditItem: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
 
 /// 캡쳐 시 흰 플래시 + 권한 안내 alert + 저장 완료 alert 를 한 묶음으로 적용.
 /// body 의 modifier chain 이 너무 길어 컴파일러 type-check 가 폭발하는 걸 막기 위해 분리.

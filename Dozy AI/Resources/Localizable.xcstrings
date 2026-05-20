@@ -706,6 +706,9 @@
         }
       }
     },
+    "100%" : {
+
+    },
     "a h:mm" : {
       "comment" : "ICU date format pattern — must produce a date string, not user-facing text.",
       "localizations" : {
@@ -2227,6 +2230,9 @@
           }
         }
       }
+    },
+    "되돌리기" : {
+
     },
     "두 가지 영역에 균형 있게 시간을 썼어요" : {
       "localizations" : {
@@ -4074,6 +4080,9 @@
         }
       }
     },
+    "오른쪽으로 회전" : {
+
+    },
     "오전" : {
       "localizations" : {
         "en" : {
@@ -4163,6 +4172,9 @@
           }
         }
       }
+    },
+    "왼쪽으로 회전" : {
+
     },
     "요약" : {
       "localizations" : {
@@ -4424,26 +4436,6 @@
         }
       }
     },
-    "이전과 동일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as before"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
     "이메일 또는 비밀번호가 올바르지 않습니다." : {
       "localizations" : {
         "en" : {
@@ -4584,6 +4576,16 @@
         }
       }
     },
+    "이전과 동일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as before"
+          }
+        }
+      }
+    },
     "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
       "localizations" : {
         "en" : {
@@ -4630,6 +4632,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
           }
         }
       }
@@ -4925,6 +4937,9 @@
         }
       }
     },
+    "자르기" : {
+
+    },
     "자세히 보기" : {
       "localizations" : {
         "en" : {
@@ -4965,12 +4980,22 @@
         }
       }
     },
-    "저장에 실패했습니다." : {
+    "저장" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save failed."
+            "value" : "Save"
+          }
+        }
+      }
+    },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-saturation mesh gradient — the calmest mood."
           }
         }
       }
@@ -4995,25 +5020,15 @@
         }
       }
     },
-    "저장" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        }
-      }
-    },
     "저장 완료" : {
 
     },
-    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+    "저장에 실패했습니다." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Low-saturation mesh gradient — the calmest mood."
+            "value" : "Save failed."
           }
         }
       }
