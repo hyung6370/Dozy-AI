@@ -312,52 +312,64 @@ struct HomeView: View {
 
         return VStack(alignment: .leading, spacing: 0) {
             if let event = displayEvent {
-                HStack(spacing: 6) {
-                    Image(systemName: icon)
-                        .font(.caption)
-                        .foregroundStyle(currentEvent != nil ? .green : .secondary)
-                    Text(label)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.bottom, 10)
-
-                HStack(alignment: .top, spacing: 12) {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(hex: event.calendarColorHex) ?? .blue)
-                        .frame(width: 4)
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(event.title)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .lineLimit(2)
-
-                        HStack(spacing: 10) {
-                            Label(event.timeRangeString, systemImage: "clock")
+                // 카드 전체(label + 일정 정보) 를 탭 가능하게 → 일정 상세 sheet 오픈.
+                // 상세에서의 수정/삭제는 .sheet(item: $selectedEvent) wiring 으로 viewModel 경유 서버 반영.
+                Button {
+                    selectedEvent = event
+                } label: {
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(spacing: 6) {
+                            Image(systemName: icon)
                                 .font(.caption)
+                                .foregroundStyle(currentEvent != nil ? .green : .secondary)
+                            Text(label)
+                                .font(.caption)
+                                .fontWeight(.medium)
                                 .foregroundStyle(.secondary)
+                            Spacer()
+                        }
+                        .padding(.bottom, 10)
 
-                            if let location = event.location, !location.isEmpty {
-                                Label(location, systemImage: "mappin")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
+                        HStack(alignment: .top, spacing: 12) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                                .frame(width: 4)
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(event.title)
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .lineLimit(2)
+                                    .foregroundStyle(.primary)
+
+                                HStack(spacing: 10) {
+                                    Label(event.timeRangeString, systemImage: "clock")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+
+                                    if let location = event.location, !location.isEmpty {
+                                        Label(location, systemImage: "mappin")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(1)
+                                    }
+                                }
                             }
+
+                            Spacer()
+
+                            Text(timeUntilLabel(event))
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                                .foregroundStyle(timeUntilColor(event))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(timeUntilColor(event).opacity(0.1), in: Capsule())
                         }
                     }
-
-                    Spacer()
-
-                    Text(timeUntilLabel(event))
-                        .font(.caption2)
-                        .fontWeight(.medium)
-                        .foregroundStyle(timeUntilColor(event))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(timeUntilColor(event).opacity(0.1), in: Capsule())
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             } else {
                 if viewModel.todayEvents.isEmpty {
                     Button {
