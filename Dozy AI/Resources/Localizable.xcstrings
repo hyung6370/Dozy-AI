@@ -706,6 +706,9 @@
         }
       }
     },
+    "100%" : {
+
+    },
     "a h:mm" : {
       "comment" : "ICU date format pattern — must produce a date string, not user-facing text.",
       "localizations" : {
@@ -2228,6 +2231,9 @@
         }
       }
     },
+    "되돌리기" : {
+
+    },
     "두 가지 영역에 균형 있게 시간을 썼어요" : {
       "localizations" : {
         "en" : {
@@ -2809,6 +2815,7 @@
       }
     },
     "뷰 모드" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2993,6 +3000,9 @@
           }
         }
       }
+    },
+    "사진 앨범 권한 필요" : {
+
     },
     "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요." : {
       "localizations" : {
@@ -3334,6 +3344,9 @@
         }
       }
     },
+    "설정으로 이동" : {
+
+    },
     "세션 만료" : {
       "localizations" : {
         "en" : {
@@ -3470,6 +3483,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Smart scheduling starts here"
+          }
+        }
+      }
+    },
+    "스크린샷 편집" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Screenshot"
+          }
+        }
+      }
+    },
+    "스크린샷이 앨범에 저장되었습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screenshot saved to Photos."
           }
         }
       }
@@ -3740,6 +3774,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "None"
+          }
+        }
+      }
+    },
+    "연결됨" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected"
+          }
+        }
+      }
+    },
+    "연결되지 않음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not connected"
           }
         }
       }
@@ -4064,6 +4118,9 @@
         }
       }
     },
+    "오른쪽으로 회전" : {
+
+    },
     "오전" : {
       "localizations" : {
         "en" : {
@@ -4153,6 +4210,9 @@
           }
         }
       }
+    },
+    "왼쪽으로 회전" : {
+
     },
     "요약" : {
       "localizations" : {
@@ -4404,6 +4464,36 @@
         }
       }
     },
+    "이메일 로그인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sign-in"
+          }
+        }
+      }
+    },
+    "이후 모든 일정 삭제" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this and all future events"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "이메일" : {
       "localizations" : {
         "en" : {
@@ -4420,16 +4510,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invalid email or password."
-          }
-        }
-      }
-    },
-    "이메일 로그인" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sign-in"
           }
         }
       }
@@ -4574,16 +4654,6 @@
         }
       }
     },
-    "이후 모든 일정 삭제" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete this and all future events"
-          }
-        }
-      }
-    },
     "인사이트" : {
       "localizations" : {
         "en" : {
@@ -4610,16 +4680,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verification code (6 digits)"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
           }
         }
       }
@@ -4805,6 +4865,7 @@
       }
     },
     "일정 추가" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4914,6 +4975,9 @@
         }
       }
     },
+    "자르기" : {
+
+    },
     "자세히 보기" : {
       "localizations" : {
         "en" : {
@@ -4954,6 +5018,29 @@
         }
       }
     },
+    "저장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        }
+      }
+    },
+    "저장 완료" : {
+
+    },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-saturation mesh gradient — the calmest mood."
+          }
+        }
+      }
+    },
     "전체" : {
       "localizations" : {
         "en" : {
@@ -4974,32 +5061,12 @@
         }
       }
     },
-    "저장" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        }
-      }
-    },
     "저장에 실패했습니다." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save failed."
-          }
-        }
-      }
-    },
-    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Low-saturation mesh gradient — the calmest mood."
           }
         }
       }
@@ -5795,6 +5862,17 @@
         }
       }
     },
+    "캘린더 분류" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar"
+          }
+        }
+      }
+    },
     "캘린더 새 창" : {
       "localizations" : {
         "en" : {
@@ -5824,6 +5902,12 @@
           }
         }
       }
+    },
+    "캘린더 스크린샷" : {
+
+    },
+    "캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요." : {
+
     },
     "캘린더 연동" : {
       "localizations" : {

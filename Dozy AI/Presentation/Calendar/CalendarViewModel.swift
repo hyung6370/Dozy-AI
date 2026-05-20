@@ -44,6 +44,7 @@ enum BarPosition {
 
 struct EventBarInfo: Identifiable {
     let id: String
+    let title: String
     let colorHex: String
     let position: BarPosition
     var isShared: Bool = false
@@ -981,7 +982,7 @@ final class CalendarViewModel: ObservableObject {
                 else if date == sorted.last { pos = .end }
                 else { pos = .middle }
                 barsDict[date, default: []].append(
-                    EventBarInfo(id: id, colorHex: event.calendarColorHex, position: pos, isShared: event.isShared, source: event.source)
+                    EventBarInfo(id: id, title: event.title, colorHex: event.calendarColorHex, position: pos, isShared: event.isShared, source: event.source)
                 )
             }
         }

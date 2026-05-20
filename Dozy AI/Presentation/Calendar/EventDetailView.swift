@@ -197,7 +197,12 @@ struct EventDetailView: View {
             }
             
             Divider().padding(.leading, 52)
-            DetailRow(icon: sourceIcon, label: "캘린더", value: event.calendarName)
+            DetailRow(
+                icon: sourceIcon,
+                assetIcon: sourceAssetIcon,
+                label: "캘린더",
+                value: event.calendarName
+            )
             
             if let dozyEvent, dozyEvent.recurrenceRule != "none" {
                 Divider().padding(.leading, 52)
@@ -624,6 +629,16 @@ struct EventDetailView: View {
         case .holiday: return "flag.fill"
         }
     }
+
+    /// 캘린더 분류 row 에 시스템 SF Symbol 대신 보여줄 Asset 이미지.
+    /// Google 은 Google 로고, Dozy 는 인앱 로고. 그 외 source 는 nil → SF Symbol 사용.
+    private var sourceAssetIcon: String? {
+        switch event.source {
+        case .google: return "google"
+        case .dozy:   return "Dozy-AI-20x20"
+        default:      return nil
+        }
+    }
     
     private func recurrenceLabel(_ rule: String) -> String {
         switch rule {
@@ -648,16 +663,28 @@ struct EventDetailView: View {
 
 private struct DetailRow: View {
     let icon: String
+    /// 시스템 SF Symbol 대신 Asset 이미지를 쓰고 싶을 때 (예: google 로고, 앱 아이콘) 전달.
+    /// non-nil 이면 `icon` 은 무시되고 asset 이 우선 렌더된다.
+    var assetIcon: String? = nil
     let label: LocalizedStringKey
     let value: String
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            Image(systemName: icon)
-                .foregroundStyle(.secondary)
-                .frame(width: 24)
-                .padding(.leading, 16)
-            
+            Group {
+                if let asset = assetIcon {
+                    Image(asset)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                } else {
+                    Image(systemName: icon)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 24)
+            .padding(.leading, 16)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.caption).foregroundStyle(.secondary)
