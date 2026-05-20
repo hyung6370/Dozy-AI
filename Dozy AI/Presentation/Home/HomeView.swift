@@ -307,7 +307,9 @@ struct HomeView: View {
             ? viewModel.todayEvents.first(where: { $0.startDate > now })
             : nil
         let displayEvent = currentEvent ?? upcomingEvent
-        let label = currentEvent != nil ? "지금 일정" : upcomingEvent != nil ? "다음 일정" : ""
+        // label 은 LocalizedStringKey 로 보관 → Text(label) 이 Localizable.xcstrings 의 ko/en 번역을 적용.
+        // displayEvent 가 nil 일 땐 label 자체가 화면에 안 쓰여 placeholder 값 무관.
+        let label: LocalizedStringKey = currentEvent != nil ? "지금 일정" : "다음 일정"
         let icon = currentEvent != nil ? "circle.fill" : "clock"
 
         return VStack(alignment: .leading, spacing: 0) {

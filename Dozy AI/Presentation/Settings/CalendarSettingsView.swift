@@ -102,10 +102,20 @@ struct CalendarSettingsView: View {
                     .font(.subheadline).fontWeight(.medium)
                 // 명시적으로 캘린더 연동을 켰을 때만 이메일 노출. 단순 앱 로그인 (Google
                 // OAuth 가 calendar grant 를 보존해도) 에는 "연결되지 않음" 으로 표시.
-                Text(viewModel.sourceManager.isEnabled(.google)
-                     ? (viewModel.googleUserEmail ?? "연결됨")
-                     : "연결되지 않음")
-                    .font(.caption).foregroundStyle(.secondary)
+                // ternary 로 묶으면 Text 가 String 오버로드를 타서 카탈로그 번역이 안 먹음 →
+                // 분기 Text 로 LocalizedStringKey 경로 보장 (이메일만 verbatim).
+                Group {
+                    if viewModel.sourceManager.isEnabled(.google) {
+                        if let email = viewModel.googleUserEmail {
+                            Text(verbatim: email)
+                        } else {
+                            Text("연결됨")
+                        }
+                    } else {
+                        Text("연결되지 않음")
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
             }
 
             Spacer()
@@ -143,8 +153,18 @@ struct CalendarSettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("네이버 캘린더")
                     .font(.subheadline).fontWeight(.medium)
-                Text(viewModel.isNaverSignedIn ? (viewModel.naverUserEmail ?? "연결됨") : "연결되지 않음")
-                    .font(.caption).foregroundStyle(.secondary)
+                Group {
+                    if viewModel.isNaverSignedIn {
+                        if let email = viewModel.naverUserEmail {
+                            Text(verbatim: email)
+                        } else {
+                            Text("연결됨")
+                        }
+                    } else {
+                        Text("연결되지 않음")
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
             }
             
             Spacer()

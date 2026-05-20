@@ -172,7 +172,7 @@ struct InsightDashboardView: View {
         }
     }
     
-    private func summaryCard(value: String, label: String, change: Double?, icon: String, color: Color) -> some View {
+    private func summaryCard(value: String, label: LocalizedStringKey, change: Double?, icon: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Image(systemName: icon)
                 .foregroundStyle(color)
