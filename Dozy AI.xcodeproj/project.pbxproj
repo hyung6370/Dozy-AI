@@ -310,7 +310,6 @@
 		F63A13892FB54F12006C580D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F63A13882FB54F12006C580D /* WidgetKit.framework */; };
 		F63A138B2FB54F12006C580D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F63A138A2FB54F12006C580D /* SwiftUI.framework */; };
 		F63A13982FB54F14006C580D /* DozyWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F63A13872FB54F12006C580D /* DozyWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		F6FCFCFC2FBD000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */; };
 		F63A13A52FB54F2C006C580D /* DozyWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A13A02FB54F2C006C580D /* DozyWidgetsBundle.swift */; };
 		F63A13A72FB54F2C006C580D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F63A139E2FB54F2C006C580D /* Assets.xcassets */; };
 		F63A13AA2FB551D9006C580D /* DozyEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96A2F7A344900084C61 /* DozyEvent.swift */; };
@@ -457,6 +456,7 @@
 		F6EC8B3D2F9A300000CFFF87 /* MacCalendarWeekView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */; };
 		F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */; };
 		F6FC89592FBD48A8000E5EDA /* CalendarScreenshotEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FC89582FBD48A8000E5EDA /* CalendarScreenshotEditView.swift */; };
+		F6FCFCFC2FBD000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
 		F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68ED2F6ACD5B001952F6 /* WorkLog.swift */; };
 		F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
@@ -694,7 +694,6 @@
 		F63A137D2FB30FD3006C580D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F63A13802FB30FE7006C580D /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		F63A13872FB54F12006C580D /* DozyWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DozyWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F63A13882FB54F12006C580D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		F63A138A2FB54F12006C580D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		F63A139E2FB54F2C006C580D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -821,6 +820,7 @@
 		F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarWeekView.swift; sourceTree = "<group>"; };
 		F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarDayView.swift; sourceTree = "<group>"; };
 		F6FC89582FBD48A8000E5EDA /* CalendarScreenshotEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarScreenshotEditView.swift; sourceTree = "<group>"; };
+		F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -2625,7 +2625,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 152;
+				CURRENT_PROJECT_VERSION = 153;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2669,7 +2669,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 152;
+				CURRENT_PROJECT_VERSION = 153;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2796,7 +2796,8 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = DozyWidgetsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 152;
+				CURRENT_PROJECT_VERSION = 153;
+				DEVELOPMENT_LANGUAGE = ko;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DozyWidgets/Info.plist;
@@ -2829,7 +2830,8 @@
 				CODE_SIGN_ENTITLEMENTS = DozyWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 152;
+				CURRENT_PROJECT_VERSION = 153;
+				DEVELOPMENT_LANGUAGE = ko;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DozyWidgets/Info.plist;
