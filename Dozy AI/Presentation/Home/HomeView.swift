@@ -105,7 +105,13 @@ struct HomeView: View {
                             selectedTab = 3
                         }
                     },
-                    onNotificationTap: { showNotificationSheet = true },
+                    onNotificationTap: {
+                        // 낙관적 업데이트 — 사용자가 알림 목록을 본다는 의도를 받자마자 배지 OFF.
+                        // markAllAsRead 의 비동기 Task / .dozyNotificationsChanged 전파 타이밍과
+                        // 무관하게 즉시 반영되도록 한다. 시트 dismiss 시 DB 재확인은 그대로 유지.
+                        viewModel.hasNotification = false
+                        showNotificationSheet = true
+                    },
                     onProfileTap: { selectedTab = 3 },
                     pullProgress: pullProgress,
                     isRefreshing: isRefreshing
@@ -199,7 +205,11 @@ struct HomeView: View {
         }
         .onChange(of: showNotificationSheet) { _, isShowing in
             guard !isShowing else { return }
-            viewModel.refreshNotificationBadge()
+            // markAllAsRead 의 SwiftData save 가 비동기 Task 라 완료 전에 fetch 가 일어나면
+            // 옛 unread 가 잡힐 수 있어 약간 지연 후 재확인.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                viewModel.refreshNotificationBadge()
+            }
         }
         .sheet(isPresented: $showSummarySheet) {
             DailySummaryView(
