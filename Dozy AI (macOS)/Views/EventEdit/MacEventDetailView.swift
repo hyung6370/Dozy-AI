@@ -62,12 +62,23 @@ struct MacEventDetailView: View {
         self.onDeleteFutureOccurrences = onDeleteFutureOccurrences
         self.onSaveMemos = onSaveMemos
         self.onSaveEvent = onSaveEvent
-        _editVM = StateObject(wrappedValue: EventEditViewModel(
+        let vm = EventEditViewModel(
             eventToEdit: dozyEvent,
             selectedDate: event.startDate,
             sharedCalendars: sharedCalendars,
             onSave: onSaveEvent
-        ))
+        )
+        // Apple/Google 외부 이벤트는 대응되는 DozyEvent 가 없어 위 init 이 빈 기본값으로 채움.
+        // CalendarEvent 의 실제 값으로 덮어써 UI 에 표시되도록 한다 (편집은 fieldsLocked 로 잠금).
+        if dozyEvent == nil && (event.source == .apple || event.source == .google) {
+            vm.title = event.title
+            vm.isAllDay = event.isAllDay
+            vm.startDate = event.startDate
+            vm.endDate = event.endDate
+            vm.location = event.location ?? ""
+            vm.notes = event.notes ?? ""
+        }
+        _editVM = StateObject(wrappedValue: vm)
     }
 
     /// 공유 캘린더 이벤트 중 내가 생성자가 아닐 때는 편집 불가 (읽기 전용).
@@ -83,8 +94,13 @@ struct MacEventDetailView: View {
     /// 파트너 이벤트(공유 캘린더의 다른 사용자가 만든 이벤트) 또는 공휴일(읽기 전용)일 때
     /// 제목·시간·장소·메모를 제외한 표시 설정 등의 필드 입력을 잠근다.
     /// 메모는 파트너 이벤트에서도 입력 가능 — iOS 와 동일.
+    /// Apple/Google 외부 이벤트(DozyEvent 매핑 없음)도 macOS 에선 편집 불가 → 잠금.
     private var fieldsLocked: Bool {
-        (!canEditEvent && dozyEvent != nil) || event.isReadOnly
+        if event.isReadOnly { return true }
+        if dozyEvent == nil && (event.source == .apple || event.source == .google) {
+            return true
+        }
+        return !canEditEvent && dozyEvent != nil
     }
 
     var body: some View {

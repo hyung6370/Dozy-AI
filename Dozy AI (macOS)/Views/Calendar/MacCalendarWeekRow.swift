@@ -27,6 +27,12 @@ struct MacCalendarWeekRow: View {
     private let barTopOffset: CGFloat = 42   // 날짜 숫자 영역 아래부터 바 시작
     private let barHorizontalInset: CGFloat = 3
 
+    /// 첫 layout pass 가 끝났는지 추적. false 인 동안엔 이벤트 바의 hit-test 를 비활성화해
+    /// 클릭이 아래 cell 로 통과하도록 한다 — 첫 렌더에서 cellWidth 가 일시적으로 부정확해도
+    /// 셀(HStack 분배)은 정확하므로 항상 올바른 날짜가 선택됨. onAppear 직후 main.async 로
+    /// true 로 토글 → 이후엔 정상적으로 바 hit-test 활성.
+    @State private var layoutSettled = false
+
     var body: some View {
         return GeometryReader { geo in
             let cellWidth = geo.size.width / 7
@@ -42,7 +48,9 @@ struct MacCalendarWeekRow: View {
             )
 
             ZStack(alignment: .topLeading) {
-                // 베이스 셀
+                // 베이스 셀 — HStack 자동 분배에 맡김. .position() 으로 cellWidth 에 의존해
+                // 명시 배치하면 첫 layout pass 의 부정확한 cellWidth 값으로 잠겨 정상화가 안 됨.
+                // HStack 은 실제 layout pass 결과로 7개 셀을 균등 분배하므로 첫 렌더부터 정확.
                 HStack(spacing: 0) {
                     ForEach(Array(weekDates.enumerated()), id: \.offset) { col, date in
                         MacCalendarDayCell(
@@ -54,6 +62,15 @@ struct MacCalendarWeekRow: View {
                             overflowCount: layout.overflowByCol[col] ?? 0
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .overlay(alignment: .trailing) {
+                            if col < 6 {
+                                Rectangle()
+                                    .fill(Color.secondary.opacity(0.2))
+                                    .frame(width: 1)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                        .contentShape(Rectangle())
                         .onTapGesture(count: 2) { onCreateEvent(date) }
                         .simultaneousGesture(
                             TapGesture(count: 1)
@@ -74,10 +91,6 @@ struct MacCalendarWeekRow: View {
                                 }
                             }
                         }
-
-                        if col < 6 {
-                            Divider()
-                        }
                     }
                 }
 
@@ -86,9 +99,17 @@ struct MacCalendarWeekRow: View {
                     eventBar(bar: bar, cellWidth: cellWidth)
                 }
             }
+            // SpatialTapGesture 가 weekRow 좌표계에서 위치를 받도록 명시. 이벤트 바의 col 계산에 사용.
+            .coordinateSpace(.named("weekRow"))
             // 셀 높이를 넘는 바가 옆 행으로 leak 되지 않도록 강제 클리핑.
             .frame(width: geo.size.width, height: geo.size.height)
             .clipped()
+            .onAppear {
+                // 첫 layout pass 후 한 번 settled 토글 → 이벤트 바의 hit-test 활성화.
+                DispatchQueue.main.async {
+                    layoutSettled = true
+                }
+            }
         }
     }
 
@@ -108,10 +129,21 @@ struct MacCalendarWeekRow: View {
             .frame(width: max(0, width), height: barHeight)
             .opacity(touchesCurrentMonth ? 1.0 : 0.4)
             .position(x: xCenter, y: y)
-            .onTapGesture {
-                guard !bar.event.isReadOnly else { return }
-                onSelectEvent(bar.event)
-            }
+            // (1) 공휴일 등 read-only 이벤트 바, (2) layout 이 아직 settled 안 된 첫 렌더 윈도우
+            //  → hit testing 비활성화 → 클릭이 아래 cell 로 통과해 정확한 날짜 선택 보장.
+            .allowsHitTesting(layoutSettled && !bar.event.isReadOnly)
+            // 일반 바는 클릭 위치(x)로부터 어느 col 위에 있었는지 계산해 date 선택과 이벤트 상세 둘 다 트리거.
+            // .named("weekRow") 좌표계 사용 → value.location.x 가 weekRow 절대 좌표라 바로 col 계산 가능.
+            .gesture(
+                SpatialTapGesture(count: 1, coordinateSpace: .named("weekRow"))
+                    .onEnded { value in
+                        let col = max(0, min(6, Int(value.location.x / cellWidth)))
+                        if col < weekDates.count {
+                            onSelectDate(weekDates[col])
+                        }
+                        onSelectEvent(bar.event)
+                    }
+            )
             .contextMenu {
                 if !bar.event.isReadOnly {
                     Button {

@@ -121,8 +121,8 @@ struct MacCalendarDayView: View {
         .themedEventChipBackground(color: color, cornerRadius: 6)
         .padding(.trailing, 20)
         .contentShape(Rectangle())
+        .allowsHitTesting(!event.isReadOnly)
         .onTapGesture {
-            guard !event.isReadOnly else { return }
             onSelectEvent(event)
         }
         .contextMenu {
@@ -317,8 +317,8 @@ struct MacCalendarDayView: View {
         .frame(width: blockWidth, height: height, alignment: .topLeading)
         .themedEventChipBackground(color: color, cornerRadius: 8)
         .offset(x: xLeft, y: y)
+        .allowsHitTesting(!block.event.isReadOnly)
         .onTapGesture {
-            guard !block.event.isReadOnly else { return }
             onSelectEvent(block.event)
         }
         .contextMenu {

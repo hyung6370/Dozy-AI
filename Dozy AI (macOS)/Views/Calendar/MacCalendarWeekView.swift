@@ -180,8 +180,9 @@ struct MacCalendarWeekView: View {
         .frame(width: max(0, width), height: 20)
         .themedEventChipBackground(color: color, cornerRadius: 6)
         .position(x: xCenter, y: y + 8)
+        // 공휴일 등 read-only 바는 hit testing 비활성화 → 아래 타임라인 컬럼으로 클릭 통과.
+        .allowsHitTesting(!bar.event.isReadOnly)
         .onTapGesture {
-            guard !bar.event.isReadOnly else { return }
             onSelectEvent(bar.event)
         }
         .contextMenu {
@@ -418,8 +419,8 @@ struct MacCalendarWeekView: View {
         .frame(width: width, height: height, alignment: .topLeading)
         .themedEventChipBackground(color: color, cornerRadius: 6)
         .offset(x: xLeft, y: y)
+        .allowsHitTesting(!block.event.isReadOnly)
         .onTapGesture {
-            guard !block.event.isReadOnly else { return }
             onSelectEvent(block.event)
         }
         .contextMenu {
