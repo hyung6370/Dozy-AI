@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F6EC8AB72F9896CE00CFFF87"
-               BuildableName = "Dozy AI (macOS).app"
+               BuildableName = "Dozy.app"
                BlueprintName = "Dozy AI (macOS)"
                ReferencedContainer = "container:Dozy AI.xcodeproj">
             </BuildableReference>
@@ -31,7 +31,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F6EC8AB72F9896CE00CFFF87"
-            BuildableName = "Dozy AI (macOS).app"
+            BuildableName = "Dozy.app"
             BlueprintName = "Dozy AI (macOS)"
             ReferencedContainer = "container:Dozy AI.xcodeproj">
          </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F6EC8AB72F9896CE00CFFF87"
-            BuildableName = "Dozy AI (macOS).app"
+            BuildableName = "Dozy.app"
             BlueprintName = "Dozy AI (macOS)"
             ReferencedContainer = "container:Dozy AI.xcodeproj">
          </BuildableReference>
@@ -92,7 +92,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F6EC8AB72F9896CE00CFFF87"
-            BuildableName = "Dozy AI (macOS).app"
+            BuildableName = "Dozy.app"
             BlueprintName = "Dozy AI (macOS)"
             ReferencedContainer = "container:Dozy AI.xcodeproj">
          </BuildableReference>
