@@ -779,7 +779,7 @@
 		F6CAFE132FA0000000000012 /* CalendarFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarFilterSheet.swift; sourceTree = "<group>"; };
 		F6CAFE162FA0000000000015 /* MacCalendarFilterPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarFilterPopover.swift; sourceTree = "<group>"; };
 		F6CAFE182FA0000000000017 /* MacMonthPagingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMonthPagingScrollView.swift; sourceTree = "<group>"; };
-		F6EC8AB82F9896CE00CFFF87 /* Dozy AI (macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dozy AI (macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F6EC8AB82F9896CE00CFFF87 /* Dozy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dozy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6EC8AC42F9896CF00CFFF87 /* Dozy AI (macOS)Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AI (macOS)Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6EC8ACE2F9896CF00CFFF87 /* Dozy AI (macOS)UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dozy AI (macOS)UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6EC8ADF2F9896E000CFFF87 /* Dozy_AI__macOS_UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dozy_AI__macOS_UITests.swift; sourceTree = "<group>"; };
@@ -964,7 +964,7 @@
 				DD808E842F694B2100F4956A /* Dozy AI.app */,
 				DD808E912F694B2200F4956A /* Dozy AITests.xctest */,
 				DD808E9B2F694B2200F4956A /* Dozy AIUITests.xctest */,
-				F6EC8AB82F9896CE00CFFF87 /* Dozy AI (macOS).app */,
+				F6EC8AB82F9896CE00CFFF87 /* Dozy.app */,
 				F6EC8AC42F9896CF00CFFF87 /* Dozy AI (macOS)Tests.xctest */,
 				F6EC8ACE2F9896CF00CFFF87 /* Dozy AI (macOS)UITests.xctest */,
 				F63A13872FB54F12006C580D /* DozyWidgetsExtension.appex */,
@@ -1822,7 +1822,7 @@
 				F67333032FA836C4000A610A /* Lottie */,
 			);
 			productName = "Dozy AI (macOS)";
-			productReference = F6EC8AB82F9896CE00CFFF87 /* Dozy AI (macOS).app */;
+			productReference = F6EC8AB82F9896CE00CFFF87 /* Dozy.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F6EC8AC32F9896CF00CFFF87 /* Dozy AI (macOS)Tests */ = {
@@ -2865,7 +2865,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI (macOS)/Dozy AI (macOS)Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2904,7 +2904,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
