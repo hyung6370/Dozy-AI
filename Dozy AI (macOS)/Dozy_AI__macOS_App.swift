@@ -26,7 +26,10 @@ struct Dozy_AI__macOS_App: App {
     @StateObject private var coordinator = MacAppCoordinator()
 
     var body: some Scene {
-        WindowGroup(id: "main") {
+        // WindowGroup 에 title 을 주면 SwiftUI 가 Window 메뉴에 "Dozy" 항목을
+        // 자동으로 만들어 — 메인 창 닫은 뒤 다시 열 수 있게 한다. (Apple App Review
+        // Guideline 4 — 단일 윈도우 앱이라도 재오픈 경로가 필요)
+        WindowGroup("Dozy", id: "main") {
             Group {
                 #if DEBUG
                 if coordinator.isReady,
@@ -56,14 +59,22 @@ struct Dozy_AI__macOS_App: App {
         }
         .windowResizability(.contentMinSize)
         .commands {
+            // 모든 액션 커맨드는 로그인 상태에서만 의미가 있다. 로그아웃 화면에선
+            // 핸들러(MacTodayView / MacCalendarView / MacMainShellView)가 뷰
+            // 계층에 존재하지 않아 클릭해도 아무 일도 일어나지 않는 "unresponsive"
+            // 상태가 되므로, isSignedIn 가 false 일 때 .disabled 처리해 회색 비활성
+            // 상태로 노출한다. (App Review Guideline 2.1(a))
+            let isSignedIn = coordinator.isSignedIn
+
             // File 메뉴의 "New..." 를 "새 일정" 으로 대체
             CommandGroup(replacing: .newItem) {
                 Button("새 일정") {
                     NotificationCenter.default.post(name: .dozyRequestNewEvent, object: nil)
                 }
                 .keyboardShortcut("n", modifiers: [.command])
+                .disabled(!isSignedIn)
             }
-            
+
             // File 메뉴 "새 일정" 아래에 추가 항목
             CommandGroup(after: .newItem) {
                 Divider()
@@ -71,28 +82,34 @@ struct Dozy_AI__macOS_App: App {
                     NotificationCenter.default.post(name: .dozyRequestRefresh, object: nil)
                 }
                 .keyboardShortcut("r", modifiers: [.command])
-                
+                .disabled(!isSignedIn)
+
                 if coordinator.authViewModel != nil {
                     Divider()
                     Button("로그아웃") {
                         coordinator.authViewModel?.signOut()
                     }
+                    .disabled(!isSignedIn)
                 }
             }
-            
+
             // View 메뉴의 Sidebar 아래에 섹션 전환 단축키
             CommandGroup(after: .sidebar) {
                 Button("오늘") { coordinator.selectedSection = .today }
                     .keyboardShortcut("1", modifiers: [.command])
+                    .disabled(!isSignedIn)
                 Button("캘린더") { coordinator.selectedSection = .calendar }
                     .keyboardShortcut("2", modifiers: [.command])
+                    .disabled(!isSignedIn)
                 Button("인사이트") { coordinator.selectedSection = .insights }
                     .keyboardShortcut("3", modifiers: [.command])
+                    .disabled(!isSignedIn)
                 Button("설정") { coordinator.selectedSection = .settings }
                     .keyboardShortcut("4", modifiers: [.command])
+                    .disabled(!isSignedIn)
             }
-            
-            
+
+
             // View -> Sidebar 뒤에 캘린더 navigation
             CommandGroup(after: .sidebar) {
                 Divider()
@@ -101,18 +118,21 @@ struct Dozy_AI__macOS_App: App {
                     NotificationCenter.default.post(name: .dozyRequestGoToToday, object: nil)
                 }
                 .keyboardShortcut("t", modifiers: [.command])
-                
+                .disabled(!isSignedIn)
+
                 Button("이전 기간") {
                     NotificationCenter.default.post(name: .dozyRequestPreviousPeriod, object: nil)
                 }
                 .keyboardShortcut("[", modifiers: [.command])
-                
+                .disabled(!isSignedIn)
+
                 Button("다음 기간") {
                     NotificationCenter.default.post(name: .dozyRequestNextPeriod, object: nil)
                 }
                 .keyboardShortcut("]", modifiers: [.command])
+                .disabled(!isSignedIn)
             }
-            
+
             // 도구 메뉴 - AI 요약
             CommandMenu("도구") {
                 Button("AI 요약 생성") {
@@ -120,10 +140,11 @@ struct Dozy_AI__macOS_App: App {
                     NotificationCenter.default.post(name: .dozyRequestSummary, object: nil)
                 }
                 .keyboardShortcut("a", modifiers: [.command, .shift])
+                .disabled(!isSignedIn)
             }
 
-            // 윈도우 메뉴 - 캘린더 단독 창
-            WindowCommands(isSignedIn: coordinator.isSignedIn)
+            // 윈도우 메뉴 - 메인 윈도우 보기 + 캘린더 단독 창
+            WindowCommands(isSignedIn: isSignedIn)
         }
 
         // 캘린더 단독 창 — 사이드바 없이 캘린더만 풀 영역. 메인 창과
@@ -206,6 +227,18 @@ private struct WindowCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        // Window 메뉴 최상단(.windowList 앞)에 메인 창을 다시 여는 항목. 사용자가
+        // 메인 창을 닫으면 Dock 아이콘이 사라지는 macOS 기본 동작 때문에
+        // "재오픈 경로 부재"로 App Review Guideline 4 에서 리젝된 적이 있어
+        // 명시 버튼을 둔다. WindowGroup 의 title 이 "Dozy" 이므로 라벨도 동일하게.
+        CommandGroup(before: .windowList) {
+            Button("Dozy 보기") {
+                NSApp.activate(ignoringOtherApps: true)
+                openWindow(id: "main")
+            }
+            .keyboardShortcut("0", modifiers: [.command])
+        }
+
         CommandGroup(after: .windowArrangement) {
             Divider()
             Button("캘린더 새 창") {
