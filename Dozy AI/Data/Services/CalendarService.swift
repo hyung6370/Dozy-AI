@@ -238,8 +238,10 @@ extension CalendarService: CalendarWriteServiceProtocol {
                         return
                     }
                     do {
+                        // commit: true 로 이미 영속 저장소까지 반영되므로 reset() 불필요.
+                        // eventStore.reset() 은 iOS 16+ 에서 내부 캐시를 통째로 버려
+                        // 진행 중인 다른 fetch 가 stale/빈 결과를 받을 수 있어 제거.
                         try eventStore.remove(ekEvent, span: .thisEvent, commit: true)
-                        eventStore.reset()
                         promise(.success(()))
                     } catch {
                         promise(.failure(.calendarWriteFailed(underlying: error)))

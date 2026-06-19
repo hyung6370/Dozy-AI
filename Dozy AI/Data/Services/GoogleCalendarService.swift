@@ -23,18 +23,32 @@ final class GoogleCalendarService: CalendarServiceProtocol {
     private let cacheTTL: TimeInterval = 5 * 60           // 5분
     private let calendarListTTL: TimeInterval = 15 * 60   // 15분
 
+    // 캐시 딕셔너리는 메인(읽기)과 URLSession 백그라운드 큐(handleEvents 쓰기) 양쪽에서
+    // 접근되므로 반드시 락으로 직렬화한다. (캘린더 탭 재진입 시 당일+현재월+인접월
+    // fetch 가 동시 팬아웃 → 여러 백그라운드 스레드가 같은 Dictionary 에 동시 쓰기 →
+    // 힙 손상/EXC_BAD_ACCESS 크래시가 발생하던 문제 차단)
+    private let cacheLock = NSLock()
+
+    private func withCacheLock<T>(_ body: () -> T) -> T {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        return body()
+    }
+
     init(signInService: GoogleSignInService) {
         self.signInService = signInService
     }
 
     func invalidateCache(for date: Date? = nil) {
-        if let date {
-            cache.removeValue(forKey: Calendar.current.startOfDay(for: date))
-            rangeCache.removeAll() // 날짜 범위 캐시도 무효화
-        } else {
-            cache.removeAll()
-            rangeCache.removeAll()
-            calendarListCache = nil
+        withCacheLock {
+            if let date {
+                cache.removeValue(forKey: Calendar.current.startOfDay(for: date))
+                rangeCache.removeAll() // 날짜 범위 캐시도 무효화
+            } else {
+                cache.removeAll()
+                rangeCache.removeAll()
+                calendarListCache = nil
+            }
         }
     }
     
@@ -52,7 +66,7 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         }
 
         let key = Calendar.current.startOfDay(for: date)
-        if let entry = cache[key], Date().timeIntervalSince(entry.fetchedAt) < cacheTTL {
+        if let entry = withCacheLock({ cache[key] }), Date().timeIntervalSince(entry.fetchedAt) < cacheTTL {
             return Just(entry.events).setFailureType(to: DozyError.self).eraseToAnyPublisher()
         }
 
@@ -64,7 +78,7 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 return self.fetchAllEvents(for: date, token: token)
             }
             .handleEvents(receiveOutput: { [weak self] events in
-                self?.cache[key] = CacheEntry(events: events, fetchedAt: Date())
+                self?.withCacheLock { self?.cache[key] = CacheEntry(events: events, fetchedAt: Date()) }
             })
             .eraseToAnyPublisher()
     }
@@ -76,7 +90,7 @@ final class GoogleCalendarService: CalendarServiceProtocol {
             return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
         }
         let key = "\(Int(start.timeIntervalSince1970))-\(Int(end.timeIntervalSince1970))"
-        if let entry = rangeCache[key], Date().timeIntervalSince(entry.fetchedAt) < cacheTTL {
+        if let entry = withCacheLock({ rangeCache[key] }), Date().timeIntervalSince(entry.fetchedAt) < cacheTTL {
             return Just(entry.events).setFailureType(to: DozyError.self).eraseToAnyPublisher()
         }
         return signInService.getValidAccessToken()
@@ -87,7 +101,7 @@ final class GoogleCalendarService: CalendarServiceProtocol {
                 return self.fetchAllEvents(from: start, to: end, token: token)
             }
             .handleEvents(receiveOutput: { [weak self] events in
-                self?.rangeCache[key] = CacheEntry(events: events, fetchedAt: Date())
+                self?.withCacheLock { self?.rangeCache[key] = CacheEntry(events: events, fetchedAt: Date()) }
             })
             .eraseToAnyPublisher()
     }
@@ -327,7 +341,7 @@ final class GoogleCalendarService: CalendarServiceProtocol {
     }
     
     private func fetchCalendarList(token: String) -> AnyPublisher<[GoogleCalendarItem], DozyError> {
-        if let cached = calendarListCache,
+        if let cached = withCacheLock({ calendarListCache }),
            Date().timeIntervalSince(cached.fetchedAt) < calendarListTTL {
             return Just(cached.items).setFailureType(to: DozyError.self).eraseToAnyPublisher()
         }
@@ -346,7 +360,7 @@ final class GoogleCalendarService: CalendarServiceProtocol {
             }
             .mapError { ($0 as? DozyError) ?? .googleCalendarFetchFailed }
             .handleEvents(receiveOutput: { [weak self] items in
-                self?.calendarListCache = (items: items, fetchedAt: Date())
+                self?.withCacheLock { self?.calendarListCache = (items: items, fetchedAt: Date()) }
             })
             .eraseToAnyPublisher()
     }
