@@ -168,7 +168,10 @@ final class ExternalMirrorSyncService {
 
         return fetch(rangeStart, rangeEnd)
             .map { origins -> ReconcileResult in
-                let originsByID = Dictionary(uniqueKeysWithValues: origins.map { ($0.id, $0) })
+                // 반복 일정은 occurrence 마다 동일한 externalEventID(EventKit eventIdentifier)를
+                // 공유하므로 id 가 중복될 수 있다. uniqueKeysWithValues 는 중복 키에서 트랩하므로
+                // grouping 으로 묶고, 미러는 startDate 가 가장 가까운 occurrence 에 매칭한다.
+                let originsByID = Dictionary(grouping: origins, by: { $0.id })
                 var updates: [ExternalMirrorUpdate] = []
                 var deletedIDs: [String] = []
                 var permanentDeleteIDs: [String] = []
@@ -176,7 +179,11 @@ final class ExternalMirrorSyncService {
 
                 for mirror in mirrors {
                     guard let extID = mirror.externalEventID else { continue }
-                    if let origin = originsByID[extID] {
+                    let origin = originsByID[extID]?.min {
+                        abs($0.startDate.timeIntervalSince(mirror.startDate))
+                            < abs($1.startDate.timeIntervalSince(mirror.startDate))
+                    }
+                    if let origin {
                         if Self.hasDrift(mirror: mirror, origin: origin) || mirror.externalDeleted {
                             updates.append(ExternalMirrorUpdate(
                                 id: mirror.id,

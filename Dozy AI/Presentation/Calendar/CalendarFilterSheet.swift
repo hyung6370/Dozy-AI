@@ -15,8 +15,8 @@ struct CalendarFilterSheet: View {
     let sharedCalendars: [SharedCalendar]
     @Environment(\.dismiss) private var dismiss
 
-    /// 토글로 노출할 소스 — naver 는 현재 미사용이라 제외, 나머지는 모두 노출.
-    private let sources: [CalendarSource] = [.apple, .google, .dozy, .holiday]
+    /// 토글로 노출할 소스 — naver 는 미사용, dozy 는 항상 표시(필터 대상에서 제외).
+    private let sources: [CalendarSource] = [.apple, .google, .holiday]
 
     var body: some View {
         NavigationStack {

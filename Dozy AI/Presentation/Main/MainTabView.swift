@@ -147,7 +147,8 @@ struct MainTabView: View {
             DozyBottomSheet(isPresented: $showCreateEvent, bottomInset: dozyTabBarVisualHeight) {
                 EventEditView(
                     eventToEdit: nil,
-                    selectedDate: Date(),
+                    selectedDate: createEventDefaultDate,
+                    sharedCalendars: calendarViewModel.sharedCalendarsForEditing(),
                     onSave: { saved in
                         // 데이터 저장만. dismiss 는 EventEditView 의 performDismiss → onCancel 이 단일 경로로 처리.
                         eventCreator.save(saved)
@@ -232,6 +233,13 @@ struct MainTabView: View {
         )) { wrapper in
             SharedCalendarJoinView(viewModel: sharedCalendarViewModel, initialCode: wrapper.code)
         }
+    }
+
+    /// 일정 생성 시트가 기본으로 쓸 날짜.
+    /// 캘린더 탭이면 그리드에서 포커스된 날짜(selectedDate) 기준, 그 외 탭은 오늘.
+    /// `content()` 가 시트 표시 시점에만 평가되므로(DozyBottomSheet) 항상 최신 포커스 날짜를 받는다.
+    private var createEventDefaultDate: Date {
+        selection == .calendar ? calendarViewModel.selectedDate : Date()
     }
 
     /// DozyMainTabBar 가 화면 bottom 에서 차지하는 visual height.
