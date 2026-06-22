@@ -31,6 +31,12 @@ final class CalendarVisibilityFilter: ObservableObject {
         } else {
             hiddenSharedCalendarIDs = []
         }
+        // Dozy 일정은 더 이상 필터로 끌 수 없으므로 항상 표시한다.
+        // 과거 버전에서 Dozy 를 숨긴 상태로 저장한 사용자도 정상 노출되도록 마이그레이션.
+        if hiddenSources.contains(.dozy) {
+            hiddenSources.remove(.dozy)
+            persistSources()
+        }
     }
 
     var isFilterActive: Bool {
