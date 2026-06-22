@@ -148,6 +148,7 @@ struct MainTabView: View {
                 EventEditView(
                     eventToEdit: nil,
                     selectedDate: createEventDefaultDate,
+                    sharedCalendars: calendarViewModel.sharedCalendarsForEditing(),
                     onSave: { saved in
                         // 데이터 저장만. dismiss 는 EventEditView 의 performDismiss → onCancel 이 단일 경로로 처리.
                         eventCreator.save(saved)
