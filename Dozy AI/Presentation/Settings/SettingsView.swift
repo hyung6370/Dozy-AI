@@ -150,15 +150,14 @@ struct SettingsView: View {
                 ? "로그인 상태에서는 데이터가 서버에 백업됩니다."
                 : "로그인하면 기기를 바꿔도 데이터를 유지할 수 있어요."
         ) {
-            Group {
-                if authViewModel.isLoggedIn {
-                    loggedInRow
-                } else {
-                    loggedOutRow
-                }
+            if authViewModel.isLoggedIn {
+                loggedInRow
+                    .padding(.horizontal, DozySpacing.md)
+                    .padding(.vertical, DozySpacing.sm)
+            } else {
+                // 패딩을 버튼 label 안쪽에 두어 카드 가장자리까지 탭 영역에 포함.
+                loggedOutRow
             }
-            .padding(.horizontal, DozySpacing.md)
-            .padding(.vertical, DozySpacing.sm)
         }
     }
     
@@ -204,10 +203,12 @@ struct SettingsView: View {
                 }
 
                 Spacer()
-
-                DozyChevron()
             }
             .padding(.vertical, 4)
+            .padding(.horizontal, DozySpacing.md)
+            .padding(.vertical, DozySpacing.sm)
+            // 텍스트/아이콘만이 아니라 카드 전체(빈 영역·가장자리 포함)가 탭 되도록.
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
