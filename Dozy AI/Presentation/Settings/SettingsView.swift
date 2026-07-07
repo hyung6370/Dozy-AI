@@ -189,9 +189,10 @@ struct SettingsView: View {
             withAnimation(.spring()) { showLoginSheet = true }
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: "person.crop.circle.badge.plus")
-                    .font(.title2)
-                    .foregroundStyle(DozyColor.Brand.primary)
+                Image(colorScheme == .dark ? "Dark-User-Add-Line" : "Light-User-Add-Line")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 26, height: 26)
                     .frame(width: 34)
 
                 VStack(alignment: .leading, spacing: 2) {
