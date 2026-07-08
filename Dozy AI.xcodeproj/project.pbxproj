@@ -140,6 +140,11 @@
 		D02ABBBB000000000000B20B /* PasswordFailLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */; };
 		D02ABBBB000000000000B20C /* PasswordFailLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F20A /* PasswordFailLimiter.swift */; };
 		D02ABBBB000000000000B20D /* PasswordFailLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */; };
+		D02ABBBB000000000000B2A1 /* AuthStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F2A1 /* AuthStyles.swift */; };
+		D02ABBBB000000000000B2A2 /* AuthEmailFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F2A2 /* AuthEmailFormView.swift */; };
+		D02ABBBB000000000000B2A3 /* AuthSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F2A3 /* AuthSheetView.swift */; };
+		D02ABBBB000000000000B2A4 /* AuthSheetDragLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F2A4 /* AuthSheetDragLogic.swift */; };
+		D02ABBBB000000000000B2A5 /* AuthSheetDragLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F2A5 /* AuthSheetDragLogicTests.swift */; };
 		D02ABBBB000000000000B30A /* SupabaseAuthLocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */; };
 		D02ABBBB000000000000B30B /* SupabaseAuthLocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */; };
 		D02ABBBB000000000000C40A /* TodayEventCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F40A /* TodayEventCache.swift */; };
@@ -565,6 +570,11 @@
 		D02AFFFF000000000000F209 /* AmbientMeshBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientMeshBackgroundView.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F20A /* PasswordFailLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordFailLimiter.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordFailLimiterTests.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F2A1 /* AuthStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthStyles.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F2A2 /* AuthEmailFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthEmailFormView.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F2A3 /* AuthSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSheetView.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F2A4 /* AuthSheetDragLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSheetDragLogic.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F2A5 /* AuthSheetDragLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSheetDragLogicTests.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthLocalStorage.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F40A /* TodayEventCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventCache.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F40B /* TodayEventCacheWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventCacheWriter.swift; sourceTree = "<group>"; };
@@ -1000,6 +1010,7 @@
 				AA1100010000000000000004 /* TestHelpers.swift */,
 				AA1100010000000000000005 /* ViewModelTests.swift */,
 				D02AFFFF000000000000F20B /* PasswordFailLimiterTests.swift */,
+				D02AFFFF000000000000F2A5 /* AuthSheetDragLogicTests.swift */,
 				D02ACCWT000000000000A01 /* TodayEventCacheWriterTests.swift */,
 				D02ACQET000000000000A01 /* CreateQuickEventIntentTests.swift */,
 			);
@@ -1027,9 +1038,21 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		D02ACCCC000000000000C2A0 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				D02AFFFF000000000000F2A1 /* AuthStyles.swift */,
+				D02AFFFF000000000000F2A2 /* AuthEmailFormView.swift */,
+				D02AFFFF000000000000F2A3 /* AuthSheetView.swift */,
+				D02AFFFF000000000000F2A4 /* AuthSheetDragLogic.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
 		DD808EBE2F694BC600F4956A /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				D02ACCCC000000000000C2A0 /* Auth */,
 				7DE596AB58A548A7BD623102 /* SharedCalendar */,
 				F63C688A2F85F0CA003464E8 /* Intro */,
 				F63C686C2F84F786003464E8 /* Notifications */,
@@ -2112,6 +2135,10 @@
 				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
 				F65068212F7D072E00F9C124 /* CalendarEventEditRequest.swift in Sources */,
 				F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */,
+				D02ABBBB000000000000B2A1 /* AuthStyles.swift in Sources */,
+				D02ABBBB000000000000B2A2 /* AuthEmailFormView.swift in Sources */,
+				D02ABBBB000000000000B2A3 /* AuthSheetView.swift in Sources */,
+				D02ABBBB000000000000B2A4 /* AuthSheetDragLogic.swift in Sources */,
 				F6A7C0012FBA0003000A610A /* PasswordChangeSheet.swift in Sources */,
 				F65068292F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift in Sources */,
 				DD9F69442F6AD1EB001952F6 /* VoiceWaveformView.swift in Sources */,
@@ -2226,6 +2253,7 @@
 				AA1100020000000000000004 /* TestHelpers.swift in Sources */,
 				AA1100020000000000000005 /* ViewModelTests.swift in Sources */,
 				D02ABBBB000000000000B20B /* PasswordFailLimiterTests.swift in Sources */,
+				D02ABBBB000000000000B2A5 /* AuthSheetDragLogicTests.swift in Sources */,
 				D02ACCWT000000000000A02 /* TodayEventCacheWriterTests.swift in Sources */,
 				D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */,
 			);

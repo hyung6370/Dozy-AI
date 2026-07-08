@@ -11,6 +11,7 @@ struct CalendarSettingsView: View {
     
     @StateObject private var viewModel: CalendarSettingsViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase // scenePhase 환경 추가
     
     init(
         sourceManager: CalendarSourceManager,
@@ -55,6 +56,17 @@ struct CalendarSettingsView: View {
                 Button("확인", role: .cancel) { viewModel.errorMessage = nil }
             } message: {
                 Text(viewModel.errorMessage ?? "")
+            }
+            .alert("캘린더 접근 권한이 필요해요", isPresented: $viewModel.showAppleCalendarPermissionAlert) {
+                Button("설정으로 이동") { viewModel.openAppSettings() }
+                Button("취소", role: .cancel) { }
+            } message: {
+                Text("이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요.")
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    viewModel.recheckAppleAccessAfterSettingsReturn()
+                }
             }
         }
     }

@@ -1,9 +1,7 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "" : {
-
-    },
+    "" : {},
     "—" : {
       "localizations" : {
         "en" : {
@@ -706,9 +704,7 @@
         }
       }
     },
-    "100%" : {
-
-    },
+    "100%" : {},
     "a h:mm" : {
       "comment" : "ICU date format pattern — must produce a date string, not user-facing text.",
       "localizations" : {
@@ -850,8 +846,16 @@
         }
       }
     },
-    "Dozy 보기" : {
-
+    "Dozy 보기" : {},
+    "Dozy 시작하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get started with Dozy"
+          }
+        }
+      }
     },
     "Dozy 요약" : {
       "localizations" : {
@@ -903,9 +907,7 @@
         }
       }
     },
-    "Dozy 위젯에서 빠르게 새 일정을 추가합니다." : {
-
-    },
+    "Dozy 위젯에서 빠르게 새 일정을 추가합니다." : {},
     "Dozy 인사이트" : {
       "localizations" : {
         "en" : {
@@ -2184,6 +2186,16 @@
         }
       }
     },
+    "데이터를 안전하게 백업하세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep your data safely backed up"
+          }
+        }
+      }
+    },
     "데이터를 안전하게 보호하고 싶다면 로그인을 해보세요 :)" : {
       "localizations" : {
         "en" : {
@@ -2234,9 +2246,7 @@
         }
       }
     },
-    "되돌리기" : {
-
-    },
+    "되돌리기" : {},
     "두 가지 영역에 균형 있게 시간을 썼어요" : {
       "localizations" : {
         "en" : {
@@ -2283,6 +2293,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sign in"
+          }
+        }
+      }
+    },
+    "로그인 · 회원가입" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in · Sign up"
           }
         }
       }
@@ -2353,6 +2373,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sign in to keep your data across devices."
+          }
+        }
+      }
+    },
+    "로그인하면 모든 기기에서 데이터가 안전하게 백업돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to safely back up your data on all your devices"
           }
         }
       }
@@ -3004,9 +3034,7 @@
         }
       }
     },
-    "사진 앨범 권한 필요" : {
-
-    },
+    "사진 앨범 권한 필요" : {},
     "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요." : {
       "localizations" : {
         "en" : {
@@ -3348,7 +3376,14 @@
       }
     },
     "설정으로 이동" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        }
+      }
     },
     "세션 만료" : {
       "localizations" : {
@@ -4121,9 +4156,7 @@
         }
       }
     },
-    "오른쪽으로 회전" : {
-
-    },
+    "오른쪽으로 회전" : {},
     "오전" : {
       "localizations" : {
         "en" : {
@@ -4214,9 +4247,7 @@
         }
       }
     },
-    "왼쪽으로 회전" : {
-
-    },
+    "왼쪽으로 회전" : {},
     "요약" : {
       "localizations" : {
         "en" : {
@@ -4457,76 +4488,6 @@
         }
       }
     },
-    "이름" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        }
-      }
-    },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
-          }
-        }
-      }
-    },
-    "이벤트 수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
-          }
-        }
-      }
-    },
-    "이전 기간" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous period"
-          }
-        }
-      }
-    },
-    "이전 기간 (월·주·일)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous period (month · week · day)"
-          }
-        }
-      }
-    },
-    "인사이트" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insights"
-          }
-        }
-      }
-    },
-    "인증 정보를 가져올 수 없습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not retrieve authentication info."
-          }
-        }
-      }
-    },
     "일" : {
       "localizations" : {
         "en" : {
@@ -4537,12 +4498,32 @@
         }
       }
     },
+    "이름" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
     "이메일" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email"
+          }
+        }
+      }
+    },
+    "이메일 또는 비밀번호가 올바르지 않습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
           }
         }
       }
@@ -4573,6 +4554,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verify with email"
+          }
+        }
+      }
+    },
+    "이메일로 계속하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue with email"
           }
         }
       }
@@ -4647,6 +4638,36 @@
         }
       }
     },
+    "이벤트 수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events"
+          }
+        }
+      }
+    },
+    "이전 기간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period"
+          }
+        }
+      }
+    },
+    "이전 기간 (월·주·일)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period (month · week · day)"
+          }
+        }
+      }
+    },
     "이전과 동일" : {
       "localizations" : {
         "en" : {
@@ -4673,6 +4694,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete this and all future events"
+          }
+        }
+      }
+    },
+    "인사이트" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insights"
+          }
+        }
+      }
+    },
+    "인증 정보를 가져올 수 없습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not retrieve authentication info."
           }
         }
       }
@@ -4978,9 +5019,7 @@
         }
       }
     },
-    "자르기" : {
-
-    },
+    "자르기" : {},
     "자세히 보기" : {
       "localizations" : {
         "en" : {
@@ -5021,16 +5060,6 @@
         }
       }
     },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
-          }
-        }
-      }
-    },
     "저장" : {
       "localizations" : {
         "en" : {
@@ -5041,9 +5070,7 @@
         }
       }
     },
-    "저장 완료" : {
-
-    },
+    "저장 완료" : {},
     "저장에 실패했습니다." : {
       "localizations" : {
         "en" : {
@@ -5070,6 +5097,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
           }
         }
       }
@@ -5906,12 +5943,8 @@
         }
       }
     },
-    "캘린더 스크린샷" : {
-
-    },
-    "캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요." : {
-
-    },
+    "캘린더 스크린샷" : {},
+    "캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요." : {},
     "캘린더 연동" : {
       "localizations" : {
         "en" : {
@@ -5978,6 +6011,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Calendar access is required. Please grant permission in Settings."
+          }
+        }
+      }
+    },
+    "캘린더 접근 권한이 필요해요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar Access Needed"
           }
         }
       }
@@ -6579,6 +6622,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncommon and different from your email"
+          }
+        }
+      }
+    },
+    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
           }
         }
       }
