@@ -3375,7 +3375,16 @@
         }
       }
     },
-    "설정으로 이동" : {},
+    "설정으로 이동" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        }
+      }
+    },
     "세션 만료" : {
       "localizations" : {
         "en" : {
@@ -4469,22 +4478,22 @@
         }
       }
     },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
     "이동" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Go"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
           }
         }
       }
@@ -5062,16 +5071,6 @@
       }
     },
     "저장 완료" : {},
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
-          }
-        }
-      }
-    },
     "저장에 실패했습니다." : {
       "localizations" : {
         "en" : {
@@ -5098,6 +5097,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
           }
         }
       }
@@ -6006,6 +6015,16 @@
         }
       }
     },
+    "캘린더 접근 권한이 필요해요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar Access Needed"
+          }
+        }
+      }
+    },
     "캘린더 탐색" : {
       "localizations" : {
         "en" : {
@@ -6603,6 +6622,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncommon and different from your email"
+          }
+        }
+      }
+    },
+    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
           }
         }
       }
