@@ -951,6 +951,17 @@
 			path = Tokens;
 			sourceTree = "<group>";
 		};
+		D02ACCCC000000000000C2A0 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				D02AFFFF000000000000F2A1 /* AuthStyles.swift */,
+				D02AFFFF000000000000F2A2 /* AuthEmailFormView.swift */,
+				D02AFFFF000000000000F2A3 /* AuthSheetView.swift */,
+				D02AFFFF000000000000F2A4 /* AuthSheetDragLogic.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
 		DD808E7B2F694B2100F4956A = {
 			isa = PBXGroup;
 			children = (
@@ -1036,17 +1047,6 @@
 				F63A13802FB30FE7006C580D /* InfoPlist.xcstrings */,
 			);
 			path = Resources;
-			sourceTree = "<group>";
-		};
-		D02ACCCC000000000000C2A0 /* Auth */ = {
-			isa = PBXGroup;
-			children = (
-				D02AFFFF000000000000F2A1 /* AuthStyles.swift */,
-				D02AFFFF000000000000F2A2 /* AuthEmailFormView.swift */,
-				D02AFFFF000000000000F2A3 /* AuthSheetView.swift */,
-				D02AFFFF000000000000F2A4 /* AuthSheetDragLogic.swift */,
-			);
-			path = Auth;
 			sourceTree = "<group>";
 		};
 		DD808EBE2F694BC600F4956A /* Presentation */ = {
@@ -2653,7 +2653,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2675,7 +2675,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -2697,7 +2697,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2719,7 +2719,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dozy-ai.Dozy-AI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
