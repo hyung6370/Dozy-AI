@@ -25,6 +25,15 @@ struct Dozy_AIApp: App {
                let authViewModel = coordinator.authViewModel {
                 mainView(container: container, authViewModel: authViewModel)
                     .modelContainer(container.modelContainer)
+            } else if UITestMode.isEnabled {
+                // 테스트 하네스는 환경 선택 다이얼로그를 조작할 수 없다.
+                // setup() 은 @Published 를 건드리므로 body 평가 중(init)이 아니라
+                // task 에서 호출해 "Modifying state during view update" 를 피한다.
+                Color.clear
+                    .task {
+                        AppEnvironment.current = .development
+                        coordinator.setup()
+                    }
             } else {
                 EnvironmentPickerView { env in
                     AppEnvironment.current = env

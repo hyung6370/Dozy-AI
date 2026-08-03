@@ -29,6 +29,24 @@ extension Notification.Name {
     static let dozyNotificationsChanged = Notification.Name("dozy.notificationsChanged")
 }
 
+// MARK: - UI 테스트 모드
+
+/// XCUITest 런처가 `-uiTesting` 인자를 넘겼는지 여부.
+///
+/// DEBUG 빌드는 실행마다 환경 선택 다이얼로그를 띄우고 인트로 애니메이션(약 3.1초)을
+/// 재생하는데, 테스트 하네스는 다이얼로그를 눌러줄 수 없어 화면 진입 자체가 막힌다.
+/// 이 플래그가 켜지면 개발 환경으로 자동 진입하고 인트로를 건너뛴다.
+/// Release 빌드에서는 인자와 무관하게 항상 false.
+enum UITestMode {
+    static let isEnabled: Bool = {
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains("-uiTesting")
+        #else
+        return false
+        #endif
+    }()
+}
+
 // MARK: - App Store
 
 enum AppStoreConfig {

@@ -155,6 +155,7 @@ struct DozyMainTabBar: View {
         }
         .buttonStyle(TabIconBounceStyle())
         .accessibilityLabel("새 일정 만들기")
+        .accessibilityIdentifier("btn_create_event")
         .accessibilityAddTraits(.isButton)
     }
 
@@ -249,6 +250,7 @@ private struct TabBarItemView: View {
         }
         .buttonStyle(TabIconBounceStyle())
         .accessibilityLabel(tab.accessibilityLabel)
+        .accessibilityIdentifier(tab.accessibilityID)
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
         .onChange(of: isSelected) { _, newValue in
             if newValue { bounceTrigger &+= 1 }
