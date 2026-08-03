@@ -958,7 +958,8 @@ private struct ScrollOffsetReader: UIViewRepresentable {
         func attach(_ scrollView: UIScrollView, host: ProbeView?) {
             observation?.invalidate()
             observation = scrollView.observe(\.contentOffset, options: [.new]) { [weak host] sv, _ in
-                host?.onChange?(sv.contentOffset.y)
+                let y = sv.contentOffset.y
+                DispatchQueue.main.async { host?.onChange?(y) }
             }
         }
     }
