@@ -565,8 +565,12 @@ final class DozyEventTests: XCTestCase {
 
 final class CalendarSourceTests: XCTestCase {
 
-    func test_allCases_containsExactlyFour() {
-        XCTAssertEqual(CalendarSource.allCases.count, 4)
+    func test_allCases_containsExactlyFive() {
+        XCTAssertEqual(CalendarSource.allCases.count, 5)
+    }
+    
+    func test_displayName_holiday() {
+        XCTAssertEqual(CalendarSource.holiday.displayName, "공휴일")
     }
 
     func test_rawValues_matchExpected() {
@@ -574,6 +578,7 @@ final class CalendarSourceTests: XCTestCase {
         XCTAssertEqual(CalendarSource.google.rawValue, "google")
         XCTAssertEqual(CalendarSource.naver.rawValue,  "naver")
         XCTAssertEqual(CalendarSource.dozy.rawValue,   "dozy")
+        XCTAssertEqual(CalendarSource.holiday.rawValue,   "holiday")
     }
 
     func test_displayNames_areNonEmpty() {
