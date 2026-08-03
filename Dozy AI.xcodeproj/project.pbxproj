@@ -372,6 +372,8 @@
 		F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7F88A300F9C124 /* InsightBannerView.swift */; };
 		F6611CB8301C273A009292A7 /* PasswordPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */; };
 		F6611CB9301C273A009292A7 /* PasswordPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */; };
+		F6611CC430201031009292A7 /* AIResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC330201031009292A7 /* AIResponseParserTests.swift */; };
+		F6611CC530201031009292A7 /* AIResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC330201031009292A7 /* AIResponseParserTests.swift */; };
 		F67333012FA34508000A610A /* MacWeatherCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333002FA34508000A610A /* MacWeatherCardView.swift */; };
 		F67333042FA836C4000A610A /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F67333032FA836C4000A610A /* Lottie */; };
 		F67333052FA836DD000A610A /* success.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68812F85EA71003464E8 /* success.json */; };
@@ -758,6 +760,7 @@
 		F650683C2F7F88A300F9C124 /* InsightBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightBannerView.swift; sourceTree = "<group>"; };
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
 		F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordPolicyTests.swift; sourceTree = "<group>"; };
+		F6611CC330201031009292A7 /* AIResponseParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIResponseParserTests.swift; sourceTree = "<group>"; };
 		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
 		F67333092FA837C5000A610A /* MacLottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLottieView.swift; sourceTree = "<group>"; };
 		F673330B2FADA047000A610A /* EventLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLocation.swift; sourceTree = "<group>"; };
@@ -1028,6 +1031,7 @@
 				D02ACCWT000000000000A01 /* TodayEventCacheWriterTests.swift */,
 				D02ACQET000000000000A01 /* CreateQuickEventIntentTests.swift */,
 				F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */,
+				F6611CC330201031009292A7 /* AIResponseParserTests.swift */,
 			);
 			path = "Dozy AITests";
 			sourceTree = "<group>";
@@ -2261,6 +2265,7 @@
 				D02ACCWT000000000000A02 /* TodayEventCacheWriterTests.swift in Sources */,
 				F6611CB9301C273A009292A7 /* PasswordPolicyTests.swift in Sources */,
 				D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */,
+				F6611CC430201031009292A7 /* AIResponseParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2482,6 +2487,7 @@
 				F6611CB8301C273A009292A7 /* PasswordPolicyTests.swift in Sources */,
 				04FAF08DAF1D592C684CCD2B /* DomainModelTests.swift in Sources */,
 				1F9D251C83B3008BE74D4257 /* UseCaseTests.swift in Sources */,
+				F6611CC530201031009292A7 /* AIResponseParserTests.swift in Sources */,
 				575318062BF53B9AAE0ABBEE /* Mocks.swift in Sources */,
 				D4667C311D34F971A24D66FD /* TestHelpers.swift in Sources */,
 				D02ABBBB000000000000B20D /* PasswordFailLimiterTests.swift in Sources */,
