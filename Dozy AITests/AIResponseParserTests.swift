@@ -228,18 +228,29 @@ struct AIResponseParserTests {
         #expect(result.completedTaskCount == 0)
     }
     
-    // 🔍 마크다운 코드펜스가 요약에 그대로 섞여 들어온다.
-    @Test("코드펜스로 감싼 응답은 백틱이 요약에 남는다")
-    func 코드펜스_백틱_잔존() {
-        let response = "```\n[Summary]\n오늘은 바빴습니다\n```"
-        #expect(parse(response).summaryText.contains("```"))
+    @Test("코드펜스로 감싼 응답에서 백틱을 제거한다", arguments: [
+        "```\n[Summary]\n오늘은 바빴습니다\n```",       // 언어 표기 없는 펜스
+        "```json\n[Summary]\n오늘은 바빴습니다\n```",   // 언어 표기가 붙은 펜스
+        "[Summary]\n오늘은 바빴습니다",                  // 펜스 없는 응답도 그대로 동작
+    ])
+    func 코드펜스_제거(response: String) {
+        #expect(parse(response).summaryText == "오늘은 바빴습니다")
     }
-    
-    // 🔍 "85%" 같은 퍼센트 표기는 Double 변환에 실패해 조용히 폴백된다.
-    @Test("퍼센트 표기 점수는 파싱되지 않고 폴백된다")
-    func 퍼센트_점수_폴백() {
-        let result = parse("[Score]\n85%")
-        #expect(result.productivityScore == 0.5)   // 85% 가 아니라 폴백값
+
+    // 본문 중간의 백틱은 의도된 내용일 수 있어 보존한다.
+    @Test("본문 내부의 백틱은 남긴다")
+    func 본문_백틱_보존() {
+        #expect(parse("[Summary]\n`코드` 리뷰를 했습니다").summaryText == "`코드` 리뷰를 했습니다")
+    }
+
+    @Test("퍼센트 표기 점수를 0...1 스케일로 변환한다", arguments: [
+        ("85%",  0.85),
+        ("100%", 1.0),
+        ("0%",   0.0),
+        ("85 %", 0.85),   // 숫자와 % 사이 공백
+    ])
+    func 퍼센트_점수_변환(raw: String, expected: Double) {
+        #expect(parse("[Score]\n\(raw)").productivityScore == expected)
     }
     
     // 🔍 다음 섹션이 줄바꿈 없이 인라인으로 오면 요약이 그것까지 삼킨다.
