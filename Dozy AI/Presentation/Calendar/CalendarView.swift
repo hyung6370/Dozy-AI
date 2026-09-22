@@ -45,7 +45,7 @@ struct CalendarView: View {
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var authViewModel: AuthViewModel
 
-    private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+    private let weekdays = Calendar.headerWeekdaySymbols()
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
@@ -402,10 +402,10 @@ struct CalendarView: View {
     
     private var weekdayHeader: some View {
         HStack(spacing: 0) {
-            ForEach(weekdays, id: \.self) { day in
+            ForEach(Array(weekdays.enumerated()), id: \.offset) { index, day in
                 Text(day)
                     .font(.caption).fontWeight(.medium)
-                    .foregroundStyle(day == "일" ? .red : day == "토" ? .blue : .secondary)
+                    .foregroundStyle(index == 0 ? .red : index == 6 ? .blue : .secondary)
                     .frame(maxWidth: .infinity)
             }
         }

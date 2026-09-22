@@ -59,3 +59,13 @@ extension Date {
         Calendar.current.date(byAdding: .day, value: -days, to: self)!
     }
 }
+
+extension Calendar {
+    /// 달력 헤더용 요일 심볼 — 항상 일요일 시작.
+    /// ko: ["일","월",…] (기존과 동일) / en: ["SUN","MON",…]
+    static func headerWeekdaySymbols(locale: Locale = .current) -> [String] {
+        var cal = Calendar(identifier: .gregorian)
+        cal.locale = locale
+        return cal.shortWeekdaySymbols.map { $0.uppercased() }
+    }
+}
