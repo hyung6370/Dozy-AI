@@ -1,7 +1,9 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "" : {},
+    "" : {
+
+    },
     "—" : {
       "localizations" : {
         "en" : {
@@ -573,6 +575,7 @@
       }
     },
     "🚀 운영 (Prod)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -583,6 +586,7 @@
       }
     },
     "🛠 개발 (Dev)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -704,7 +708,9 @@
         }
       }
     },
-    "100%" : {},
+    "100%" : {
+
+    },
     "a h:mm" : {
       "comment" : "ICU date format pattern — must produce a date string, not user-facing text.",
       "localizations" : {
@@ -717,6 +723,7 @@
       }
     },
     "Action: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -827,6 +834,7 @@
       }
     },
     "Dozy AI 디자인 토큰 0123" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -846,7 +854,9 @@
         }
       }
     },
-    "Dozy 보기" : {},
+    "Dozy 보기" : {
+
+    },
     "Dozy 시작하기" : {
       "localizations" : {
         "en" : {
@@ -907,7 +917,9 @@
         }
       }
     },
-    "Dozy 위젯에서 빠르게 새 일정을 추가합니다." : {},
+    "Dozy 위젯에서 빠르게 새 일정을 추가합니다." : {
+
+    },
     "Dozy 인사이트" : {
       "localizations" : {
         "en" : {
@@ -1264,6 +1276,7 @@
       }
     },
     "OFF" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1274,6 +1287,7 @@
       }
     },
     "ON" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1284,6 +1298,7 @@
       }
     },
     "Selected: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1294,6 +1309,7 @@
       }
     },
     "Show sheet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2246,7 +2262,9 @@
         }
       }
     },
-    "되돌리기" : {},
+    "되돌리기" : {
+
+    },
     "두 가지 영역에 균형 있게 시간을 썼어요" : {
       "localizations" : {
         "en" : {
@@ -2258,6 +2276,7 @@
       }
     },
     "드래그로 닫기 / dim 탭 / 시트 안에서 isPresented = false" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3034,7 +3053,9 @@
         }
       }
     },
-    "사진 앨범 권한 필요" : {},
+    "사진 앨범 권한 필요" : {
+
+    },
     "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요." : {
       "localizations" : {
         "en" : {
@@ -3647,6 +3668,7 @@
       }
     },
     "시트 내용" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3867,6 +3889,7 @@
       }
     },
     "연결할 Supabase 환경을 선택하세요.\n앱을 재설치하면 다시 선택할 수 있습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4156,7 +4179,9 @@
         }
       }
     },
-    "오른쪽으로 회전" : {},
+    "오른쪽으로 회전" : {
+
+    },
     "오전" : {
       "localizations" : {
         "en" : {
@@ -4247,7 +4272,9 @@
         }
       }
     },
-    "왼쪽으로 회전" : {},
+    "왼쪽으로 회전" : {
+
+    },
     "요약" : {
       "localizations" : {
         "en" : {
@@ -4478,12 +4505,52 @@
         }
       }
     },
-    "이동" : {
+    "이메일 또는 비밀번호가 올바르지 않습니다." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Go"
+            "value" : "Invalid email or password."
+          }
+        }
+      }
+    },
+    "이모지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        }
+      }
+    },
+    "이전 기간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period"
+          }
+        }
+      }
+    },
+    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as your current password. Please choose a new one."
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code (6 digits)"
           }
         }
       }
@@ -4494,6 +4561,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Day"
+          }
+        }
+      }
+    },
+    "이동" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go"
           }
         }
       }
@@ -4514,16 +4591,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email"
-          }
-        }
-      }
-    },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
           }
         }
       }
@@ -4588,16 +4655,6 @@
         }
       }
     },
-    "이모지" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emoji"
-          }
-        }
-      }
-    },
     "이모지 선택" : {
       "localizations" : {
         "en" : {
@@ -4648,16 +4705,6 @@
         }
       }
     },
-    "이전 기간" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous period"
-          }
-        }
-      }
-    },
     "이전 기간 (월·주·일)" : {
       "localizations" : {
         "en" : {
@@ -4678,12 +4725,12 @@
         }
       }
     },
-    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
+    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Same as your current password. Please choose a new one."
+            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
           }
         }
       }
@@ -4714,16 +4761,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not retrieve authentication info."
-          }
-        }
-      }
-    },
-    "인증 코드 (6자리)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verification code (6 digits)"
           }
         }
       }
@@ -5019,7 +5056,9 @@
         }
       }
     },
-    "자르기" : {},
+    "자르기" : {
+
+    },
     "자세히 보기" : {
       "localizations" : {
         "en" : {
@@ -5070,7 +5109,9 @@
         }
       }
     },
-    "저장 완료" : {},
+    "저장 완료" : {
+
+    },
     "저장에 실패했습니다." : {
       "localizations" : {
         "en" : {
@@ -5943,8 +5984,12 @@
         }
       }
     },
-    "캘린더 스크린샷" : {},
-    "캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요." : {},
+    "캘린더 스크린샷" : {
+
+    },
+    "캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요." : {
+
+    },
     "캘린더 연동" : {
       "localizations" : {
         "en" : {
@@ -6216,6 +6261,7 @@
       }
     },
     "탈퇴 시 모든 데이터가 영구 삭제됩니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6567,6 +6613,7 @@
       }
     },
     "환경 선택" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6622,16 +6669,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncommon and different from your email"
-          }
-        }
-      }
-    },
-    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
           }
         }
       }

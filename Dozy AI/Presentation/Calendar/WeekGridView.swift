@@ -15,7 +15,7 @@ struct WeekGridView: View {
     let isHoliday: (Date) -> Bool
     let onSelectDate: (Date) -> Void
 
-    private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+    private let weekdays = Calendar.headerWeekdaySymbols()
 
     var body: some View {
         HStack(spacing: 0) {

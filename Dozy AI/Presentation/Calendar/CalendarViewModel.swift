@@ -301,8 +301,13 @@ final class CalendarViewModel: ObservableObject {
         fmt.locale = .current
         switch viewMode {
         case .month:
-            fmt.dateFormat = String(localized: "yyyy년 M월")
-            return fmt.string(from: currentMonth)
+            // 영문은 "September 2026" 대신 "SEP 2026" 으로 축약한다.
+            // 한국어("2026년 9월")는 그대로 — uppercased() 는 한글에 영향이 없다.
+            // catalog 키를 그대로 쓰지 않고 분기하는 이유: "yyyy년 M월" 키는 홈·위젯·macOS 도
+            // 공유하고 있어서, 값을 바꾸면 캘린더 탭 밖까지 같이 바뀐다.
+            let isEnglish = Locale.current.language.languageCode?.identifier == "en"
+            fmt.dateFormat = isEnglish ? "MMM yyyy" : String(localized: "yyyy년 M월")
+            return fmt.string(from: currentMonth).uppercased()
         case .week:
             fmt.dateFormat = String(localized: "M월 d일")
             let dates = currentWeekDates
