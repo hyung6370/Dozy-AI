@@ -28,6 +28,15 @@ enum MainTab: Int, CaseIterable, Hashable, Identifiable {
 
     /// 접근성 라벨. title 과 동일하지만, 향후 분리가 필요할 때를 위해 분리해 둔다.
     var accessibilityLabel: String { title }
+    
+    var accessibilityID: String {
+        switch self {
+        case .home: return "tab_home"
+        case .calendar: return "tab_calendar"
+        case .insight: return "tab_insight"
+        case .settings: return "tab_settings"
+        }
+    }
 
     func iconName(colorScheme: ColorScheme, isSelected: Bool) -> String {
         let prefix = colorScheme == .dark ? "Dark" : "Light"

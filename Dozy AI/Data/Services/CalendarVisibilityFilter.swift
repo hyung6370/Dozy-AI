@@ -16,11 +16,13 @@ final class CalendarVisibilityFilter: ObservableObject {
     @Published private(set) var hiddenSources: Set<CalendarSource>
     @Published private(set) var hiddenSharedCalendarIDs: Set<String>
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let sourcesKey = "dozy_hidden_calendar_sources"
     private let sharedKey = "dozy_hidden_shared_calendar_ids"
 
-    init() {
+    /// 테스트에서 격리된 suite 를 주입할 수 있도록 열어둔다 (프로덕션은 기본값 사용).
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         if let raw = defaults.array(forKey: sourcesKey) as? [String] {
             hiddenSources = Set(raw.compactMap { CalendarSource(rawValue: $0) })
         } else {

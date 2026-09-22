@@ -834,7 +834,9 @@ private struct TossScrollIntrospector: UIViewRepresentable {
             // 그 차이가 곧 당김 거리.
             offsetObservation = sv.observe(\.contentOffset, options: [.new]) { [weak self] scroll, _ in
                 let pull = max(0, -scroll.contentOffset.y - scroll.adjustedContentInset.top)
-                self?.onPullUpdate?(pull)
+                DispatchQueue.main.async {
+                    self?.onPullUpdate?(pull)
+                }
             }
 
             // pan gesture state 변화 — .ended / .cancelled / .failed 가 곧 release.

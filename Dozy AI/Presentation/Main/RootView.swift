@@ -12,7 +12,8 @@ import OSLog
 struct RootView: View {
 
     let container: DependencyContainer
-    @State private var showIntro = true
+    // UI 테스트에서는 인트로 애니메이션(약 3.1초)을 건너뛰어 대기 시간과 flakiness 를 줄인다.
+    @State private var showIntro = !UITestMode.isEnabled
     @State private var forceUpdateRequired = false
 
     @Environment(\.scenePhase) private var scenePhase

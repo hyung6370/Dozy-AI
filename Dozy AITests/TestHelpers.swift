@@ -44,7 +44,8 @@ func makeTestEvent(
     startHour: Int = 9, endHour: Int = 10,
     isAllDay: Bool = false,
     location: String? = nil,
-    source: CalendarSource = .apple
+    source: CalendarSource = .apple,
+    category: String = "일반"
 ) -> CalendarEvent {
     var c = DateComponents()
     c.year = 2026; c.month = 4; c.day = 11
@@ -55,7 +56,7 @@ func makeTestEvent(
         startDate: start, endDate: end,
         location: location, notes: nil, isAllDay: isAllDay,
         calendarName: "테스트", calendarColorHex: "#007AFF",
-        source: source, priority: 0, isPinned: false, category: "일반"
+        source: source, priority: 0, isPinned: false, category: category
     )
 }
 

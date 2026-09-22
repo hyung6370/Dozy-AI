@@ -39,7 +39,7 @@
 		44039241C37345B9A25246E9 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D808CA427DE3411D99E36895 /* SearchView.swift */; };
 		444FE9C09B264D31BBF541F7 /* MirrorExternalEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */; };
 		44BCF8BFE8AA2C53E214B1BE /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F619D94C2F75113C00084C61 /* GoogleSignInSwift */; };
-		47DAA502B8FEC7D2AD0AC1C6 /* RecommendNextTaskUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */; };
+		47DAA502B8FEC7D2AD0AC1C6 /* FetchRecentLogsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FE2F6ACE34001952F6 /* FetchRecentLogsUseCase.swift */; };
 		4817041814F3CAF5B88A863A /* JoinSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5F8C5B215F473C848CB8B0 /* JoinSharedCalendarUseCase.swift */; };
 		4BCAA1C0F48BB3E046D7C275 /* AuthUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */; };
 		4EDD2742975D5157B74941DA /* DeleteCalendarEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650682A2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift */; };
@@ -197,7 +197,7 @@
 		DD9F68F92F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */; };
 		DD9F68FB2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FA2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift */; };
 		DD9F68FD2F6ACE25001952F6 /* SaveWorkLogUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FC2F6ACE25001952F6 /* SaveWorkLogUseCase.swift */; };
-		DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */; };
+		DD9F68FF2F6ACE34001952F6 /* FetchRecentLogsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FE2F6ACE34001952F6 /* FetchRecentLogsUseCase.swift */; };
 		DD9F69022F6ACE5C001952F6 /* CalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69012F6ACE5C001952F6 /* CalendarServiceProtocol.swift */; };
 		DD9F69042F6ACE69001952F6 /* ReminderServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */; };
 		DD9F69062F6ACE74001952F6 /* AIServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69052F6ACE74001952F6 /* AIServiceProtocol.swift */; };
@@ -370,6 +370,14 @@
 		F650683B2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683A2F7E611000F9C124 /* FetchDozyEventsForPeriodUseCase.swift */; };
 		F650683D2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */; };
 		F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7F88A300F9C124 /* InsightBannerView.swift */; };
+		F6611CB8301C273A009292A7 /* PasswordPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */; };
+		F6611CB9301C273A009292A7 /* PasswordPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */; };
+		F6611CC430201031009292A7 /* AIResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC330201031009292A7 /* AIResponseParserTests.swift */; };
+		F6611CC530201031009292A7 /* AIResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC330201031009292A7 /* AIResponseParserTests.swift */; };
+		F6611CC730217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */; };
+		F6611CC830217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */; };
+		F6611CCA30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */; };
+		F6611CCB30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */; };
 		F67333012FA34508000A610A /* MacWeatherCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67333002FA34508000A610A /* MacWeatherCardView.swift */; };
 		F67333042FA836C4000A610A /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F67333032FA836C4000A610A /* Lottie */; };
 		F67333052FA836DD000A610A /* success.json in Resources */ = {isa = PBXBuildFile; fileRef = F63C68812F85EA71003464E8 /* success.json */; };
@@ -460,6 +468,8 @@
 		F6EC8B3B2F9A300000CFFF87 /* MacCalendarViewMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */; };
 		F6EC8B3D2F9A300000CFFF87 /* MacCalendarWeekView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */; };
 		F6EC8B3F2F9A300000CFFF87 /* MacCalendarDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */; };
+		F6F48F04306258D8003AE487 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F48F03306258D8003AE487 /* CalendarVisibilityFilterTests.swift */; };
+		F6F48F05306258D8003AE487 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F48F03306258D8003AE487 /* CalendarVisibilityFilterTests.swift */; };
 		F6FC89592FBD48A8000E5EDA /* CalendarScreenshotEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FC89582FBD48A8000E5EDA /* CalendarScreenshotEditView.swift */; };
 		F6FCFCFC2FBD000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */; };
 		F71DC72A1B0A1715E1231AD2 /* UserPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */; };
@@ -610,7 +620,7 @@
 		DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateDailySummaryUseCase.swift; sourceTree = "<group>"; };
 		DD9F68FA2F6ACE0A001952F6 /* FetchCalendarEventsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchCalendarEventsUseCase.swift; sourceTree = "<group>"; };
 		DD9F68FC2F6ACE25001952F6 /* SaveWorkLogUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveWorkLogUseCase.swift; sourceTree = "<group>"; };
-		DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendNextTaskUseCase.swift; sourceTree = "<group>"; };
+		DD9F68FE2F6ACE34001952F6 /* FetchRecentLogsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentLogsUseCase.swift; sourceTree = "<group>"; };
 		DD9F69012F6ACE5C001952F6 /* CalendarServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarServiceProtocol.swift; sourceTree = "<group>"; };
 		DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderServiceProtocol.swift; sourceTree = "<group>"; };
 		DD9F69052F6ACE74001952F6 /* AIServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIServiceProtocol.swift; sourceTree = "<group>"; };
@@ -755,6 +765,10 @@
 		F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchEventCompletionsForPeriodUseCase.swift; sourceTree = "<group>"; };
 		F650683C2F7F88A300F9C124 /* InsightBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightBannerView.swift; sourceTree = "<group>"; };
 		F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarDetailView.swift; sourceTree = "<group>"; };
+		F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordPolicyTests.swift; sourceTree = "<group>"; };
+		F6611CC330201031009292A7 /* AIResponseParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIResponseParserTests.swift; sourceTree = "<group>"; };
+		F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentLogsUseCaseTests.swift; sourceTree = "<group>"; };
+		F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityFilterTests.swift; sourceTree = "<group>"; };
 		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
 		F67333092FA837C5000A610A /* MacLottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLottieView.swift; sourceTree = "<group>"; };
 		F673330B2FADA047000A610A /* EventLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLocation.swift; sourceTree = "<group>"; };
@@ -829,6 +843,7 @@
 		F6EC8B3A2F9A300000CFFF87 /* MacCalendarViewMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarViewMode.swift; sourceTree = "<group>"; };
 		F6EC8B3C2F9A300000CFFF87 /* MacCalendarWeekView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarWeekView.swift; sourceTree = "<group>"; };
 		F6EC8B3E2F9A300000CFFF87 /* MacCalendarDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarDayView.swift; sourceTree = "<group>"; };
+		F6F48F03306258D8003AE487 /* CalendarVisibilityFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityFilterTests.swift; sourceTree = "<group>"; };
 		F6FC89582FBD48A8000E5EDA /* CalendarScreenshotEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarScreenshotEditView.swift; sourceTree = "<group>"; };
 		F6FCFCFC2FBD000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarJoinView.swift; sourceTree = "<group>"; };
@@ -1024,6 +1039,11 @@
 				D02AFFFF000000000000F2A5 /* AuthSheetDragLogicTests.swift */,
 				D02ACCWT000000000000A01 /* TodayEventCacheWriterTests.swift */,
 				D02ACQET000000000000A01 /* CreateQuickEventIntentTests.swift */,
+				F6611CB7301C273A009292A7 /* PasswordPolicyTests.swift */,
+				F6611CC330201031009292A7 /* AIResponseParserTests.swift */,
+				F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */,
+				F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */,
+				F6F48F03306258D8003AE487 /* CalendarVisibilityFilterTests.swift */,
 			);
 			path = "Dozy AITests";
 			sourceTree = "<group>";
@@ -1251,7 +1271,7 @@
 				F650682E2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift */,
 				F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */,
 				DD9F68F82F6ACDAD001952F6 /* GenerateDailySummaryUseCase.swift */,
-				DD9F68FE2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift */,
+				DD9F68FE2F6ACE34001952F6 /* FetchRecentLogsUseCase.swift */,
 				F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */,
 				F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */,
 				F650682C2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift */,
@@ -2060,7 +2080,7 @@
 				F63C68E62F86430D003464E8 /* EventDisplaySettingsRepository.swift in Sources */,
 				F6BC59972F739B010090DF3A /* TaskRow.swift in Sources */,
 				DD9F69252F6ACFFD001952F6 /* WorkLogDTO.swift in Sources */,
-				DD9F68FF2F6ACE34001952F6 /* RecommendNextTaskUseCase.swift in Sources */,
+				DD9F68FF2F6ACE34001952F6 /* FetchRecentLogsUseCase.swift in Sources */,
 				DD9F69352F6AD144001952F6 /* VoiceInputView.swift in Sources */,
 				F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */,
 				F650681F2F7CF1B400F9C124 /* DayTimelineView.swift in Sources */,
@@ -2251,11 +2271,16 @@
 				AA1100020000000000000002 /* UseCaseTests.swift in Sources */,
 				AA1100020000000000000003 /* Mocks.swift in Sources */,
 				AA1100020000000000000004 /* TestHelpers.swift in Sources */,
+				F6F48F05306258D8003AE487 /* CalendarVisibilityFilterTests.swift in Sources */,
 				AA1100020000000000000005 /* ViewModelTests.swift in Sources */,
 				D02ABBBB000000000000B20B /* PasswordFailLimiterTests.swift in Sources */,
 				D02ABBBB000000000000B2A5 /* AuthSheetDragLogicTests.swift in Sources */,
 				D02ACCWT000000000000A02 /* TodayEventCacheWriterTests.swift in Sources */,
+				F6611CB9301C273A009292A7 /* PasswordPolicyTests.swift in Sources */,
+				F6611CC730217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */,
+				F6611CCA30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */,
 				D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */,
+				F6611CC430201031009292A7 /* AIResponseParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2319,7 +2344,7 @@
 				B87AC7D575F27C509602F32F /* UpdateSharedCalendarNicknameUseCase.swift in Sources */,
 				DBFC5E192ECDB68070B57048 /* ReminderServiceProtocol.swift in Sources */,
 				510BD3FDCC7B48115B145337 /* DailySummary.swift in Sources */,
-				47DAA502B8FEC7D2AD0AC1C6 /* RecommendNextTaskUseCase.swift in Sources */,
+				47DAA502B8FEC7D2AD0AC1C6 /* FetchRecentLogsUseCase.swift in Sources */,
 				8CDF673EBB3857CD4A95B98E /* TaskItem.swift in Sources */,
 				7CEBE979A989BF893A2600E1 /* DeleteDozyEventUseCase.swift in Sources */,
 				F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */,
@@ -2474,8 +2499,13 @@
 			files = (
 				F6EC8AE62F9896E000CFFF87 /* Dozy_AI__macOS_Tests.swift in Sources */,
 				B7A0B73D2EE8246EFC01E03B /* Dozy_AITests.swift in Sources */,
+				F6611CB8301C273A009292A7 /* PasswordPolicyTests.swift in Sources */,
 				04FAF08DAF1D592C684CCD2B /* DomainModelTests.swift in Sources */,
+				F6F48F04306258D8003AE487 /* CalendarVisibilityFilterTests.swift in Sources */,
 				1F9D251C83B3008BE74D4257 /* UseCaseTests.swift in Sources */,
+				F6611CC530201031009292A7 /* AIResponseParserTests.swift in Sources */,
+				F6611CC830217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */,
+				F6611CCB30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */,
 				575318062BF53B9AAE0ABBEE /* Mocks.swift in Sources */,
 				D4667C311D34F971A24D66FD /* TestHelpers.swift in Sources */,
 				D02ABBBB000000000000B20D /* PasswordFailLimiterTests.swift in Sources */,

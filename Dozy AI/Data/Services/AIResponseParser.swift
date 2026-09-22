@@ -16,7 +16,11 @@ enum AIResponseParser {
         events: [CalendarEvent],
         completedTasks: [TaskItem]
     ) -> DailySummary {
-        
+
+        // LLM 이 응답 전체를 ``` 로 감싸는 경우가 흔하다. 펜스를 먼저 걷어내지 않으면
+        // 마지막 섹션 추출값에 백틱이 그대로 붙어 사용자에게 노출된다.
+        let response = stripCodeFence(response)
+
         // 각 섹션 추출 — AIPromptBuilder 와 동일한 영문 tag 사용 (한·영 공통).
         // 이전 한글 tag 응답과의 호환을 위해 alternate tag 도 함께 시도.
         let summaryText = extractSection(from: response, tags: ["Summary", "요약"])
@@ -31,7 +35,7 @@ enum AIResponseParser {
             ?? detectCategoryFromEvents(events)
 
         let score = extractSection(from: response, tags: ["Score", "생산성 점수"])
-            .flatMap { Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+            .flatMap { parseScore($0) }
             ?? calculateFallbackScore(events: events, completedTasks: completedTasks)
         
         let totalMinutes = events
@@ -111,6 +115,40 @@ enum AIResponseParser {
             }
             .filter { !$0.isEmpty }
             .filter { seen.insert($0.lowercased()).inserted }
+    }
+    
+    // MARK: - 코드펜스 제거
+
+    /// 응답을 감싼 마크다운 코드펜스(``` 또는 ```json) 라인을 제거한다.
+    /// 첫 줄·마지막 줄만 검사한다 — 본문 중간의 백틱은 의도된 내용일 수 있어 건드리지 않는다.
+    private static func stripCodeFence(_ text: String) -> String {
+        var lines = text.components(separatedBy: .newlines)
+
+        if lines.first?.trimmingCharacters(in: .whitespaces).hasPrefix("```") == true {
+            lines.removeFirst()
+        }
+        if lines.last?.trimmingCharacters(in: .whitespaces).hasPrefix("```") == true {
+            lines.removeLast()
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    // MARK: - 점수 파싱
+    /**
+     점수 문자열 -> 0...1 스케일. 프롬프트가 0.0~1.0을 요구하지만
+     LLM이 "85%" 로 답하는 경우가 흔해 퍼센트 표기를 함께 받는다.
+     
+     `%` 가 붙은 경우만 100으로 나눈다. 접미사 없는 큰 값(예: "1.5")은
+     백분율인지 잘못된 스케일인지 구분할 수 없어, 기존처럼 clamp에 맡긴다.
+     */
+    private static func parseScore(_ raw: String) -> Double? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmed.hasSuffix("%") {
+            let numeric = trimmed.dropLast().trimmingCharacters(in: .whitespaces)
+            return Double(numeric).map { $0 / 100 }
+        }
+        return Double(trimmed)
     }
     
     // MARK: - 카테고리 정규화
