@@ -227,6 +227,10 @@ struct MainTabView: View {
             // accessoryRectangular 탭 → 홈 탭으로 먼저 이동. 상세 시트 띄우기는 HomeView 가 처리.
             selection = .home
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyOpenVoiceInput)) { _ in
+            // Siri 음성 메모 → 홈 탭으로 먼저 이동. 시트 띄우기는 HomeView 가 처리.
+            selection = .home
+        }
         .sheet(item: Binding(
             get: { authViewModel.pendingInviteCode.map { InviteCodeWrapper(code: $0) } },
             set: { if $0 == nil { authViewModel.pendingInviteCode = nil } }

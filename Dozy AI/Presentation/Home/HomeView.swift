@@ -39,6 +39,7 @@ struct HomeView: View {
     // 토스 스타일 Pull-to-Refresh 상태 — 상단바 내부 요소의 scale/인디케이터를 구동한다.
     @State private var pullProgress: Double = 0
     @State private var isRefreshing: Bool = false
+    @State private var showVoiceInput = false
 
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
@@ -159,6 +160,15 @@ struct HomeView: View {
                 } else {
                     pendingWidgetEventID = id
                     viewModel.loadTodayData()
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .dozyOpenVoiceInput)) { _ in
+                // Siri "Dozy 음성 메모" (OpenVoiceInputIntent) → MainTabView 가 홈 탭으로 옮긴 뒤 시트 오픈.
+                showVoiceInput = true
+            }
+            .sheet(isPresented: $showVoiceInput) {
+                VoiceInputView(speechService: container.speechService) { text in
+                    viewModel.addMemo(text)
                 }
             }
             .onChange(of: viewModel.todayEvents.count) { _, _ in
@@ -599,6 +609,13 @@ struct HomeView: View {
                 TextField("메모를 남겨보세요", text: $memoText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(1...)
+
+                Button { showVoiceInput = true } label: {
+                    Image(systemName: "mic.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.blue)
+                }
+                .disabled(viewModel.todayLog == nil)   // addMemo 가 todayLog nil 이면 조용히 버리므로 막는다
 
                 Button { submitMemo() } label: {
                     Image(systemName: "plus.circle.fill")
