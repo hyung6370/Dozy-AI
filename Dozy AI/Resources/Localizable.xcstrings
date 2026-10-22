@@ -2827,6 +2827,9 @@
         }
       }
     },
+    "반복·알림" : {
+
+    },
     "배경" : {
       "localizations" : {
         "en" : {
@@ -3915,16 +3918,6 @@
         }
       }
     },
-    "연결됨" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected"
-          }
-        }
-      }
-    },
     "연결되지 않음" : {
       "localizations" : {
         "en" : {
@@ -3941,6 +3934,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connected calendars"
+          }
+        }
+      }
+    },
+    "연결됨" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected"
           }
         }
       }
@@ -4577,26 +4580,6 @@
         }
       }
     },
-    "이동" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go"
-          }
-        }
-      }
-    },
-    "이메일 인증하기" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verify with email"
-          }
-        }
-      }
-    },
     "인증 코드 (6자리)" : {
       "localizations" : {
         "en" : {
@@ -4613,6 +4596,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Day"
+          }
+        }
+      }
+    },
+    "이동" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go"
           }
         }
       }
@@ -4663,6 +4656,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email sign-in failed. (%@)"
+          }
+        }
+      }
+    },
+    "이메일 인증하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verify with email"
           }
         }
       }
@@ -5161,12 +5164,25 @@
         }
       }
     },
+    "장소·메모" : {
+
+    },
     "재시도" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retry"
+          }
+        }
+      }
+    },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-saturation mesh gradient — the calmest mood."
           }
         }
       }
@@ -5206,16 +5222,6 @@
     },
     "저장하거나 다시 녹음할 수 있어요" : {
 
-    },
-    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Low-saturation mesh gradient — the calmest mood."
-          }
-        }
-      }
     },
     "전체" : {
       "localizations" : {

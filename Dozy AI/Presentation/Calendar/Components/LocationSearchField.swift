@@ -26,7 +26,7 @@ struct LocationSearchField: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 TextField("장소 (선택)", text: $locationText)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)   // 카드 행 안에 들어가므로 테두리 없이 (EventEditView)
                     .focused($isFocused)
                     .onChange(of: locationText) { _, newValue in
                         // 사용자가 다시 타이핑하면 이전 좌표는 의도와 어긋날 수 있어 무효화.

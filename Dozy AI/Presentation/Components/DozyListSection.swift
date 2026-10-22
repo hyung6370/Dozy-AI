@@ -82,6 +82,8 @@ struct DozyListRow<Icon: View, Trailing: View>: View {
             Text(title)
                 .font(DozyFont.bodyEmphasized)
                 .foregroundStyle(titleColor)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)   // 넓은 trailing(DatePicker 등)이 제목을 두 줄로 꺾지 않게
             Spacer(minLength: DozySpacing.sm)
             trailing()
         }
