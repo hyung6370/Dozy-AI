@@ -4,36 +4,64 @@
 //
 //  Created by HyungJun's mac on 3/18/26.
 //
+//  일일 요약 / 한 줄 요약 생성.
+//  1) iOS 26+ 에서 Apple Intelligence 가 켜져 있으면 온디바이스 Foundation Models (FoundationModelsEngine)
+//  2) 아니면, 또는 모델 호출이 실패하면 NaturalLanguage 기반 로컬 분석으로 폴백 — 사용자에게 에러를 보이지 않는다.
+//
 
 import Foundation
 import Combine
 import NaturalLanguage
+import OSLog
 
 final class AIService: AIServiceProtocol {
-    
-    // MARK: - 일일 요약 생성
-    
-    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) async throws -> DailySummary {
-        
-        // Foundation Models 사용 가능 시 (iOS 26+)
-        if #available(iOS 26.0, *), Self.isFoundationModelsAvailable() {
-            let prompt = AIPromptBuilder.buildDailySummaryPrompt(
-                events: events,
-                completedTasks: completedTasks,
-                pendingTasks: pendingTasks,
-                memos: memos
-            )
-            let response = try await requestFoundationModels(prompt: prompt)
-            
-            return AIResponseParser.parse(
-                response: response,
-                date: Date(),
-                events: events,
-                completedTasks: completedTasks
-            )
+
+    // MARK: - 엔진 상태
+
+    /// 가용성 API 는 .available 이라도 실제 생성이 실패할 수 있다(시뮬레이터처럼 모델 자산이 없는 경우 등).
+    /// 마지막 시도 결과를 기억해 설정 화면이 "사용 가능" 으로만 보이지 않게 한다.
+    private var lastOnDeviceGenerationFailed = false
+
+    var engineStatus: AIEngineStatus {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            let status = FoundationModelsEngine().status
+            if status == .onDevice, lastOnDeviceGenerationFailed { return .onDeviceFailed }
+            return status
         }
-        
-        // 폴백: NaturalLanguage 기반 로컬 분석
+        #endif
+        return .deviceNotEligible
+    }
+
+    // MARK: - 일일 요약 생성
+
+    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) async throws -> DailySummary {
+
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            let engine = FoundationModelsEngine()
+            if engine.status == .onDevice {
+                do {
+                    let prompt = AIPromptBuilder.buildDailySummaryPrompt(
+                        events: events,
+                        completedTasks: completedTasks,
+                        pendingTasks: pendingTasks,
+                        memos: memos,
+                        includeFormatInstruction: false   // 형식은 @Generable 이 강제
+                    )
+                    let draft = try await engine.dailyReport(prompt: prompt)
+                    lastOnDeviceGenerationFailed = false
+                    Logger.ai.info("[요약] 온디바이스 모델 생성 완료 (highlights \(draft.highlights.count), score \(draft.score))")
+                    return makeSummary(from: draft, events: events, completedTasks: completedTasks)
+                } catch {
+                    // 컨텍스트 초과·가드레일·언어 미지원·모델 자산 없음 등 → 로컬 분석으로 조용히 폴백
+                    lastOnDeviceGenerationFailed = true
+                    Logger.ai.error("[요약] 온디바이스 모델 실패, 로컬 분석 폴백: \(error.localizedDescription, privacy: .public)")
+                }
+            }
+        }
+        #endif
+
         return generateWithLocalAnalysis(
             events: events,
             completedTasks: completedTasks,
@@ -42,45 +70,58 @@ final class AIService: AIServiceProtocol {
             completedEventCount: completedEventCount
         )
     }
-    
-    // MARK: - 빠른 한줄 요약 (async)
+
+    // MARK: - 빠른 한줄 요약 (위젯·Siri)
+
     func generateQuickSummary(events: [CalendarEvent], completedTasks: [TaskItem]) async throws -> String {
-        if #available(iOS 26.0, *), Self.isFoundationModelsAvailable() {
-            let prompt = AIPromptBuilder.buildQuickSummaryPrompt(
-                events: events,
-                completedTasks: completedTasks
-            )
-            return try await requestFoundationModels(prompt: prompt)
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            let engine = FoundationModelsEngine()
+            if engine.status == .onDevice {
+                do {
+                    let prompt = AIPromptBuilder.buildQuickSummaryPrompt(events: events, completedTasks: completedTasks)
+                    let line = try await engine.quickLine(prompt: prompt)
+                    lastOnDeviceGenerationFailed = false
+                    if !line.isEmpty { return String(line.prefix(60)) }
+                } catch {
+                    lastOnDeviceGenerationFailed = true
+                    Logger.ai.error("[한줄 요약] 온디바이스 모델 실패, 로컬 폴백: \(error.localizedDescription, privacy: .public)")
+                }
+            }
         }
-        
+        #endif
         return buildQuickSummaryLocally(events: events, completedTasks: completedTasks)
     }
-    
-    // MARK: - Foundation Models (iOS 26+)
-    
-    /// Foundation Models 사용 가능 여부 체크
-    private static func isFoundationModelsAvailable() -> Bool {
-        // Xcode 26+에서 FoundationModels.isAvailable 등으로 교체
-        if #available(iOS 26.0, *) {
-            return false  // Xcode 26 전까지 false
-        }
-        return false
+
+    // MARK: - Foundation Models 응답 → DailySummary
+
+    #if canImport(FoundationModels)
+    /// 모델 응답을 도메인 모델로. 수치(총 소요시간·완료 수)는 모델이 아니라 입력 데이터에서 계산 — 모델이 숫자를 틀릴 수 있다.
+    @available(iOS 26.0, macOS 26.0, *)
+    private func makeSummary(from draft: DailyReportDraft, events: [CalendarEvent], completedTasks: [TaskItem]) -> DailySummary {
+        let totalMinutes = events
+            .filter { !$0.isAllDay }
+            .reduce(0) { $0 + $1.durationMinutes }
+
+        // 모델이 고른 카테고리가 입력에 없는 이름이면 규칙 기반 감지로 대체 (지어낸 카테고리 방지)
+        let knownCategories = Set(events.map(\.category))
+        let category = knownCategories.contains(draft.category)
+            ? draft.category
+            : detectCategory(events: events, tasks: completedTasks)
+
+        return DailySummary(
+            date: Date(),
+            summaryText: draft.summary.trimmingCharacters(in: .whitespacesAndNewlines),
+            highlights: draft.highlights.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty },
+            nextActions: draft.nextActions.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty },
+            detectedCategory: category,
+            productivityScore: min(max(draft.score, 0.0), 1.0),
+            totalEventMinutes: totalMinutes,
+            completedTaskCount: completedTasks.count
+        )
     }
-    
-    /// Foundation Models 호출
-    @available(iOS 26.0, *)
-    private func requestFoundationModels(prompt: String) async throws -> String {
-        // ──────────────────────────────────────────
-        // Xcode 26+ 에서 아래 코드를 활성화:
-        //
-        // import FoundationModels
-        // let session = LanguageModelSession()
-        // let response = try await session.respond(to: prompt)
-        // return response.content
-        // ──────────────────────────────────────────
-        throw DozyError.aiSummarizationFailed
-    }
-    
+    #endif
+
     // MARK: - NaturalLanguage 기반 로컬 분석
     // NLTagger 키워드 추출 + 규칙 기반 로직 조합
     private func generateWithLocalAnalysis(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) -> DailySummary {

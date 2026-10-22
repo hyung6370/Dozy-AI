@@ -24,6 +24,9 @@ protocol AIServiceProtocol {
         events: [CalendarEvent],
         completedTasks: [TaskItem]
     ) async throws -> String
+    
+    /// 현재 요약 엔진 상태 (설정 화면 표시용), 온디바이스 모델이 없으면 규칙 기반
+    var engineStatus: AIEngineStatus { get }
 }
 
 
@@ -59,4 +62,7 @@ extension AIServiceProtocol {
         }
         .eraseToAnyPublisher()
     }
+    
+    /// 기본값 - 테스트 Mock 등 엔진 개념이 없는 구현체용
+    var engineStatus: AIEngineStatus { .unavailable }
 }

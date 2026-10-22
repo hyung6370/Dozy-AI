@@ -40,6 +40,7 @@ enum DozyError: LocalizedError {
     case sharedCalendarNotOwner
     case sharedCalendarInvalidName
     case sharedCalendarCodeGenerationFailed
+    case eventParsingFailed
 
     var errorDescription: String? {
         switch self {
@@ -110,6 +111,8 @@ enum DozyError: LocalizedError {
             return String(localized: "캘린더 이름을 입력해주세요.")
         case .sharedCalendarCodeGenerationFailed:
             return String(localized: "초대 코드 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
+        case .eventParsingFailed:
+            return String(localized: "문장에서 일정을 알아내지 못했어요. 날짜와 시간을 넣어 다시 적어 주세요.")
         }
     }
 }

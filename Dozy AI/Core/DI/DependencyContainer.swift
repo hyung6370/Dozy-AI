@@ -41,6 +41,7 @@ final class DependencyContainer: ObservableObject {
     lazy var calendarVisibilityFilter = CalendarVisibilityFilter()
     lazy var patternAnalysisService = PatternAnalysisService()
     lazy var speechService: SpeechServiceProtocol = SpeechService()
+    lazy var eventParsingService: EventParsingServiceProtocol = NaturalLanguageEventParser()
 
     private lazy var appleCalendarService = CalendarService()
     private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)
@@ -108,6 +109,7 @@ final class DependencyContainer: ObservableObject {
     lazy var leaveSharedCalendarUseCase = LeaveSharedCalendarUseCase(service: sharedCalendarService)
     lazy var regenerateSharedCalendarInviteCodeUseCase = RegenerateSharedCalendarInviteCodeUseCase(service: sharedCalendarService)
     lazy var updateSharedCalendarNicknameUseCase = UpdateSharedCalendarNicknameUseCase(service: sharedCalendarService)
+    lazy var parseNaturalLanguageEventUseCase = ParseNaturalLanguageEventUseCase(service: eventParsingService)
 
     #if os(iOS)
     // FetchTodayDataUseCase 는 iOS 의 Today 화면 전용 — reminderService 까지 묶어 쓰는데

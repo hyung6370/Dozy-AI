@@ -120,6 +120,18 @@ final class EventEditViewModel: ObservableObject {
 
     var isSavable: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
     
+    /// 자연어 파싱 결과로 폼을 채운다. 반복/알림/카테고리는 건드리지 않는다 - 사용자가 이어서 고른다
+    func apply(_ draft: EventDraft) {
+        title = draft.title
+        isAllDay = draft.isAllDay
+        startDate = draft.startDate
+        endDate = draft.isAllDay ? draft.startDate : draft.endDate
+        if let location = draft.location, !location.isEmpty {
+            self.location = location
+            resolvedLocation = nil // 좌표는 사용자가 자동완성에서 고를 때만
+        }
+    }
+    
     func save() {
         let colorHex = selectedColor.toHex() ?? "#007AFF"
         let finalEnd = isAllDay ? startDate : endDate

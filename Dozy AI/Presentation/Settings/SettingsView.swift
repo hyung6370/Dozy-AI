@@ -303,6 +303,16 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .disabled(privacyPolicyURL == nil)
 
+            DozyListRow(title: "AI 엔진") {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 16))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                    .frame(width: 34)
+            } trailing: {
+                // 온디바이스 모델(Apple Intelligence) 사용 가능 여부 / 불가 사유
+                DozyTrailingValue(text: container.aiService.engineStatus.displayName)
+            }
+
             DozyListRow(title: "버전") {
                 settingIcon("Light-Version", "Dark-Version")
             } trailing: {

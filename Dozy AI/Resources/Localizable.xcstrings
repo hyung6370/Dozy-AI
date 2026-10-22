@@ -97,6 +97,9 @@
         }
       }
     },
+    "%@ 결과로 채웠어요. 내용을 확인하고 저장하세요." : {
+
+    },
     "%@ 로 보낸 6자리 코드를 입력하세요." : {
       "localizations" : {
         "en" : {
@@ -742,6 +745,9 @@
         }
       }
     },
+    "AI 엔진" : {
+
+    },
     "AI 요약 생성" : {
       "localizations" : {
         "en" : {
@@ -771,6 +777,12 @@
           }
         }
       }
+    },
+    "Apple Intelligence" : {
+
+    },
+    "Apple Intelligence (최근 실패, 기본 분석 사용)" : {
+
     },
     "Apple 로그인" : {
       "localizations" : {
@@ -1787,6 +1799,15 @@
         }
       }
     },
+    "기본 분석" : {
+
+    },
+    "기본 분석 (Apple Intelligence 꺼짐)" : {
+
+    },
+    "기본 분석 (기기 미지원)" : {
+
+    },
     "기본 정보" : {
       "localizations" : {
         "en" : {
@@ -1916,6 +1937,12 @@
           }
         }
       }
+    },
+    "날짜 인식" : {
+
+    },
+    "날짜·시간·장소가 들어간 문장을 적으면 아래 항목을 채워 드려요." : {
+
     },
     "남은 일정" : {
       "localizations" : {
@@ -2715,6 +2742,9 @@
       }
     },
     "무엇을 기록할까요?" : {
+
+    },
+    "문장에서 일정을 알아내지 못했어요. 날짜와 시간을 넣어 다시 적어 주세요." : {
 
     },
     "미리알림 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요." : {
@@ -3918,6 +3948,16 @@
         }
       }
     },
+    "연결됨" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected"
+          }
+        }
+      }
+    },
     "연결되지 않음" : {
       "localizations" : {
         "en" : {
@@ -3934,16 +3974,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connected calendars"
-          }
-        }
-      }
-    },
-    "연결됨" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected"
           }
         }
       }
@@ -4580,12 +4610,32 @@
         }
       }
     },
-    "인증 코드 (6자리)" : {
+    "이메일을 먼저 입력해주세요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verification code (6 digits)"
+            "value" : "Please enter your email first."
+          }
+        }
+      }
+    },
+    "이미 참여한 공유 캘린더입니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already a member of this shared calendar."
+          }
+        }
+      }
+    },
+    "이벤트 수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events"
           }
         }
       }
@@ -4690,16 +4740,6 @@
         }
       }
     },
-    "이메일을 먼저 입력해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please enter your email first."
-          }
-        }
-      }
-    },
     "이모지" : {
       "localizations" : {
         "en" : {
@@ -4730,32 +4770,12 @@
         }
       }
     },
-    "이미 참여한 공유 캘린더입니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Already a member of this shared calendar."
-          }
-        }
-      }
-    },
     "이미지 업로드 실패" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Image upload failed"
-          }
-        }
-      }
-    },
-    "이벤트 수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
           }
         }
       }
@@ -4836,6 +4856,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not retrieve authentication info."
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code (6 digits)"
           }
         }
       }
@@ -5177,26 +5207,6 @@
         }
       }
     },
-    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Low-saturation mesh gradient — the calmest mood."
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
-          }
-        }
-      }
-    },
     "저장" : {
       "localizations" : {
         "en" : {
@@ -5223,12 +5233,32 @@
     "저장하거나 다시 녹음할 수 있어요" : {
 
     },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-saturation mesh gradient — the calmest mood."
+          }
+        }
+      }
+    },
     "전체" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
           }
         }
       }
@@ -5486,6 +5516,9 @@
         }
       }
     },
+    "준비 중" : {
+
+    },
     "중간" : {
       "localizations" : {
         "en" : {
@@ -5625,6 +5658,9 @@
           }
         }
       }
+    },
+    "채우기" : {
+
     },
     "초대 코드" : {
       "localizations" : {
@@ -6588,6 +6624,9 @@
           }
         }
       }
+    },
+    "한 줄로 입력 (예: 내일 오후 3시 치과 30분)" : {
+
     },
     "할 일 %lld개를 완료하여 생산적인 하루였습니다" : {
       "localizations" : {
