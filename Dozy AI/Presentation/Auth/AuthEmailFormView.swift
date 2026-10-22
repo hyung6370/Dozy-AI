@@ -204,7 +204,10 @@ struct AuthEmailFormView: View {
                     switchEmailLoginMode(to: .signIn)
                 } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: "chevron.left").font(.caption)
+                        Image("btn_navi_back")
+                            .renderingMode(.template)   // accentColor 틴트를 따르도록
+                            .resizable().scaledToFit()
+                            .frame(width: 12, height: 12)
                         Text("로그인으로 돌아가기").font(.caption)
                     }
                 }

@@ -15,6 +15,8 @@ struct CategoryManagementView: View {
     @Query private var allDozyEvents: [DozyEvent]
     @Environment(\.modelContext) private var context
     @State private var showAddSheet = false
+    /// 순서 변경 편집 모드. 시스템 EditButton 대신 아이콘 버튼(square.and.pencil)이 토글한다.
+    @State private var editMode: EditMode = .inactive
     @State private var editingCategory: UserCategory? = nil
     @State private var deletingCategory: UserCategory? = nil
 
@@ -62,6 +64,7 @@ struct CategoryManagementView: View {
                     .onMove(perform: move)
                 }
                 // List 유지 (swipeActions/onMove 보존). themed shell bg 가 비치도록 투명.
+                .environment(\.editMode, $editMode)
                 .listStyle(.insetGrouped)
                 .scrollContentBackground(.hidden)
                 .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
@@ -73,12 +76,27 @@ struct CategoryManagementView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAddSheet = true } label: {
                     Image(systemName: "plus")
+                        .foregroundStyle(Color(.label))   // 틴트(파랑) 대신 라이트 검정 / 다크 흰색
                 }
+                .accessibilityLabel("카테고리 추가")
             }
             ToolbarItem(placement: .topBarLeading) {
-                EditButton()
+                // 편집 아이콘 ↔ 편집 중엔 "완료" 텍스트
+                Button {
+                    withAnimation { editMode = editMode == .active ? .inactive : .active }
+                } label: {
+                    if editMode == .active {
+                        Text("완료").fontWeight(.semibold)
+                    } else {
+                        Image(systemName: "square.and.pencil")   // 색은 아래 foregroundStyle: 라이트 검정 / 다크 흰색
+                    }
+                }
+                .foregroundStyle(Color(.label))
+                .accessibilityLabel(editMode == .active ? "편집 완료" : "순서 편집")
+                .accessibilityIdentifier("btn_category_edit")
             }
         }
+        .dozyBackButton()   // 시스템 뒤로가기 → btn_navi_back 에셋 (스와이프 백 유지 — 자체 toolbar(편집) 뒤에 둬야 가장 왼쪽)
         .sheet(isPresented: $showAddSheet) {
             CategoryEditSheet()
         }

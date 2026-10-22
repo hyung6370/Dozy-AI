@@ -284,6 +284,7 @@
 		F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */; };
 		F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */; };
 		D02ABBBB000000000000B212 /* KeyboardDismissOnTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F212 /* KeyboardDismissOnTap.swift */; };
+		D02ABBBB000000000000B213 /* View+DozyBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F213 /* View+DozyBackButton.swift */; };
 		F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */ = {isa = PBXBuildFile; fileRef = F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */; };
 		F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */; };
 		F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9682F7A170E00084C61 /* FilterTab.swift */; };
@@ -694,6 +695,7 @@
 		F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsView.swift; sourceTree = "<group>"; };
 		F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+TopVC.swift"; sourceTree = "<group>"; };
 		D02AFFFF000000000000F212 /* KeyboardDismissOnTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardDismissOnTap.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F213 /* View+DozyBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+DozyBackButton.swift"; sourceTree = "<group>"; };
 		F619D9642F7A0CF400084C61 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text; path = Secrets.xcconfig.template; sourceTree = "<group>"; };
 		F619D9682F7A170E00084C61 /* FilterTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterTab.swift; sourceTree = "<group>"; };
@@ -1149,6 +1151,7 @@
 				DD9F68E52F6ACD14001952F6 /* String+Extensions.swift */,
 				F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */,
 				D02AFFFF000000000000F212 /* KeyboardDismissOnTap.swift */,
+				D02AFFFF000000000000F213 /* View+DozyBackButton.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -2236,6 +2239,7 @@
 				F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */,
 				F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */,
 				D02ABBBB000000000000B212 /* KeyboardDismissOnTap.swift in Sources */,
+				D02ABBBB000000000000B213 /* View+DozyBackButton.swift in Sources */,
 				F619D9832F7A422900084C61 /* DayCell.swift in Sources */,
 				DD9F68FD2F6ACE25001952F6 /* SaveWorkLogUseCase.swift in Sources */,
 				F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */,

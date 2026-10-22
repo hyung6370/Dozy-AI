@@ -128,6 +128,30 @@ final class TabNavigationTests: XCTestCase {
         XCTAssertTrue(homeTab.waitForExistence(timeout: 5), "키보드가 내려가면 탭바가 다시 보여야 합니다")
     }
 
+    /// push 화면의 뒤로가기가 btn_navi_back 커스텀 버튼으로 바뀌었고(시스템 back 없음), 탭·스와이프 모두 pop 되는지 확인
+    @MainActor
+    func test_customBackButton_popsByTapAndSwipe() throws {
+        app.tabButton("tab_settings").tap()
+        let themeRow = app.staticTexts["테마"].firstMatch
+        XCTAssertTrue(themeRow.waitForExistence(timeout: 5))
+
+        // 1) 탭으로 pop
+        themeRow.tap()
+        let back = app.buttons["btn_navi_back"].firstMatch
+        XCTAssertTrue(back.waitForExistence(timeout: 3), "push 화면에 커스텀 뒤로가기 버튼이 있어야 합니다")
+        XCTAssertFalse(app.navigationBars.buttons["Back"].exists, "시스템 Back 버튼은 숨겨져야 합니다")
+        back.tap()
+        XCTAssertTrue(app.tabButton("tab_home").waitForExistence(timeout: 3), "pop 후 루트(탭바 표시)로 돌아와야 합니다")
+
+        // 2) 스와이프 백으로 pop
+        themeRow.tap()
+        XCTAssertTrue(back.waitForExistence(timeout: 3))
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
+        let finish = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: finish)
+        XCTAssertTrue(app.tabButton("tab_home").waitForExistence(timeout: 3), "스와이프 백으로도 루트로 돌아와야 합니다")
+    }
+
     /// 조건이 참이 될 때까지 폴링 (XCUIElement 의 비존재는 waitForExistence 로 못 기다린다).
     private func waitUntil(timeout: TimeInterval, _ condition: () -> Bool) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)

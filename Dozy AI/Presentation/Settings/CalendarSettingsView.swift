@@ -49,6 +49,7 @@ struct CalendarSettingsView: View {
             .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("캘린더 설정")
             .navigationBarTitleDisplayMode(.inline)
+            .dozyBackButton()   // 시스템 뒤로가기 → btn_navi_back 에셋 (스와이프 백 유지)
             .alert("로그인 실패", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }

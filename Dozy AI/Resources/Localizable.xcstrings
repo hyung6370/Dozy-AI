@@ -2302,6 +2302,9 @@
         }
       }
     },
+    "뒤로" : {
+
+    },
     "드래그로 닫기 / dim 탭 / 시트 안에서 isPresented = false" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3577,6 +3580,9 @@
         }
       }
     },
+    "순서 편집" : {
+
+    },
     "숫자 포함" : {
       "localizations" : {
         "en" : {
@@ -4571,22 +4577,42 @@
         }
       }
     },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
     "이동" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Go"
+          }
+        }
+      }
+    },
+    "이메일 인증하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verify with email"
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
           }
         }
       }
@@ -4637,16 +4663,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email sign-in failed. (%@)"
-          }
-        }
-      }
-    },
-    "이메일 인증하기" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verify with email"
           }
         }
       }
@@ -4817,16 +4833,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not retrieve authentication info."
-          }
-        }
-      }
-    },
-    "인증 코드 (6자리)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verification code (6 digits)"
           }
         }
       }
@@ -5165,6 +5171,16 @@
         }
       }
     },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
+          }
+        }
+      }
+    },
     "저장" : {
       "localizations" : {
         "en" : {
@@ -5190,16 +5206,6 @@
     },
     "저장하거나 다시 녹음할 수 있어요" : {
 
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
-          }
-        }
-      }
     },
     "저채도 메시 그라디언트 — 가장 차분한 무드." : {
       "localizations" : {
@@ -6492,6 +6498,9 @@
           }
         }
       }
+    },
+    "편집 완료" : {
+
     },
     "평균" : {
       "localizations" : {

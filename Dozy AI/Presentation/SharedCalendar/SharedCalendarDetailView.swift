@@ -50,6 +50,7 @@ struct SharedCalendarDetailView: View {
         }
         .navigationTitle(calendar.name)
         .navigationBarTitleDisplayMode(.inline)
+        .dozyBackButton()   // 시스템 뒤로가기 → btn_navi_back 에셋 (스와이프 백 유지)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
