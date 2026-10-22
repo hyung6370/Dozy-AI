@@ -742,6 +742,9 @@
         }
       }
     },
+    "AI 엔진" : {
+
+    },
     "AI 요약 생성" : {
       "localizations" : {
         "en" : {
@@ -771,6 +774,12 @@
           }
         }
       }
+    },
+    "Apple Intelligence" : {
+
+    },
+    "Apple Intelligence (최근 실패, 기본 분석 사용)" : {
+
     },
     "Apple 로그인" : {
       "localizations" : {
@@ -1786,6 +1795,15 @@
           }
         }
       }
+    },
+    "기본 분석" : {
+
+    },
+    "기본 분석 (Apple Intelligence 꺼짐)" : {
+
+    },
+    "기본 분석 (기기 미지원)" : {
+
     },
     "기본 정보" : {
       "localizations" : {
@@ -4580,12 +4598,12 @@
         }
       }
     },
-    "인증 코드 (6자리)" : {
+    "이미 존재하는 이메일입니다. 로그인 탭을 사용해주세요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verification code (6 digits)"
+            "value" : "This email is already registered. Please use the Sign In tab."
           }
         }
       }
@@ -4720,16 +4738,6 @@
         }
       }
     },
-    "이미 존재하는 이메일입니다. 로그인 탭을 사용해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This email is already registered. Please use the Sign In tab."
-          }
-        }
-      }
-    },
     "이미 참여한 공유 캘린더입니다." : {
       "localizations" : {
         "en" : {
@@ -4836,6 +4844,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not retrieve authentication info."
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code (6 digits)"
           }
         }
       }
@@ -5177,16 +5195,6 @@
         }
       }
     },
-    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Low-saturation mesh gradient — the calmest mood."
-          }
-        }
-      }
-    },
     "점" : {
       "localizations" : {
         "en" : {
@@ -5222,6 +5230,16 @@
     },
     "저장하거나 다시 녹음할 수 있어요" : {
 
+    },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-saturation mesh gradient — the calmest mood."
+          }
+        }
+      }
     },
     "전체" : {
       "localizations" : {
@@ -5485,6 +5503,9 @@
           }
         }
       }
+    },
+    "준비 중" : {
+
     },
     "중간" : {
       "localizations" : {

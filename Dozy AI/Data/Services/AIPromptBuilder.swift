@@ -21,14 +21,23 @@ enum AIPromptBuilder {
     }
 
     // MARK: - 전체 업무 요약 프롬프트
+    
+    /// 온디바이스 모델 컨텍스트 윈도우를 넘지 않도록 입력 상한
+    private static let maxEvents = 20
+    private static let maxPendingTasks = 10
+    private static let maxMemos = 8
 
     static func buildDailySummaryPrompt(
         events: [CalendarEvent],
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
         memos: [String],
-        date: Date = Date()
+        date: Date = Date(),
+        includeFormatInstruction: Bool = true
     ) -> String {
+        
+        let events = Array(events.prefix(maxEvents))
+        let memos = Array(memos.prefix(maxMemos))
 
         var sections: [String] = []
 
@@ -73,7 +82,7 @@ enum AIPromptBuilder {
 
         // 미완료 할 일
         if !pendingTasks.isEmpty {
-            let lines = pendingTasks.prefix(10).map { task in
+            let lines = pendingTasks.prefix(maxPendingTasks).map { task in
                 let prefix = "- ⏳ \(task.title)"
                 guard task.priority > 0 else { return prefix }
                 let priorityTag = isKorean
@@ -94,8 +103,10 @@ enum AIPromptBuilder {
             sections.append("\(header)\n\(lines.joined(separator: "\n"))")
         }
 
-        // AI 지시사항 — section tag 는 영문 공통.
-        sections.append(instruction)
+        // AI 지시사항 — 텍스트 파싱 경로에서만. section tag 는 영문 공통.
+        if includeFormatInstruction {
+            sections.append(instruction)
+        }
 
         return sections.joined(separator: "\n\n")
     }
