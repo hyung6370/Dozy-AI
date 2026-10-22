@@ -40,6 +40,7 @@ final class DependencyContainer: ObservableObject {
     lazy var calendarSourceManager = CalendarSourceManager()
     lazy var calendarVisibilityFilter = CalendarVisibilityFilter()
     lazy var patternAnalysisService = PatternAnalysisService()
+    lazy var speechService: SpeechServiceProtocol = SpeechService()
 
     private lazy var appleCalendarService = CalendarService()
     private lazy var dozyCalendarService = DozyCalendarService(repository: dozyEventRepository)

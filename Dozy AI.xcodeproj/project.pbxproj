@@ -129,7 +129,8 @@
 		D02ABBBB000000000000B105 /* DozyTokensCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F105 /* DozyTokensCatalog.swift */; };
 		D02ABBBB000000000000B201 /* MainTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F201 /* MainTab.swift */; };
 		D02ABBBB000000000000B202 /* DozyMainTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F202 /* DozyMainTabBar.swift */; };
-		D02ABBBB000000000000B203 /* DozyTabBarShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F203 /* DozyTabBarShape.swift */; };
+		D02ABBBB000000000000B210 /* DozyGlassSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F210 /* DozyGlassSurface.swift */; };
+		D02ABBBB000000000000B211 /* DozyTabBarChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F211 /* DozyTabBarChrome.swift */; };
 		D02ABBBB000000000000B204 /* LottiePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F204 /* LottiePlayer.swift */; };
 		D02ABBBB000000000000B205 /* DozyBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F205 /* DozyBottomSheet.swift */; };
 		D02ABBBB000000000000B206 /* DozyListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F206 /* DozyListSection.swift */; };
@@ -282,6 +283,8 @@
 		F619D95F2F7528C600084C61 /* CalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */; };
 		F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */; };
 		F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */; };
+		D02ABBBB000000000000B212 /* KeyboardDismissOnTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F212 /* KeyboardDismissOnTap.swift */; };
+		D02ABBBB000000000000B213 /* View+DozyBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F213 /* View+DozyBackButton.swift */; };
 		F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */ = {isa = PBXBuildFile; fileRef = F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */; };
 		F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */; };
 		F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9682F7A170E00084C61 /* FilterTab.swift */; };
@@ -573,7 +576,8 @@
 		D02AFFFF000000000000F105 /* DozyTokensCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyTokensCatalog.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F201 /* MainTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTab.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F202 /* DozyMainTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyMainTabBar.swift; sourceTree = "<group>"; };
-		D02AFFFF000000000000F203 /* DozyTabBarShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyTabBarShape.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F210 /* DozyGlassSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyGlassSurface.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F211 /* DozyTabBarChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyTabBarChrome.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F204 /* LottiePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottiePlayer.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F205 /* DozyBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyBottomSheet.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F206 /* DozyListSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DozyListSection.swift; sourceTree = "<group>"; };
@@ -690,6 +694,8 @@
 		F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSettingsView.swift; sourceTree = "<group>"; };
 		F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+TopVC.swift"; sourceTree = "<group>"; };
+		D02AFFFF000000000000F212 /* KeyboardDismissOnTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardDismissOnTap.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F213 /* View+DozyBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+DozyBackButton.swift"; sourceTree = "<group>"; };
 		F619D9642F7A0CF400084C61 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text; path = Secrets.xcconfig.template; sourceTree = "<group>"; };
 		F619D9682F7A170E00084C61 /* FilterTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterTab.swift; sourceTree = "<group>"; };
@@ -1144,6 +1150,8 @@
 				DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */,
 				DD9F68E52F6ACD14001952F6 /* String+Extensions.swift */,
 				F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */,
+				D02AFFFF000000000000F212 /* KeyboardDismissOnTap.swift */,
+				D02AFFFF000000000000F213 /* View+DozyBackButton.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1199,7 +1207,8 @@
 				E1F2E5C2128D432DB7FA7A8C /* WeatherCardView.swift */,
 				F63C687B2F85E569003464E8 /* LottieView.swift */,
 				D02AFFFF000000000000F202 /* DozyMainTabBar.swift */,
-				D02AFFFF000000000000F203 /* DozyTabBarShape.swift */,
+				D02AFFFF000000000000F210 /* DozyGlassSurface.swift */,
+				D02AFFFF000000000000F211 /* DozyTabBarChrome.swift */,
 				D02AFFFF000000000000F204 /* LottiePlayer.swift */,
 				D02AFFFF000000000000F205 /* DozyBottomSheet.swift */,
 				D02AFFFF000000000000F206 /* DozyListSection.swift */,
@@ -2187,7 +2196,8 @@
 				D02ABBBB000000000000B105 /* DozyTokensCatalog.swift in Sources */,
 				D02ABBBB000000000000B201 /* MainTab.swift in Sources */,
 				D02ABBBB000000000000B202 /* DozyMainTabBar.swift in Sources */,
-				D02ABBBB000000000000B203 /* DozyTabBarShape.swift in Sources */,
+				D02ABBBB000000000000B210 /* DozyGlassSurface.swift in Sources */,
+				D02ABBBB000000000000B211 /* DozyTabBarChrome.swift in Sources */,
 				D02ABBBB000000000000B204 /* LottiePlayer.swift in Sources */,
 				D02ABBBB000000000000B205 /* DozyBottomSheet.swift in Sources */,
 				D02ABBBB000000000000B206 /* DozyListSection.swift in Sources */,
@@ -2228,6 +2238,8 @@
 				DD9F68F62F6ACD8C001952F6 /* UserPattern.swift in Sources */,
 				F60ADF122F7FB746007B8D9F /* AuthViewModel.swift in Sources */,
 				F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */,
+				D02ABBBB000000000000B212 /* KeyboardDismissOnTap.swift in Sources */,
+				D02ABBBB000000000000B213 /* View+DozyBackButton.swift in Sources */,
 				F619D9832F7A422900084C61 /* DayCell.swift in Sources */,
 				DD9F68FD2F6ACE25001952F6 /* SaveWorkLogUseCase.swift in Sources */,
 				F619D9422F73B38B00084C61 /* AIResponseParser.swift in Sources */,

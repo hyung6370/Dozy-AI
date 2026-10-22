@@ -2,8 +2,9 @@
 //  MainTabView.swift
 //  Dozy AI
 //
-//  v2.0.0: 시스템 탭바를 숨기고 DozyMainTabBar 를 safeAreaInset 으로 올린다.
+//  시스템 탭바를 숨기고 플로팅 Liquid Glass 탭바(DozyMainTabBar)를 overlay 로 띄운다.
 //  TabView 자체는 유지 → 탭별 NavigationStack/뷰 lifecycle 을 SwiftUI 가 무료로 보존.
+//  탭 루트 스크롤(drivesTabBarChrome)이 "위로 쓸기" 를 보고하면 DozyTabBarChrome 이 바를 축소한다.
 //
 
 import SwiftUI
@@ -54,9 +55,10 @@ struct MainTabView: View {
     @StateObject private var homeViewModel: HomeViewModel
     @State private var selection: MainTab = .home
     @State private var showCreateEvent = false
-    /// 캘린더 탭에서 아래로 스크롤하면 true → DozyMainTabBar 를 화면 밖으로 슬라이드.
-    /// 다른 탭으로 이동하거나 다시 캘린더에 진입하면 false 로 리셋.
-    @State private var calendarTabBarHidden = false
+    /// 하단 탭바 축소 상태 + 재터치 '맨 위로' 틱. 탭 루트 스크롤뷰(drivesTabBarChrome)가 구동한다.
+    @State private var chrome = DozyTabBarChrome()
+    /// 키보드가 올라와 있는 동안 true — 탭바를 내려 둔다(키보드 위에 바가 겹쳐 뜨지 않게).
+    @State private var keyboardVisible = false
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
 
@@ -100,10 +102,9 @@ struct MainTabView: View {
         )
     }
 
-    /// 탭바 본체에 마지막 콘텐츠가 가려지지 않도록 각 탭 화면에 두 가지 보정을 같이 건다.
-    /// 1) .contentMargins(.bottom, ..., for: .scrollContent): ScrollView/List/Form 의 contentInset 으로 전파
-    /// 2) .padding(.bottom, ...): contentMargins 가 일부 컨테이너에서 전파 안 될 때를 위한 fallback
-    private let scrollBottomMargin: CGFloat = 80
+    /// 떠 있는 탭바가 마지막 콘텐츠를 덮지 않도록 각 탭 스크롤 콘텐츠에 주는 하단 여백.
+    /// 바 뒤로 콘텐츠가 비쳐야 하므로(글라스) safeAreaInset 이 아니라 contentMargins 만 쓴다.
+    private let scrollBottomMargin: CGFloat = DozyTabBarMetrics.scrollClearance
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -111,40 +112,37 @@ struct MainTabView: View {
             //    카드는 자체 solid groupedRow + tint 로 시인성 보장되므로 themed bg 위에서도 잘 보임.
             DozyShellBackgroundView(theme: backgroundTheme)
 
-            // 1) Tabs content — safeAreaInset 으로 탭바 자리만큼 transparent spacer.
-            //    탭바 visual 자체는 별도 layer (아래쪽)로 분리한다.
+            // 1) Tabs content — 떠 있는 글라스 바 뒤로 콘텐츠가 지나가도록 safeAreaInset 은 두지 않고
+            //    각 탭의 스크롤 콘텐츠에 하단 여백(contentMargins)만 준다.
             TabView(selection: selectionBinding) {
                 HomeView(container: container, selectedTab: selectionBinding, viewModel: homeViewModel)
                     .tabContentInset(scrollBottomMargin)
+                    .environment(\.dozyTab, .home)
                     .tag(MainTab.home.rawValue)
                     .toolbar(.hidden, for: .tabBar)
 
-                CalendarView(
-                    container: container,
-                    viewModel: calendarViewModel,
-                    tabBarHidden: $calendarTabBarHidden
-                )
+                CalendarView(container: container, viewModel: calendarViewModel)
                     .tabContentInset(scrollBottomMargin)
+                    .environment(\.dozyTab, .calendar)
                     .tag(MainTab.calendar.rawValue)
                     .toolbar(.hidden, for: .tabBar)
 
                 InsightDashboardView(container: container, selectedTab: selectionBinding)
                     .tabContentInset(scrollBottomMargin)
+                    .environment(\.dozyTab, .insight)
                     .tag(MainTab.insight.rawValue)
                     .toolbar(.hidden, for: .tabBar)
 
                 SettingsView(container: container)
                     .tabContentInset(scrollBottomMargin)
+                    .environment(\.dozyTab, .settings)
                     .tag(MainTab.settings.rawValue)
                     .toolbar(.hidden, for: .tabBar)
-            }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                Color.clear.frame(height: dozyTabBarVisualHeight)
             }
 
             // 2) Create-event 커스텀 시트 — DozyBottomSheet 컴포넌트.
             //    탭바보다 아래 layer 라서 시트가 슬라이드 업할 때 탭바 뒤에서 올라오는 효과.
-            DozyBottomSheet(isPresented: $showCreateEvent, bottomInset: dozyTabBarVisualHeight) {
+            DozyBottomSheet(isPresented: $showCreateEvent, bottomInset: 0) {
                 EventEditView(
                     eventToEdit: nil,
                     selectedDate: createEventDefaultDate,
@@ -159,20 +157,29 @@ struct MainTabView: View {
                 )
             }
 
-            // 3) DozyMainTabBar — modal 이 그 뒤에서 올라오게 한다.
-            //    캘린더 탭에서 아래로 스크롤 시 화면 밖으로 슬라이드.
-            DozyMainTabBar(
-                selection: $selection,
-                onReselect: handleReselect,
-                onCreateEvent: {
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
-                        showCreateEvent.toggle()
-                    }
+            // 3) 플로팅 글라스 탭바 — modal 이 그 뒤에서 올라오게 한다.
+            //    탭 루트를 위로 쓸면 축소(라벨 접힘), 아래로 쓸거나 탭을 바꾸면 복원.
+            //    하위 화면(push)·일정 생성 시트에서는 아래로 내려가며 사라진다.
+            ZStack(alignment: .bottom) {
+                if showsTabBar {
+                    DozyMainTabBar(
+                        selection: $selection,
+                        isCompact: chrome.isCompact,
+                        onReselect: handleReselect,
+                        onCreateEvent: {
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
+                                showCreateEvent.toggle()
+                            }
+                        }
+                    )
+                    .padding(.bottom, DozyTabBarMetrics.bottomMargin)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
-            )
-            .offset(y: shouldHideTabBar ? dozyTabBarHideOffset : 0)
-            .animation(.spring(response: 0.55, dampingFraction: 0.9), value: shouldHideTabBar)
+            }
+            .animation(.spring(response: 0.38, dampingFraction: 0.82), value: chrome.isCompact)
+            .animation(.spring(response: 0.42, dampingFraction: 0.85), value: showsTabBar)
         }
+        .environment(chrome)
         // Success Lottie — ZStack 외부 overlay 로 두어 layout 에 영향 없이 화면 위에만 표시.
         .overlay {
             if eventCreator.showSuccessAnimation {
@@ -200,8 +207,7 @@ struct MainTabView: View {
         .onChange(of: selection) { old, newTab in
             Logger.nav.info("[탭 전환] 🧭 \(old.title) → \(newTab.title)")
             if newTab == .calendar { calendarViewModel.refreshData(source: "MainTabView.selection→calendar") }
-            // 다른 탭에서 캘린더 진입 시 — 직전 세션의 hide 상태가 남아있으면 안 되니 리셋.
-            if newTab != old { calendarTabBarHidden = false }
+            chrome.reset()   // 탭 전환은 항상 펼친 상태로
         }
         .onChange(of: scenePhase) { old, phase in
             Logger.nav.info("[앱 상태] 🌅 \(String(describing: old)) → \(String(describing: phase))")
@@ -227,6 +233,16 @@ struct MainTabView: View {
             // accessoryRectangular 탭 → 홈 탭으로 먼저 이동. 상세 시트 띄우기는 HomeView 가 처리.
             selection = .home
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyOpenVoiceInput)) { _ in
+            // Siri 음성 메모 → 홈 탭으로 먼저 이동. 시트 띄우기는 HomeView 가 처리.
+            selection = .home
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            keyboardVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            keyboardVisible = false
+        }
         .sheet(item: Binding(
             get: { authViewModel.pendingInviteCode.map { InviteCodeWrapper(code: $0) } },
             set: { if $0 == nil { authViewModel.pendingInviteCode = nil } }
@@ -242,20 +258,15 @@ struct MainTabView: View {
         selection == .calendar ? calendarViewModel.selectedDate : Date()
     }
 
-    /// DozyMainTabBar 가 화면 bottom 에서 차지하는 visual height.
-    private var dozyTabBarVisualHeight: CGFloat { 84 }
-
-    /// 탭바를 화면 밖으로 밀어내는 offset — visual height + 홈 인디케이터 safe area 여유 포함.
-    private var dozyTabBarHideOffset: CGFloat { dozyTabBarVisualHeight + 60 }
-
-    /// 캘린더 탭에서 스크롤로 hide 신호가 켜졌을 때만 슬라이드. 다른 탭은 항상 표시.
-    private var shouldHideTabBar: Bool {
-        selection == .calendar && calendarTabBarHidden
+    /// 탭바 노출 조건 — 현재 탭이 루트 화면이고(하위 push 아님), 그 탭의 커스텀 오버레이(hidesTabBar)가 없고,
+    /// 일정 생성 시트가 닫혀 있고, 키보드가 내려가 있을 때.
+    private var showsTabBar: Bool {
+        chrome.showsBar(for: selection) && !showCreateEvent && !keyboardVisible
     }
 
+    /// 이미 선택된 탭 재터치 → 그 탭 루트 스크롤뷰를 맨 위로(drivesTabBarChrome 이 처리).
     private func handleReselect(_ tab: MainTab) {
-        // 후속 작업: NotificationCenter.default.post(name: .dozyTabReselected, object: tab)
-        // 각 화면이 ScrollViewReader 로 구독하면 더블탭 → 스크롤 투 톱 동작.
+        chrome.reselect(tab)
     }
 
     /// 일정 생성 시트 닫기 — 키보드를 먼저 hide 한 뒤 시트 dismiss 를 같은 animation 흐름으로 묶음.
@@ -277,14 +288,12 @@ private struct InviteCodeWrapper: Identifiable {
 }
 
 private extension View {
-    /// 탭 화면의 마지막 콘텐츠가 커스텀 탭바에 가려지지 않도록 + List/Form 의 시스템 배경을
-    /// 숨겨 themed shell background 가 비치게 한다.
+    /// 탭 화면의 마지막 콘텐츠가 떠 있는 탭바에 가려지지 않도록 스크롤 콘텐츠에만 하단 여백을 주고,
+    /// List/Form 의 시스템 배경을 숨겨 themed shell background 가 비치게 한다.
+    /// safeAreaInset 은 쓰지 않는다 — 글라스 바 뒤로 콘텐츠가 비쳐야 한다.
     func tabContentInset(_ amount: CGFloat) -> some View {
         self
             .contentMargins(.bottom, amount, for: .scrollContent)
             .scrollContentBackground(.hidden)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                Color.clear.frame(height: amount)
-            }
     }
 }

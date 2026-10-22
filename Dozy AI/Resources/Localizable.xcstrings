@@ -84,6 +84,9 @@
         }
       }
     },
+    "%@" : {
+
+    },
     "%@ %@" : {
       "localizations" : {
         "en" : {
@@ -293,6 +296,9 @@
           }
         }
       }
+    },
+    "%lld건 완료했어요." : {
+
     },
     "%lld건의 회의에 참석했습니다" : {
       "localizations" : {
@@ -606,6 +612,9 @@
         }
       }
     },
+    "${memo} 기록" : {
+
+    },
     "1시간 전" : {
       "localizations" : {
         "en" : {
@@ -853,6 +862,9 @@
           }
         }
       }
+    },
+    "Dozy 를 열고 음성으로 메모를 남깁니다." : {
+
     },
     "Dozy 보기" : {
 
@@ -1742,6 +1754,9 @@
         }
       }
     },
+    "권한 확인 중…" : {
+
+    },
     "그 날짜에 새 일정을 바로 만들 수 있어요." : {
       "localizations" : {
         "en" : {
@@ -1922,6 +1937,9 @@
         }
       }
     },
+    "남은 일정: %@" : {
+
+    },
     "남은 일정이 없습니다." : {
       "localizations" : {
         "en" : {
@@ -2042,6 +2060,12 @@
         }
       }
     },
+    "녹음 시작" : {
+
+    },
+    "녹음 중지" : {
+
+    },
     "높은 우선순위" : {
       "localizations" : {
         "en" : {
@@ -2121,6 +2145,9 @@
           }
         }
       }
+    },
+    "다시 녹음" : {
+
     },
     "다시 생성하기" : {
       "localizations" : {
@@ -2275,6 +2302,9 @@
         }
       }
     },
+    "뒤로" : {
+
+    },
     "드래그로 닫기 / dim 탭 / 시트 안에서 isPresented = false" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2285,6 +2315,9 @@
           }
         }
       }
+    },
+    "듣는 중… 끝나면 마이크를 다시 누르세요" : {
+
     },
     "또는" : {
       "localizations" : {
@@ -2426,6 +2459,9 @@
         }
       }
     },
+    "마이크를 눌러 시작" : {
+
+    },
     "만들기" : {
       "localizations" : {
         "en" : {
@@ -2445,6 +2481,9 @@
           }
         }
       }
+    },
+    "말씀해 보세요..." : {
+
     },
     "매년" : {
       "localizations" : {
@@ -2536,6 +2575,9 @@
         }
       }
     },
+    "메모 기록" : {
+
+    },
     "메모 삭제" : {
       "localizations" : {
         "en" : {
@@ -2556,6 +2598,9 @@
         }
       }
     },
+    "메모로 저장" : {
+
+    },
     "메모를 남겨보세요" : {
       "localizations" : {
         "en" : {
@@ -2565,6 +2610,9 @@
           }
         }
       }
+    },
+    "메모를 남겼어요: %@" : {
+
     },
     "멤버" : {
       "localizations" : {
@@ -2665,6 +2713,9 @@
           }
         }
       }
+    },
+    "무엇을 기록할까요?" : {
+
     },
     "미리알림 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요." : {
       "localizations" : {
@@ -2775,6 +2826,9 @@
           }
         }
       }
+    },
+    "반복·알림" : {
+
     },
     "배경" : {
       "localizations" : {
@@ -3396,6 +3450,9 @@
         }
       }
     },
+    "설정에서 허용" : {
+
+    },
     "설정으로 이동" : {
       "localizations" : {
         "en" : {
@@ -3525,6 +3582,9 @@
           }
         }
       }
+    },
+    "순서 편집" : {
+
     },
     "숫자 포함" : {
       "localizations" : {
@@ -4049,6 +4109,12 @@
         }
       }
     },
+    "오늘 일정을 아직 불러오지 않았어요. Dozy 를 한 번 열어주세요." : {
+
+    },
+    "오늘 일정을 한 줄로 요약해 알려줍니다." : {
+
+    },
     "오늘 일정이 없습니다" : {
       "localizations" : {
         "en" : {
@@ -4148,6 +4214,9 @@
           }
         }
       }
+    },
+    "오늘의 업무 기록에 메모를 추가합니다." : {
+
     },
     "오늘의 주요 카테고리" : {
       "localizations" : {
@@ -4435,6 +4504,12 @@
         }
       }
     },
+    "음성 메모" : {
+
+    },
+    "음성 인식 또는 마이크 권한이 꺼져 있어요" : {
+
+    },
     "음성 인식에 실패했습니다." : {
       "localizations" : {
         "en" : {
@@ -4505,46 +4580,6 @@
         }
       }
     },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
-          }
-        }
-      }
-    },
-    "이모지" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emoji"
-          }
-        }
-      }
-    },
-    "이전 기간" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous period"
-          }
-        }
-      }
-    },
-    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as your current password. Please choose a new one."
-          }
-        }
-      }
-    },
     "인증 코드 (6자리)" : {
       "localizations" : {
         "en" : {
@@ -4591,6 +4626,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email"
+          }
+        }
+      }
+    },
+    "이메일 또는 비밀번호가 올바르지 않습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
           }
         }
       }
@@ -4655,6 +4700,16 @@
         }
       }
     },
+    "이모지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        }
+      }
+    },
     "이모지 선택" : {
       "localizations" : {
         "en" : {
@@ -4705,6 +4760,16 @@
         }
       }
     },
+    "이전 기간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period"
+          }
+        }
+      }
+    },
     "이전 기간 (월·주·일)" : {
       "localizations" : {
         "en" : {
@@ -4721,6 +4786,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Same as before"
+          }
+        }
+      }
+    },
+    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as your current password. Please choose a new one."
           }
         }
       }
@@ -5089,12 +5164,35 @@
         }
       }
     },
+    "장소·메모" : {
+
+    },
     "재시도" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retry"
+          }
+        }
+      }
+    },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-saturation mesh gradient — the calmest mood."
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
           }
         }
       }
@@ -5122,15 +5220,8 @@
         }
       }
     },
-    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Low-saturation mesh gradient — the calmest mood."
-          }
-        }
-      }
+    "저장하거나 다시 녹음할 수 있어요" : {
+
     },
     "전체" : {
       "localizations" : {
@@ -5138,16 +5229,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
           }
         }
       }
@@ -5171,6 +5252,9 @@
           }
         }
       }
+    },
+    "정리 중…" : {
+
     },
     "정말로 로그아웃 하시겠습니까?" : {
       "localizations" : {
@@ -6420,6 +6504,9 @@
           }
         }
       }
+    },
+    "편집 완료" : {
+
     },
     "평균" : {
       "localizations" : {

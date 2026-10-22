@@ -54,6 +54,7 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.35), value: networkMonitor.isConnected)
         .animation(.easeInOut(duration: 0.25), value: forceUpdateRequired)
+        .dismissesKeyboardOnTap()   // 키보드가 떠 있을 때 여백 탭 → 키보드 내림 (윈도우 단위, 시트 포함)
         .task {
             await checkForceUpdate()
         }

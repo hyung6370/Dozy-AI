@@ -51,6 +51,117 @@ final class TabNavigationTests: XCTestCase {
         XCTAssertTrue(app.buttons["tab_home"].exists, "탭바가 표시되어야 합니다")
     }
 
+    /// 하위 화면으로 push 하면 탭바가 사라지고, 뒤로 가면 다시 나타나는지 확인
+    @MainActor
+    func test_pushSubScreen_hidesTabBar() throws {
+        app.tabButton("tab_settings").tap()
+        let themeRow = app.staticTexts["테마"].firstMatch
+        XCTAssertTrue(themeRow.waitForExistence(timeout: 5), "설정 탭에 '테마' 행이 있어야 합니다")
+        themeRow.tap()
+
+        let homeTab = app.tabButton("tab_home")
+        XCTAssertTrue(waitUntil(timeout: 3) { !homeTab.exists }, "하위 화면에서는 탭바가 숨겨져야 합니다")
+
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(homeTab.waitForExistence(timeout: 3), "루트로 돌아오면 탭바가 다시 보여야 합니다")
+    }
+
+    /// 일정 생성 시트가 열리면 탭바가 사라지고, 닫히면 다시 나타나는지 확인
+    @MainActor
+    func test_createEventSheet_hidesTabBar() throws {
+        app.createEventButton.tap()
+        let homeTab = app.tabButton("tab_home")
+        XCTAssertTrue(waitUntil(timeout: 3) { !homeTab.exists }, "일정 생성 시트가 열리면 탭바가 숨겨져야 합니다")
+
+        app.navigationBars["새 일정"].buttons["취소"].tap()
+        XCTAssertTrue(homeTab.waitForExistence(timeout: 3), "시트를 닫으면 탭바가 다시 보여야 합니다")
+    }
+
+    /// 설정의 '로그인 · 회원가입' 커스텀 시트가 열리면 탭바가 사라지고, 닫히면 다시 나타나는지 확인
+    @MainActor
+    func test_settingsLoginSheet_hidesTabBar() throws {
+        app.tabButton("tab_settings").tap()
+        let loginRow = app.staticTexts["로그인 · 회원가입"].firstMatch
+        guard loginRow.waitForExistence(timeout: 5) else {
+            throw XCTSkip("로그인 상태라 '로그인 · 회원가입' 행이 없습니다")
+        }
+        loginRow.tap()
+
+        let homeTab = app.tabButton("tab_home")
+        XCTAssertTrue(waitUntil(timeout: 3) { !homeTab.exists }, "로그인 시트가 열리면 탭바가 숨겨져야 합니다")
+
+        // 시트 바깥(상단 dim 영역) 탭 → 닫힘
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.08)).tap()
+        XCTAssertTrue(homeTab.waitForExistence(timeout: 3), "로그인 시트를 닫으면 탭바가 다시 보여야 합니다")
+    }
+
+    /// 텍스트 필드를 눌러 키보드가 올라오면 탭바가 사라지고, 키보드가 내려가면 다시 나타나는지 확인
+    @MainActor
+    func test_keyboard_hidesTabBar() throws {
+        // 홈은 캘린더/미리알림 권한 프롬프트가 떠 있는 동안 isLoading 이라 메모 입력란을 그리지 않는다.
+        // 시스템 권한 알림이 오면 허용하고 넘어간다 (버튼 라벨은 OS 언어에 따라 다름).
+        let monitor = addUIInterruptionMonitor(withDescription: "권한 알림") { alert in
+            for label in ["모든 이벤트 접근 허용", "모든 미리 알림 접근 허용", "허용", "Allow Full Access", "Allow", "OK", "확인"] {
+                let button = alert.buttons[label]
+                if button.exists { button.tap(); return true }
+            }
+            return false
+        }
+        defer { removeUIInterruptionMonitor(monitor) }
+        app.swipeUp()   // 인터럽션 모니터는 앱과 상호작용할 때 발동한다
+
+        // axis: .vertical TextField 는 UITextView 로 노출되므로 타입을 특정하지 않고 identifier 로 찾는다.
+        let memoField = app.descendants(matching: .any).matching(identifier: "home_memo_field").firstMatch
+        guard memoField.waitForExistence(timeout: 10) else {
+            throw XCTSkip("홈 데이터 로딩이 끝나지 않아(권한 프롬프트 등) 메모 입력란이 표시되지 않음 — 실기기에서 확인")
+        }
+        if !memoField.isHittable { app.swipeUp() }   // 화면 아래쪽이라 스크롤로 끌어올린다
+        memoField.tap()
+
+        let homeTab = app.tabButton("tab_home")
+        XCTAssertTrue(waitUntil(timeout: 3) { !homeTab.exists }, "키보드가 올라오면 탭바가 숨겨져야 합니다")
+
+        // 여백(상단 인사말 영역) 탭 → 키보드 내려감 (dismissesKeyboardOnTap)
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 3), "입력란을 누르면 키보드가 올라와야 합니다")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.17)).tap()
+        XCTAssertTrue(waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }, "여백을 누르면 키보드가 내려가야 합니다")
+        XCTAssertTrue(homeTab.waitForExistence(timeout: 5), "키보드가 내려가면 탭바가 다시 보여야 합니다")
+    }
+
+    /// push 화면의 뒤로가기가 btn_navi_back 커스텀 버튼으로 바뀌었고(시스템 back 없음), 탭·스와이프 모두 pop 되는지 확인
+    @MainActor
+    func test_customBackButton_popsByTapAndSwipe() throws {
+        app.tabButton("tab_settings").tap()
+        let themeRow = app.staticTexts["테마"].firstMatch
+        XCTAssertTrue(themeRow.waitForExistence(timeout: 5))
+
+        // 1) 탭으로 pop
+        themeRow.tap()
+        let back = app.buttons["btn_navi_back"].firstMatch
+        XCTAssertTrue(back.waitForExistence(timeout: 3), "push 화면에 커스텀 뒤로가기 버튼이 있어야 합니다")
+        XCTAssertFalse(app.navigationBars.buttons["Back"].exists, "시스템 Back 버튼은 숨겨져야 합니다")
+        back.tap()
+        XCTAssertTrue(app.tabButton("tab_home").waitForExistence(timeout: 3), "pop 후 루트(탭바 표시)로 돌아와야 합니다")
+
+        // 2) 스와이프 백으로 pop
+        themeRow.tap()
+        XCTAssertTrue(back.waitForExistence(timeout: 3))
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
+        let finish = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: finish)
+        XCTAssertTrue(app.tabButton("tab_home").waitForExistence(timeout: 3), "스와이프 백으로도 루트로 돌아와야 합니다")
+    }
+
+    /// 조건이 참이 될 때까지 폴링 (XCUIElement 의 비존재는 waitForExistence 로 못 기다린다).
+    private func waitUntil(timeout: TimeInterval, _ condition: () -> Bool) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if condition() { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+        return condition()
+    }
+
     /// 홈 탭이 기본으로 선택되어 있는지 확인
     @MainActor
     func test_launch_homeTabIsSelected() throws {

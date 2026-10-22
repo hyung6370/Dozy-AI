@@ -58,8 +58,10 @@ struct InsightDashboardView: View {
                         }
                         .padding()
                     }
+                    .drivesTabBarChrome()   // 위로 쓸기 → 탭바 축소 / 인사이트 탭 재터치 → 맨 위로
                 }
             }
+            .tracksTabRoot()   // 하위 화면 push 시 탭바 숨김 (로딩/빈 상태도 루트라 Group 에 건다)
             .dozyThemedShellBackground()
             .navigationTitle("인사이트")
             .toolbar {

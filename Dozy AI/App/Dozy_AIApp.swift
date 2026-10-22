@@ -71,11 +71,15 @@ struct Dozy_AIApp: App {
                 // 가 launch 를 트리거한 경우). scenePhase 콜백이 항상 active 로 떨어진다는
                 // 보장이 없어 onAppear 에서도 한 번 소비.
                 consumePendingCreateEventFlag()
+                consumePendingVoiceInputFlag()
             }
             .onChange(of: scenePhase) { _, phase in
                 // 위젯의 CreateQuickEventIntent 가 perform 에서 App Group 플래그를 set 함.
                 // 메인 앱이 foreground 로 돌아온 시점에 플래그를 소비해 일정 생성 시트를 띄움.
-                if phase == .active { consumePendingCreateEventFlag() }
+                if phase == .active {
+                    consumePendingCreateEventFlag()
+                    consumePendingVoiceInputFlag()
+                }
             }
             .environmentObject(authViewModel)
     }
@@ -87,6 +91,15 @@ struct Dozy_AIApp: App {
         guard defaults?.bool(forKey: CreateQuickEventIntent.pendingFlagKey) == true else { return }
         defaults?.set(false, forKey: CreateQuickEventIntent.pendingFlagKey)
         NotificationCenter.default.post(name: .dozyWidgetOpenAddEvent, object: nil)
+    }
+
+    /// OpenVoiceInputIntent 가 켠 `pendingVoiceInput` 플래그를 소비 → `.dozyOpenVoiceInput` post
+    /// → MainTabView 가 홈 탭으로 이동, HomeView 가 음성 입력 시트를 연다.
+    private func consumePendingVoiceInputFlag() {
+        let defaults = UserDefaults(suiteName: AppIntentStore.appGroupID)
+        guard defaults?.bool(forKey: OpenVoiceInputIntent.pendingFlagKey) == true else { return }
+        defaults?.set(false, forKey: OpenVoiceInputIntent.pendingFlagKey)
+        NotificationCenter.default.post(name: .dozyOpenVoiceInput, object: nil)
     }
 
     /// 위젯의 widgetURL/Link 탭으로 들어온 deep link 처리.
@@ -138,6 +151,10 @@ extension Notification.Name {
     /// `dozy-ai://event-detail?id=<id>` 수신 시 eventID 를 `object` 로 post.
     /// `MainTabView` 가 홈 탭으로 이동시키고, `HomeView` 가 events 목록에서 찾아 selectedEvent 설정.
     static let dozyWidgetOpenEventDetail = Notification.Name("dozyWidgetOpenEventDetail")
+
+    /// Siri "Dozy 음성 메모" (OpenVoiceInputIntent) → 홈 탭 + 음성 입력 시트 오픈.
+    /// `Dozy_AIApp.consumePendingVoiceInputFlag` 가 App Group 플래그 소비 시 post.
+    static let dozyOpenVoiceInput = Notification.Name("dozyOpenVoiceInput")
 }
 
 // MARK: - AppCoordinator
@@ -172,6 +189,8 @@ final class AppCoordinator: ObservableObject {
             realtimeService: c.sharedCalendarRealtimeService
         )
         container = c
+        // Siri/단축어 인텐트가 살아있는 컨테이너를 재사용하도록 등록 (AppIntentStore 참고).
+        AppIntentStore.register(c)
         isReady = true
     }
 }
