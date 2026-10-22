@@ -68,6 +68,7 @@ struct SettingsView: View {
                     .zIndex(2)
             }
         }
+        .hidesTabBar(showLoginSheet)   // 커스텀 로그인 시트가 떠 있는 동안 탭바 숨김
         // 로그인 성공 → 시트 닫기. 축하 Lottie 는 settingsContent 의 overlay 에서 재생.
         .onChange(of: authViewModel.isLoggedIn) { _, loggedIn in
             if loggedIn {
@@ -92,6 +93,8 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, DozySpacing.lg)
             }
+            .drivesTabBarChrome()   // 위로 쓸기 → 탭바 축소 / 설정 탭 재터치 → 맨 위로
+            .tracksTabRoot()        // 하위 화면 push 시 탭바 숨김
             // system 일 때는 grouped, ambient/blob 일 땐 themed bg — modifier 가 단일 layer 로 처리.
             .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("설정")

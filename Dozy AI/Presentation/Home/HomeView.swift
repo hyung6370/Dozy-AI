@@ -86,6 +86,8 @@ struct HomeView: View {
                 }
                 .padding()
             }
+            .drivesTabBarChrome()   // 위로 쓸기 → 탭바 축소 / 홈 탭 재터치 → 맨 위로
+            .tracksTabRoot()        // 하위 화면 push 시 탭바 숨김
             .overlay {
                 if viewModel.showSuccessAnimation {
                     LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
@@ -609,6 +611,7 @@ struct HomeView: View {
                 TextField("메모를 남겨보세요", text: $memoText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(1...)
+                    .accessibilityIdentifier("home_memo_field")   // UI 테스트 — 다중행 TextField 는 textView 로 노출된다
 
                 Button { showVoiceInput = true } label: {
                     Image(systemName: "mic.circle.fill")

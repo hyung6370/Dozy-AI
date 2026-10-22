@@ -52,7 +52,7 @@ struct DozyBottomSheet<Content: View>: View {
                     content()
                     Color.clear.frame(height: bottomInset)
                 }
-                .background(DozyColor.Background.grouped)
+                .background(DozyColor.Background.grouped.ignoresSafeArea(edges: .bottom))
                 .clipShape(.rect(topLeadingRadius: cornerRadius, topTrailingRadius: cornerRadius))
                 .padding(.top, topInset)
                 .offset(y: dragOffset)

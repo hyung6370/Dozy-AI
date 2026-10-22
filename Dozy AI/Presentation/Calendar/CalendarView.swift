@@ -14,9 +14,6 @@ struct CalendarView: View {
 
     let container: DependencyContainer
     @ObservedObject var viewModel: CalendarViewModel
-    /// 스크롤 방향에 따라 토글되는 외부 상태 — MainTabView 가 DozyMainTabBar 의 offset 에 적용.
-    /// 기본 `.constant(false)` 라 프리뷰/단독 호출에선 그냥 무시된다.
-    var tabBarHidden: Binding<Bool> = .constant(false)
     @State private var showLegend = false
     @State private var showSearch = false
     @State private var showFilter = false
@@ -31,8 +28,6 @@ struct CalendarView: View {
     @State private var pickerDate = Date()
     @State private var triggerScrollToList = false
     @State private var isShowingEventList = false
-    /// 마지막으로 관찰한 스크롤 offset (preferenceKey 의 minY). 방향 판정용.
-    @State private var lastScrollOffset: CGFloat = 0
     /// 캡쳐 버튼 → 흰 플래시 오버레이 (iOS 시스템 스크린샷 모션 흉내).
     @State private var captureFlashOpacity: Double = 0
     /// 권한 거부 상태에서 캡쳐 시도 시 띄우는 커스텀 권한 안내 alert.
@@ -54,11 +49,6 @@ struct CalendarView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     Color.clear.frame(height: 0).id("calendarTop")
-                    // UIScrollView 가 layout 된 이후에 introspect → contentOffset.y 변화를 추적.
-                    ScrollOffsetReader { y in
-                        handleScrollY(y)
-                    }
-                    .frame(width: 0, height: 0)
                     monthHeader
                     if viewModel.viewMode != .week {
                         weekdayHeader
@@ -80,6 +70,8 @@ struct CalendarView: View {
                     Color.clear.frame(height: 80)
                 }
             }
+            .drivesTabBarChrome()   // 위로 쓸기 → 탭바 축소 / 캘린더 탭 재터치 → 맨 위로
+            .tracksTabRoot()        // 하위 화면 push 시 탭바 숨김
             .overlay(alignment: .bottom) {
                 if viewModel.viewMode != .day {
                     floatingScrollButton(proxy: proxy)
@@ -649,8 +641,8 @@ struct CalendarView: View {
             .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
-        // 커스텀 탭바(84pt) 위로 떠 있도록 충분한 bottom padding.
-        .padding(.bottom, 100)
+        // 떠 있는 글라스 탭바 위로 올라오도록 bottom padding.
+        .padding(.bottom, DozyTabBarMetrics.scrollClearance + 8)
     }
 
     @ViewBuilder
@@ -688,28 +680,6 @@ struct CalendarView: View {
         fmt.dateFormat = String(localized: "M월 d일 (E)")
         fmt.locale = .current
         return fmt.string(from: viewModel.selectedDate)
-    }
-
-    /// UIScrollView.contentOffset.y 변화에 따라 외부 `tabBarHidden` 바인딩 토글.
-    /// - 최상단 근처(y <= 10)에선 강제 표시 → bounce 로 인한 오토글 방지.
-    /// - 작은 떨림(|delta| <= 4)은 무시.
-    /// - 아래로 스크롤(y 증가): 숨김.
-    /// - 위로 스크롤(y 감소): 표시.
-    private func handleScrollY(_ y: CGFloat) {
-        let delta = y - lastScrollOffset
-        lastScrollOffset = y
-
-        if y <= 10 {
-            if tabBarHidden.wrappedValue { tabBarHidden.wrappedValue = false }
-            return
-        }
-        guard abs(delta) > 4 else { return }
-
-        if delta > 0 {
-            if !tabBarHidden.wrappedValue { tabBarHidden.wrappedValue = true }
-        } else {
-            if tabBarHidden.wrappedValue { tabBarHidden.wrappedValue = false }
-        }
     }
 
     // MARK: - Calendar Capture
@@ -929,63 +899,6 @@ private struct CaptureOverlayModifier: ViewModifier {
             } message: {
                 Text("스크린샷이 앨범에 저장되었습니다.")
             }
-    }
-}
-
-/// 자기 view 가 layout 되면 enclosing UIScrollView 를 찾아 contentOffset 변화를 KVO 로 관찰.
-/// SwiftUI ScrollView 가 PreferenceKey 와 잘 안 맞을 때를 위한 fallback.
-private struct ScrollOffsetReader: UIViewRepresentable {
-    let onChange: (CGFloat) -> Void
-
-    func makeUIView(context: Context) -> UIView {
-        let v = ProbeView()
-        v.onAttach = { [weak v] scrollView in
-            context.coordinator.attach(scrollView, host: v)
-        }
-        v.onChange = onChange
-        return v
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        (uiView as? ProbeView)?.onChange = onChange
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
-    final class Coordinator: NSObject {
-        private var observation: NSKeyValueObservation?
-
-        func attach(_ scrollView: UIScrollView, host: ProbeView?) {
-            observation?.invalidate()
-            observation = scrollView.observe(\.contentOffset, options: [.new]) { [weak host] sv, _ in
-                let y = sv.contentOffset.y
-                DispatchQueue.main.async { host?.onChange?(y) }
-            }
-        }
-    }
-
-    final class ProbeView: UIView {
-        var onAttach: ((UIScrollView) -> Void)?
-        var onChange: ((CGFloat) -> Void)?
-        private var hasAttached = false
-
-        override func didMoveToWindow() {
-            super.didMoveToWindow()
-            guard !hasAttached, window != nil else { return }
-            if let sv = enclosingScrollView() {
-                hasAttached = true
-                onAttach?(sv)
-            }
-        }
-
-        private func enclosingScrollView() -> UIScrollView? {
-            var v: UIView? = superview
-            while let cur = v {
-                if let sv = cur as? UIScrollView { return sv }
-                v = cur.superview
-            }
-            return nil
-        }
     }
 }
 
