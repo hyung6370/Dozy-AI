@@ -280,7 +280,8 @@ struct HomeView: View {
             Button("취소", role: .cancel) { }
         }
         .sheet(isPresented: $showNewEventSheet) {
-            EventEditView(eventToEdit: nil, selectedDate: Date()) { saved in
+            EventEditView(eventToEdit: nil, selectedDate: Date(),
+                          parseUseCase: container.parseNaturalLanguageEventUseCase) { saved in
                 viewModel.saveDozyEvent(saved)
             }
         }

@@ -402,6 +402,14 @@
 		F693483D3089D1A600FB5E1C /* AIEngineStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693483B3089D1A600FB5E1C /* AIEngineStatus.swift */; };
 		F693483F3089D3B900FB5E1C /* FoundationModelsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693483E3089D3B900FB5E1C /* FoundationModelsEngine.swift */; };
 		F69348403089D3B900FB5E1C /* FoundationModelsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693483E3089D3B900FB5E1C /* FoundationModelsEngine.swift */; };
+		F69348423089E54500FB5E1C /* EventDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69348413089E54500FB5E1C /* EventDraft.swift */; };
+		F69348433089E54500FB5E1C /* EventDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69348413089E54500FB5E1C /* EventDraft.swift */; };
+		F69348453089E5D600FB5E1C /* EventParsingServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69348443089E5D600FB5E1C /* EventParsingServiceProtocol.swift */; };
+		F69348463089E5D600FB5E1C /* EventParsingServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69348443089E5D600FB5E1C /* EventParsingServiceProtocol.swift */; };
+		F69348483089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */; };
+		F69348493089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */; };
+		F693484B3089E85C00FB5E1C /* NaturalLanguageEventParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */; };
+		F693484C3089E85C00FB5E1C /* NaturalLanguageEventParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */; };
 		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
 		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
 		F699C1442F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */; };
@@ -791,6 +799,10 @@
 		F68B39B22F83721600FEAFB0 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		F693483B3089D1A600FB5E1C /* AIEngineStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIEngineStatus.swift; sourceTree = "<group>"; };
 		F693483E3089D3B900FB5E1C /* FoundationModelsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelsEngine.swift; sourceTree = "<group>"; };
+		F69348413089E54500FB5E1C /* EventDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDraft.swift; sourceTree = "<group>"; };
+		F69348443089E5D600FB5E1C /* EventParsingServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventParsingServiceProtocol.swift; sourceTree = "<group>"; };
+		F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseNaturalLanguageEventUseCase.swift; sourceTree = "<group>"; };
+		F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaturalLanguageEventParser.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
 		F699C1472F9F5822001FBF8F /* holidays.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = holidays.json; sourceTree = "<group>"; };
@@ -1185,6 +1197,7 @@
 				DDA9A5B52F89560300C1572C /* UserCategory.swift */,
 				DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */,
 				F693483B3089D1A600FB5E1C /* AIEngineStatus.swift */,
+				F69348413089E54500FB5E1C /* EventDraft.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1297,6 +1310,7 @@
 				F650682C2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift */,
 				F619D9742F7A371900084C61 /* UpdateDozyEventUseCase.swift */,
 				F65068282F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift */,
+				F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */,
 			);
 			path = UseCases;
 			sourceTree = "<group>";
@@ -1314,6 +1328,7 @@
 				DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */,
 				DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */,
 				DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */,
+				F69348443089E5D600FB5E1C /* EventParsingServiceProtocol.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -1351,6 +1366,7 @@
 				F619D9552F751F7D00084C61 /* GoogleSignInService.swift */,
 				F699C14A2F9F59F4001FBF8F /* HolidayService.swift */,
 				F673330E2FADA064000A610A /* LocationSearchService.swift */,
+				F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */,
 				F616DCD02F7B448300FA0476 /* NaverSignInService.swift */,
 				F616DCD42F7B49AE00FA0476 /* NaverCalendarService.swift */,
 				F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */,
@@ -2083,6 +2099,7 @@
 				B983D6927F254284838DA052 /* SharedCalendarEditView.swift in Sources */,
 				2F60073C0F4F45FE89F2B430 /* SharedCalendarRealtimeService.swift in Sources */,
 				F67333132FADA094000A610A /* LocationSearchField.swift in Sources */,
+				F693484C3089E85C00FB5E1C /* NaturalLanguageEventParser.swift in Sources */,
 				807EED356A2F4E5095F4C7F4 /* SharedCalendar.swift in Sources */,
 				C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */,
 				F699C14B2F9F59F4001FBF8F /* HolidayService.swift in Sources */,
@@ -2124,6 +2141,7 @@
 				F63C688D2F85F0D9003464E8 /* RootView.swift in Sources */,
 				DD9F69232F6ACFF2001952F6 /* CalendarEventDTO.swift in Sources */,
 				DD808ED62F694C7800F4956A /* HomeViewModel.swift in Sources */,
+				F69348483089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift in Sources */,
 				F6BC59952F7399E90090DF3A /* EventRow.swift in Sources */,
 				DD9F69082F6ACE7E001952F6 /* SpeechServiceProtocol.swift in Sources */,
 				F619D9892F7A4ADD00084C61 /* EventEditView.swift in Sources */,
@@ -2140,6 +2158,7 @@
 				F619D94F2F75122300084C61 /* CalendarSource.swift in Sources */,
 				DD9F69122F6ACF2B001952F6 /* ReminderService.swift in Sources */,
 				F619D9812F7A3CD100084C61 /* CalendarViewModel.swift in Sources */,
+				F69348423089E54500FB5E1C /* EventDraft.swift in Sources */,
 				F63A137B2FB30F0D006C580D /* Locale+Dozy.swift in Sources */,
 				DD9F69302F6AD0B1001952F6 /* WorkLogDetailView.swift in Sources */,
 				F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */,
@@ -2159,6 +2178,7 @@
 				DD9F694A2F6AD239001952F6 /* SummarizeShortcut.swift in Sources */,
 				F63C686E2F84F79B003464E8 /* NotificationViewModel.swift in Sources */,
 				F619D9852F7A43DF00084C61 /* CalendarView.swift in Sources */,
+				F69348463089E5D600FB5E1C /* EventParsingServiceProtocol.swift in Sources */,
 				DD808EB32F694B2A00F4956A /* Dozy_AIApp.swift in Sources */,
 				F673330D2FADA047000A610A /* EventLocation.swift in Sources */,
 				DD9F69482F6AD22B001952F6 /* LogWorkShortcut.swift in Sources */,
@@ -2359,6 +2379,7 @@
 				F6EC8AEC2F9896E000CFFF87 /* Dozy_AI__macOS_App.swift in Sources */,
 				6F40AB13E92ED6471627908F /* SharedCalendar.swift in Sources */,
 				F0358D60D97649A39C84BD8B /* SharedCalendarMember.swift in Sources */,
+				F693484B3089E85C00FB5E1C /* NaturalLanguageEventParser.swift in Sources */,
 				857D0475217A34782DC60979 /* SharedCalendarResults.swift in Sources */,
 				FC652980D606704F32887363 /* SharedCalendarServiceProtocol.swift in Sources */,
 				F9E8A9EBBA615C67DAEED7FA /* CreateSharedCalendarUseCase.swift in Sources */,
@@ -2400,6 +2421,7 @@
 				E75D1231C01579E54A5A6FE7 /* ToggleDozyEventCompletionUseCase.swift in Sources */,
 				A482739D7B323B2F72208349 /* GenerateDailySummaryUseCase.swift in Sources */,
 				F0E98384934E29E7CDA72AE6 /* FetchEventCompletionsUseCase.swift in Sources */,
+				F69348453089E5D600FB5E1C /* EventParsingServiceProtocol.swift in Sources */,
 				4BCAA1C0F48BB3E046D7C275 /* AuthUser.swift in Sources */,
 				F63A137A2FB30F0D006C580D /* Locale+Dozy.swift in Sources */,
 				F7D24E7B9815DD7942AE2A4F /* WorkLog.swift in Sources */,
@@ -2419,6 +2441,7 @@
 				112825F186EE778A14F3F658 /* Date+Extensions.swift in Sources */,
 				E64E8D7DEE2904F2AF41AA37 /* SharedCalendarRealtimeService.swift in Sources */,
 				AB28BF823121CA6AE8E5D851 /* SharedCalendarService.swift in Sources */,
+				F69348493089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift in Sources */,
 				ABF24F81257EC3FBB1E27F57 /* DozyEventRepository.swift in Sources */,
 				6E91B9AE4FA13E9B1E20D143 /* EventDisplaySettingsRepository.swift in Sources */,
 				F6EC8AFE2F9995F000CFFF87 /* MacMainShellView.swift in Sources */,
@@ -2502,6 +2525,7 @@
 				C56216131A337FABE51EB98E /* Constants.swift in Sources */,
 				F6A790022FB90001000A610A /* PasswordPolicy.swift in Sources */,
 				7FFF373EB6B35C46EB1A6487 /* SpeechService.swift in Sources */,
+				F69348433089E54500FB5E1C /* EventDraft.swift in Sources */,
 				13631B4305AC21FAE10F14E0 /* SwiftDataContainer.swift in Sources */,
 				41CA189E759F615475FF68CC /* AIResponseParser.swift in Sources */,
 				B252A21A86A34F3FB41F871A /* Publisher+Extensions.swift in Sources */,

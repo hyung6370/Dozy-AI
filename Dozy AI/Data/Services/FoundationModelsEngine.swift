@@ -42,6 +42,26 @@ struct DailyReportDraft {
     var score: Double
 }
 
+/// 자연어 문장 -> 일정. 날짜는 모델이 Date를 만들지 않고 문자열 조각만 내놓고, Swift가 Calendar로 조립
+@available(iOS 26.0, macOS 26.0, *)
+@Generable(description: "자연어 문장에서 추출한 일정")
+struct EventDraftResponse {
+    @Guide(description: "일정 제목. 날짜·시간·소요시간·장소 표현은 빼고 핵심 내용만 (예: '치과', '팀 회의')")
+    var title: String
+    
+    @Guide(description: "일정 날짜, YYYY-MM-DD 형식. '내일', '다음주 월요일' 같은 상대 표현은 지시문의 기준 날짜로 계산")
+    var date: String
+    
+    @Guide(description: "시작 시각, 24시간 HH:mm 형식. 시각 언급이 없으면 null (종일)")
+    var startTime: String?
+    
+    @Guide(description: "소요 시간(분). 종료 시각이 있으면 그 차이, 언급이 없으면 60", .range(5...1440))
+    var durationMinutes: Int
+    
+    @Guide(description: "장소. 언급이 없으면 null")
+    var location: String?
+}
+
 // MARK: - Engine
 
 @available(iOS 26.0, macOS 26.0, *)
@@ -109,6 +129,30 @@ final class FoundationModelsEngine {
         return response.content
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "\n", with: " ")
+    }
+    
+    /// 자연어 일정 파싱 - guided generation. 상대 날짜 해석을 위해 기준 날짜, 요일을 지시문에 넣는다
+    func eventDraft(from text: String, referenceDate: Date) async throws -> EventDraftResponse {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "yyyy-MM-dd (EEEE)"
+        let today = formatter.string(from: referenceDate)
+        let language = Locale.current.language.languageCode?.identifier == "ko" ? "Korean" : "English"
+        
+        let instructions = """
+            You extract a single calendar event from one \(language) sentence.
+            Today is \(today). Resolve relative dates (tomorrow, next Monday, this Friday) against today.
+            If the sentence has no date, use today. If it has no time, leave startTime null.
+            Keep the title short and in the sentence's own words, without date/time/location phrases.
+            Never invent details that are not in the sentence.
+            """
+        let session = LanguageModelSession(model: model, instructions: instructions)
+        let response = try await session.respond(
+            to: text,
+            generating: EventDraftResponse.self,
+            options: GenerationOptions(temperature: 0.1)   // 추출 작업 — 가장 결정적으로
+        )
+        return response.content
     }
     
     /// 첫 호출 지연을 줄이려면 홈 진입 시 한 번 불러 둔다

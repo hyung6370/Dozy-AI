@@ -21,14 +21,25 @@ struct EventEditView: View {
     /// ZStack overlay 같이 @Environment(\.dismiss) 가 안 동작하는 컨텍스트에서 명시적 dismiss 콜백.
     /// nil 이면 기본 dismiss() 호출.
     private let onCancel: (() -> Void)?
+    
+    /// 자연어 한 줄 -> 폼 채우기. nil 이면 빠른 입력 카드를 그리지 않는다 (수정 모드, 외부 호출부 호환)
+    private let parseUseCase: ParseNaturalLanguageEventUseCase?
+    @State private var quickText = ""
+    @State private var isParsing = false
+    @State private var parseError: String?
+    @State private var parsedSourceLabel: String?
+    @FocusState private var quickFieldFocused: Bool
 
-    init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [], onSave: @escaping (DozyEvent) -> Void, onCancel: (() -> Void)? = nil) {
+    init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [],
+         parseUseCase: ParseNaturalLanguageEventUseCase? = nil,
+         onSave: @escaping (DozyEvent) -> Void, onCancel: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: eventToEdit,
             selectedDate: selectedDate,
             sharedCalendars: sharedCalendars,
             onSave: onSave
         ))
+        self.parseUseCase = parseUseCase
         self.onCancel = onCancel
     }
 
@@ -40,6 +51,9 @@ struct EventEditView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: DozySpacing.lg) {
+                    if parseUseCase != nil, !viewModel.isEditing {
+                        quickInputCard   // 자연어 한 줄 → 폼 채우기 (새 일정에서만)
+                    }
                     titleCard
                     timeSection
                     detailSection
@@ -79,6 +93,72 @@ struct EventEditView: View {
     private func syncColor(with categoryName: String) {
         if let cat = categories.first(where: { $0.name == categoryName }) {
             viewModel.selectedColor = Color(hex: cat.colorHex) ?? viewModel.selectedColor
+        }
+    }
+    
+    // MARK: - 0) 빠른 입력 (자연어)
+    
+    private var quickInputCard: some View {
+        VStack(alignment: .leading, spacing: DozySpacing.xs) {
+            HStack(spacing: DozySpacing.xs) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                TextField("한 줄로 입력 (예: 내일 오후 3시 치과 30분)", text: $quickText)
+                    .font(DozyFont.subheadline)
+                    .focused($quickFieldFocused)
+                    .submitLabel(.go)
+                    .onSubmit { parseQuickText() }
+                    .disabled(isParsing)
+                
+                if isParsing {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button("채우기") { parseQuickText() }
+                        .font(.footnote.weight(.semibold))
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .tint(DozyColor.Brand.primary)
+                        .disabled(quickText.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            
+            if let parseError {
+                Text(parseError)
+                    .font(DozyFont.caption)
+                    .foregroundStyle(DozyColor.State.danger)
+            } else if let parsedSourceLabel {
+                Text("\(parsedSourceLabel) 결과로 채웠어요. 내용을 확인하고 저장하세요.")
+                    .font(DozyFont.caption)
+                    .foregroundStyle(DozyColor.Text.tertiary)
+            } else {
+                Text("날짜·시간·장소가 들어간 문장을 적으면 아래 항목을 채워 드려요.")
+                    .font(DozyFont.caption)
+                    .foregroundStyle(DozyColor.Text.tertiary)
+            }
+        }
+        .padding(DozySpacing.md)
+        .clipShape(RoundedRectangle(cornerRadius: DozyRadius.lg, style: .continuous))
+        .dozyThemedCardSurface(cornerRadius: DozyRadius.lg)
+        .padding(.horizontal, DozySpacing.md)
+    }
+    
+    private func parseQuickText() {
+        guard let parseUseCase, !isParsing else { return }
+        let text = quickText
+        isParsing = true
+        parseError = nil
+        parsedSourceLabel = nil
+        Task {
+            defer { isParsing = false }
+            do {
+                let draft = try await parseUseCase.execute(text: text)
+                withAnimation(.snappy(duration: 0.25)) { viewModel.apply(draft) }
+                parsedSourceLabel = draft.sourceLabel
+                quickFieldFocused = false
+            } catch {
+                parseError = (error as? DozyError)?.errorDescription ?? error.localizedDescription
+            }
         }
     }
 
