@@ -93,7 +93,7 @@ struct EventEditView: View {
                     .frame(width: 4, height: 28)
                     .animation(.easeInOut(duration: 0.2), value: viewModel.selectedColor)
                 TextField("제목", text: $viewModel.title)
-                    .font(.title2.weight(.semibold))
+                    .font(.title3.weight(.semibold))
                     .submitLabel(.done)
             }
 
@@ -127,7 +127,7 @@ struct EventEditView: View {
             HStack(spacing: DozySpacing.xxs) {
                 Text(cat.emoji)
                 Text(cat.name)
-                    .font(.subheadline.weight(isSelected ? .semibold : .medium))
+                    .font(.footnote.weight(isSelected ? .semibold : .medium))
             }
             .padding(.horizontal, DozySpacing.sm)
             .padding(.vertical, DozySpacing.xs)
@@ -142,7 +142,7 @@ struct EventEditView: View {
     private var addCategoryChip: some View {
         Button { showAddCategory = true } label: {
             Label("추가", systemImage: "plus")
-                .font(.subheadline.weight(.medium))
+                .font(.footnote.weight(.medium))
                 .padding(.horizontal, DozySpacing.sm)
                 .padding(.vertical, DozySpacing.xs)
                 .foregroundStyle(DozyColor.Text.secondary)
@@ -159,7 +159,7 @@ struct EventEditView: View {
 
     private var timeSection: some View {
         DozyListSection(header: "시간") {
-            DozyListRow(title: "종일") {
+            DozyListRow(title: "종일", titleFont: rowFont) {
                 DozyTintedIcon(systemName: "sun.max.fill", tint: DozyColor.State.warning)
             } trailing: {
                 Toggle("종일", isOn: $viewModel.isAllDay)
@@ -168,7 +168,7 @@ struct EventEditView: View {
             }
 
             if viewModel.isAllDay {
-                DozyListRow(title: "날짜") {
+                DozyListRow(title: "날짜", titleFont: rowFont) {
                     DozyTintedIcon(systemName: "calendar")
                 } trailing: {
                     DatePicker("날짜", selection: $viewModel.startDate, displayedComponents: .date)
@@ -176,14 +176,14 @@ struct EventEditView: View {
                         .environment(\.locale, .current)
                 }
             } else {
-                DozyListRow(title: "시작") {
+                DozyListRow(title: "시작", titleFont: rowFont) {
                     DozyTintedIcon(systemName: "clock.fill")
                 } trailing: {
                     DatePicker("시작", selection: $viewModel.startDate, displayedComponents: [.date, .hourAndMinute])
                         .labelsHidden()
                         .environment(\.locale, .current)
                 }
-                DozyListRow(title: "종료") {
+                DozyListRow(title: "종료", titleFont: rowFont) {
                     DozyTintedIcon(systemName: "flag.checkered")
                 } trailing: {
                     DatePicker("종료",
@@ -218,7 +218,7 @@ struct EventEditView: View {
                 DozyTintedIcon(systemName: "note.text", tint: DozyColor.Brand.secondary)
                 TextField("메모 (선택)", text: $viewModel.notes, axis: .vertical)
                     .lineLimit(2...6)
-                    .font(DozyFont.body)
+                    .font(DozyFont.subheadline)
                     .padding(.top, 6)
             }
             .padding(.horizontal, DozySpacing.md)
@@ -231,7 +231,7 @@ struct EventEditView: View {
 
     private var repeatAlarmSection: some View {
         DozyListSection(header: "반복·알림") {
-            DozyListRow(title: "반복") {
+            DozyListRow(title: "반복", titleFont: rowFont) {
                 DozyTintedIcon(systemName: "repeat", tint: DozyColor.State.success)
             } trailing: {
                 Menu {
@@ -248,7 +248,7 @@ struct EventEditView: View {
             }
 
             if viewModel.recurrenceRule != "none" {
-                DozyListRow(title: "반복 종료일") {
+                DozyListRow(title: "반복 종료일", titleFont: rowFont) {
                     DozyTintedIcon(systemName: "calendar.badge.checkmark", tint: DozyColor.State.success)
                 } trailing: {
                     DatePicker("반복 종료일", selection: $viewModel.recurrenceEndDate, displayedComponents: .date)
@@ -257,7 +257,7 @@ struct EventEditView: View {
                 }
             }
 
-            DozyListRow(title: "알림") {
+            DozyListRow(title: "알림", titleFont: rowFont) {
                 DozyTintedIcon(systemName: "bell.fill", tint: DozyColor.State.info)
             } trailing: {
                 Menu {
@@ -282,7 +282,7 @@ struct EventEditView: View {
 
     private var sharedCalendarSection: some View {
         DozyListSection(header: "공유 캘린더") {
-            DozyListRow(title: "공유") {
+            DozyListRow(title: "공유", titleFont: rowFont) {
                 DozyTintedIcon(systemName: "person.2.fill")
             } trailing: {
                 Menu {
@@ -302,11 +302,14 @@ struct EventEditView: View {
 
     // MARK: - Helpers
 
+    /// 섹션 안 행 제목 폰트 — 섹션 헤더는 그대로 두고 내용만 한 단계 작게.
+    private let rowFont: Font = DozyFont.subheadlineEmphasized
+
     /// 메뉴 행의 우측 값 표시 — 현재 값 + 위아래 셰브론.
     private func menuValueLabel(_ text: String) -> some View {
         HStack(spacing: DozySpacing.xxs) {
             Text(text)
-                .font(DozyFont.subheadline)
+                .font(DozyFont.footnote)
                 .foregroundStyle(DozyColor.Text.secondary)
             Image(systemName: "chevron.up.chevron.down")
                 .font(.system(size: 12, weight: .semibold))

@@ -60,18 +60,22 @@ struct DozyListRow<Icon: View, Trailing: View>: View {
     /// title 은 `LocalizedStringKey` — String Catalog 자동 추출 보장.
     let title: LocalizedStringKey
     let titleColor: Color
+    /// 제목 폰트. 기본은 bodyEmphasized(설정 화면). 입력 폼처럼 촘촘한 화면은 subheadlineEmphasized 를 넘긴다.
+    let titleFont: Font
     @ViewBuilder var icon: () -> Icon
     @ViewBuilder var trailing: () -> Trailing
 
     init(
         title: LocalizedStringKey,
         titleColor: Color = DozyColor.Text.primary,
+        titleFont: Font = DozyFont.bodyEmphasized,
         showsDivider _: Bool = true,  // 호환: 호출부 인자 유지, 내부적으론 사용 안 함
         @ViewBuilder icon: @escaping () -> Icon = { EmptyView() },
         @ViewBuilder trailing: @escaping () -> Trailing = { EmptyView() }
     ) {
         self.title = title
         self.titleColor = titleColor
+        self.titleFont = titleFont
         self.icon = icon
         self.trailing = trailing
     }
@@ -80,7 +84,7 @@ struct DozyListRow<Icon: View, Trailing: View>: View {
         HStack(spacing: DozySpacing.md) {
             icon()
             Text(title)
-                .font(DozyFont.bodyEmphasized)
+                .font(titleFont)
                 .foregroundStyle(titleColor)
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)   // 넓은 trailing(DatePicker 등)이 제목을 두 줄로 꺾지 않게
