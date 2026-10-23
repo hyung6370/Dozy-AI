@@ -26,6 +26,11 @@ struct SettingsView: View {
     @State private var showPasswordChange = false
     /// DragGesture 기반 커스텀 로그인 시트 (AuthSheetView) 표시 여부.
     @State private var showLoginSheet = false
+    #if os(iOS)
+    /// 저녁 요약 알림 설정 (UserDefaults 와 동기화).
+    @State private var reminderSettings = SummaryReminderSettings.load()
+    @State private var showReminderDeniedAlert = false
+    #endif
     @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
 
@@ -83,6 +88,9 @@ struct SettingsView: View {
                 VStack(spacing: DozySpacing.xl) {
                     accountSection
                     appearanceSection
+                    #if os(iOS)
+                    summaryReminderSection
+                    #endif
                     calendarSection
                     categorySection
                     infoSection
@@ -266,6 +274,74 @@ struct SettingsView: View {
             .buttonStyle(.plain)
         }
     }
+
+    // MARK: - AI 요약 알림 섹션
+
+    #if os(iOS)
+    private var summaryReminderSection: some View {
+        DozyListSection(
+            header: "AI 요약 알림",
+            footer: "정한 시각에 오늘 하루 요약을 알려드려요. 알림을 누르면 요약 화면이 바로 열립니다."
+        ) {
+            DozyListRow(title: "저녁 요약 알림") {
+                Image(systemName: "bell.badge.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                    .frame(width: 34)
+            } trailing: {
+                Toggle("저녁 요약 알림", isOn: $reminderSettings.isEnabled)
+                    .labelsHidden()
+                    .tint(DozyColor.Brand.primary)
+            }
+
+            if reminderSettings.isEnabled {
+                DozyListRow(title: "알림 시각") {
+                    Image(systemName: "clock.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(DozyColor.Brand.primary)
+                        .frame(width: 34)
+                } trailing: {
+                    DatePicker("알림 시각", selection: reminderTimeBinding, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .environment(\.locale, .current)
+                }
+            }
+        }
+        .animation(.snappy(duration: 0.25), value: reminderSettings.isEnabled)
+        .onChange(of: reminderSettings) { _, newValue in applyReminderSettings(newValue) }
+        .alert("알림 권한이 꺼져 있어요", isPresented: $showReminderDeniedAlert) {
+            Button("설정 열기") {
+                if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+            }
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("설정 > 알림에서 Dozy의 알림을 허용한 뒤 다시 켜 주세요.")
+        }
+    }
+
+    /// hour/minute ↔ DatePicker 의 Date.
+    private var reminderTimeBinding: Binding<Date> {
+        Binding(
+            get: { reminderSettings.timeAsDate },
+            set: { date in
+                let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+                reminderSettings.hour = parts.hour ?? 21
+                reminderSettings.minute = parts.minute ?? 0
+            }
+        )
+    }
+
+    private func applyReminderSettings(_ settings: SummaryReminderSettings) {
+        settings.save()
+        Task { @MainActor in
+            let granted = await container.summaryReminderService.apply(settings)
+            if settings.isEnabled, !granted {
+                reminderSettings.isEnabled = false   // onChange 재진입 → 해제 경로로 정리됨
+                showReminderDeniedAlert = true
+            }
+        }
+    }
+    #endif
 
     // MARK: - 카테고리 섹션
 

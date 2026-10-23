@@ -16,6 +16,8 @@ struct Dozy_AIApp: App {
 
     @StateObject private var coordinator = AppCoordinator()
     @Environment(\.scenePhase) private var scenePhase
+    /// 알림 delegate + BGTaskScheduler 등록 (앱 시작 직후에만 가능한 일).
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
         WindowGroup {
@@ -72,6 +74,7 @@ struct Dozy_AIApp: App {
                 // 보장이 없어 onAppear 에서도 한 번 소비.
                 consumePendingCreateEventFlag()
                 consumePendingVoiceInputFlag()
+                consumePendingOpenSummaryFlag()
             }
             .onChange(of: scenePhase) { _, phase in
                 // 위젯의 CreateQuickEventIntent 가 perform 에서 App Group 플래그를 set 함.
@@ -79,6 +82,7 @@ struct Dozy_AIApp: App {
                 if phase == .active {
                     consumePendingCreateEventFlag()
                     consumePendingVoiceInputFlag()
+                    consumePendingOpenSummaryFlag()
                 }
             }
             .environmentObject(authViewModel)
@@ -100,6 +104,14 @@ struct Dozy_AIApp: App {
         guard defaults?.bool(forKey: OpenVoiceInputIntent.pendingFlagKey) == true else { return }
         defaults?.set(false, forKey: OpenVoiceInputIntent.pendingFlagKey)
         NotificationCenter.default.post(name: .dozyOpenVoiceInput, object: nil)
+    }
+
+    /// 요약 알림 탭(AppDelegate)이 켠 플래그를 소비 → `.dozyOpenDailySummary` post → 홈 탭 + 요약 시트.
+    private func consumePendingOpenSummaryFlag() {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: AppDelegate.pendingOpenSummaryKey) else { return }
+        defaults.set(false, forKey: AppDelegate.pendingOpenSummaryKey)
+        NotificationCenter.default.post(name: .dozyOpenDailySummary, object: nil)
     }
 
     /// 위젯의 widgetURL/Link 탭으로 들어온 deep link 처리.
@@ -155,6 +167,9 @@ extension Notification.Name {
     /// Siri "Dozy 음성 메모" (OpenVoiceInputIntent) → 홈 탭 + 음성 입력 시트 오픈.
     /// `Dozy_AIApp.consumePendingVoiceInputFlag` 가 App Group 플래그 소비 시 post.
     static let dozyOpenVoiceInput = Notification.Name("dozyOpenVoiceInput")
+
+    /// 저녁 요약 알림 탭 → 홈 탭 + 요약 시트 오픈. `AppDelegate.didReceive` / `consumePendingOpenSummaryFlag` 가 post.
+    static let dozyOpenDailySummary = Notification.Name("dozyOpenDailySummary")
 }
 
 // MARK: - AppCoordinator
@@ -191,6 +206,12 @@ final class AppCoordinator: ObservableObject {
         container = c
         // Siri/단축어 인텐트가 살아있는 컨테이너를 재사용하도록 등록 (AppIntentStore 참고).
         AppIntentStore.register(c)
+        // 백그라운드 요약 갱신이 컨테이너의 유스케이스를 쓰도록 연결 + 켜져 있으면 다음 갱신 제출.
+        SummaryReminderService.backgroundSummaryProvider = { [weak c] in
+            guard let c else { throw CancellationError() }
+            return try await c.generateTodaySummaryInBackground()
+        }
+        Task { @MainActor in c.summaryReminderService.refreshSchedulesIfEnabled() }
         isReady = true
     }
 }

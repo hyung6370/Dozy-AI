@@ -168,6 +168,11 @@ struct HomeView: View {
                 // Siri "Dozy 음성 메모" (OpenVoiceInputIntent) → MainTabView 가 홈 탭으로 옮긴 뒤 시트 오픈.
                 showVoiceInput = true
             }
+            .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
+                // 저녁 요약 알림 탭. 백그라운드에서 미리 만들어 둔 요약이 있으면 즉시, 없으면 시트가 생성한다.
+                viewModel.loadTodayData()
+                showSummarySheet = true
+            }
             .sheet(isPresented: $showVoiceInput) {
                 VoiceInputView(speechService: container.speechService) { text in
                     viewModel.addMemo(text)

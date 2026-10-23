@@ -52,6 +52,10 @@
 	<string>$(PROD_SUPABASE_HOST)</string>
 	<key>PRIVACY_POLICY_URL</key>
 	<string>https://www.dozyapp.kr/privacy</string>
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.dozy-ai.Dozy-AI.summaryRefresh</string>
+    </array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
