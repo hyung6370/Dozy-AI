@@ -29,9 +29,13 @@ struct EventEditView: View {
     @State private var parseError: String?
     @State private var parsedSourceLabel: String?
     @FocusState private var quickFieldFocused: Bool
+    /// 음성으로 한 줄 입력. nil 이면 마이크 버튼을 그리지 않는다.
+    private let speechService: SpeechServiceProtocol?
+    @State private var showVoiceInput = false
 
     init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [],
          parseUseCase: ParseNaturalLanguageEventUseCase? = nil,
+         speechService: SpeechServiceProtocol? = nil,
          onSave: @escaping (DozyEvent) -> Void, onCancel: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: eventToEdit,
@@ -40,6 +44,7 @@ struct EventEditView: View {
             onSave: onSave
         ))
         self.parseUseCase = parseUseCase
+        self.speechService = speechService
         self.onCancel = onCancel
     }
 
@@ -110,6 +115,25 @@ struct EventEditView: View {
                     .submitLabel(.go)
                     .onSubmit { parseQuickText() }
                     .disabled(isParsing)
+
+                if let speechService, !isParsing {
+                    Button { showVoiceInput = true } label: {
+                        Image(systemName: "mic.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(DozyColor.Brand.primary)
+                            .frame(width: 28, height: 28)
+                            .background(DozyColor.Brand.primary.opacity(0.12), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("음성으로 입력")
+                    .accessibilityIdentifier("btn_quick_voice")
+                    .sheet(isPresented: $showVoiceInput) {
+                        VoiceInputView(speechService: speechService, style: .event) { text in
+                            quickText = text
+                            parseQuickText()   // 받아쓴 문장을 바로 파싱 → 폼 채움
+                        }
+                    }
+                }
                 
                 if isParsing {
                     ProgressView().controlSize(.small)
@@ -132,7 +156,9 @@ struct EventEditView: View {
                     .font(DozyFont.caption)
                     .foregroundStyle(DozyColor.Text.tertiary)
             } else {
-                Text("날짜·시간·장소가 들어간 문장을 적으면 아래 항목을 채워 드려요.")
+                Text(speechService == nil
+                     ? "날짜·시간·장소가 들어간 문장을 적으면 아래 항목을 채워 드려요."
+                     : "문장을 적거나 마이크로 말하면 아래 항목을 채워 드려요.")
                     .font(DozyFont.caption)
                     .foregroundStyle(DozyColor.Text.tertiary)
             }

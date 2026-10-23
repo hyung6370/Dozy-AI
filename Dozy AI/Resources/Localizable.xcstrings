@@ -2492,6 +2492,9 @@
         }
       }
     },
+    "마이크 입력을 사용할 수 없어요. 다른 앱이 마이크를 쓰고 있는지 확인해 주세요." : {
+
+    },
     "마이크를 눌러 시작" : {
 
     },
@@ -2751,6 +2754,9 @@
 
     },
     "문장에서 일정을 알아내지 못했어요. 날짜와 시간을 넣어 다시 적어 주세요." : {
+
+    },
+    "문장을 적거나 마이크로 말하면 아래 항목을 채워 드려요." : {
 
     },
     "미리알림 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요." : {
@@ -4054,6 +4060,9 @@
         }
       }
     },
+    "예: 내일 오후 3시 치과 30분" : {
+
+    },
     "예: 우리 가족 캘린더" : {
       "localizations" : {
         "en" : {
@@ -4568,6 +4577,12 @@
         }
       }
     },
+    "음성으로 일정 입력" : {
+
+    },
+    "음성으로 입력" : {
+
+    },
     "이 공유 캘린더에서 나가시겠습니까?" : {
       "localizations" : {
         "en" : {
@@ -4628,6 +4643,76 @@
         }
       }
     },
+    "이메일 또는 비밀번호가 올바르지 않습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
+          }
+        }
+      }
+    },
+    "이메일 로그인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sign-in"
+          }
+        }
+      }
+    },
+    "이메일로 로그인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with email"
+          }
+        }
+      }
+    },
+    "이벤트 수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events"
+          }
+        }
+      }
+    },
+    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "이동" : {
       "localizations" : {
         "en" : {
@@ -4654,106 +4739,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email"
-          }
-        }
-      }
-    },
-    "이메일 로그인" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sign-in"
-          }
-        }
-      }
-    },
-    "이메일을 먼저 입력해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please enter your email first."
-          }
-        }
-      }
-    },
-    "이모지 선택" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pick an emoji"
-          }
-        }
-      }
-    },
-    "이벤트 수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
-          }
-        }
-      }
-    },
-    "이전과 동일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as before"
-          }
-        }
-      }
-    },
-    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as your current password. Please choose a new one."
-          }
-        }
-      }
-    },
-    "인사이트" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insights"
-          }
-        }
-      }
-    },
-    "인증 코드 (6자리)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verification code (6 digits)"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
           }
         }
       }
@@ -4788,12 +4773,12 @@
         }
       }
     },
-    "이메일로 로그인" : {
+    "이메일을 먼저 입력해주세요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sign in with email"
+            "value" : "Please enter your email first."
           }
         }
       }
@@ -4804,6 +4789,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Emoji"
+          }
+        }
+      }
+    },
+    "이모지 선택" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick an emoji"
           }
         }
       }
@@ -4858,12 +4853,22 @@
         }
       }
     },
-    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
+    "이전과 동일" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
+            "value" : "Same as before"
+          }
+        }
+      }
+    },
+    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as your current password. Please choose a new one."
           }
         }
       }
@@ -4874,6 +4879,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete this and all future events"
+          }
+        }
+      }
+    },
+    "인사이트" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insights"
           }
         }
       }
@@ -5099,6 +5114,9 @@
         }
       }
     },
+    "일정으로 채우기" : {
+
+    },
     "일정을 더 추가하면\n요일 패턴을 확인할 수 있어요" : {
       "localizations" : {
         "en" : {
@@ -5225,9 +5243,6 @@
         }
       }
     },
-    "저장하거나 다시 녹음할 수 있어요" : {
-
-    },
     "점" : {
       "localizations" : {
         "en" : {
@@ -5263,6 +5278,9 @@
           }
         }
       }
+    },
+    "저장하거나 다시 녹음할 수 있어요" : {
+
     },
     "저채도 메시 그라디언트 — 가장 차분한 무드." : {
       "localizations" : {
@@ -5682,6 +5700,9 @@
           }
         }
       }
+    },
+    "채우거나 다시 녹음할 수 있어요" : {
+
     },
     "채우기" : {
 

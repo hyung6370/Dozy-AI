@@ -77,14 +77,27 @@ final class SpeechService: SpeechServiceProtocol {
         self.request = request
         
         let inputNode = audioEngine.inputNode
-        let format = inputNode.outputFormat(forBus: 0)
+        // 입력 노드가 실제로 받는 하드웨어 포맷. 마이크 입력이 없으면(시뮬레이터에 Mac 입력 장치가 없거나
+        // 세션이 아직 준비되지 않은 경우) 샘플레이트/채널이 0 으로 온다. 그 상태로 installTap 하면
+        // "IsFormatSampleRateAndChannelCountValid(format)" ObjC 예외로 크래시 — Swift 로 못 잡으니 먼저 걸러낸다.
+        let format = inputNode.inputFormat(forBus: 0)
+        guard format.sampleRate > 0, format.channelCount > 0 else {
+            Logger.app.error("[Speech] 마이크 입력 포맷 무효 (sampleRate \(format.sampleRate), channels \(format.channelCount))")
+            tearDown()
+            throw DozyError.microphoneUnavailable
+        }
         inputNode.removeTap(onBus: 0)
         // tap 콜백은 오디오 스레드 - self 상태를 건드리지 말고 request에만 append
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
             request.append(buffer)
         }
         audioEngine.prepare()
-        try audioEngine.start()
+        do {
+            try audioEngine.start()
+        } catch {
+            tearDown()
+            throw DozyError.microphoneUnavailable
+        }
         
         return AsyncThrowingStream { continuation in
             self.continuation = continuation

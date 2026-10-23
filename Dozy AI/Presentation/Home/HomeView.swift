@@ -286,7 +286,8 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showNewEventSheet) {
             EventEditView(eventToEdit: nil, selectedDate: Date(),
-                          parseUseCase: container.parseNaturalLanguageEventUseCase) { saved in
+                          parseUseCase: container.parseNaturalLanguageEventUseCase,
+                          speechService: container.speechService) { saved in
                 viewModel.saveDozyEvent(saved)
             }
         }
