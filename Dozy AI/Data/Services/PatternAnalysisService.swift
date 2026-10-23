@@ -68,7 +68,9 @@ final class PatternAnalysisService {
         let today = cal.startOfDay(for: Date())
 
         return (0..<weeks).reversed().compactMap { weekOffset -> (Date, Double)? in
-            guard let weekEnd = cal.date(byAdding: .day, value: -weekOffset * 7, to: today),
+            // 상한은 exclusive 라 "내일 0시" 를 기준으로 잡아야 오늘 일정이 이번 주에 포함된다.
+            // (이전: 오늘 0시 → 오늘 일정이 주간 집계에서 항상 빠지는 off-by-one)
+            guard let weekEnd = cal.date(byAdding: .day, value: 1 - weekOffset * 7, to: today),
                   let weekStart = cal.date(byAdding: .day, value: -7, to: weekEnd) else { return nil }
 
             let weekDozy = events.filter {
