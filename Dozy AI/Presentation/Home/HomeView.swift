@@ -578,63 +578,140 @@ struct HomeView: View {
 
     // MARK: - Memo
 
+    /// 메모 카드 — 홈의 다른 카드(focusCard 등)와 같은 머티리얼 카드 안에 헤더·목록·입력창을 담는다.
     private var memoSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("메모")
-                .font(.footnote)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .padding(.leading, 2)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                Image(systemName: "note.text")
+                    .font(.caption)
+                    .foregroundStyle(DozyColor.Brand.primary)
+                Text("메모")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                if let count = viewModel.todayLog?.memos.count, count > 0 {
+                    Text("\(count)")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(DozyColor.Brand.primary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(DozyColor.Brand.primary.opacity(0.12), in: Capsule())
+                }
+                Spacer()
+            }
+            .padding(.bottom, 12)
 
-            if let log = viewModel.todayLog {
-                ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
-                    HStack(alignment: .top, spacing: 8) {
-                        Text(verbatim: "📝").font(.subheadline)
-                        Text(memo)
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(10)
-                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
-                    .contextMenu {
-                        Button {
-                            editingMemoIndex = index
-                            editingMemoText = memo
-                            showEditMemoAlert = true
-                        } label: {
-                            Label("수정", systemImage: "pencil")
-                        }
-                        Button(role: .destructive) {
-                            deletingMemoIndex = index
-                            showDeleteMemoAlert = true
-                        } label: {
-                            Label("삭제", systemImage: "trash")
+            if let log = viewModel.todayLog, !log.memos.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(Array(log.memos.enumerated()), id: \.offset) { index, memo in
+                        memoRow(memo, index: index)
+                        if index < log.memos.count - 1 {
+                            Divider().padding(.leading, 16)
                         }
                     }
                 }
+                .padding(.bottom, 12)
+            } else {
+                Text("오늘의 생각이나 할 일을 짧게 남겨 보세요.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.bottom, 12)
             }
 
-            HStack(alignment: .bottom, spacing: 10) {
+            memoComposer
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .dozyThemedCardBorder(cornerRadius: 14)
+    }
+
+    /// 메모 한 줄 — 점 + 본문 + 더보기(수정/삭제). 길게 눌러도 같은 메뉴.
+    private func memoRow(_ memo: String, index: Int) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Circle()
+                .fill(DozyColor.Brand.primary.opacity(0.7))
+                .frame(width: 6, height: 6)
+                .padding(.top, 7)
+            Text(memo)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Menu {
+                memoActions(memo, index: index)
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("메모 메뉴")
+        }
+        .padding(.vertical, 8)
+        .contentShape(Rectangle())
+        .contextMenu { memoActions(memo, index: index) }
+    }
+
+    @ViewBuilder
+    private func memoActions(_ memo: String, index: Int) -> some View {
+        Button {
+            editingMemoIndex = index
+            editingMemoText = memo
+            showEditMemoAlert = true
+        } label: {
+            Label("수정", systemImage: "pencil")
+        }
+        Button(role: .destructive) {
+            deletingMemoIndex = index
+            showDeleteMemoAlert = true
+        } label: {
+            Label("삭제", systemImage: "trash")
+        }
+    }
+
+    /// 입력창 — 둥근 필드(텍스트 + 마이크) 와 전송 버튼. 내용이 있을 때만 전송 버튼이 브랜드 색으로 켜진다.
+    private var memoComposer: some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 TextField("메모를 남겨보세요", text: $memoText, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .lineLimit(1...)
+                    .font(.subheadline)
+                    .lineLimit(1...4)
                     .accessibilityIdentifier("home_memo_field")   // UI 테스트 — 다중행 TextField 는 textView 로 노출된다
 
                 Button { showVoiceInput = true } label: {
-                    Image(systemName: "mic.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.blue)
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(DozyColor.Brand.primary)
+                        .frame(width: 28, height: 28)
                 }
+                .buttonStyle(.plain)
                 .disabled(viewModel.todayLog == nil)   // addMemo 가 todayLog nil 이면 조용히 버리므로 막는다
-
-                Button { submitMemo() } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.blue)
-                }
-                .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .accessibilityLabel("음성으로 메모")
             }
+            .padding(.leading, 14)
+            .padding(.trailing, 6)
+            .padding(.vertical, 6)
+            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+            Button { submitMemo() } label: {
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 34, height: 34)
+                    .background(canSubmitMemo ? DozyColor.Brand.primary : Color(.systemGray4), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!canSubmitMemo)
+            .animation(.easeInOut(duration: 0.15), value: canSubmitMemo)
+            .accessibilityLabel("메모 추가")
+            .accessibilityIdentifier("btn_memo_add")
         }
+    }
+
+    private var canSubmitMemo: Bool {
+        !memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.todayLog != nil
     }
 
     private func submitMemo() {
