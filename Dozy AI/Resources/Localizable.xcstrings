@@ -2614,6 +2614,9 @@
     "메모 기록" : {
 
     },
+    "메모 메뉴" : {
+
+    },
     "메모 삭제" : {
       "localizations" : {
         "en" : {
@@ -2633,6 +2636,9 @@
           }
         }
       }
+    },
+    "메모 추가" : {
+
     },
     "메모로 저장" : {
 
@@ -4262,6 +4268,9 @@
         }
       }
     },
+    "오늘의 생각이나 할 일을 짧게 남겨 보세요." : {
+
+    },
     "오늘의 생산성" : {
       "localizations" : {
         "en" : {
@@ -4577,6 +4586,9 @@
         }
       }
     },
+    "음성으로 메모" : {
+
+    },
     "음성으로 일정 입력" : {
 
     },
@@ -4643,76 +4655,6 @@
         }
       }
     },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
-          }
-        }
-      }
-    },
-    "이메일 로그인" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sign-in"
-          }
-        }
-      }
-    },
-    "이메일로 로그인" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sign in with email"
-          }
-        }
-      }
-    },
-    "이벤트 수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
-          }
-        }
-      }
-    },
-    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
-          }
-        }
-      }
-    },
-    "인증 코드 (6자리)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verification code (6 digits)"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
     "이동" : {
       "localizations" : {
         "en" : {
@@ -4743,6 +4685,36 @@
         }
       }
     },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
+    "이메일 또는 비밀번호가 올바르지 않습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
+          }
+        }
+      }
+    },
+    "이메일 로그인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sign-in"
+          }
+        }
+      }
+    },
     "이메일 로그인에 실패했습니다. (%@)" : {
       "localizations" : {
         "en" : {
@@ -4769,6 +4741,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continue with email"
+          }
+        }
+      }
+    },
+    "이메일로 로그인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with email"
           }
         }
       }
@@ -4833,6 +4815,16 @@
         }
       }
     },
+    "이벤트 수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events"
+          }
+        }
+      }
+    },
     "이전 기간" : {
       "localizations" : {
         "en" : {
@@ -4873,6 +4865,16 @@
         }
       }
     },
+    "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access was previously declined, so the system prompt can't be shown again.\nFind Dozy AI in the Settings app and allow Full Access to Calendars."
+          }
+        }
+      }
+    },
     "이후 모든 일정 삭제" : {
       "localizations" : {
         "en" : {
@@ -4899,6 +4901,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not retrieve authentication info."
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code (6 digits)"
           }
         }
       }
@@ -5243,16 +5255,6 @@
         }
       }
     },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
-          }
-        }
-      }
-    },
     "저녁 요약 알림" : {
 
     },
@@ -5298,6 +5300,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
           }
         }
       }
