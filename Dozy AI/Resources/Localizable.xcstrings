@@ -758,6 +758,9 @@
         }
       }
     },
+    "AI 요약 알림" : {
+
+    },
     "App Store에서 업데이트" : {
       "localizations" : {
         "en" : {
@@ -1053,6 +1056,9 @@
           }
         }
       }
+    },
+    "Dozy가 오늘 일정과 할 일을 요약해 드릴게요. 눌러서 확인해 보세요." : {
+
     },
     "Dozy가 오늘 하루를 분석하고 있습니다..." : {
       "localizations" : {
@@ -3460,6 +3466,9 @@
         }
       }
     },
+    "설정 > 알림에서 Dozy의 알림을 허용한 뒤 다시 켜 주세요." : {
+
+    },
     "설정 열기" : {
       "localizations" : {
         "en" : {
@@ -3858,6 +3867,12 @@
         }
       }
     },
+    "알림 권한이 꺼져 있어요" : {
+
+    },
+    "알림 시각" : {
+
+    },
     "앱 내 직접 생성한 일정" : {
       "localizations" : {
         "en" : {
@@ -3948,16 +3963,6 @@
         }
       }
     },
-    "연결됨" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected"
-          }
-        }
-      }
-    },
     "연결되지 않음" : {
       "localizations" : {
         "en" : {
@@ -3974,6 +3979,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connected calendars"
+          }
+        }
+      }
+    },
+    "연결됨" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected"
           }
         }
       }
@@ -4184,6 +4199,9 @@
           }
         }
       }
+    },
+    "오늘 하루를 정리할 시간이에요" : {
+
     },
     "오늘: %@" : {
       "localizations" : {
@@ -4610,46 +4628,6 @@
         }
       }
     },
-    "이메일을 먼저 입력해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please enter your email first."
-          }
-        }
-      }
-    },
-    "이미 참여한 공유 캘린더입니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Already a member of this shared calendar."
-          }
-        }
-      }
-    },
-    "이벤트 수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
     "이동" : {
       "localizations" : {
         "en" : {
@@ -4680,22 +4658,102 @@
         }
       }
     },
-    "이메일 또는 비밀번호가 올바르지 않습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid email or password."
-          }
-        }
-      }
-    },
     "이메일 로그인" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email sign-in"
+          }
+        }
+      }
+    },
+    "이메일을 먼저 입력해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please enter your email first."
+          }
+        }
+      }
+    },
+    "이모지 선택" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick an emoji"
+          }
+        }
+      }
+    },
+    "이벤트 수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events"
+          }
+        }
+      }
+    },
+    "이전과 동일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as before"
+          }
+        }
+      }
+    },
+    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as your current password. Please choose a new one."
+          }
+        }
+      }
+    },
+    "인사이트" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insights"
+          }
+        }
+      }
+    },
+    "인증 코드 (6자리)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
+    "이메일 또는 비밀번호가 올바르지 않습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
           }
         }
       }
@@ -4750,22 +4808,22 @@
         }
       }
     },
-    "이모지 선택" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pick an emoji"
-          }
-        }
-      }
-    },
     "이미 존재하는 이메일입니다. 로그인 탭을 사용해주세요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "This email is already registered. Please use the Sign In tab."
+          }
+        }
+      }
+    },
+    "이미 참여한 공유 캘린더입니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already a member of this shared calendar."
           }
         }
       }
@@ -4800,26 +4858,6 @@
         }
       }
     },
-    "이전과 동일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as before"
-          }
-        }
-      }
-    },
-    "이전과 동일한 비밀번호입니다. 새로운 비밀번호로 변경해주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Same as your current password. Please choose a new one."
-          }
-        }
-      }
-    },
     "이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요." : {
       "localizations" : {
         "en" : {
@@ -4840,32 +4878,12 @@
         }
       }
     },
-    "인사이트" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insights"
-          }
-        }
-      }
-    },
     "인증 정보를 가져올 수 없습니다." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not retrieve authentication info."
-          }
-        }
-      }
-    },
-    "인증 코드 (6자리)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verification code (6 digits)"
           }
         }
       }
@@ -5207,6 +5225,22 @@
         }
       }
     },
+    "저장하거나 다시 녹음할 수 있어요" : {
+
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
+          }
+        }
+      }
+    },
+    "저녁 요약 알림" : {
+
+    },
     "저장" : {
       "localizations" : {
         "en" : {
@@ -5230,9 +5264,6 @@
         }
       }
     },
-    "저장하거나 다시 녹음할 수 있어요" : {
-
-    },
     "저채도 메시 그라디언트 — 가장 차분한 무드." : {
       "localizations" : {
         "en" : {
@@ -5249,16 +5280,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
           }
         }
       }
@@ -5315,6 +5336,9 @@
           }
         }
       }
+    },
+    "정한 시각에 오늘 하루 요약을 알려드려요. 알림을 누르면 요약 화면이 바로 열립니다." : {
+
     },
     "제목" : {
       "localizations" : {

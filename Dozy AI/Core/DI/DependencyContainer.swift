@@ -79,6 +79,8 @@ final class DependencyContainer: ObservableObject {
         googleService: googleCalendarService,
         sourceManager: calendarSourceManager
     )
+    /// 저녁 요약 알림 + 백그라운드 미리 생성 스케줄러.
+    @MainActor lazy var summaryReminderService = SummaryReminderService()
     #endif
 
     // MARK: - Repository (Data Layer)
@@ -275,3 +277,26 @@ final class DependencyContainer: ObservableObject {
         KeychainService.save("1", forKey: Self.hasSeededCategoriesKey)
     }
 }
+
+// MARK: - 백그라운드 요약 생성 (iOS)
+
+#if os(iOS)
+extension DependencyContainer {
+    /// BGAppRefreshTask 안에서 UI 없이 오늘 요약을 만들어 WorkLog 에 저장한다.
+    /// 완료 체크 수는 조회하지 않아 0 으로 넘긴다 — 온디바이스 모델 경로에서는 쓰이지 않고,
+    /// 로컬 분석 경로에서는 점수만 보수적으로 나온다.
+    @MainActor
+    func generateTodaySummaryInBackground() async throws -> DailySummary {
+        let today = try await fetchTodayDataUseCase.execute().firstValue()
+        // WorkLog 가 없으면 GenerateDailySummaryUseCase 가 저장을 건너뛰므로 먼저 만들어 둔다.
+        let log = try await saveWorkLogUseCase.execute(events: today.events, tasks: today.completedTasks).firstValue()
+        return try await generateDailySummaryUseCase.execute(
+            events: today.events,
+            completedTasks: today.completedTasks,
+            pendingTasks: today.pendingTasks,
+            memos: log.memos,
+            completedEventCount: 0
+        ).firstValue()
+    }
+}
+#endif

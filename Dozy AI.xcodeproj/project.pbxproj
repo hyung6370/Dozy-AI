@@ -410,6 +410,10 @@
 		F69348493089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */; };
 		F693484B3089E85C00FB5E1C /* NaturalLanguageEventParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */; };
 		F693484C3089E85C00FB5E1C /* NaturalLanguageEventParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */; };
+		F6934854308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */; };
+		F6934855308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */; };
+		F6934857308AE28400FB5E1C /* SummaryReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934856308AE28400FB5E1C /* SummaryReminderService.swift */; };
+		F6934858308AE28400FB5E1C /* SummaryReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934856308AE28400FB5E1C /* SummaryReminderService.swift */; };
 		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
 		F699C1422F9F1E2F001FBF8F /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
 		F699C1442F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */; };
@@ -803,6 +807,8 @@
 		F69348443089E5D600FB5E1C /* EventParsingServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventParsingServiceProtocol.swift; sourceTree = "<group>"; };
 		F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseNaturalLanguageEventUseCase.swift; sourceTree = "<group>"; };
 		F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaturalLanguageEventParser.swift; sourceTree = "<group>"; };
+		F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryReminderSettings.swift; sourceTree = "<group>"; };
+		F6934856308AE28400FB5E1C /* SummaryReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryReminderService.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
 		F699C1472F9F5822001FBF8F /* holidays.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = holidays.json; sourceTree = "<group>"; };
@@ -1198,6 +1204,7 @@
 				DD9F68F52F6ACD8C001952F6 /* UserPattern.swift */,
 				F693483B3089D1A600FB5E1C /* AIEngineStatus.swift */,
 				F69348413089E54500FB5E1C /* EventDraft.swift */,
+				F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1376,6 +1383,7 @@
 				F68B39B22F83721600FEAFB0 /* SyncService.swift */,
 				138EDD04FB7644938FBB1BBD /* AppVersionService.swift */,
 				E52E9135FC4F4C559A927798 /* WeatherService.swift */,
+				F6934856308AE28400FB5E1C /* SummaryReminderService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -2195,6 +2203,7 @@
 				F6BC59992F739B470090DF3A /* RecentLogRow.swift in Sources */,
 				DD9F68E22F6ACCF4001952F6 /* DependencyContainer.swift in Sources */,
 				F650683D2F7F88A300F9C124 /* InsightBannerView.swift in Sources */,
+				F6934858308AE28400FB5E1C /* SummaryReminderService.swift in Sources */,
 				DD9F693E2F6AD1CD001952F6 /* TaskCard.swift in Sources */,
 				F65068212F7D072E00F9C124 /* CalendarEventEditRequest.swift in Sources */,
 				F60ADF142F832AD6007B8D9F /* SettingsView.swift in Sources */,
@@ -2279,6 +2288,7 @@
 				DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */,
 				F619D9542F751CB100084C61 /* GoogleCalendarDTO.swift in Sources */,
 				F616DCF02F7CB13B00FA0476 /* NotificationService.swift in Sources */,
+				F6934854308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */,
 				F619D9752F7A371900084C61 /* UpdateDozyEventUseCase.swift in Sources */,
 				F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */,
 				F6CAFE122FA0000000000011 /* CalendarVisibilityFilter.swift in Sources */,
@@ -2408,6 +2418,7 @@
 				D9B0E271B7B1535650A4F04A /* UserCategory.swift in Sources */,
 				F699C1442F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift in Sources */,
 				8447B4678548A5AF00713808 /* CreateDozyEventUseCase.swift in Sources */,
+				F6934857308AE28400FB5E1C /* SummaryReminderService.swift in Sources */,
 				79DF6792FC633E4317316B79 /* MirrorExternalEventUseCase.swift in Sources */,
 				07A250DEB5AFD50B518AA0C3 /* CalendarWriteServiceProtocol.swift in Sources */,
 				01C1053FB89AEF87331992D6 /* FetchCalendarEventUseCase.swift in Sources */,
@@ -2517,6 +2528,7 @@
 				BEDBAC0D5C430ABDFB0A57C6 /* SupabaseClient.swift in Sources */,
 				54BCFADE4A50BB72910F8047 /* Logger.swift in Sources */,
 				86D3ECAFA3730CF636CFFC13 /* AIService.swift in Sources */,
+				F6934855308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */,
 				BF0B976768ED331A7479E90E /* SyncService.swift in Sources */,
 				A773E5459570D04F6BBB5C84 /* WeatherService.swift in Sources */,
 				F699C1462F9F2251001FBF8F /* MacCalendarSettingsView.swift in Sources */,
