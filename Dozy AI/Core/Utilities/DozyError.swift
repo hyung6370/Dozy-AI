@@ -16,6 +16,7 @@ enum DozyError: LocalizedError {
     case saveFailed(underlying: Error)
     case aiSummarizationFailed
     case speechRecognitionFailed
+    case microphoneUnavailable
     case unknown(underlying: Error)
     case googleSignInFailed(underlying: Error?)
     case googleCalendarFetchFailed
@@ -60,6 +61,8 @@ enum DozyError: LocalizedError {
             return String(localized: "Dozy 요약 생성에 실패했습니다.")
         case .speechRecognitionFailed:
             return String(localized: "음성 인식에 실패했습니다.")
+        case .microphoneUnavailable:
+            return String(localized: "마이크 입력을 사용할 수 없어요. 다른 앱이 마이크를 쓰고 있는지 확인해 주세요.")
         case .unknown(let error):
             return String(localized: "알 수 없는 오류: \(error.localizedDescription)")
         case .googleSignInFailed:
