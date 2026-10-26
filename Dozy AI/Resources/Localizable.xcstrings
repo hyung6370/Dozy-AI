@@ -2273,6 +2273,7 @@
       }
     },
     "데이터를 안전하게 보호하고 싶다면 로그인을 해보세요 :)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4655,6 +4656,56 @@
         }
       }
     },
+    "이메일 로그인에 실패했습니다. (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sign-in failed. (%@)"
+          }
+        }
+      }
+    },
+    "이메일 인증하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verify with email"
+          }
+        }
+      }
+    },
+    "이모지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        }
+      }
+    },
+    "이전 기간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "이동" : {
       "localizations" : {
         "en" : {
@@ -4685,16 +4736,6 @@
         }
       }
     },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
-          }
-        }
-      }
-    },
     "이메일 또는 비밀번호가 올바르지 않습니다." : {
       "localizations" : {
         "en" : {
@@ -4711,26 +4752,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email sign-in"
-          }
-        }
-      }
-    },
-    "이메일 로그인에 실패했습니다. (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sign-in failed. (%@)"
-          }
-        }
-      }
-    },
-    "이메일 인증하기" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verify with email"
           }
         }
       }
@@ -4761,16 +4782,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please enter your email first."
-          }
-        }
-      }
-    },
-    "이모지" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emoji"
           }
         }
       }
@@ -4821,16 +4832,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Events"
-          }
-        }
-      }
-    },
-    "이전 기간" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous period"
           }
         }
       }
@@ -5255,6 +5256,16 @@
         }
       }
     },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
+          }
+        }
+      }
+    },
     "저녁 요약 알림" : {
 
     },
@@ -5300,16 +5311,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
           }
         }
       }
