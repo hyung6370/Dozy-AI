@@ -6913,6 +6913,36 @@
           }
         }
       }
+    },
+    "잠금화면" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen"
+          }
+        }
+      }
+    },
+    "오늘 일정 Live Activity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Agenda Live Activity"
+          }
+        }
+      }
+    },
+    "오늘 시간제 일정이 있으면 잠금화면과 다이나믹 아일랜드에 진행 중·다음 일정을 보여줘요. 앱을 열 때 시작되고 마지막 일정이 끝나면 사라져요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows your current and next events on the Lock Screen and Dynamic Island when you have timed events today. Starts when you open the app and disappears after your last event ends."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

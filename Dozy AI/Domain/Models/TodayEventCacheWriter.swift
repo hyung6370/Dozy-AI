@@ -59,6 +59,7 @@ enum TodayEventCacheWriter {
             ))
         }
         try? context.save()
+        TodayAgendaLiveActivityHooks.cacheDidChange()
     }
 
     /// 캐시에서 특정 id 의 row 제거 — 이벤트 삭제 후 즉시 호출.
@@ -69,6 +70,7 @@ enum TodayEventCacheWriter {
         let existing = (try? context.fetch(FetchDescriptor<TodayEventCache>(predicate: predicate))) ?? []
         for entity in existing { context.delete(entity) }
         try? context.save()
+        TodayAgendaLiveActivityHooks.cacheDidChange()
     }
 
     /// 메인 앱이 이번 달 머지된 일정을 받았을 때 호출 — 일정 있는 startOfDay 들의 Set 을
@@ -160,6 +162,7 @@ enum TodayEventCacheWriter {
         // ③ save — 위젯이 다음 read 에서 새 데이터를 볼 수 있도록 명시적 commit.
         do {
             try context.save()
+            TodayAgendaLiveActivityHooks.cacheDidChange()
             #if DEBUG
             print("📦 [Widget Cache] upsert OK — \(events.count) events (deleted \(existing.count) old). store: \(container.configurations.first?.url.path ?? "?")")
             #endif
@@ -170,6 +173,33 @@ enum TodayEventCacheWriter {
             print("❌ [Widget Cache] save failed: \(error)")
             #endif
             assertionFailure("TodayEventCache save failed: \(error)")
+        }
+    }
+}
+
+// MARK: - Live Activity 입력
+
+extension TodayEventCacheWriter {
+
+    /// 캐시에 남아 있는 오늘 일정을 "오늘 아젠다" 플래너 입력으로 읽는다.
+    /// cachedAt 이 오늘 이전이면(어제 데이터가 남은 경우) 빈 배열 — 어제 일정으로 액티비티를 띄우지 않기 위함.
+    @MainActor
+    static func loadTodayAgendaItems(container: ModelContainer, now: Date = Date()) -> [TodayAgendaItem] {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<TodayEventCache>(sortBy: [SortDescriptor(\.startDate)])
+        let rows = (try? context.fetch(descriptor)) ?? []
+        let startOfDay = Calendar.current.startOfDay(for: now)
+        guard let latest = rows.map(\.cachedAt).max(), latest >= startOfDay else { return [] }
+        return rows.map {
+            TodayAgendaItem(
+                id: $0.id,
+                title: $0.title,
+                start: $0.startDate,
+                end: $0.endDate,
+                isAllDay: $0.isAllDay,
+                isCompleted: $0.isCompleted,
+                colorHex: $0.colorHex
+            )
         }
     }
 }

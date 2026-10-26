@@ -213,6 +213,76 @@
           }
         }
       }
+    },
+    "진행 중" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In progress"
+          }
+        }
+      }
+    },
+    "다음 일정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up next"
+          }
+        }
+      }
+    },
+    "앱을 열어 최신 일정으로 갱신하세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the app to refresh"
+          }
+        }
+      }
+    },
+    "일정 완료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark complete"
+          }
+        }
+      }
+    },
+    "완료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "남은 일정 %lld개" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld left"
+          }
+        }
+      }
+    },
+    "위젯과 잠금화면에서 오늘 일정의 완료 상태를 토글합니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggles completion of today's events from the widget and Lock Screen."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

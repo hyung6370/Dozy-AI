@@ -2,9 +2,12 @@
 //  ToggleEventCompletionIntent.swift
 //  DozyWidgetsExtension
 //
-//  위젯에서 일정 row 끝의 체크박스를 탭하면 실행되는 App Intent.
+//  위젯 체크박스 · Live Activity 완료 버튼에서 실행되는 App Intent.
 //  공유 App Group SwiftData store 를 열어 일정 종류별로 완료 상태를 토글하고,
 //  TodayEventCache 에도 미러링한 뒤 위젯 timeline 을 reload 한다.
+//
+//  LiveActivityIntent 를 채택해 메인 앱 프로세스에서 실행된다 (ActivityKit 갱신은 extension 에서 불가).
+//  토글 뒤 TodayAgendaLiveActivityHooks.refresh 로 잠금화면 아젠다까지 다시 맞춘다 — 앱·위젯 양 타깃에 컴파일됨.
 //
 
 import AppIntents
@@ -12,10 +15,10 @@ import Foundation
 import SwiftData
 import WidgetKit
 
-struct ToggleEventCompletionIntent: AppIntent {
+struct ToggleEventCompletionIntent: LiveActivityIntent {
 
     static var title: LocalizedStringResource = "일정 완료 토글"
-    static var description = IntentDescription("위젯에서 오늘 일정의 완료 상태를 토글합니다.")
+    static var description = IntentDescription("위젯과 잠금화면에서 오늘 일정의 완료 상태를 토글합니다.")
     static var isDiscoverable: Bool = false
 
     /// 위젯이 보여주는 CalendarEvent 의 stable id.
@@ -36,6 +39,8 @@ struct ToggleEventCompletionIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         await Self.toggle(eventID: eventID, eventDate: eventDate)
+        // 앱 프로세스에서 돌므로 Live Activity 도 즉시 갱신 (훅이 없으면 다음 포그라운드에서 맞춰짐).
+        await TodayAgendaLiveActivityHooks.refresh?()
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
