@@ -101,6 +101,11 @@ final class CalendarViewModel: ObservableObject {
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
     private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
+    /// 홈과 같은 저장소 선택 규칙 (ToggleEventCompletionUseCase). 기존 두 유스케이스를 그대로 감싼다.
+    private lazy var toggleEventCompletionUseCase = ToggleEventCompletionUseCase(
+        toggleDozy: toggleCompletionUseCase,
+        toggleCalendar: toggleCalendarEventCompletionUseCase
+    )
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
     private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
@@ -425,35 +430,26 @@ final class CalendarViewModel: ObservableObject {
         return completionsByID[key] ?? false
     }
 
-    // 완료 토글 (source 분기)
+    // 완료 토글 (source 분기는 ToggleEventCompletionUseCase.target 이 담당)
+    // - Dozy 비반복: DozyEvent.isCompleted (기존 toggleCompletion(for: DozyEvent) 경로 → dozyEventsByID 갱신 + dozyEventChanged)
+    // - 반복 Dozy: 발생일(startDate) 키의 EventCompletion
+    // - Apple/Google: 선택 날짜를 eventDate 로 저장 → 다일 종일 일정도 날짜별 독립 완료 유지
     func toggleCompletion(for event: CalendarEvent) {
-        if event.source == .dozy {
-            guard let dozyEvent = dozyEventsByID[event.id] else { return }
-            // 반복 일정은 날짜별 독립 완료 (EventCompletion 사용)
-            if dozyEvent.recurrenceRule != "none" {
-                toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
-                    .receive(on: DispatchQueue.main)
-                    .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
-                        guard let self else { return }
-                        self.completionsByID[self.completionKey(for: event)] = newValue
-                    })
-                    .store(in: &cancellables)
-            } else {
-                toggleCompletion(for: dozyEvent)
-            }
-        } else {
-            // Apple/Google: 선택 날짜를 eventDate로 저장 → 다일 종일 일정도 날짜별 독립 완료 유지
-            let eventDate = selectedDate
-            toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: eventDate)
-                .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
-                    guard let self else { return }
-                    let key = EventCompletionRepository.completionKey(eventID: event.id, date: eventDate)
-                    self.completionsByID[key] = newValue
-                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
-                })
-                .store(in: &cancellables)
+        guard let target = ToggleEventCompletionUseCase.target(for: event, dozyEvent: dozyEventsByID[event.id], on: selectedDate) else { return }
+        if case .dozyEvent(let dozyEvent) = target {
+            toggleCompletion(for: dozyEvent)
+            return
         }
+        toggleEventCompletionUseCase.execute(target)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
+                guard let self, case .completion(let eventID, let eventDate) = target else { return }
+                self.completionsByID[EventCompletionRepository.completionKey(eventID: eventID, date: eventDate)] = newValue
+                if event.source != .dozy {
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                }
+            })
+            .store(in: &cancellables)
     }
     
     // Apple/Google 수정 시작

@@ -40,6 +40,8 @@ struct HomeView: View {
     @State private var pullProgress: Double = 0
     @State private var isRefreshing: Bool = false
     @State private var showVoiceInput = false
+    /// 저녁 체크 시트가 떠 있는 동안 요약 알림 탭이 들어오면, 체크 시트를 닫은 뒤 요약 시트를 연다.
+    @State private var pendingSummaryAfterCheck = false
 
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
@@ -142,6 +144,7 @@ struct HomeView: View {
                     calendarEventToEdit = nil
                     showCreateFromEmptyAlert = false
                     showNewEventSheet = false
+                    viewModel.showEveningCheck = false
                 }
             }
             .onAppear {
@@ -170,8 +173,13 @@ struct HomeView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
                 // 저녁 요약 알림 탭. 백그라운드에서 미리 만들어 둔 요약이 있으면 즉시, 없으면 시트가 생성한다.
+                // 저녁 체크 시트가 떠 있으면 체크를 먼저 마치고(닫히면) 요약을 연다.
                 viewModel.loadTodayData()
-                showSummarySheet = true
+                if viewModel.showEveningCheck {
+                    pendingSummaryAfterCheck = true
+                } else {
+                    showSummarySheet = true
+                }
             }
             .sheet(isPresented: $showVoiceInput) {
                 VoiceInputView(speechService: container.speechService) { text in
@@ -230,7 +238,19 @@ struct HomeView: View {
         }
         .onChange(of: showSummarySheet) { _, isPresented in
             // 요약을 봤으면 오늘 저녁 알림은 생략한다 (오늘 요청만 제거, 내일 이후는 유지).
-            if isPresented { container.summaryReminderService.markSummaryViewed() }
+            // 요약을 보는 중에는 저녁 체크 프롬프트도 오늘은 띄우지 않는다 (시트 충돌 방지).
+            if isPresented {
+                container.summaryReminderService.markSummaryViewed()
+                viewModel.skipEveningCheckForToday()
+            }
+        }
+        .sheet(isPresented: $viewModel.showEveningCheck, onDismiss: {
+            if pendingSummaryAfterCheck {
+                pendingSummaryAfterCheck = false
+                showSummarySheet = true
+            }
+        }) {
+            EveningCheckSheet(viewModel: viewModel) { viewModel.showEveningCheck = false }
         }
         .sheet(isPresented: $showSummarySheet) {
             DailySummaryView(
@@ -1024,3 +1044,78 @@ private struct HomeStatCard: View {
     }
 }
 
+
+// MARK: - 저녁 일정 체크 시트
+
+/// 18시 이후 앱을 열었을 때 끝났는데 완료 체크가 없는 오늘 일정을 묻는 시트 (#63).
+/// 목록은 열 때의 스냅샷(viewModel.eveningCheckEvents), 체크 상태는 completionsByEventID 로 실시간 반영.
+private struct EveningCheckSheet: View {
+    @ObservedObject var viewModel: HomeViewModel
+    let onDone: () -> Void
+
+    private var remainingCount: Int {
+        viewModel.eveningCheckEvents.filter { viewModel.completionsByEventID[$0.id] != true }.count
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("오늘 일정 어떠셨나요?")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                        Text("완료한 일정이 있다면 체크해 주세요.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    VStack(spacing: 8) {
+                        ForEach(viewModel.eveningCheckEvents) { event in
+                            EventRow(
+                                event: event,
+                                isCompleted: viewModel.completionsByEventID[event.id] == true,
+                                onToggle: { viewModel.toggleCompletion(for: event) }
+                            )
+                        }
+                    }
+
+                    if remainingCount > 0 {
+                        Button {
+                            viewModel.completeAllEveningCheckEvents()
+                        } label: {
+                            Label("모두 완료", systemImage: "checkmark.circle")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(DozyColor.Brand.primary)
+                        .padding(.leading, 2)
+                    }
+                }
+                .padding()
+            }
+            .safeAreaInset(edge: .bottom) {
+                Button(action: onDone) {
+                    Text("완료")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(DozyColor.Brand.primary)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("나중에", action: onDone)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}

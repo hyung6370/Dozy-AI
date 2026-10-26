@@ -615,9 +615,6 @@
         }
       }
     },
-    "${memo} 기록" : {
-
-    },
     "1시간 전" : {
       "localizations" : {
         "en" : {
@@ -1894,6 +1891,16 @@
         }
       }
     },
+    "나중에" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        }
+      }
+    },
     "날씨 불러오는 중..." : {
       "localizations" : {
         "en" : {
@@ -2683,6 +2690,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading member info…"
+          }
+        }
+      }
+    },
+    "모두 완료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete all"
           }
         }
       }
@@ -3976,16 +3993,6 @@
         }
       }
     },
-    "연결되지 않음" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not connected"
-          }
-        }
-      }
-    },
     "연결된 캘린더" : {
       "localizations" : {
         "en" : {
@@ -4002,6 +4009,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connected"
+          }
+        }
+      }
+    },
+    "연결되지 않음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not connected"
           }
         }
       }
@@ -4176,6 +4193,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All of today's events done!"
+          }
+        }
+      }
+    },
+    "오늘 일정 어떠셨나요?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How did today's events go?"
           }
         }
       }
@@ -4404,6 +4431,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completed"
+          }
+        }
+      }
+    },
+    "완료한 일정이 있다면 체크해 주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check off any events you completed."
           }
         }
       }
@@ -4666,12 +4703,22 @@
         }
       }
     },
-    "이메일 로그인에 실패했습니다. (%@)" : {
+    "이동" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Email sign-in failed. (%@)"
+            "value" : "Go"
+          }
+        }
+      }
+    },
+    "이메일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
           }
         }
       }
@@ -4686,26 +4733,6 @@
         }
       }
     },
-    "이모지" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emoji"
-          }
-        }
-      }
-    },
-    "이전 기간" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous period"
-          }
-        }
-      }
-    },
     "일" : {
       "localizations" : {
         "en" : {
@@ -4716,32 +4743,12 @@
         }
       }
     },
-    "이동" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go"
-          }
-        }
-      }
-    },
     "이름" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
-          }
-        }
-      }
-    },
-    "이메일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email"
           }
         }
       }
@@ -4762,6 +4769,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Email sign-in"
+          }
+        }
+      }
+    },
+    "이메일 로그인에 실패했습니다. (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sign-in failed. (%@)"
           }
         }
       }
@@ -4792,6 +4809,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please enter your email first."
+          }
+        }
+      }
+    },
+    "이모지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
           }
         }
       }
@@ -4842,6 +4869,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Events"
+          }
+        }
+      }
+    },
+    "이전 기간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period"
           }
         }
       }
@@ -5278,6 +5315,16 @@
     },
     "저녁 요약 알림" : {
 
+    },
+    "저녁 일정 체크" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evening event check"
+          }
+        }
+      }
     },
     "저장" : {
       "localizations" : {

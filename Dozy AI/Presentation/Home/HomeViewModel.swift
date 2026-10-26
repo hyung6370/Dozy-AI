@@ -9,6 +9,7 @@
 //  Service나 Repository를 직접 참조하지 않습니다.
 
 import Foundation
+import OSLog
 import Combine
 import SwiftData
 import WidgetKit
@@ -41,6 +42,12 @@ final class HomeViewModel: ObservableObject {
     @Published var weeklyDates: [Date] = []
     @Published var monthlySummary: MonthlySummary? = nil
     @Published var dozyEventsByID: [String: DozyEvent] = [:]
+
+    // 저녁 일정 체크 프롬프트 (EveningCheckPrompt)
+    /// 시트에 보여줄 일정 스냅샷. 완료 상태는 completionsByEventID 로 실시간 반영되고 목록 자체는 열 때 고정된다
+    /// (체크하자마자 줄이 사라지지 않도록).
+    @Published var eveningCheckEvents: [CalendarEvent] = []
+    @Published var showEveningCheck = false
 
     // MARK: - Computed Properties
 
@@ -120,6 +127,7 @@ final class HomeViewModel: ObservableObject {
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let displaySettingsRepo: EventDisplaySettingsRepository
     private let notificationRepository: NotificationRepository
+    private let toggleEventCompletionUseCase: ToggleEventCompletionUseCase
     /// 위젯 캐시 쓰기용. App Group container 가리키므로 위젯 extension 이 같은 store 를 본다.
     private let modelContainer: ModelContainer
     var cancellables = Set<AnyCancellable>()
@@ -151,6 +159,7 @@ final class HomeViewModel: ObservableObject {
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
         displaySettingsRepo: EventDisplaySettingsRepository,
         notificationRepository: NotificationRepository,
+        toggleEventCompletionUseCase: ToggleEventCompletionUseCase,
         modelContainer: ModelContainer
     ) {
         self.fetchTodayDataUseCase = fetchTodayDataUseCase
@@ -170,6 +179,7 @@ final class HomeViewModel: ObservableObject {
         self.updateCalendarEventUseCase = updateCalendarEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
         self.notificationRepository = notificationRepository
+        self.toggleEventCompletionUseCase = toggleEventCompletionUseCase
         self.modelContainer = modelContainer
 
         // throttle 구독 — 첫 호출은 즉시, 같은 윈도우(300ms) 안의 burst 는 1회로 합친 뒤
@@ -245,6 +255,7 @@ final class HomeViewModel: ObservableObject {
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
             displaySettingsRepo: container.eventDisplaySettingsRepository,
             notificationRepository: container.notificationRepository,
+            toggleEventCompletionUseCase: container.toggleEventCompletionUseCase,
             modelContainer: container.modelContainer
         )
     }
@@ -393,6 +404,9 @@ final class HomeViewModel: ObservableObject {
                 container: self.modelContainer
             )
             WidgetCenter.shared.reloadAllTimelines()
+
+            // 완료 상태까지 갖춰진 뒤에만 저녁 체크 조건을 평가한다 (하루 1회 게이팅은 EveningCheckPrompt.Store).
+            self.evaluateEveningCheckIfNeeded()
         })
     }
 
@@ -467,6 +481,61 @@ final class HomeViewModel: ObservableObject {
         .store(in: &cancellables)
     }
     
+    // MARK: - 저녁 일정 체크
+
+    /// 완료 상태 로드가 끝난 뒤 호출. 18시 이후 · 오늘 미표시 · 끝났는데 체크 안 된 일정 있음 → 오늘 1회 시트를 띄운다.
+    func evaluateEveningCheckIfNeeded(now: Date = Date()) {
+        guard !showEveningCheck else { return }
+        let targets = EveningCheckPrompt.targetEvents(todayEvents, completions: completionsByEventID, now: now)
+        guard EveningCheckPrompt.shouldPrompt(
+            now: now,
+            isEnabled: EveningCheckPrompt.Store.isEnabled(),
+            lastShownDay: EveningCheckPrompt.Store.lastShownDay(),
+            targetCount: targets.count
+        ) else { return }
+        EveningCheckPrompt.Store.markShown(on: now)
+        eveningCheckEvents = targets
+        showEveningCheck = true
+        Logger.app.info("[저녁 체크] 미완료 \(targets.count)건 → 프롬프트 표시")
+    }
+
+    /// 요약 시트 등 다른 흐름이 먼저 열렸을 때 — 오늘은 체크 프롬프트를 띄우지 않는다.
+    func skipEveningCheckForToday() {
+        EveningCheckPrompt.Store.markShown()
+    }
+
+    /// 저녁 체크 시트의 체크박스. 낙관적으로 즉시 반영하고, 저장이 끝나면 .dozyEventChanged 로 홈·캘린더·위젯 캐시를 다시 맞춘다.
+    func toggleCompletion(for event: CalendarEvent) {
+        guard let target = ToggleEventCompletionUseCase.target(for: event, dozyEvent: dozyEventsByID[event.id], on: Date()) else { return }
+        let previous = completionsByEventID[event.id] ?? false
+        completionsByEventID[event.id] = !previous
+
+        toggleEventCompletionUseCase.execute(target)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.completionsByEventID[event.id] = previous
+                        self?.errorMessage = error.errorDescription
+                    }
+                },
+                receiveValue: { [weak self] newValue in
+                    guard let self else { return }
+                    self.completionsByEventID[event.id] = newValue
+                    if case .dozyEvent(let dozyEvent) = target { self.dozyEventsByID[dozyEvent.id] = dozyEvent }
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 시트의 "모두 완료" — 아직 체크 안 된 대상 일정을 한 번에 완료 처리.
+    func completeAllEveningCheckEvents() {
+        for event in eveningCheckEvents where completionsByEventID[event.id] != true {
+            toggleCompletion(for: event)
+        }
+    }
+
     func loadWeeklyData() {
         let calendar = Calendar.current
         let today = Date()

@@ -30,6 +30,8 @@ struct SettingsView: View {
     /// 저녁 요약 알림 설정 (UserDefaults 와 동기화).
     @State private var reminderSettings = SummaryReminderSettings.load()
     @State private var showReminderDeniedAlert = false
+    /// 저녁 일정 체크 프롬프트 (18시 이후 앱을 열면 미완료 일정을 1회 물어봄). 기본 켜짐.
+    @AppStorage(EveningCheckPrompt.enabledKey) private var eveningCheckEnabled = true
     #endif
     @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
@@ -305,6 +307,17 @@ struct SettingsView: View {
                         .labelsHidden()
                         .environment(\.locale, .current)
                 }
+            }
+
+            DozyListRow(title: "저녁 일정 체크") {
+                Image(systemName: "checklist")
+                    .font(.system(size: 16))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                    .frame(width: 34)
+            } trailing: {
+                Toggle("저녁 일정 체크", isOn: $eveningCheckEnabled)
+                    .labelsHidden()
+                    .tint(DozyColor.Brand.primary)
             }
         }
         .animation(.snappy(duration: 0.25), value: reminderSettings.isEnabled)

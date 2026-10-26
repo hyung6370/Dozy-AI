@@ -104,6 +104,11 @@ final class DependencyContainer: ObservableObject {
     lazy var mirrorExternalEventUseCase = MirrorExternalEventUseCase(repository: dozyEventRepository)
     lazy var toggleCalendarEventCompletionUseCase = ToggleCalendarEventCompletionUseCase(repository: eventCompletionRepository)
     lazy var fetchEventCompletionsUseCase = FetchEventCompletionsUseCase(repository: eventCompletionRepository)
+    /// 홈·캘린더가 공유하는 완료 토글 (source/반복 여부로 저장소 선택).
+    lazy var toggleEventCompletionUseCase = ToggleEventCompletionUseCase(
+        toggleDozy: toggleDozyEventCompletionUseCase,
+        toggleCalendar: toggleCalendarEventCompletionUseCase
+    )
     lazy var fetchDozyEventsForPeriodUseCase = FetchDozyEventsForPeriodUseCase(repository: dozyEventRepository)
     lazy var fetchEventCompletionsForPeriodUseCase = FetchEventCompletionsForPeriodUseCase(repository: eventCompletionRepository)
     lazy var createSharedCalendarUseCase = CreateSharedCalendarUseCase(service: sharedCalendarService)
