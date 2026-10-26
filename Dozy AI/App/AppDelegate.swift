@@ -51,7 +51,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        guard response.notification.request.identifier == SummaryReminderService.notificationIdentifier else { return }
+        guard SummaryReminderSchedule.isReminderIdentifier(response.notification.request.identifier) else { return }
         UserDefaults.standard.set(true, forKey: Self.pendingOpenSummaryKey)
         NotificationCenter.default.post(name: .dozyOpenDailySummary, object: nil)
     }

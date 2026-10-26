@@ -228,6 +228,10 @@ struct HomeView: View {
                 viewModel.refreshNotificationBadge()
             }
         }
+        .onChange(of: showSummarySheet) { _, isPresented in
+            // 요약을 봤으면 오늘 저녁 알림은 생략한다 (오늘 요청만 제거, 내일 이후는 유지).
+            if isPresented { container.summaryReminderService.markSummaryViewed() }
+        }
         .sheet(isPresented: $showSummarySheet) {
             DailySummaryView(
                 generateSummaryUseCase: container.generateDailySummaryUseCase,

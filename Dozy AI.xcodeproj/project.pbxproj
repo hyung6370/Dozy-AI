@@ -381,6 +381,8 @@
 		F6611CC830217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */; };
 		D02ABBBB000000000000B301 /* PatternAnalysisServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F301 /* PatternAnalysisServiceTests.swift */; };
 		D02ABBBB000000000000B302 /* PatternAnalysisServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F301 /* PatternAnalysisServiceTests.swift */; };
+		D02ABBBB000000000000B303 /* SummaryReminderScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */; };
+		D02ABBBB000000000000B304 /* SummaryReminderScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */; };
 		F6611CCA30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */; };
 		F6611CCB30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */; };
 		F6611CCD30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CCC30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift */; };
@@ -793,6 +795,7 @@
 		F6611CC330201031009292A7 /* AIResponseParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIResponseParserTests.swift; sourceTree = "<group>"; };
 		F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentLogsUseCaseTests.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F301 /* PatternAnalysisServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternAnalysisServiceTests.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryReminderScheduleTests.swift; sourceTree = "<group>"; };
 		F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityFilterTests.swift; sourceTree = "<group>"; };
 		F6611CCC30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHeaderSymbolsTests.swift; sourceTree = "<group>"; };
 		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
@@ -1076,6 +1079,7 @@
 				F6611CC330201031009292A7 /* AIResponseParserTests.swift */,
 				F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */,
 				D02AFFFF000000000000F301 /* PatternAnalysisServiceTests.swift */,
+				D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */,
 				F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */,
 				F6611CCC30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift */,
 			);
@@ -2334,6 +2338,7 @@
 				F6611CB9301C273A009292A7 /* PasswordPolicyTests.swift in Sources */,
 				F6611CC730217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */,
 				D02ABBBB000000000000B301 /* PatternAnalysisServiceTests.swift in Sources */,
+				D02ABBBB000000000000B303 /* SummaryReminderScheduleTests.swift in Sources */,
 				F6611CCA30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */,
 				F6611CCD30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift in Sources */,
 				D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */,
@@ -2570,6 +2575,7 @@
 				F6611CC530201031009292A7 /* AIResponseParserTests.swift in Sources */,
 				F6611CC830217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */,
 				D02ABBBB000000000000B302 /* PatternAnalysisServiceTests.swift in Sources */,
+				D02ABBBB000000000000B304 /* SummaryReminderScheduleTests.swift in Sources */,
 				F6611CCB30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */,
 				F6611CCE30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift in Sources */,
 				575318062BF53B9AAE0ABBEE /* Mocks.swift in Sources */,
