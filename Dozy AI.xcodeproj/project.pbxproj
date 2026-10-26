@@ -364,6 +364,8 @@
 		F65068292F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068282F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift */; };
 		F650682B2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650682A2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift */; };
 		F650682D2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650682C2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift */; };
+		D02ABBBB000000000000B305 /* ToggleEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F303 /* ToggleEventCompletionUseCase.swift */; };
+		D02ABBBB000000000000B306 /* ToggleEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F303 /* ToggleEventCompletionUseCase.swift */; };
 		F650682F2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650682E2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift */; };
 		F65068312F7D115300F9C124 /* EventCompletionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068302F7D115300F9C124 /* EventCompletionRepository.swift */; };
 		F65068332F7DEA9200F9C124 /* CalendarEventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068322F7DEA9200F9C124 /* CalendarEventEditView.swift */; };
@@ -383,6 +385,8 @@
 		D02ABBBB000000000000B302 /* PatternAnalysisServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F301 /* PatternAnalysisServiceTests.swift */; };
 		D02ABBBB000000000000B303 /* SummaryReminderScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */; };
 		D02ABBBB000000000000B304 /* SummaryReminderScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */; };
+		D02ABBBB000000000000B311 /* EveningCheckPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F305 /* EveningCheckPromptTests.swift */; };
+		D02ABBBB000000000000B312 /* EveningCheckPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F305 /* EveningCheckPromptTests.swift */; };
 		F6611CCA30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */; };
 		F6611CCB30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */; };
 		F6611CCD30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6611CCC30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift */; };
@@ -416,6 +420,8 @@
 		F693484C3089E85C00FB5E1C /* NaturalLanguageEventParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */; };
 		F6934854308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */; };
 		F6934855308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */; };
+		D02ABBBB000000000000B307 /* EveningCheckPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F304 /* EveningCheckPrompt.swift */; };
+		D02ABBBB000000000000B308 /* EveningCheckPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AFFFF000000000000F304 /* EveningCheckPrompt.swift */; };
 		F6934857308AE28400FB5E1C /* SummaryReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934856308AE28400FB5E1C /* SummaryReminderService.swift */; };
 		F6934858308AE28400FB5E1C /* SummaryReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6934856308AE28400FB5E1C /* SummaryReminderService.swift */; };
 		F699C1412F9F1E11001FBF8F /* CompositeCalendarSerivce.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95B2F75271600084C61 /* CompositeCalendarSerivce.swift */; };
@@ -781,6 +787,7 @@
 		F65068282F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCalendarEventUseCase.swift; sourceTree = "<group>"; };
 		F650682A2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteCalendarEventUseCase.swift; sourceTree = "<group>"; };
 		F650682C2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleCalendarEventCompletionUseCase.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F303 /* ToggleEventCompletionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleEventCompletionUseCase.swift; sourceTree = "<group>"; };
 		F650682E2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchEventCompletionsUseCase.swift; sourceTree = "<group>"; };
 		F65068302F7D115300F9C124 /* EventCompletionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCompletionRepository.swift; sourceTree = "<group>"; };
 		F65068322F7DEA9200F9C124 /* CalendarEventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventEditView.swift; sourceTree = "<group>"; };
@@ -796,6 +803,7 @@
 		F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentLogsUseCaseTests.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F301 /* PatternAnalysisServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternAnalysisServiceTests.swift; sourceTree = "<group>"; };
 		D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryReminderScheduleTests.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F305 /* EveningCheckPromptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EveningCheckPromptTests.swift; sourceTree = "<group>"; };
 		F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityFilterTests.swift; sourceTree = "<group>"; };
 		F6611CCC30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHeaderSymbolsTests.swift; sourceTree = "<group>"; };
 		F67333002FA34508000A610A /* MacWeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWeatherCardView.swift; sourceTree = "<group>"; };
@@ -812,6 +820,7 @@
 		F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseNaturalLanguageEventUseCase.swift; sourceTree = "<group>"; };
 		F693484A3089E85C00FB5E1C /* NaturalLanguageEventParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaturalLanguageEventParser.swift; sourceTree = "<group>"; };
 		F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryReminderSettings.swift; sourceTree = "<group>"; };
+		D02AFFFF000000000000F304 /* EveningCheckPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EveningCheckPrompt.swift; sourceTree = "<group>"; };
 		F6934856308AE28400FB5E1C /* SummaryReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryReminderService.swift; sourceTree = "<group>"; };
 		F699C1432F9F2104001FBF8F /* MacCalendarSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsViewModel.swift; sourceTree = "<group>"; };
 		F699C1452F9F2251001FBF8F /* MacCalendarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCalendarSettingsView.swift; sourceTree = "<group>"; };
@@ -1080,6 +1089,7 @@
 				F6611CC630217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift */,
 				D02AFFFF000000000000F301 /* PatternAnalysisServiceTests.swift */,
 				D02AFFFF000000000000F302 /* SummaryReminderScheduleTests.swift */,
+				D02AFFFF000000000000F305 /* EveningCheckPromptTests.swift */,
 				F6611CC930217AC6009292A7 /* CalendarVisibilityFilterTests.swift */,
 				F6611CCC30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift */,
 			);
@@ -1209,6 +1219,7 @@
 				F693483B3089D1A600FB5E1C /* AIEngineStatus.swift */,
 				F69348413089E54500FB5E1C /* EventDraft.swift */,
 				F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */,
+				D02AFFFF000000000000F304 /* EveningCheckPrompt.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1319,6 +1330,7 @@
 				F616DCEB2F7CB01400FA0476 /* ScheduleNotificationUseCase.swift */,
 				F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */,
 				F650682C2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift */,
+				D02AFFFF000000000000F303 /* ToggleEventCompletionUseCase.swift */,
 				F619D9742F7A371900084C61 /* UpdateDozyEventUseCase.swift */,
 				F65068282F7D081B00F9C124 /* UpdateCalendarEventUseCase.swift */,
 				F69348473089E62F00FB5E1C /* ParseNaturalLanguageEventUseCase.swift */,
@@ -2293,6 +2305,7 @@
 				F619D9542F751CB100084C61 /* GoogleCalendarDTO.swift in Sources */,
 				F616DCF02F7CB13B00FA0476 /* NotificationService.swift in Sources */,
 				F6934854308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */,
+				D02ABBBB000000000000B307 /* EveningCheckPrompt.swift in Sources */,
 				F619D9752F7A371900084C61 /* UpdateDozyEventUseCase.swift in Sources */,
 				F619D95A2F7525DB00084C61 /* CalendarSourceManager.swift in Sources */,
 				F6CAFE122FA0000000000011 /* CalendarVisibilityFilter.swift in Sources */,
@@ -2311,6 +2324,7 @@
 				F65068252F7D07AC00F9C124 /* EventCompletionRepositoryProtocol.swift in Sources */,
 				F65068392F7E536700F9C124 /* InsightDashboardViewModel.swift in Sources */,
 				F650682D2F7D08A000F9C124 /* ToggleCalendarEventCompletionUseCase.swift in Sources */,
+				D02ABBBB000000000000B305 /* ToggleEventCompletionUseCase.swift in Sources */,
 				F63C68E22F862E87003464E8 /* LoginPromptBannerView.swift in Sources */,
 				87BF234CA70E48C7ADC1DFF3 /* WeatherCardView.swift in Sources */,
 				F65068312F7D115300F9C124 /* EventCompletionRepository.swift in Sources */,
@@ -2339,6 +2353,7 @@
 				F6611CC730217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */,
 				D02ABBBB000000000000B301 /* PatternAnalysisServiceTests.swift in Sources */,
 				D02ABBBB000000000000B303 /* SummaryReminderScheduleTests.swift in Sources */,
+				D02ABBBB000000000000B311 /* EveningCheckPromptTests.swift in Sources */,
 				F6611CCA30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */,
 				F6611CCD30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift in Sources */,
 				D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */,
@@ -2453,6 +2468,7 @@
 				E4DD460FD7EECCBE7C5A1A68 /* NotificationServiceProtocol.swift in Sources */,
 				92201929ABD4C9BD8867C9A8 /* EventCompletionRepositoryProtocol.swift in Sources */,
 				95913AAD42B929CA4C928400 /* ToggleCalendarEventCompletionUseCase.swift in Sources */,
+				D02ABBBB000000000000B306 /* ToggleEventCompletionUseCase.swift in Sources */,
 				39E750FF5E4697B62A014898 /* EventDisplaySettings.swift in Sources */,
 				112825F186EE778A14F3F658 /* Date+Extensions.swift in Sources */,
 				E64E8D7DEE2904F2AF41AA37 /* SharedCalendarRealtimeService.swift in Sources */,
@@ -2534,6 +2550,7 @@
 				54BCFADE4A50BB72910F8047 /* Logger.swift in Sources */,
 				86D3ECAFA3730CF636CFFC13 /* AIService.swift in Sources */,
 				F6934855308ADDB400FB5E1C /* SummaryReminderSettings.swift in Sources */,
+				D02ABBBB000000000000B308 /* EveningCheckPrompt.swift in Sources */,
 				BF0B976768ED331A7479E90E /* SyncService.swift in Sources */,
 				A773E5459570D04F6BBB5C84 /* WeatherService.swift in Sources */,
 				F699C1462F9F2251001FBF8F /* MacCalendarSettingsView.swift in Sources */,
@@ -2576,6 +2593,7 @@
 				F6611CC830217AC6009292A7 /* FetchRecentLogsUseCaseTests.swift in Sources */,
 				D02ABBBB000000000000B302 /* PatternAnalysisServiceTests.swift in Sources */,
 				D02ABBBB000000000000B304 /* SummaryReminderScheduleTests.swift in Sources */,
+				D02ABBBB000000000000B312 /* EveningCheckPromptTests.swift in Sources */,
 				F6611CCB30217AC6009292A7 /* CalendarVisibilityFilterTests.swift in Sources */,
 				F6611CCE30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift in Sources */,
 				575318062BF53B9AAE0ABBEE /* Mocks.swift in Sources */,

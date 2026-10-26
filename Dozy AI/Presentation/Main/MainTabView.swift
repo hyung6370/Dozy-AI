@@ -219,6 +219,10 @@ struct MainTabView: View {
         .onChange(of: showCreateEvent) { _, isOpen in
             Logger.nav.info("[시트: 일정 생성] 📋 \(isOpen ? "OPEN" : "CLOSE")")
         }
+        .onChange(of: homeViewModel.showEveningCheck) { _, isShown in
+            // 저녁 일정 체크 시트는 HomeView 에 붙어 있다 — 다른 탭에 있었다면 홈으로 옮겨서 띄운다.
+            if isShown { selection = .home }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenAddEvent)) { _ in
             // 잠금화면 위젯 accessoryCircular 의 widgetURL 탭으로 들어옴 →
             // 홈 탭으로 이동 후 일정 생성 바텀시트 오픈.
