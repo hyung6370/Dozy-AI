@@ -282,21 +282,47 @@ final class DependencyContainer: ObservableObject {
 
 #if os(iOS)
 extension DependencyContainer {
-    /// BGAppRefreshTask 안에서 UI 없이 오늘 요약을 만들어 WorkLog 에 저장한다.
-    /// 완료 체크 수는 조회하지 않아 0 으로 넘긴다 — 온디바이스 모델 경로에서는 쓰이지 않고,
-    /// 로컬 분석 경로에서는 점수만 보수적으로 나온다.
+    /// BGAppRefreshTask 안에서 UI 없이 오늘 요약을 만들어 WorkLog 에 저장하고, 알림 본문용 완료 일정 수와 함께 돌려준다.
+    /// 완료 수 조회가 실패해도 요약 생성은 계속한다 (그 경우 0 으로 보수적으로 넘긴다).
     @MainActor
-    func generateTodaySummaryInBackground() async throws -> DailySummary {
+    func generateTodaySummaryInBackground() async throws -> BackgroundSummaryResult {
+        let now = Date()
         let today = try await fetchTodayDataUseCase.execute().firstValue()
+        let completedEventCount = (try? await completedEventCount(for: today.events, on: now)) ?? 0
         // WorkLog 가 없으면 GenerateDailySummaryUseCase 가 저장을 건너뛰므로 먼저 만들어 둔다.
         let log = try await saveWorkLogUseCase.execute(events: today.events, tasks: today.completedTasks).firstValue()
-        return try await generateDailySummaryUseCase.execute(
+        let summary = try await generateDailySummaryUseCase.execute(
             events: today.events,
             completedTasks: today.completedTasks,
             pendingTasks: today.pendingTasks,
             memos: log.memos,
-            completedEventCount: 0
+            completedEventCount: completedEventCount
         ).firstValue()
+        return BackgroundSummaryResult(summary: summary, completedEventCount: completedEventCount)
+    }
+
+    /// HomeViewModel.loadCompletions 와 같은 규칙으로 오늘 완료된 일정 수를 센다.
+    /// 완료 맵의 복합키(eventID_timestamp)를 eventID 로 환원하고, Dozy 비반복 일정은 isCompleted 를 우선한다.
+    @MainActor
+    private func completedEventCount(for events: [CalendarEvent], on date: Date) async throws -> Int {
+        guard !events.isEmpty else { return 0 }
+        let ids = events.map(\.id)
+        let dozyIDs = Set(events.filter { $0.source == .dozy }.map(\.id))
+        let dozyEvents = try await fetchDozyEventsUseCase.execute(for: date).firstValue()
+        let completions = try await fetchEventCompletionsUseCase.execute(for: ids, on: date).firstValue()
+
+        let daySuffix = "_\(Int(Calendar.current.startOfDay(for: date).timeIntervalSince1970))"
+        var merged: [String: Bool] = [:]
+        for (compositeKey, value) in completions {
+            let eventID = compositeKey.hasSuffix(daySuffix)
+                ? String(compositeKey.dropLast(daySuffix.count))
+                : compositeKey
+            merged[eventID] = value
+        }
+        for event in dozyEvents where dozyIDs.contains(event.id) && event.recurrenceRule == "none" {
+            merged[event.id] = event.isCompleted
+        }
+        return events.filter { merged[$0.id] == true }.count
     }
 }
 #endif

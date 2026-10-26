@@ -4110,6 +4110,16 @@
         }
       }
     },
+    "오늘 %lld건 완료 · 생산성 %lld점. 눌러서 요약을 확인해 보세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld done today · productivity %2$lld. Tap to see your summary."
+          }
+        }
+      }
+    },
     "오늘 %lld건의 일정을 소화했습니다" : {
       "localizations" : {
         "en" : {
