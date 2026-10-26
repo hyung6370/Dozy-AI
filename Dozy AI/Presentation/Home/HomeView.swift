@@ -322,7 +322,7 @@ struct HomeView: View {
     }
     
     private var loginPromptBanner: some View {
-        LoginPromptTooltipView {
+        LoginPromptCardView {
             selectedTab = 3
         }
     }
