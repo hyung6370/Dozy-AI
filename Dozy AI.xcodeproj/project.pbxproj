@@ -15,6 +15,7 @@
 		0674BA8F4BA2339D07E6DADE /* CancelNotificationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCED2F7CB0C800FA0476 /* CancelNotificationUseCase.swift */; };
 		07A250DEB5AFD50B518AA0C3 /* CalendarWriteServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068262F7D07E100F9C124 /* CalendarWriteServiceProtocol.swift */; };
 		0A0622D2248CAC4BC2F685A3 /* SaveWorkLogUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68FC2F6ACE25001952F6 /* SaveWorkLogUseCase.swift */; };
+		0D5BBFD7590124B0F9C8AD2A /* DemoDataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59E40F5C125D155B93E562A4 /* DemoDataSeeder.swift */; };
 		112825F186EE778A14F3F658 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E32F6ACD08001952F6 /* Date+Extensions.swift */; };
 		118E4E22922D2F814603C4CC /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E52F6ACD14001952F6 /* String+Extensions.swift */; };
 		13631B4305AC21FAE10F14E0 /* SwiftDataContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F691A2F6ACF74001952F6 /* SwiftDataContainer.swift */; };
@@ -268,6 +269,7 @@
 		E5FAF054B59D083A0F0F43E2 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF032F7FAA01007B8D9F /* Realtime */; };
 		E64E8D7DEE2904F2AF41AA37 /* SharedCalendarRealtimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */; };
 		E75D1231C01579E54A5A6FE7 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
+		E7B05E5E910D4AB002A24F46 /* DemoDataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59E40F5C125D155B93E562A4 /* DemoDataSeeder.swift */; };
 		E7E5F48B89DB443EB5FE5A72 /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
 		E9E3499D4DAB5458917C608D /* TodayAgendaPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48265506FD81F8102344D97F /* TodayAgendaPlanner.swift */; };
 		F0358D60D97649A39C84BD8B /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
@@ -595,6 +597,7 @@
 		501B310DB8A4B97BDE747343 /* DozyIcon.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DozyIcon.swift; sourceTree = "<group>"; };
 		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
 		57FBC57DF2FB5482862225B0 /* SyncTodayLiveActivityUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncTodayLiveActivityUseCase.swift; sourceTree = "<group>"; };
+		59E40F5C125D155B93E562A4 /* DemoDataSeeder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DemoDataSeeder.swift; sourceTree = "<group>"; };
 		665BB66E8DEA517945094EFD /* TodayAgendaLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayAgendaLiveActivity.swift; sourceTree = "<group>"; };
 		672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
@@ -1343,6 +1346,7 @@
 				D02AFFFF000000000000F30A /* SupabaseAuthLocalStorage.swift */,
 				3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */,
 				501B310DB8A4B97BDE747343 /* DozyIcon.swift */,
+				59E40F5C125D155B93E562A4 /* DemoDataSeeder.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -2390,6 +2394,7 @@
 				7DD14E56F2467E52E5F4D11D /* TodayAgendaAttributes.swift in Sources */,
 				53496E83FFBE3A1F4BED45CD /* ToggleEventCompletionIntent.swift in Sources */,
 				6EBAA7DB93A3BF62DCBA434A /* DozyIcon.swift in Sources */,
+				E7B05E5E910D4AB002A24F46 /* DemoDataSeeder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2643,6 +2648,7 @@
 				F9C4A185DB3460A5003AF84F /* LiveActivityServiceProtocol.swift in Sources */,
 				D7F9BD5911B63BE91E0A04E2 /* SyncTodayLiveActivityUseCase.swift in Sources */,
 				9078D03417C5BC30A3D2A193 /* DozyIcon.swift in Sources */,
+				0D5BBFD7590124B0F9C8AD2A /* DemoDataSeeder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2840,7 +2846,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 159;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2884,7 +2890,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 159;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3011,7 +3017,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = DozyWidgetsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 159;
 				DEVELOPMENT_LANGUAGE = ko;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3045,7 +3051,7 @@
 				CODE_SIGN_ENTITLEMENTS = DozyWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 159;
 				DEVELOPMENT_LANGUAGE = ko;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
