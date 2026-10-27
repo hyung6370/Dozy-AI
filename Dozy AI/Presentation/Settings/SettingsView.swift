@@ -32,6 +32,8 @@ struct SettingsView: View {
     @State private var showReminderDeniedAlert = false
     /// 저녁 일정 체크 프롬프트 (18시 이후 앱을 열면 미완료 일정을 1회 물어봄). 기본 켜짐.
     @AppStorage(EveningCheckPrompt.enabledKey) private var eveningCheckEnabled = true
+    /// 잠금화면 · 다이나믹 아일랜드 "오늘 아젠다" Live Activity. 기본 켜짐 (UserDefaults 와 동기화).
+    @State private var liveActivityEnabled = LiveActivitySettings.isEnabled()
     #endif
     @AppStorage(DozyBackgroundTheme.storageKey, store: DozyBackgroundTheme.sharedDefaults)
     private var backgroundThemeRaw: String = DozyBackgroundTheme.defaultTheme.rawValue
@@ -92,6 +94,7 @@ struct SettingsView: View {
                     appearanceSection
                     #if os(iOS)
                     summaryReminderSection
+                    lockScreenSection
                     #endif
                     calendarSection
                     categorySection
@@ -351,6 +354,38 @@ struct SettingsView: View {
             if settings.isEnabled, !granted {
                 reminderSettings.isEnabled = false   // onChange 재진입 → 해제 경로로 정리됨
                 showReminderDeniedAlert = true
+            }
+        }
+    }
+
+    // MARK: - 잠금화면 섹션
+
+    private var lockScreenSection: some View {
+        DozyListSection(
+            header: "잠금화면",
+            footer: "오늘 시간제 일정이 있으면 잠금화면과 다이나믹 아일랜드에 진행 중·다음 일정을 보여줘요. 앱을 열 때 시작되고 마지막 일정이 끝나면 사라져요."
+        ) {
+            DozyListRow(title: "오늘 일정 Live Activity") {
+                Image(systemName: "platter.filled.top.iphone")
+                    .font(.system(size: 16))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                    .frame(width: 34)
+            } trailing: {
+                Toggle("오늘 일정 Live Activity", isOn: $liveActivityEnabled)
+                    .labelsHidden()
+                    .tint(DozyColor.Brand.primary)
+            }
+        }
+        .onChange(of: liveActivityEnabled) { _, enabled in applyLiveActivitySetting(enabled) }
+    }
+
+    private func applyLiveActivitySetting(_ enabled: Bool) {
+        LiveActivitySettings.setEnabled(enabled)
+        Task { @MainActor in
+            if enabled {
+                _ = await container.syncTodayLiveActivityUseCase.execute()
+            } else {
+                await container.syncTodayLiveActivityUseCase.endAll()
             }
         }
     }

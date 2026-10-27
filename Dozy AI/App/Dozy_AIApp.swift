@@ -83,6 +83,9 @@ struct Dozy_AIApp: App {
                     consumePendingCreateEventFlag()
                     consumePendingVoiceInputFlag()
                     consumePendingOpenSummaryFlag()
+                    // 포그라운드 복귀 — 캐시가 그대로여도 "지금" 기준으로 잠금화면 아젠다를 다시 계산한다
+                    // (일정 간 전환 따라잡기, 8시간 제한으로 내려간 액티비티 재시작).
+                    Task { @MainActor in _ = await container.syncTodayLiveActivityUseCase.execute() }
                 }
             }
             .environmentObject(authViewModel)
@@ -212,6 +215,14 @@ final class AppCoordinator: ObservableObject {
             return try await c.generateTodaySummaryInBackground()
         }
         Task { @MainActor in c.summaryReminderService.refreshSchedulesIfEnabled() }
+        // 위젯 캐시가 바뀔 때(TodayEventCacheWriter) · 백그라운드 갱신 때 잠금화면 "오늘 아젠다" Live Activity 를 다시 맞춘다.
+        // AppDelegate 가 꽂아 둔 독립 실행 훅을 살아있는 컨테이너의 유스케이스로 덮어쓴다.
+        TodayAgendaLiveActivityHooks.refresh = { [weak c] in
+            _ = await c?.syncTodayLiveActivityUseCase.execute()
+        }
+        SummaryReminderService.backgroundLiveActivityRefresh = { [weak c] in
+            _ = await c?.syncTodayLiveActivityUseCase.execute()
+        }
         isReady = true
     }
 }

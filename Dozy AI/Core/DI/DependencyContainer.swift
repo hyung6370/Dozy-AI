@@ -81,6 +81,13 @@ final class DependencyContainer: ObservableObject {
     )
     /// 저녁 요약 알림 + 백그라운드 미리 생성 스케줄러.
     @MainActor lazy var summaryReminderService = SummaryReminderService()
+    /// 잠금화면 · 다이나믹 아일랜드 "오늘 아젠다" Live Activity (#71).
+    @MainActor lazy var liveActivityService: LiveActivityServiceProtocol = TodayAgendaActivityService()
+    /// 위젯 캐시(TodayEventCache) → 플래너 → Live Activity. 캐시 저장 훅·포그라운드 복귀·백그라운드 갱신·설정 토글이 부른다.
+    @MainActor lazy var syncTodayLiveActivityUseCase = SyncTodayLiveActivityUseCase(
+        service: liveActivityService,
+        loadItems: { [modelContainer] in TodayEventCacheWriter.loadTodayAgendaItems(container: modelContainer) }
+    )
     #endif
 
     // MARK: - Repository (Data Layer)

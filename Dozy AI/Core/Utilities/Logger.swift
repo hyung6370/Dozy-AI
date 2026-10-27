@@ -17,4 +17,5 @@ extension Logger {
     static let nav      = Logger(subsystem: subsystem, category: "Nav")
     static let ai       = Logger(subsystem: subsystem, category: "AI")
     static let reminder = Logger(subsystem: subsystem, category: "Reminder")
+    static let liveActivity = Logger(subsystem: subsystem, category: "LiveActivity")
 }

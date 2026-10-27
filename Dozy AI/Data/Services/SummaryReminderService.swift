@@ -38,6 +38,10 @@ final class SummaryReminderService {
     /// nil(DEBUG 환경 선택 전 등)이면 생성은 건너뛰고 재예약만 한다.
     nonisolated(unsafe) static var backgroundSummaryProvider: (() async throws -> BackgroundSummaryResult)?
 
+    /// 백그라운드 갱신 때 잠금화면 "오늘 아젠다" Live Activity 를 지금 시각 기준으로 다시 맞춘다 (#71).
+    /// 시작은 못 하지만(포그라운드 전용) 이미 떠 있는 것의 current/next 전환·종료는 여기서 따라잡는다.
+    nonisolated(unsafe) static var backgroundLiveActivityRefresh: (@MainActor () async -> Void)?
+
     private let center = UNUserNotificationCenter.current()
 
     // MARK: - 설정 반영
@@ -210,6 +214,8 @@ final class SummaryReminderService {
         if settings.isEnabled { scheduleBackgroundRefresh(settings) }
 
         let work = Task { @MainActor in
+            // 요약 설정과 무관하게 Live Activity 는 먼저 맞춘다 — 비용이 거의 없다.
+            await backgroundLiveActivityRefresh?()
             guard settings.isEnabled else {
                 task.setTaskCompleted(success: true)
                 return
