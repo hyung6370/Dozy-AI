@@ -41,7 +41,7 @@ struct CalendarLegendView: View {
 
                         row(name: "Apple 캘린더", logo: {
                             AnyView(
-                                Image(systemName: "apple.logo")
+                                Image(symbol: "apple.logo")
                                     .font(.title2)
                                     .foregroundStyle(.primary)
                             )

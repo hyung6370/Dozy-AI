@@ -96,11 +96,11 @@ struct InsightDashboardView: View {
     // MARK: - Insight Card
     private var insightCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Dozy 인사이트", systemImage: "sparkles")
+            Label("Dozy 인사이트", symbol: "sparkles")
                 .font(.headline)
             ForEach(viewModel.insights) { insight in
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: insight.icon)
+                    Image(symbol: insight.icon)
                         .foregroundStyle(insight.color)
                         .frame(width: 20)
                     Text(insight.text)
@@ -119,7 +119,7 @@ struct InsightDashboardView: View {
         // 상위에서 maxHeight: .infinity 로 화면 전체에 펼쳐주므로 padding(.top:) 으로
         // 위치를 잡지 않고 VStack 의 자체 centering 에 맡긴다.
         VStack(spacing: 16) {
-            Image(systemName: "chart.bar.xaxis")
+            Image(symbol: "chart.bar.xaxis")
                 .font(.system(size: 60))
                 .foregroundStyle(.secondary)
             Text("아직 분석할 데이터가 없어요")
@@ -176,7 +176,7 @@ struct InsightDashboardView: View {
     
     private func summaryCard(value: String, label: LocalizedStringKey, change: Double?, icon: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .foregroundStyle(color)
             Text(value)
                 .font(.title2)
@@ -187,7 +187,7 @@ struct InsightDashboardView: View {
             
             if let change {
                 HStack(spacing: 2) {
-                    Image(systemName: trendIcon(for: change))
+                    Image(symbol: trendIcon(for: change))
                     Text(trendLabel(for: change))
                 }
                 .font(.caption2)
@@ -227,7 +227,7 @@ struct InsightDashboardView: View {
             VStack(spacing: 16) {
                 if showSwipeHint {
                     HStack(spacing: 4) {
-                        Image(systemName: "hand.draw")
+                        Image(symbol: "hand.draw")
                             .font(.caption)
                         Text("옆으로 넘겨 더 많은 분석을 확인해보세요")
                             .font(.caption)
@@ -242,7 +242,7 @@ struct InsightDashboardView: View {
                     }
                 } else {
                     HStack(spacing: 4) {
-                        Image(systemName: "rectangle.on.rectangle.angled")
+                        Image(symbol: "rectangle.on.rectangle.angled")
                             .font(.title3)
                         Text("카드를 넘겨 인사이트를 확인해보세요")
                             .font(.title3)
@@ -291,7 +291,7 @@ struct InsightDashboardView: View {
             )
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "chart.pie.fill")
+                Image(symbol: "chart.pie.fill")
                     .font(.title2)
                     .foregroundStyle(.purple)
                     .frame(width: 40, height: 40)
@@ -306,7 +306,7 @@ struct InsightDashboardView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
+                Image(symbol: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -320,7 +320,7 @@ struct InsightDashboardView: View {
     // MARK: - 카드 Empty State 공통
     private func cardEmptyState(icon: String = "tray", message: LocalizedStringKey) -> some View {
         VStack(spacing: 8) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.system(size: 28))
                 .foregroundStyle(.tertiary)
             Text(message)
@@ -342,7 +342,7 @@ struct InsightDashboardView: View {
         let xStrideCount = viewModel.selectedPeriod == .week ? 1 : viewModel.selectedPeriod == .month ? 5 : 7
 
         return VStack(alignment: .leading, spacing: 10) {
-            Label(chartTitle, systemImage: "chart.line.uptrend.xyaxis")
+            Label(chartTitle, symbol: "chart.line.uptrend.xyaxis")
                 .font(.headline)
             if chartData.isEmpty {
                 cardEmptyState(icon: "checkmark.circle", message: "일정을 완료하면\n완료율 추이를 볼 수 있어요")
@@ -378,7 +378,7 @@ struct InsightDashboardView: View {
     // MARK: - 시간대별 집중도
     private var hourlyCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("시간대별 집중도", systemImage: "clock")
+            Label("시간대별 집중도", symbol: "clock")
                 .font(.headline)
             if viewModel.hourlyDistribution.isEmpty {
                 cardEmptyState(icon: "clock", message: "일정이 쌓이면\n시간대별 패턴을 분석할 수 있어요")
@@ -410,7 +410,7 @@ struct InsightDashboardView: View {
     // MARK: - 요일별 평균
     private var weekdayCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("요일별 평균 일정 수", systemImage: "calendar")
+            Label("요일별 평균 일정 수", symbol: "calendar")
                 .font(.headline)
             if viewModel.weekdayAvgCounts.allSatisfy({ $0.avg == 0 }) {
                 cardEmptyState(icon: "calendar.badge.plus", message: "일정을 더 추가하면\n요일 패턴을 확인할 수 있어요")
@@ -434,7 +434,7 @@ struct InsightDashboardView: View {
     // MARK: - 반복 vs 단발성
     private var recurrenceCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("일정 유형 분포", systemImage: "arrow.trianglehead.clockwise")
+            Label("일정 유형 분포", symbol: "arrow.trianglehead.clockwise")
                 .font(.headline)
             HStack(spacing: 2) {
                 let total = viewModel.recurringCount + viewModel.oneTimeCount
@@ -479,7 +479,7 @@ struct InsightDashboardView: View {
     // MARK: - 생산성 점수 추이
     private var productivityCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("생산성 점수 추이", systemImage: "star.fill")
+            Label("생산성 점수 추이", symbol: "star.fill")
                 .font(.headline)
             if viewModel.productivityScores.isEmpty {
                 cardEmptyState(icon: "star", message: "Dozy 일일 요약을 생성하면\n생산성 점수를 추적할 수 있어요")
@@ -504,7 +504,7 @@ struct InsightDashboardView: View {
     // MARK: - 카테고리 분포
     private var categoryCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("업무 카테고리", systemImage: "chart.pie")
+            Label("업무 카테고리", symbol: "chart.pie")
                 .font(.headline)
             if viewModel.categoryDistribution.isEmpty {
                 cardEmptyState(icon: "chart.pie", message: "Dozy 요약이 쌓이면\n카테고리 분포를 볼 수 있어요")

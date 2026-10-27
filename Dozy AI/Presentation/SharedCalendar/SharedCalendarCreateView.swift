@@ -87,7 +87,7 @@ struct SharedCalendarCreateView: View {
             ScrollView {
                 VStack(spacing: 32) {
                     VStack(spacing: 12) {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(symbol: "checkmark.circle.fill")
                             .font(.system(size: 56))
                             .foregroundStyle(.green)
                         Text("캘린더가 만들어졌어요!")
@@ -113,7 +113,7 @@ struct SharedCalendarCreateView: View {
                     item: shareText(code: result.inviteCode),
                     subject: Text("Dozy AI 공유 캘린더 초대")
                 ) {
-                    Label("공유하기", systemImage: "square.and.arrow.up")
+                    Label("공유하기", symbol: "square.and.arrow.up")
                         .font(.subheadline).fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
@@ -154,7 +154,7 @@ struct SharedCalendarCreateView: View {
                 copied = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) { copied = false }
             } label: {
-                Label(copied ? "복사됨" : "코드 복사", systemImage: copied ? "checkmark" : "doc.on.doc")
+                Label(copied ? "복사됨" : "코드 복사", symbol: copied ? "checkmark" : "doc.on.doc")
                     .font(.subheadline)
                     .foregroundStyle(copied ? .green : .accentColor)
             }

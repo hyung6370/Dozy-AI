@@ -16,7 +16,7 @@ struct InsightBannerView: View {
             action?()
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: "calendar.badge.plus")
+                Image(symbol: "calendar.badge.plus")
                     .font(.title2)
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
@@ -36,7 +36,7 @@ struct InsightBannerView: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
+                Image(symbol: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }

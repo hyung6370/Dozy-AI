@@ -99,7 +99,7 @@ struct RootView: View {
 
     private var offlineBanner: some View {
         HStack(spacing: 8) {
-            Image(systemName: "wifi.slash")
+            Image(symbol: "wifi.slash")
                 .font(.footnote)
                 .fontWeight(.semibold)
             Text("네트워크 연결 없음 — 오프라인 모드로 동작 중입니다")

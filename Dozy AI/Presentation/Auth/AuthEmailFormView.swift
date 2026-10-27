@@ -305,7 +305,7 @@ struct AuthEmailFormView: View {
             if emailLoginMode == .signIn && emailPasswordLimiter.count > 0 {
                 let isReset = emailPasswordLimiter.hasReachedLimit
                 HStack(spacing: 8) {
-                    Image(systemName: isReset ? "lock.rotation" : "exclamationmark.circle")
+                    Image(symbol: isReset ? "lock.rotation" : "exclamationmark.circle")
                         .font(.subheadline)
                     Text(
                         isReset
@@ -381,7 +381,7 @@ struct AuthEmailFormView: View {
                 submitEmailLogin()
             } label: {
                 HStack(spacing: 10) {
-                    Image(systemName: "envelope.fill")
+                    Image(symbol: "envelope.fill")
                         .font(.system(size: 14, weight: .medium))
                     Text(submitLabel)
                 }
@@ -409,7 +409,7 @@ struct AuthEmailFormView: View {
     /// 비밀번호 정책 체크리스트 한 줄 — 통과 시 초록 ✓, 미통과 시 회색 원.
     private func passwordRule(_ label: LocalizedStringKey, passed: Bool) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: passed ? "checkmark.circle.fill" : "circle")
+            Image(symbol: passed ? "checkmark.circle.fill" : "circle")
                 .font(.caption)
                 .foregroundStyle(passed ? .green : .secondary)
             Text(label)

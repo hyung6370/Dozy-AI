@@ -153,7 +153,7 @@ struct MonthlyStatCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.title3)
                 .foregroundStyle(color)
 

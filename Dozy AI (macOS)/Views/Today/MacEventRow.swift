@@ -27,7 +27,7 @@ struct MacEventRow: View {
             Button {
                 onToggleCompletion?()
             } label: {
-                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                Image(symbol: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
                     .foregroundStyle(isCompleted ? Color.green : Color.secondary.opacity(0.5))
                     .frame(width: 28, height: 28)
@@ -70,7 +70,7 @@ struct MacEventRow: View {
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 5) {
                     if event.isPinned {
-                        Image(systemName: "pin.fill")
+                        Image(symbol: "pin.fill")
                             .font(.caption)
                             .foregroundStyle(accent)
                     }
@@ -88,7 +88,7 @@ struct MacEventRow: View {
                         .foregroundStyle(.secondary)
 
                     if let location = event.location, !location.isEmpty {
-                        Label(location, systemImage: "mappin")
+                        Label(location, symbol: "mappin")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -99,7 +99,7 @@ struct MacEventRow: View {
             Spacer(minLength: 0)
 
             if event.isShared {
-                Image(systemName: "person.2.fill")
+                Image(symbol: "person.2.fill")
                     .font(.subheadline)
                     .foregroundStyle(accent)
                     .help("공유 캘린더 일정")

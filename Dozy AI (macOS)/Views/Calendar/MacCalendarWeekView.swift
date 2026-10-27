@@ -161,7 +161,7 @@ struct MacCalendarWeekView: View {
 
         return HStack(spacing: 3) {
             if bar.event.isPinned {
-                Image(systemName: "pin.fill")
+                Image(symbol: "pin.fill")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(foreground)
                     .padding(.leading, 6)
@@ -190,12 +190,12 @@ struct MacCalendarWeekView: View {
                 Button {
                     onEditEvent?(bar.event)
                 } label: {
-                    Label("수정", systemImage: "pencil")
+                    Label("수정", symbol: "pencil")
                 }
                 Button(role: .destructive) {
                     onDeleteEvent?(bar.event)
                 } label: {
-                    Label("삭제", systemImage: "trash")
+                    Label("삭제", symbol: "trash")
                 }
             }
         }
@@ -276,7 +276,7 @@ struct MacCalendarWeekView: View {
                 Button {
                     onCreateEventAt(slotDate)
                 } label: {
-                    Label(String(format: "%02d:00 에 새 일정", hour), systemImage: "plus.circle")
+                    Label(String(format: "%02d:00 에 새 일정", hour), symbol: "plus.circle")
                 }
             }
     }
@@ -393,7 +393,7 @@ struct MacCalendarWeekView: View {
                     : color.adjustingBrightness(0.65)
                 HStack(spacing: 3) {
                     if block.event.isPinned {
-                        Image(systemName: "pin.fill")
+                        Image(symbol: "pin.fill")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(foreground)
                     }
@@ -428,12 +428,12 @@ struct MacCalendarWeekView: View {
                 Button {
                     onEditEvent?(block.event)
                 } label: {
-                    Label("수정", systemImage: "pencil")
+                    Label("수정", symbol: "pencil")
                 }
                 Button(role: .destructive) {
                     onDeleteEvent?(block.event)
                 } label: {
-                    Label("삭제", systemImage: "trash")
+                    Label("삭제", symbol: "trash")
                 }
             }
         }

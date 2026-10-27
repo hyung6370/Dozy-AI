@@ -171,7 +171,7 @@ struct MacCalendarView: View {
                 Button {
                     showNewEventSheet = true
                 } label: {
-                    Label("새 일정", systemImage: "plus")
+                    Label("새 일정", symbol: "plus")
                 }
                 .help("선택된 날짜에 새 일정 추가")
             }
@@ -285,7 +285,7 @@ struct MacCalendarView: View {
             Button {
                 animatedGoToPreviousMonth()
             } label: {
-                Image(systemName: "chevron.left")
+                Image(symbol: "chevron.left")
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.borderless)
@@ -300,7 +300,7 @@ struct MacCalendarView: View {
                     Text(viewModel.monthTitle)
                         .font(.title2)
                         .fontWeight(.semibold)
-                    Image(systemName: "chevron.down")
+                    Image(symbol: "chevron.down")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -315,7 +315,7 @@ struct MacCalendarView: View {
             Button {
                 animatedGoToNextMonth()
             } label: {
-                Image(systemName: "chevron.right")
+                Image(symbol: "chevron.right")
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.borderless)
@@ -531,7 +531,7 @@ struct MacCalendarView: View {
                         showNewEventSheet = true
                     } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "calendar.badge.plus")
+                            Image(symbol: "calendar.badge.plus")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             Text("일정이 없습니다. 새로 추가해볼까요?")

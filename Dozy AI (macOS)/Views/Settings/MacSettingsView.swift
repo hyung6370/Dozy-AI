@@ -146,16 +146,16 @@ struct MacSettingsView: View {
                 .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
             switch provider {
             case .apple:
-                Image(systemName: "apple.logo").font(.title2)
+                Image(symbol: "apple.logo").font(.title2)
             case .google:
                 Image("google")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 22, height: 22)
             case .email:
-                Image(systemName: "envelope.fill").font(.title3)
+                Image(symbol: "envelope.fill").font(.title3)
             case nil:
-                Image(systemName: "person.fill").font(.title3).foregroundStyle(.secondary)
+                Image(symbol: "person.fill").font(.title3).foregroundStyle(.secondary)
             }
         }
     }
@@ -213,7 +213,7 @@ struct MacSettingsView: View {
         SettingsSection(title: "메뉴바") {
             Toggle(isOn: $menuBarShowBadge) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Label("남은 일정 개수 배지", systemImage: "app.badge")
+                    Label("남은 일정 개수 배지", symbol: "app.badge")
                     Text("메뉴바 아이콘 옆에 오늘 남은 일정 수를 표시합니다.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -309,13 +309,13 @@ struct MacSettingsView: View {
                 showPasswordChange = true
             } label: {
                 HStack(spacing: 10) {
-                    Image(systemName: "key.fill")
+                    Image(symbol: "key.fill")
                         .font(.system(size: 16))
                         .foregroundStyle(.secondary)
                         .frame(width: 22, height: 22)
                     Text("비밀번호 변경")
                     Spacer()
-                    Image(systemName: "chevron.right")
+                    Image(symbol: "chevron.right")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -341,7 +341,7 @@ struct MacSettingsView: View {
                     Text("계정 탈퇴")
                         .foregroundStyle(.red)
                     Spacer()
-                    Image(systemName: "chevron.right")
+                    Image(symbol: "chevron.right")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -362,7 +362,7 @@ struct MacSettingsView: View {
                 .frame(width: 22, height: 22)
             Text(title)
             Spacer()
-            Image(systemName: "chevron.right")
+            Image(symbol: "chevron.right")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
@@ -499,7 +499,7 @@ private struct TipRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.accentColor)
                 .frame(width: 22, height: 22)

@@ -78,7 +78,7 @@ struct MacSharedCalendarCreateView: View {
 
     private func successView(result: SharedCalendarCreationResult) -> some View {
         VStack(spacing: 20) {
-            Image(systemName: "checkmark.seal.fill")
+            Image(symbol: "checkmark.seal.fill")
                 .font(.system(size: 48))
                 .foregroundStyle(.green)
 
@@ -103,7 +103,7 @@ struct MacSharedCalendarCreateView: View {
                     Button {
                         copyCode(result.inviteCode)
                     } label: {
-                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                        Image(symbol: copied ? "checkmark" : "doc.on.doc")
                     }
                     .buttonStyle(.bordered)
                 }

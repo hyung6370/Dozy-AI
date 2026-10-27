@@ -34,7 +34,7 @@ struct SharedCalendarJoinView: View {
         VStack(spacing: 0) {
             VStack(spacing: 32) {
                 VStack(spacing: 8) {
-                    Image(systemName: "person.badge.plus")
+                    Image(symbol: "person.badge.plus")
                         .font(.system(size: 48))
                         .foregroundStyle(Color.accentColor)
                     Text("초대 코드 입력")
@@ -136,7 +136,7 @@ struct SharedCalendarJoinView: View {
     private var successView: some View {
         VStack(spacing: 24) {
             Spacer()
-            Image(systemName: "checkmark.circle.fill")
+            Image(symbol: "checkmark.circle.fill")
                 .font(.system(size: 72))
                 .foregroundStyle(.green)
             VStack(spacing: 8) {

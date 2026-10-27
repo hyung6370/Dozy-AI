@@ -71,7 +71,7 @@ struct AuthSheetView: View {
                                 withAnimation(.spring()) { showEmailForm = true }
                             } label: {
                                 HStack(spacing: 10) {
-                                    Image(systemName: "envelope")
+                                    Image(symbol: "envelope")
                                         .font(.system(size: 14, weight: .medium))
                                     Text("이메일로 계속하기")
                                 }
@@ -219,7 +219,7 @@ struct AuthSheetView: View {
         if isAppleSignInAvailable {
             Button { authViewModel.signInWithApple() } label: {
                 HStack(spacing: 10) {
-                    Image(systemName: "apple.logo")
+                    Image(symbol: "apple.logo")
                         .font(.system(size: 16, weight: .medium))
                     Text("Apple로 로그인")
                 }

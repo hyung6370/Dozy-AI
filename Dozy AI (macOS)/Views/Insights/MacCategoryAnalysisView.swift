@@ -146,7 +146,7 @@ struct MacCategoryAnalysisView: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "chart.pie")
+            Image(symbol: "chart.pie")
                 .font(.system(size: 52))
                 .foregroundStyle(.secondary)
             Text("분석할 일정 데이터가 없어요")
@@ -199,7 +199,7 @@ struct MacCategoryAnalysisView: View {
 
     private var timeDistributionCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Label("시간 분배", systemImage: "clock.fill").font(.title3)
+            Label("시간 분배", symbol: "clock.fill").font(.title3)
 
             GeometryReader { geo in
                 HStack(spacing: 2) {
@@ -254,7 +254,7 @@ struct MacCategoryAnalysisView: View {
         let maxCount = catStats.map { $0.count }.max() ?? 1
 
         return VStack(alignment: .leading, spacing: 14) {
-            Label("일정 건수", systemImage: "calendar.badge.clock").font(.title3)
+            Label("일정 건수", symbol: "calendar.badge.clock").font(.title3)
 
             ForEach(catStats) { stat in
                 HStack(spacing: 12) {
@@ -294,7 +294,7 @@ struct MacCategoryAnalysisView: View {
 
         return VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Label("카테고리별 완료율", systemImage: "checkmark.circle.fill").font(.title3)
+                Label("카테고리별 완료율", symbol: "checkmark.circle.fill").font(.title3)
                 Spacer()
                 Text("Dozy 일정 기준")
                     .font(.caption).foregroundStyle(.secondary)
@@ -337,7 +337,7 @@ struct MacCategoryAnalysisView: View {
         let withHour = catStats.filter { $0.peakHour != nil }
 
         return VStack(alignment: .leading, spacing: 14) {
-            Label("선호 시간대", systemImage: "sun.max.fill").font(.title3)
+            Label("선호 시간대", symbol: "sun.max.fill").font(.title3)
 
             ForEach(withHour) { stat in
                 HStack(spacing: 14) {
@@ -345,7 +345,7 @@ struct MacCategoryAnalysisView: View {
                         .font(.subheadline)
                         .frame(width: 130, alignment: .leading)
                         .lineLimit(1)
-                    Image(systemName: "arrow.right")
+                    Image(symbol: "arrow.right")
                         .font(.caption).foregroundStyle(.tertiary)
                     if let label = stat.peakHourLabel {
                         Text(label)
@@ -368,7 +368,7 @@ struct MacCategoryAnalysisView: View {
 
     private var weekdayPatternCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Label("요일별 패턴", systemImage: "calendar").font(.title3)
+            Label("요일별 패턴", symbol: "calendar").font(.title3)
 
             ForEach(catStats) { stat in
                 VStack(alignment: .leading, spacing: 8) {
@@ -422,7 +422,7 @@ struct MacCategoryAnalysisView: View {
         }()
 
         return VStack(alignment: .leading, spacing: 14) {
-            Label("집중도 분석", systemImage: "scope").font(.title3)
+            Label("집중도 분석", symbol: "scope").font(.title3)
 
             HStack(spacing: 24) {
                 ZStack {

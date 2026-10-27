@@ -124,7 +124,7 @@ struct VoiceInputView: View {
                         : .default,
                         value: viewModel.isListening
                     )
-                Image(systemName: viewModel.isListening ? "stop.fill" : "mic.fill")
+                Image(symbol: viewModel.isListening ? "stop.fill" : "mic.fill")
                     .font(.system(size: 34, weight: .semibold))
                     .foregroundStyle(viewModel.isListening ? .red : .blue)
             }
@@ -139,7 +139,7 @@ struct VoiceInputView: View {
             Button {
                 viewModel.start()
             } label: {
-                Label("다시 녹음", systemImage: "arrow.counterclockwise")
+                Label("다시 녹음", symbol: "arrow.counterclockwise")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -149,7 +149,7 @@ struct VoiceInputView: View {
                 onSave(viewModel.trimmedTranscript)
                 dismiss()
             } label: {
-                Label(style.saveLabel, systemImage: "checkmark")
+                Label(style.saveLabel, symbol: "checkmark")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)

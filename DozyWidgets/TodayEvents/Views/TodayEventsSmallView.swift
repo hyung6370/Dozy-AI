@@ -96,7 +96,7 @@ struct TodayEventsSmallView: View {
 
             // 하단 — 완료 카운트.
             HStack(spacing: 4) {
-                Image(systemName: "checkmark.circle.fill")
+                Image(symbol: "checkmark.circle.fill")
                     .font(.caption2)
                     .foregroundStyle(.green)
                 Text(verbatim: "\(entry.completedCount) / \(entry.totalCount)")

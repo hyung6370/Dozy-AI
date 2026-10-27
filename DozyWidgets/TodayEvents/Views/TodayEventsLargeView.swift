@@ -60,7 +60,7 @@ struct TodayEventsLargeView: View {
                 .font(.headline)
             Spacer()
             HStack(spacing: 4) {
-                Image(systemName: "checkmark.circle.fill")
+                Image(symbol: "checkmark.circle.fill")
                     .font(.caption2)
                     .foregroundStyle(.green)
                 Text(verbatim: "\(entry.completedCount) / \(entry.totalCount)")
@@ -74,7 +74,7 @@ struct TodayEventsLargeView: View {
     /// 헤더 우측의 "+ 새 일정" 버튼. CreateQuickEventIntent 가 메인 앱 활성화 + 생성 시트 트리거.
     private var createEventButton: some View {
         Button(intent: CreateQuickEventIntent()) {
-            Image(systemName: "plus.circle.fill")
+            Image(symbol: "plus.circle.fill")
                 .font(.title3)
                 .foregroundStyle(Color.accentColor)
                 .symbolRenderingMode(.hierarchical)

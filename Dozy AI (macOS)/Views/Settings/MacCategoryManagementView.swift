@@ -42,19 +42,19 @@ struct MacCategoryManagementView: View {
                         Button(role: .destructive) {
                             deletingCategory = cat
                         } label: {
-                            Label("삭제", systemImage: "trash")
+                            Label("삭제", symbol: "trash")
                         }
                     }
                     .contextMenu {
                         Button {
                             editingCategory = cat
                         } label: {
-                            Label("수정", systemImage: "pencil")
+                            Label("수정", symbol: "pencil")
                         }
                         Button(role: .destructive) {
                             deletingCategory = cat
                         } label: {
-                            Label("삭제", systemImage: "trash")
+                            Label("삭제", symbol: "trash")
                         }
                     }
                 }
@@ -68,7 +68,7 @@ struct MacCategoryManagementView: View {
                     Button {
                         showAddSheet = true
                     } label: {
-                        Label("추가", systemImage: "plus")
+                        Label("추가", symbol: "plus")
                     }
                 }
             }

@@ -129,7 +129,7 @@ struct DozyTintedIcon: View {
     @ViewBuilder
     private var iconView: some View {
         if let systemName {
-            Image(systemName: systemName)
+            Image(symbol: systemName)
                 .font(.system(size: 15, weight: .semibold))
         } else if let imageName {
             Image(imageName)
@@ -146,7 +146,7 @@ struct DozyTintedIcon: View {
 /// 우측 chevron — NavigationLink/Button 행에 표준으로.
 struct DozyChevron: View {
     var body: some View {
-        Image(systemName: "chevron.right")
+        Image(symbol: "chevron.right")
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(DozyColor.Text.tertiary)
     }
@@ -172,14 +172,14 @@ private struct DozyListPreviewHost: View {
             VStack(spacing: DozySpacing.xl) {
                 DozyListSection(header: "캘린더", footer: nil) {
                     DozyListRow(title: "캘린더 연동") {
-                        Image(systemName: "calendar")
+                        Image(symbol: "calendar")
                             .foregroundStyle(DozyColor.Brand.primary)
                             .frame(width: 24)
                     } trailing: {
                         DozyChevron()
                     }
                     DozyListRow(title: "공유 캘린더", showsDivider: false) {
-                        Image(systemName: "person.2")
+                        Image(symbol: "person.2")
                             .foregroundStyle(DozyColor.Brand.primary)
                             .frame(width: 24)
                     } trailing: {
@@ -189,14 +189,14 @@ private struct DozyListPreviewHost: View {
 
                 DozyListSection(header: "앱 정보") {
                     DozyListRow(title: "개인정보 처리방침") {
-                        Image(systemName: "hand.raised")
+                        Image(symbol: "hand.raised")
                             .foregroundStyle(DozyColor.Brand.primary)
                             .frame(width: 24)
                     } trailing: {
                         DozyChevron()
                     }
                     DozyListRow(title: "버전", showsDivider: false) {
-                        Image(systemName: "info.circle")
+                        Image(symbol: "info.circle")
                             .foregroundStyle(DozyColor.Brand.primary)
                             .frame(width: 24)
                     } trailing: {
@@ -210,7 +210,7 @@ private struct DozyListPreviewHost: View {
                         titleColor: DozyColor.State.danger,
                         showsDivider: false
                     ) {
-                        Image(systemName: "trash")
+                        Image(symbol: "trash")
                             .foregroundStyle(DozyColor.State.danger)
                             .frame(width: 24)
                     }

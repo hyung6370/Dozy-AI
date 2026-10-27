@@ -27,7 +27,7 @@ struct ForceUpdateView: View {
                     Circle()
                         .fill(Color.orange.opacity(0.15))
                         .frame(width: 120, height: 120)
-                    Image(systemName: "arrow.down.app.fill")
+                    Image(symbol: "arrow.down.app.fill")
                         .font(.system(size: 56))
                         .foregroundStyle(.orange)
                 }
@@ -50,7 +50,7 @@ struct ForceUpdateView: View {
                     UIApplication.shared.open(appStoreURL)
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "arrow.up.forward.app.fill")
+                        Image(symbol: "arrow.up.forward.app.fill")
                         Text("App Store에서 업데이트")
                             .fontWeight(.semibold)
                     }

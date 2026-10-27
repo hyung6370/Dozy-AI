@@ -217,7 +217,7 @@ struct EventPill: View {
                 if layout.isActualStart {
                     HStack(spacing: 2) {
                         if layout.isPinned {
-                            Image(systemName: "pin.fill")
+                            Image(symbol: "pin.fill")
                                 .font(.system(size: 7, weight: .bold))
                                 .foregroundStyle(isDozy ? dozyTextColor : isGoogle ? googleTextColor : isHoliday ? holidayTextColor : .white)
                         }

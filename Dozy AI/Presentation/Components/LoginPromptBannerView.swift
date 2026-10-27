@@ -16,7 +16,7 @@ struct LoginPromptCardView: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 12) {
-                Image(systemName: "lock.shield.fill")
+                Image(symbol: "lock.shield.fill")
                     .font(.subheadline)
                     .foregroundStyle(DozyColor.Brand.primary)
 

@@ -374,7 +374,7 @@ struct HomeView: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 6) {
-                            Image(systemName: icon)
+                            Image(symbol: icon)
                                 .font(.caption)
                                 .foregroundStyle(currentEvent != nil ? .green : .secondary)
                             Text(label)
@@ -398,12 +398,12 @@ struct HomeView: View {
                                     .foregroundStyle(.primary)
 
                                 HStack(spacing: 10) {
-                                    Label(event.timeRangeString, systemImage: "clock")
+                                    Label(event.timeRangeString, symbol: "clock")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
 
                                     if let location = event.location, !location.isEmpty {
-                                        Label(location, systemImage: "mappin")
+                                        Label(location, symbol: "mappin")
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                             .lineLimit(1)
@@ -431,7 +431,7 @@ struct HomeView: View {
                         showCreateFromEmptyAlert = true
                     } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "calendar.badge.minus")
+                            Image(symbol: "calendar.badge.minus")
                                 .font(.title3)
                                 .foregroundStyle(Color.secondary)
                             Text("오늘 일정이 없습니다.")
@@ -445,7 +445,7 @@ struct HomeView: View {
                         showCreateFromEmptyAlert = true
                     } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "checkmark.circle.fill")
+                            Image(symbol: "checkmark.circle.fill")
                                 .font(.title3)
                                 .foregroundStyle(Color.green)
                             Text("남은 일정이 없습니다.")
@@ -536,7 +536,7 @@ struct HomeView: View {
     private func aiSummaryPreview(_ summary: DailySummary) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label("Dozy 요약", systemImage: "sparkles")
+                Label("Dozy 요약", symbol: "sparkles")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.indigo)
@@ -559,7 +559,7 @@ struct HomeView: View {
             if !summary.highlights.isEmpty {
                 ForEach(Array(summary.highlights.prefix(2).enumerated()), id: \.offset) { _, highlight in
                     HStack(alignment: .top, spacing: 6) {
-                        Image(systemName: "star.fill")
+                        Image(symbol: "star.fill")
                             .font(.system(size: 8))
                             .foregroundStyle(.orange)
                             .padding(.top, 4)
@@ -576,7 +576,7 @@ struct HomeView: View {
                 Text("상세 보기")
                     .font(.caption2)
                     .foregroundStyle(.indigo)
-                Image(systemName: "chevron.right")
+                Image(symbol: "chevron.right")
                     .font(.system(size: 9))
                     .foregroundStyle(.indigo)
             }
@@ -606,7 +606,7 @@ struct HomeView: View {
     private var memoSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
-                Image(systemName: "note.text")
+                Image(symbol: "note.text")
                     .font(.caption)
                     .foregroundStyle(DozyColor.Brand.primary)
                 Text("메모")
@@ -665,7 +665,7 @@ struct HomeView: View {
             Menu {
                 memoActions(memo, index: index)
             } label: {
-                Image(systemName: "ellipsis")
+                Image(symbol: "ellipsis")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .frame(width: 24, height: 24)
@@ -685,13 +685,13 @@ struct HomeView: View {
             editingMemoText = memo
             showEditMemoAlert = true
         } label: {
-            Label("수정", systemImage: "pencil")
+            Label("수정", symbol: "pencil")
         }
         Button(role: .destructive) {
             deletingMemoIndex = index
             showDeleteMemoAlert = true
         } label: {
-            Label("삭제", systemImage: "trash")
+            Label("삭제", symbol: "trash")
         }
     }
 
@@ -705,7 +705,7 @@ struct HomeView: View {
                     .accessibilityIdentifier("home_memo_field")   // UI 테스트 — 다중행 TextField 는 textView 로 노출된다
 
                 Button { showVoiceInput = true } label: {
-                    Image(systemName: "mic.fill")
+                    Image(symbol: "mic.fill")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(DozyColor.Brand.primary)
                         .frame(width: 28, height: 28)
@@ -720,7 +720,7 @@ struct HomeView: View {
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
             Button { submitMemo() } label: {
-                Image(systemName: "arrow.up")
+                Image(symbol: "arrow.up")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(width: 34, height: 34)
@@ -773,7 +773,7 @@ struct HomeView: View {
                 if viewModel.isSummarizing {
                     ProgressView().tint(.indigo)
                 } else {
-                    Image(systemName: viewModel.hasSummary ? "brain.head.profile" : "sparkles")
+                    Image(symbol: viewModel.hasSummary ? "brain.head.profile" : "sparkles")
                         .font(.subheadline)
                         .foregroundStyle(.indigo)
                 }
@@ -794,7 +794,7 @@ struct HomeView: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
+                Image(symbol: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -1023,7 +1023,7 @@ private struct HomeStatCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.subheadline)
                 .foregroundStyle(color)
 
@@ -1084,7 +1084,7 @@ private struct EveningCheckSheet: View {
                         Button {
                             viewModel.completeAllEveningCheckEvents()
                         } label: {
-                            Label("모두 완료", systemImage: "checkmark.circle")
+                            Label("모두 완료", symbol: "checkmark.circle")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                         }

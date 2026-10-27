@@ -50,7 +50,7 @@ struct MacCalendarFilterPopover: View {
                     filter.reset()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "arrow.counterclockwise")
+                        Image(symbol: "arrow.counterclockwise")
                         Text("모두 표시")
                         Spacer()
                     }
@@ -101,7 +101,7 @@ struct MacCalendarFilterPopover: View {
             set: { filter.setVisibleSharedCalendar(cal.id, $0) }
         )) {
             HStack(spacing: 10) {
-                Image(systemName: "person.2.fill")
+                Image(symbol: "person.2.fill")
                     .foregroundStyle(.secondary)
                     .frame(width: 20, height: 20)
                 Text(cal.name)
@@ -126,7 +126,7 @@ struct MacCalendarFilterPopover: View {
     private func iconView(for source: CalendarSource) -> some View {
         switch source {
         case .apple:
-            Image(systemName: "apple.logo")
+            Image(symbol: "apple.logo")
                 .foregroundStyle(.black)
                 .frame(width: 20, height: 20)
         case .google:
@@ -142,12 +142,12 @@ struct MacCalendarFilterPopover: View {
                     .frame(width: 20, height: 20)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
             } else {
-                Image(systemName: source.iconName)
+                Image(symbol: source.iconName)
                     .foregroundStyle(.secondary)
                     .frame(width: 20, height: 20)
             }
         default:
-            Image(systemName: source.iconName)
+            Image(symbol: source.iconName)
                 .foregroundStyle(.secondary)
                 .frame(width: 20, height: 20)
         }

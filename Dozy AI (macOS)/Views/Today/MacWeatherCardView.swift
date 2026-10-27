@@ -47,7 +47,7 @@ struct MacWeatherCardView: View {
                         .foregroundStyle(.white.opacity(0.85))
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
+                Image(symbol: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.7))
             }
@@ -150,7 +150,7 @@ struct MacWeatherCardView: View {
         VStack(spacing: 0) {
             if let city = service.locationName {
                 HStack(spacing: 4) {
-                    Image(systemName: "location.fill")
+                    Image(symbol: "location.fill")
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.85))
                     Text(city)
@@ -204,7 +204,7 @@ struct MacWeatherCardView: View {
     
     private func detailItem(icon: String, text: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.75))
             Text(text)

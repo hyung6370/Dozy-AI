@@ -89,7 +89,7 @@ struct EventBarView: View {
                             .foregroundStyle(textColor)
                             .lineLimit(1)
                         if bar.isShared {
-                            Image(systemName: "person.2.fill")
+                            Image(symbol: "person.2.fill")
                                 .font(.system(size: 6))
                                 .foregroundStyle(textColor.opacity(0.85))
                         }

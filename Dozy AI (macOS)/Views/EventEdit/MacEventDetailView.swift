@@ -230,12 +230,12 @@ struct MacEventDetailView: View {
             if hasTags {
                 HStack(spacing: 8) {
                     if event.isShared {
-                        Label("공유 캘린더", systemImage: "person.2.fill")
+                        Label("공유 캘린더", symbol: "person.2.fill")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     if let partnerDisplayName, !partnerDisplayName.isEmpty {
-                        Label(partnerDisplayName, systemImage: "person.fill")
+                        Label(partnerDisplayName, symbol: "person.fill")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 8)
@@ -420,7 +420,7 @@ struct MacEventDetailView: View {
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { submitMemo(dozy) }
                 Button { submitMemo(dozy) } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(symbol: "plus.circle.fill")
                         .font(.title2)
                         .foregroundStyle(.blue)
                 }
@@ -450,7 +450,7 @@ struct MacEventDetailView: View {
             if !editVM.sharedCalendars.isEmpty {
                 VStack(spacing: 0) {
                     settingsRow {
-                        Label("공유 캘린더", systemImage: "person.2.fill")
+                        Label("공유 캘린더", symbol: "person.2.fill")
                     } trailing: {
                         Picker("", selection: $editVM.sharedCalendarID) {
                             Text("없음").tag(String?.none)
@@ -469,7 +469,7 @@ struct MacEventDetailView: View {
 
             VStack(spacing: 0) {
                 settingsRow {
-                    Label("상단 고정", systemImage: editVM.isPinned ? "pin.fill" : "pin")
+                    Label("상단 고정", symbol: editVM.isPinned ? "pin.fill" : "pin")
                 } trailing: {
                     Toggle("", isOn: $editVM.isPinned)
                         .toggleStyle(.switch)
@@ -479,7 +479,7 @@ struct MacEventDetailView: View {
                 Divider().padding(.leading, 16)
 
                 settingsRow {
-                    Label("우선순위", systemImage: "chart.bar")
+                    Label("우선순위", symbol: "chart.bar")
                 } trailing: {
                     Picker("", selection: $editVM.priority) {
                         Text("없음").tag(0)
@@ -495,7 +495,7 @@ struct MacEventDetailView: View {
                 Divider().padding(.leading, 16)
 
                 settingsRow {
-                    Label("카테고리", systemImage: "tag")
+                    Label("카테고리", symbol: "tag")
                 } trailing: {
                     HStack(spacing: 8) {
                         Picker("", selection: $editVM.category) {
@@ -509,7 +509,7 @@ struct MacEventDetailView: View {
                         Button {
                             showCategoryManagement = true
                         } label: {
-                            Image(systemName: "pencil.line")
+                            Image(symbol: "pencil.line")
                                 .font(.subheadline)
                         }
                         .buttonStyle(.borderless)
@@ -549,7 +549,7 @@ struct MacEventDetailView: View {
         Button(role: .destructive) {
             showDeleteDialog = true
         } label: {
-            Label("삭제", systemImage: "trash")
+            Label("삭제", symbol: "trash")
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.bordered)
@@ -599,7 +599,7 @@ private struct EditRow<Content: View>: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .frame(width: 22)
@@ -637,7 +637,7 @@ private struct MacMemoRow: View {
             if isHovered {
                 HStack(spacing: 8) {
                     Button(action: onEdit) {
-                        Image(systemName: "pencil")
+                        Image(symbol: "pencil")
                             .font(.body)
                             .foregroundStyle(.secondary)
                             .frame(width: 22, height: 22)
@@ -646,7 +646,7 @@ private struct MacMemoRow: View {
                     .help("수정")
 
                     Button(action: onDelete) {
-                        Image(systemName: "trash")
+                        Image(symbol: "trash")
                             .font(.body)
                             .foregroundStyle(.red)
                             .frame(width: 22, height: 22)
@@ -666,10 +666,10 @@ private struct MacMemoRow: View {
         }
         .contextMenu {
             Button(action: onEdit) {
-                Label("수정", systemImage: "pencil")
+                Label("수정", symbol: "pencil")
             }
             Button(role: .destructive, action: onDelete) {
-                Label("삭제", systemImage: "trash")
+                Label("삭제", symbol: "trash")
             }
         }
     }

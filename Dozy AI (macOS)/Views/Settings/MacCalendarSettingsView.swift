@@ -39,7 +39,7 @@ struct MacCalendarSettingsView: View {
     private var appleRow: some View {
         Toggle(isOn: $viewModel.isAppleEnabled) {
             VStack(alignment: .leading, spacing: 2) {
-                Label("Apple 캘린더", systemImage: "apple.logo")
+                Label("Apple 캘린더", symbol: "apple.logo")
                 Text("macOS 기본 캘린더 일정을 Dozy 에서 함께 봅니다.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -52,7 +52,7 @@ struct MacCalendarSettingsView: View {
     private var dozyRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Label("Dozy 캘린더", systemImage: "checklist")
+                Label("Dozy 캘린더", symbol: "checklist")
                 Text("앱 내 직접 생성한 일정")
                     .font(.caption)
                     .foregroundStyle(.secondary)

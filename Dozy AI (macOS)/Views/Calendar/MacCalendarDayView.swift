@@ -100,7 +100,7 @@ struct MacCalendarDayView: View {
         return HStack(spacing: 4) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
-                Image(systemName: "pin.fill")
+                Image(symbol: "pin.fill")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(foreground)
                     .padding(.leading, 6)
@@ -130,12 +130,12 @@ struct MacCalendarDayView: View {
                 Button {
                     onEditEvent?(event)
                 } label: {
-                    Label("수정", systemImage: "pencil")
+                    Label("수정", symbol: "pencil")
                 }
                 Button(role: .destructive) {
                     onDeleteEvent?(event)
                 } label: {
-                    Label("삭제", systemImage: "trash")
+                    Label("삭제", symbol: "trash")
                 }
             }
         }
@@ -199,7 +199,7 @@ struct MacCalendarDayView: View {
                 Button {
                     onCreateEventAt(slotDate)
                 } label: {
-                    Label(String(format: "%02d:00 에 새 일정", hour), systemImage: "plus.circle")
+                    Label(String(format: "%02d:00 에 새 일정", hour), symbol: "plus.circle")
                 }
             }
     }
@@ -286,7 +286,7 @@ struct MacCalendarDayView: View {
                     : color.adjustingBrightness(0.65)
                 HStack(spacing: 4) {
                     if block.event.isPinned {
-                        Image(systemName: "pin.fill")
+                        Image(symbol: "pin.fill")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(foreground)
                     }
@@ -303,7 +303,7 @@ struct MacCalendarDayView: View {
                         .foregroundStyle(foreground.opacity(0.85))
                 }
                 if height >= 80, block.totalSubCols == 1, let location = block.event.location, !location.isEmpty {
-                    Label(location, systemImage: "mappin")
+                    Label(location, symbol: "mappin")
                         .font(.subheadline)
                         .foregroundStyle(foreground.opacity(0.85))
                         .lineLimit(1)
@@ -326,12 +326,12 @@ struct MacCalendarDayView: View {
                 Button {
                     onEditEvent?(block.event)
                 } label: {
-                    Label("수정", systemImage: "pencil")
+                    Label("수정", symbol: "pencil")
                 }
                 Button(role: .destructive) {
                     onDeleteEvent?(block.event)
                 } label: {
-                    Label("삭제", systemImage: "trash")
+                    Label("삭제", symbol: "trash")
                 }
             }
         }

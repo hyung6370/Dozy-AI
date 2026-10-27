@@ -308,7 +308,7 @@ struct CalendarView: View {
                 }
                 viewModel.selectDate(Date())
             } label: {
-                Image(systemName: "arrow.uturn.left")
+                Image(symbol: "arrow.uturn.left")
                     .fontWeight(.semibold)
                     .foregroundStyle(.orange)
             }
@@ -322,7 +322,7 @@ struct CalendarView: View {
                     isForward = false
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
                 } label: {
-                    Image(systemName: "chevron.left").fontWeight(.semibold)
+                    Image(symbol: "chevron.left").fontWeight(.semibold)
                 }
 
                 Group {
@@ -336,7 +336,7 @@ struct CalendarView: View {
                             HStack(spacing: 4) {
                                 Text(viewModel.currentPeriodString)
                                     .font(.title2).fontWeight(.bold)
-                                Image(systemName: "chevron.down")
+                                Image(symbol: "chevron.down")
                                     .font(.caption).fontWeight(.semibold)
                             }
                             .foregroundStyle(.primary)
@@ -350,7 +350,7 @@ struct CalendarView: View {
                             HStack(spacing: 4) {
                                 Text(viewModel.currentPeriodString)
                                     .font(.title2).fontWeight(.bold)
-                                Image(systemName: "chevron.down")
+                                Image(symbol: "chevron.down")
                                     .font(.caption).fontWeight(.semibold)
                             }
                             .foregroundStyle(.primary)
@@ -363,7 +363,7 @@ struct CalendarView: View {
                     isForward = true
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
                 } label: {
-                    Image(systemName: "chevron.right").fontWeight(.semibold)
+                    Image(symbol: "chevron.right").fontWeight(.semibold)
                 }
             }
 
@@ -570,28 +570,28 @@ struct CalendarView: View {
             let canEdit = isEventEditable(dozyEvent)
             if canEdit {
                 Button { viewModel.startEditingEvent(dozyEvent) } label: {
-                    Label("수정", systemImage: "pencil")
+                    Label("수정", symbol: "pencil")
                 }
                 Button(role: .destructive) {
                     viewModel.requestDelete(event)
                 } label: {
-                    Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
+                    Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", symbol: "trash")
                 }
             }
         } else if event.source == .apple || event.source == .google {
             Button { viewModel.startEditingCalendarEvent(event) } label: {
-                Label("수정", systemImage: "pencil")
+                Label("수정", symbol: "pencil")
             }
             Button(role: .destructive) {
                 viewModel.requestDelete(event)
             } label: {
-                Label("삭제", systemImage: "trash")
+                Label("삭제", symbol: "trash")
             }
             if !viewModel.mySharedCalendars.isEmpty {
                 Button {
                     viewModel.shareExternalEvent(event)
                 } label: {
-                    Label("공유 캘린더로 공유", systemImage: "person.2.badge.plus")
+                    Label("공유 캘린더로 공유", symbol: "person.2.badge.plus")
                 }
             }
         }
@@ -603,7 +603,7 @@ struct CalendarView: View {
             viewModel.updateDisplaySettings(for: event, priority: event.priority, isPinned: !event.isPinned)
         } label: {
             Label(event.isPinned ? "고정 해제" : "상단 고정",
-                  systemImage: event.isPinned ? "pin.slash" : "pin")
+                  symbol: event.isPinned ? "pin.slash" : "pin")
         }
 
         // 우선순위 서브메뉴
@@ -629,7 +629,7 @@ struct CalendarView: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: isShowingEventList ? "calendar" : "list.bullet")
+                Image(symbol: isShowingEventList ? "calendar" : "list.bullet")
                     .font(.subheadline)
                 Text(isShowingEventList ? "캘린더 보기" : "일정 목록 보기")
                     .font(.subheadline)
@@ -689,20 +689,22 @@ struct CalendarView: View {
     private var calendarToolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button { showSearch = true } label: {
-                Image(colorScheme == .dark ? "Dark-Search" : "Light-Search")
+                Image(symbol: "magnifyingglass")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
             }
             .accessibilityLabel("검색")
             .accessibilityIdentifier("btn_calendar_search")
         }
         ToolbarItem(placement: .topBarLeading) {
             Button { showFilter = true } label: {
-                Image(colorScheme == .dark ? "Dark-Calendar-Filter" : "Light-Calendar-Filter")
+                Image(symbol: "line.3.horizontal.decrease")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
                     .overlay(alignment: .topTrailing) {
                         if viewModel.visibilityFilter.isFilterActive {
                             Circle()
@@ -718,20 +720,22 @@ struct CalendarView: View {
         }
         ToolbarItem(placement: .topBarTrailing) {
             Button { captureCalendarGrid() } label: {
-                Image(colorScheme == .dark ? "Dark-Calendar-Screenshot" : "Light-Calendar-Screenshot")
+                Image(symbol: "crop")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
             }
             .accessibilityLabel("캘린더 스크린샷")
             .accessibilityIdentifier("btn_calendar_screenshot")
         }
         ToolbarItem(placement: .topBarTrailing) {
             Button { showLegend = true } label: {
-                Image(colorScheme == .dark ? "Dark-Question" : "Light-Question")
+                Image(symbol: "questionmark.circle")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
             }
         }
     }

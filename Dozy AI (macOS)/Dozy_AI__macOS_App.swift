@@ -165,7 +165,7 @@ struct Dozy_AI__macOS_App: App {
                 MacMenuBarView(container: container, viewModel: menuBarViewModel)
             } else {
                 VStack(spacing: 8) {
-                    Image(systemName: "calendar")
+                    Image(symbol: "calendar")
                         .font(.title3)
                         .foregroundStyle(.secondary)
                     Text("Dozy 준비 중...")
@@ -178,7 +178,7 @@ struct Dozy_AI__macOS_App: App {
             if let vm = coordinator.menuBarViewModel {
                 MacMenuBarIcon(viewModel: vm)
             } else {
-                Image(systemName: "calendar")
+                Image(symbol: "calendar")
             }
         }
         .menuBarExtraStyle(.window)
@@ -206,7 +206,7 @@ struct Dozy_AI__macOS_App: App {
                 .modelContainer(container.modelContainer)
         } else {
             VStack(spacing: 12) {
-                Image(systemName: "calendar.badge.exclamationmark")
+                Image(symbol: "calendar.badge.exclamationmark")
                     .font(.system(size: 40))
                     .foregroundStyle(.secondary)
                 Text("로그인 후 사용할 수 있어요")

@@ -80,7 +80,7 @@ struct CategoryEditSheet: View {
                             ZStack {
                                 Circle().fill(color).frame(width: 36, height: 36)
                                 if color.toHex() == selectedColor.toHex() {
-                                    Image(systemName: "checkmark")
+                                    Image(symbol: "checkmark")
                                         .font(.caption).fontWeight(.bold)
                                         .foregroundStyle(.white)
                                 }

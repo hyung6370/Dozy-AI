@@ -78,7 +78,7 @@ struct MacTodayView: View {
                 Button {
                     showNotificationSheet = true
                 } label: {
-                    Label("알림", systemImage: viewModel.hasUnreadNotification ? "bell.badge.fill" : "bell")
+                    Label("알림", symbol: viewModel.hasUnreadNotification ? "bell.badge.fill" : "bell")
                 }
                 .help("알림")
             }
@@ -86,7 +86,7 @@ struct MacTodayView: View {
                 Button {
                     showNewEventSheet = true
                 } label: {
-                    Label("새 일정", systemImage: "plus")
+                    Label("새 일정", symbol: "plus")
                 }
                 .help("새 일정 추가")
             }
@@ -263,12 +263,12 @@ struct MacTodayView: View {
                             .lineLimit(2)
 
                         HStack(spacing: 14) {
-                            Label(event.timeRangeString, systemImage: "clock")
+                            Label(event.timeRangeString, symbol: "clock")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
                             if let location = event.location, !location.isEmpty {
-                                Label(location, systemImage: "mappin")
+                                Label(location, symbol: "mappin")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
@@ -291,7 +291,7 @@ struct MacTodayView: View {
                     showNewEventSheet = true
                 } label: {
                     HStack(spacing: 14) {
-                        Image(systemName: "calendar.badge.plus")
+                        Image(symbol: "calendar.badge.plus")
                             .font(.title)
                             .foregroundStyle(.tint)
                         VStack(alignment: .leading, spacing: 4) {
@@ -303,7 +303,7 @@ struct MacTodayView: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Image(systemName: "plus.circle.fill")
+                        Image(symbol: "plus.circle.fill")
                             .font(.title2)
                             .foregroundStyle(.tint)
                     }
@@ -404,7 +404,7 @@ struct MacTodayView: View {
 
     private func progressLegend(icon: String, color: Color, value: Int, label: LocalizedStringKey) -> some View {
         HStack(spacing: 7) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.subheadline)
                 .foregroundStyle(color)
             // 숫자만 표시 — verbatim 으로 추출 제외 ('%lld' 가 catalog 에 들어가는 노이즈 방지).
@@ -457,7 +457,7 @@ struct MacTodayView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 HStack(spacing: 7) {
-                    Image(systemName: "sparkles")
+                    Image(symbol: "sparkles")
                         .font(.subheadline)
                     Text("Dozy 요약")
                         .font(.subheadline)
@@ -485,7 +485,7 @@ struct MacTodayView: View {
             if !summary.highlights.isEmpty {
                 ForEach(Array(summary.highlights.prefix(3).enumerated()), id: \.offset) { _, h in
                     HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "star.fill")
+                        Image(symbol: "star.fill")
                             .font(.system(size: 11))
                             .foregroundStyle(.orange)
                             .padding(.top, 5)
@@ -501,7 +501,7 @@ struct MacTodayView: View {
                 Divider().padding(.vertical, 2)
                 ForEach(Array(summary.nextActions.prefix(3).enumerated()), id: \.offset) { _, action in
                     HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "arrow.right.circle")
+                        Image(symbol: "arrow.right.circle")
                             .font(.system(size: 13))
                             .foregroundStyle(.blue)
                             .padding(.top, 3)
@@ -564,13 +564,13 @@ struct MacTodayView: View {
                             editingMemoText = memo
                             showEditMemoAlert = true
                         } label: {
-                            Label("수정", systemImage: "pencil")
+                            Label("수정", symbol: "pencil")
                         }
                         Button(role: .destructive) {
                             deletingMemoIndex = index
                             showDeleteMemoAlert = true
                         } label: {
-                            Label("삭제", systemImage: "trash")
+                            Label("삭제", symbol: "trash")
                         }
                     }
                 }
@@ -585,7 +585,7 @@ struct MacTodayView: View {
                 Button {
                     submitMemo()
                 } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(symbol: "plus.circle.fill")
                         .font(.title2)
                         .foregroundStyle(.blue)
                 }
@@ -613,7 +613,7 @@ struct MacTodayView: View {
                 if viewModel.isSummarizing {
                     ProgressView().controlSize(.regular)
                 } else {
-                    Image(systemName: "sparkles")
+                    Image(symbol: "sparkles")
                         .font(.title3)
                         .foregroundStyle(.indigo)
                 }
@@ -629,7 +629,7 @@ struct MacTodayView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
+                Image(symbol: "chevron.right")
                     .font(.subheadline)
                     .foregroundStyle(.tertiary)
             }
@@ -654,7 +654,7 @@ private struct MacStatCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Image(systemName: icon)
+                Image(symbol: icon)
                     .font(.callout)
                     .foregroundStyle(color)
                     .frame(width: 28, height: 28)
