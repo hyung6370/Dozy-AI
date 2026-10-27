@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftUI
 
+@MainActor
 final class EventEditViewModel: ObservableObject {
     
     @Published var title: String
@@ -16,6 +17,8 @@ final class EventEditViewModel: ObservableObject {
     @Published var startDate: Date
     @Published var endDate: Date
     @Published var location: String
+    /// 자동완성 제안에서 사용자가 고른 좌표 포함 장소. nil 이면 텍스트만 입력된 케이스 — 지도 미표시.
+    @Published var resolvedLocation: EventLocation?
     @Published var notes: String
     @Published var notificationMinutesBefore: Int
     @Published var recurrenceRule: String
@@ -24,22 +27,42 @@ final class EventEditViewModel: ObservableObject {
     @Published var priority: Int
     @Published var isPinned: Bool
     @Published var category: String
-    
+    @Published var sharedCalendarID: String?
+    let sharedCalendars: [SharedCalendar]
+
     let isEditing: Bool
     private let eventToEdit: DozyEvent?
     private let onSave: (DozyEvent) -> Void
-    
-    init(eventToEdit: DozyEvent?, selectedDate: Date, onSave: @escaping (DozyEvent) -> Void) {
+    private var cancellables = Set<AnyCancellable>()
+
+    init(
+        eventToEdit: DozyEvent?,
+        selectedDate: Date,
+        sharedCalendars: [SharedCalendar] = [],
+        useTimeHint: Bool = false,
+        onSave: @escaping (DozyEvent) -> Void
+    ) {
         self.eventToEdit = eventToEdit
         self.onSave = onSave
         self.isEditing = eventToEdit != nil
-        
+        self.sharedCalendars = sharedCalendars
+
         if let e = eventToEdit {
             title = e.title
             isAllDay = e.isAllDay
             startDate = e.startDate
             endDate = e.endDate
             location = e.location ?? ""
+            if let lat = e.latitude, let lng = e.longitude {
+                resolvedLocation = EventLocation(
+                    name: e.location ?? "",
+                    address: nil,
+                    latitude: lat,
+                    longitude: lng
+                )
+            } else {
+                resolvedLocation = nil
+            }
             notes = e.notes ?? ""
             notificationMinutesBefore = e.notificationMinutesBefore
             recurrenceRule = e.recurrenceRule
@@ -48,26 +71,66 @@ final class EventEditViewModel: ObservableObject {
             priority = e.priority
             isPinned = e.isPinned
             category = e.category
+            sharedCalendarID = e.sharedCalendarID
         } else {
             let calendar = Calendar.current
-            let defaultEnd = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+            let resolvedStart: Date
+            let resolvedEnd: Date
+            if useTimeHint {
+                // 시각 힌트 사용: selectedDate 의 hour/minute 그대로 사용, 종료는 +1시간
+                resolvedStart = selectedDate
+                resolvedEnd = calendar.date(byAdding: .hour, value: 1, to: selectedDate) ?? selectedDate
+            } else {
+                // 기본: 해당 날짜 오전 9시 ~ 10시
+                resolvedStart = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+                resolvedEnd = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+            }
             title = ""
             isAllDay = false
-            startDate = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: selectedDate) ?? selectedDate
-            endDate = defaultEnd
+            startDate = resolvedStart
+            endDate = resolvedEnd
             location = ""
+            resolvedLocation = nil
             notes = ""
             notificationMinutesBefore = -1
             recurrenceRule = "none"
-            recurrenceEndDate = defaultEnd  // 이벤트 종료일 기준으로 초기화 (사용자가 반복 종료일을 직접 연장)
+            recurrenceEndDate = resolvedEnd
             selectedColor = .blue
             priority = 0
             isPinned = false
             category = UserCategory.defaultName
         }
+
+        // 시작 시각이 바뀌면 종료가 그보다 앞이 되지 않도록 자동 보정.
+        // allDay 이면 동일일자, 아니면 시작 + 1시간 으로.
+        $startDate
+            .dropFirst()
+            .sink { [weak self] newStart in
+                guard let self else { return }
+                if self.endDate < newStart {
+                    if self.isAllDay {
+                        self.endDate = newStart
+                    } else {
+                        self.endDate = Calendar.current.date(byAdding: .hour, value: 1, to: newStart) ?? newStart
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
-    
+
     var isSavable: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
+    
+    /// 자연어 파싱 결과로 폼을 채운다. 반복/알림/카테고리는 건드리지 않는다 - 사용자가 이어서 고른다
+    func apply(_ draft: EventDraft) {
+        title = draft.title
+        isAllDay = draft.isAllDay
+        startDate = draft.startDate
+        endDate = draft.isAllDay ? draft.startDate : draft.endDate
+        if let location = draft.location, !location.isEmpty {
+            self.location = location
+            resolvedLocation = nil // 좌표는 사용자가 자동완성에서 고를 때만
+        }
+    }
     
     func save() {
         let colorHex = selectedColor.toHex() ?? "#007AFF"
@@ -79,6 +142,8 @@ final class EventEditViewModel: ObservableObject {
             event.startDate = startDate
             event.endDate = finalEnd
             event.location = location.isEmpty ? nil : location
+            event.latitude = resolvedLocation?.latitude
+            event.longitude = resolvedLocation?.longitude
             event.notes = notes.isEmpty ? nil : notes
             event.notificationMinutesBefore = notificationMinutesBefore
             event.recurrenceRule = recurrenceRule
@@ -87,6 +152,7 @@ final class EventEditViewModel: ObservableObject {
             event.priority = priority
             event.isPinned = isPinned
             event.category = category
+            event.sharedCalendarID = sharedCalendarID
             onSave(event)
         } else {
             onSave(DozyEvent(
@@ -95,6 +161,8 @@ final class EventEditViewModel: ObservableObject {
                 endDate: finalEnd,
                 isAllDay: isAllDay,
                 location: location.isEmpty ? nil : location,
+                latitude: resolvedLocation?.latitude,
+                longitude: resolvedLocation?.longitude,
                 notes: notes.isEmpty ? nil : notes,
                 colorHex: colorHex,
                 recurrenceRule: recurrenceRule,
@@ -102,7 +170,8 @@ final class EventEditViewModel: ObservableObject {
                 notificationMinutesBefore: notificationMinutesBefore,
                 priority: priority,
                 isPinned: isPinned,
-                category: category
+                category: category,
+                sharedCalendarID: sharedCalendarID
             ))
         }
     }

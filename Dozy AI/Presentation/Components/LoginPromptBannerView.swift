@@ -7,91 +7,53 @@
 
 import SwiftUI
 
-struct LoginPromptTooltipView: View {
+/// 홈 탭 비로그인 상태 안내 카드.
+/// 바로 위의 "Dozy 일정 요약" 카드와 같은 카드 언어(.regularMaterial + 14pt 라운드 + 테마 보더)를 쓴다.
+struct LoginPromptCardView: View {
 
     let onTap: () -> Void
 
-    private let tailHeight: CGFloat = 8
-    private let tailOffset: CGFloat = 24
-    private let tailWidth: CGFloat = 14
-    private let cornerRadius: CGFloat = 12
-
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 10) {
-                Image(systemName: "lock.fill")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            HStack(spacing: 12) {
+                Image(symbol: "lock.shield.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(DozyColor.Brand.primary)
 
-                Text("데이터를 안전하게 보호하고 싶다면 로그인을 해보세요 :)")
-                    .font(.caption)
-                    .foregroundStyle(.primary)
-
-                Spacer()
-
-                HStack(spacing: 3) {
-                    Text("로그인")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("로그인 · 회원가입")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                    Text("로그인하면 모든 기기에서 데이터가 안전하게 백업돼요")
                         .font(.caption)
-                        .fontWeight(.semibold)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
-                .foregroundStyle(.indigo)
+
+                Spacer(minLength: 8)
+
+                Text("로그인")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(DozyColor.Brand.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(DozyColor.Brand.primary.opacity(0.12), in: Capsule())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .padding(.top, tailHeight)
-            .background {
-                SpeechBubbleShape(
-                    tailOffset: tailOffset,
-                    tailWidth: tailWidth,
-                    tailHeight: tailHeight,
-                    cornerRadius: cornerRadius
-                )
-                .fill(Color(uiColor: .secondarySystemBackground))
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
-            }
-            .overlay {
-                SpeechBubbleShape(
-                    tailOffset: tailOffset,
-                    tailWidth: tailWidth,
-                    tailHeight: tailHeight,
-                    cornerRadius: cornerRadius
-                )
-                .stroke(Color.primary.opacity(0.07), lineWidth: 1)
-            }
+            .padding(14)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .dozyThemedCardBorder(cornerRadius: 14)
+            // 텍스트/아이콘만이 아니라 카드 전체(빈 영역·가장자리 포함)가 탭 되도록.
+            .contentShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - Speech Bubble Shape
-
-private struct SpeechBubbleShape: Shape {
-    let tailOffset: CGFloat
-    let tailWidth: CGFloat
-    let tailHeight: CGFloat
-    let cornerRadius: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        let bodyRect = CGRect(
-            x: rect.minX,
-            y: rect.minY + tailHeight,
-            width: rect.width,
-            height: rect.height - tailHeight
-        )
-
-        var path = Path(roundedRect: bodyRect, cornerRadius: cornerRadius)
-
-        // Tail triangle pointing upward
-        let tailX = rect.minX + tailOffset
-        var tail = Path()
-        tail.move(to: CGPoint(x: tailX, y: bodyRect.minY))
-        tail.addLine(to: CGPoint(x: tailX + tailWidth / 2, y: rect.minY))
-        tail.addLine(to: CGPoint(x: tailX + tailWidth, y: bodyRect.minY))
-        tail.closeSubpath()
-
-        path.addPath(tail)
-        return path
+#Preview {
+    VStack(spacing: 20) {
+        LoginPromptCardView {}
     }
+    .padding()
 }

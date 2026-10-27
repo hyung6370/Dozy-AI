@@ -22,6 +22,8 @@ struct EventDetailView: View {
     let onUpdateDisplaySettings: ((CalendarEvent, Int, Bool, String?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var authViewModel: AuthViewModel
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
     @Query private var allDisplaySettings: [EventDisplaySettings]
     @State private var showCalendarDeleteConfirm = false
@@ -36,7 +38,27 @@ struct EventDetailView: View {
     @State private var displayPriority: Int = 0
     @State private var displayIsPinned: Bool = false
     @State private var displayCategory: String = UserCategory.defaultName
+    @State private var originalPriority: Int = 0
+    @State private var originalIsPinned: Bool = false
+    @State private var originalCategory: String = UserCategory.defaultName
     @State private var showRecurringEditConfirm = false
+
+    private var hasChanges: Bool {
+        displayPriority != originalPriority
+            || displayIsPinned != originalIsPinned
+            || displayCategory != originalCategory
+    }
+
+    /// 파트너가 생성한 공유 캘린더 이벤트인지 여부.
+    /// - 개인 이벤트(sharedCalendarID == nil): 항상 편집 가능
+    /// - 공유 이벤트: ownerID와 현재 사용자 ID 일치 여부로 판단
+    /// - ownerID가 nil인 레거시 이벤트: 편집 가능하게 처리 (마이그레이션 전 데이터)
+    private var canEditEvent: Bool {
+        guard let dozyEvent else { return true }
+        if dozyEvent.sharedCalendarID == nil { return true }
+        guard let ownerID = dozyEvent.ownerID else { return true }
+        return ownerID == (authViewModel.currentUser?.id ?? "")
+    }
 
     var body: some View {
         NavigationStack {
@@ -65,9 +87,32 @@ struct EventDetailView: View {
                     let settings = allDisplaySettings.first(where: { $0.eventID == event.id })
                     displayCategory = settings?.category ?? event.category
                 }
+                originalPriority = displayPriority
+                originalIsPinned = displayIsPinned
+                originalCategory = displayCategory
             }
             .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .inactive || newPhase == .background {
+                    showEditMemoAlert = false
+                    showDeleteMemoAlert = false
+                    showRecurringEditConfirm = false
+                    showDozyDeleteConfirm = false
+                    showCalendarDeleteConfirm = false
+                }
+            }
             .toolbar {
+                if hasChanges {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("저장") {
+                            onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, displayCategory)
+                            originalPriority = displayPriority
+                            originalIsPinned = displayIsPinned
+                            originalCategory = displayCategory
+                        }
+                        .fontWeight(.semibold)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("닫기") { dismiss() }
                 }
@@ -78,19 +123,51 @@ struct EventDetailView: View {
     // MARK: - Header
     
     private var headerSection: some View {
-        HStack(spacing: 14) {
+        let currentCategory = categories.first(where: { $0.name == displayCategory })
+        let barColor: Color = {
+            if event.source == .dozy, let cat = currentCategory {
+                return Color(hex: cat.colorHex) ?? .blue
+            }
+            return Color(hex: event.calendarColorHex) ?? .blue
+        }()
+        return HStack(spacing: 14) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                .fill(barColor)
                 .frame(width: 6, height: 56)
-            
+
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.title)
-                    .font(.title2).fontWeight(.bold)
-                Text(event.calendarName)
-                    .font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    if let emoji = currentCategory?.emoji {
+                        Text(emoji).font(.title3)
+                    }
+                    Text(event.title)
+                        .font(.title2).fontWeight(.bold)
+                }
+                HStack(spacing: 6) {
+                    Text(event.calendarName)
+                        .font(.caption).foregroundStyle(.secondary)
+                    if let partnerTag {
+                        Text(verbatim: "·").font(.caption).foregroundStyle(.tertiary)
+                        Label(partnerTag, symbol: "person.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color(UIColor.systemGray6), in: Capsule())
+                    }
+                }
             }
         }
         .padding()
+    }
+
+    /// 파트너 이벤트인 경우 파트너 닉네임(없으면 "파트너") 반환, 아니면 nil
+    private var partnerTag: String? {
+        guard let dozyEvent else { return nil }
+        guard let calID = dozyEvent.sharedCalendarID else { return nil }
+        guard let ownerID = dozyEvent.ownerID,
+              ownerID != (authViewModel.currentUser?.id ?? "") else { return nil }
+        return ActiveSharedCalendarStore.shared.partnerDisplayName(for: calID)
     }
     
     // MARK: - Info
@@ -101,6 +178,17 @@ struct EventDetailView: View {
             if let location = event.location, !location.isEmpty {
                 Divider().padding(.leading, 52)
                 DetailRow(icon: "mappin", label: "위치", value: location)
+                // 좌표가 있을 때만 지도 임베드. 자동완성에서 안 골랐거나 외부(Apple/Google) 이벤트면 nil — 자연스럽게 미표시.
+                if let lat = dozyEvent?.latitude, let lng = dozyEvent?.longitude {
+                    LocationMapView(location: EventLocation(
+                        name: location,
+                        address: nil,
+                        latitude: lat,
+                        longitude: lng
+                    ))
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+                }
             }
             
             if let notes = event.notes, !notes.isEmpty {
@@ -109,7 +197,12 @@ struct EventDetailView: View {
             }
             
             Divider().padding(.leading, 52)
-            DetailRow(icon: sourceIcon, label: "캘린더", value: event.calendarName)
+            DetailRow(
+                icon: sourceIcon,
+                assetIcon: sourceAssetIcon,
+                label: "캘린더",
+                value: event.calendarName
+            )
             
             if let dozyEvent, dozyEvent.recurrenceRule != "none" {
                 Divider().padding(.leading, 52)
@@ -137,7 +230,7 @@ struct EventDetailView: View {
             
             ForEach(Array(memos.enumerated()), id: \.offset) { index, memo in
                 HStack(alignment: .top, spacing: 8) {
-                    Text("📝").font(.subheadline)
+                    Text(verbatim: "📝").font(.subheadline)
                     Text(memo)
                         .font(.subheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -151,23 +244,23 @@ struct EventDetailView: View {
                         editingMemoText = memo
                         showEditMemoAlert = true
                     } label: {
-                        Label("수정", systemImage: "pencil")
+                        Label("수정", symbol: "pencil")
                     }
                     Button(role: .destructive) {
                         deletingMemoIndex = index
                         showDeleteMemoAlert = true
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Label("삭제", symbol: "trash")
                     }
                 }
             }
-            
+
             HStack(spacing: 10) {
                 TextField("메모를 남겨보세요", text: $memoText)
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { submitMemo(dozy) }
                 Button { submitMemo(dozy) } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(symbol: "plus.circle.fill")
                         .font(.title2)
                         .foregroundStyle(.blue)
                 }
@@ -211,120 +304,223 @@ struct EventDetailView: View {
     
     // MARK: - Action (Dozy)
 
+    // MARK: - Display Settings (표시 설정 카드)
+
+    /// 내 이벤트용 — 토글/Picker로 편집 가능
+    private var editableDisplaySettings: some View {
+        VStack(spacing: 0) {
+            Toggle(isOn: $displayIsPinned) {
+                Label("상단 고정", symbol: displayIsPinned ? "pin.fill" : "pin")
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+
+            Divider().padding(.leading)
+
+            HStack {
+                Label("우선순위", symbol: "chart.bar").foregroundStyle(.primary)
+                Spacer()
+                Picker("", selection: $displayPriority) {
+                    Text("없음").tag(0)
+                    Text("높음 🔴").tag(1)
+                    Text("중간 🟡").tag(2)
+                    Text("낮음 🔵").tag(3)
+                }
+                .pickerStyle(.menu)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+
+            Divider().padding(.leading)
+
+            HStack {
+                Label("카테고리", symbol: "tag").foregroundStyle(.primary)
+                Spacer()
+                Picker("", selection: $displayCategory) {
+                    ForEach(categories) { cat in
+                        Text("\(cat.emoji) \(cat.name)").tag(cat.name)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+        }
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
+    }
+
+    /// 파트너 이벤트용 — 읽기 전용. 카테고리는 파트너가 설정한 값을 그대로 표시
+    private func readOnlyDisplaySettings(for dozyEvent: DozyEvent) -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                Label("상단 고정", symbol: dozyEvent.isPinned ? "pin.fill" : "pin")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(verbatim: dozyEvent.isPinned ? "ON" : "OFF")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal).padding(.vertical, 12)
+
+            Divider().padding(.leading)
+
+            HStack {
+                Label("우선순위", symbol: "chart.bar").foregroundStyle(.secondary)
+                Spacer()
+                Text(priorityLabel(dozyEvent.priority))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal).padding(.vertical, 10)
+
+            Divider().padding(.leading)
+
+            HStack {
+                Label("카테고리", symbol: "tag").foregroundStyle(.secondary)
+                Spacer()
+                Text(dozyEvent.category.isEmpty ? "-" : dozyEvent.category)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal).padding(.vertical, 10)
+        }
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
+    }
+
+    private func priorityLabel(_ value: Int) -> String {
+        switch value {
+        case 1: return String(localized: "높음 🔴")
+        case 2: return String(localized: "중간 🟡")
+        case 3: return String(localized: "낮음 🔵")
+        default: return String(localized: "없음")
+        }
+    }
+
     private func dozyActionSection(_ dozyEvent: DozyEvent) -> some View {
         VStack(spacing: 12) {
             Divider().padding(.top, 16)
 
-            // 표시 설정
-            VStack(spacing: 0) {
-                Toggle(isOn: $displayIsPinned) {
-                    Label("상단 고정", systemImage: displayIsPinned ? "pin.fill" : "pin")
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-                .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
-                }
+            if event.isExternalMirror && event.externalDeleted {
+                externalDeletedBanner
+            }
 
-                Divider().padding(.leading)
+            // 표시 설정 — 내 이벤트는 편집 가능, 파트너 이벤트는 읽기 전용
+            if canEditEvent {
+                editableDisplaySettings
+                Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+            } else {
+                readOnlyDisplaySettings(for: dozyEvent)
+            }
 
-                HStack {
-                    Label("우선순위", systemImage: "chart.bar")
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Picker("", selection: $displayPriority) {
-                        Text("없음").tag(0)
-                        Text("높음 🔴").tag(1)
-                        Text("중간 🟡").tag(2)
-                        Text("낮음 🔵").tag(3)
+            if canEditEvent {
+                if event.isExternalMirror {
+                    // 외부 미러는 수정 버튼 없음(원본은 Apple/Google 앱에서 편집).
+                    // 공유 자체만 해제 가능.
+                    Button(role: .destructive) {
+                        showDozyDeleteConfirm = true
+                    } label: {
+                        Label("공유 해제", symbol: "person.2.slash")
+                            .frame(maxWidth: .infinity)
                     }
-                    .pickerStyle(.menu)
-                    .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-
-                Divider().padding(.leading)
-
-                HStack {
-                    Label("카테고리", systemImage: "tag")
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Picker("", selection: $displayCategory) {
-                        ForEach(categories) { cat in
-                            Text("\(cat.emoji) \(cat.name)").tag(cat.name)
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+                    .confirmationDialog("공유 해제", isPresented: $showDozyDeleteConfirm, titleVisibility: .visible) {
+                        Button("공유 해제", role: .destructive) {
+                            onDelete?(dozyEvent)
                         }
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-            }
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal)
-
-            Button {
-                if dozyEvent.recurrenceRule != "none" {
-                    showRecurringEditConfirm = true
-                } else {
-                    dismiss()
-                    onEdit?(dozyEvent)
-                }
-            } label: {
-                Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .padding(.horizontal)
-            .confirmationDialog("반복 일정 수정", isPresented: $showRecurringEditConfirm, titleVisibility: .visible) {
-                Button("모든 반복 일정 수정") {
-                    dismiss()
-                    onEdit?(dozyEvent)
-                }
-            } message: {
-                Text("반복 일정의 모든 항목이 수정됩니다.")
-            }
-
-            Button(role: .destructive) {
-                showDozyDeleteConfirm = true
-            } label: {
-                Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .padding(.horizontal)
-            .padding(.bottom, 24)
-            .confirmationDialog(
-                dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
-                isPresented: $showDozyDeleteConfirm,
-                titleVisibility: .visible
-            ) {
-                if dozyEvent.recurrenceRule != "none" {
-                    Button("이 일정만 삭제", role: .destructive) {
-                        onDeleteThisOnly?(dozyEvent, event.startDate)
-                        dismiss()
-                    }
-                    Button("이후 모든 일정 삭제", role: .destructive) {
-                        onDeleteFutureEvents?(dozyEvent, event.startDate)
-                        dismiss()
-                    }
-                    Button("모든 반복 일정 삭제", role: .destructive) {
-                        onDelete?(dozyEvent)
+                    } message: {
+                        Text("이 일정의 공유만 해제됩니다. 원본 Apple · Google 일정은 그대로 유지됩니다.")
                     }
                 } else {
-                    Button("삭제", role: .destructive) {
-                        onDelete?(dozyEvent)
+                    Button {
+                        if dozyEvent.recurrenceRule != "none" {
+                            showRecurringEditConfirm = true
+                        } else {
+                            dismiss()
+                            onEdit?(dozyEvent)
+                        }
+                    } label: {
+                        Label("수정", symbol: "pencil").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal)
+                    .confirmationDialog("반복 일정 수정", isPresented: $showRecurringEditConfirm, titleVisibility: .visible) {
+                        Button("모든 반복 일정 수정") {
+                            dismiss()
+                            onEdit?(dozyEvent)
+                        }
+                    } message: {
+                        Text("반복 일정의 모든 항목이 수정됩니다.")
+                    }
+
+                    Button(role: .destructive) {
+                        showDozyDeleteConfirm = true
+                    } label: {
+                        Label("삭제", symbol: "trash").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+                    .confirmationDialog(
+                        dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제",
+                        isPresented: $showDozyDeleteConfirm,
+                        titleVisibility: .visible
+                    ) {
+                        if dozyEvent.recurrenceRule != "none" {
+                            Button("이 일정만 삭제", role: .destructive) {
+                                onDeleteThisOnly?(dozyEvent, event.startDate)
+                                dismiss()
+                            }
+                            Button("이후 모든 일정 삭제", role: .destructive) {
+                                onDeleteFutureEvents?(dozyEvent, event.startDate)
+                                dismiss()
+                            }
+                            Button("모든 반복 일정 삭제", role: .destructive) {
+                                onDelete?(dozyEvent)
+                            }
+                        } else {
+                            Button("삭제", role: .destructive) {
+                                onDelete?(dozyEvent)
+                            }
+                        }
+                    } message: {
+                        Text(dozyEvent.recurrenceRule != "none"
+                             ? "삭제할 범위를 선택해주세요."
+                             : "정말로 삭제하시겠습니까?")
                     }
                 }
-            } message: {
-                Text(dozyEvent.recurrenceRule != "none"
-                     ? "삭제할 범위를 선택해주세요."
-                     : "정말로 삭제하시겠습니까?")
+            } else {
+                Label("파트너가 만든 일정은 수정 · 삭제할 수 없습니다.", symbol: "lock")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
             }
         }
+    }
+
+    /// 외부 원본이 삭제된 미러 스냅샷에 대한 경고 배너. 소유자·파트너 모두에게 표시.
+    private var externalDeletedBanner: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("원본이 삭제되었습니다", symbol: "exclamationmark.triangle.fill")
+                .font(.subheadline)
+                .foregroundStyle(.orange)
+            Text("원본 Apple · Google 일정이 더이상 존재하지 않습니다. 공유 캘린더에서는 계속 표시되며, 소유자가 공유를 해제할 수 있습니다.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal)
     }
 
     // MARK: - Action (Apple / Google)
@@ -336,18 +532,15 @@ struct EventDetailView: View {
             // 표시 설정
             VStack(spacing: 0) {
                 Toggle(isOn: $displayIsPinned) {
-                    Label("상단 고정", systemImage: displayIsPinned ? "pin.fill" : "pin")
+                    Label("상단 고정", symbol: displayIsPinned ? "pin.fill" : "pin")
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
-                .onChange(of: displayIsPinned) { _, newValue in
-                    onUpdateDisplaySettings?(event, displayPriority, newValue, displayCategory)
-                }
 
                 Divider().padding(.leading)
 
                 HStack {
-                    Label("우선순위", systemImage: "chart.bar")
+                    Label("우선순위", symbol: "chart.bar")
                         .foregroundStyle(.primary)
                     Spacer()
                     Picker("", selection: $displayPriority) {
@@ -357,9 +550,6 @@ struct EventDetailView: View {
                         Text("낮음 🔵").tag(3)
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayPriority) { _, newValue in
-                        onUpdateDisplaySettings?(event, newValue, displayIsPinned, displayCategory)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -367,7 +557,7 @@ struct EventDetailView: View {
                 Divider().padding(.leading)
 
                 HStack {
-                    Label("카테고리", systemImage: "tag")
+                    Label("카테고리", symbol: "tag")
                         .foregroundStyle(.primary)
                     Spacer()
                     Picker("", selection: $displayCategory) {
@@ -376,9 +566,6 @@ struct EventDetailView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: displayCategory) { _, newValue in
-                        onUpdateDisplaySettings?(event, displayPriority, displayIsPinned, newValue)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -386,11 +573,16 @@ struct EventDetailView: View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal)
 
+            Text("Apple · Google 일정은 일정 색깔을 변경할 수 없습니다.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+
             Button {
                 dismiss()
                 onEditCalendar?(event)
             } label: {
-                Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
+                Label("수정", symbol: "pencil").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
@@ -398,7 +590,7 @@ struct EventDetailView: View {
             Button(role: .destructive) {
                 showCalendarDeleteConfirm = true
             } label: {
-                Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
+                Label("삭제", symbol: "trash").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
@@ -417,10 +609,11 @@ struct EventDetailView: View {
     // MARK: - Helpers
     
     private var timeString: String {
-        if event.isAllDay { return "종일" }
+        if event.isAllDay { return String(localized: "종일") }
+        // DateFormatter 패턴 자체가 한글 literal 을 포함 — locale-aware 포맷팅은 PR #7 에서 마이그레이션.
         let fmt = DateFormatter()
-        fmt.dateFormat = "M월 d일 (E) HH:mm"
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.dateFormat = String(localized: "M월 d일 (E) HH:mm")
+        fmt.locale = .current
         let start = fmt.string(from: event.startDate)
         fmt.dateFormat = "HH:mm"
         let end = fmt.string(from: event.endDate)
@@ -429,28 +622,39 @@ struct EventDetailView: View {
     
     private var sourceIcon: String {
         switch event.source {
-        case .apple: return "apple.logo"
-        case .google: return "g.circle"
-        case .naver: return "n.circle"
-        case .dozy: return "d.circle.fill"
+        case .apple:   return "apple.logo"
+        case .google:  return "g.circle"
+        case .naver:   return "n.circle"
+        case .dozy:    return "d.circle.fill"
+        case .holiday: return "flag.fill"
+        }
+    }
+
+    /// 캘린더 분류 row 에 시스템 SF Symbol 대신 보여줄 Asset 이미지.
+    /// Google 은 Google 로고, Dozy 는 인앱 로고. 그 외 source 는 nil → SF Symbol 사용.
+    private var sourceAssetIcon: String? {
+        switch event.source {
+        case .google: return "google"
+        case .dozy:   return "Dozy-AI-20x20"
+        default:      return nil
         }
     }
     
     private func recurrenceLabel(_ rule: String) -> String {
         switch rule {
-        case "daily": return "매일"
-        case "weekly": return "매주"
-        case "monthly": return "매월"
-        case "yearly": return "매년"
+        case "daily": return String(localized: "매일")
+        case "weekly": return String(localized: "매주")
+        case "monthly": return String(localized: "매월")
+        case "yearly": return String(localized: "매년")
         default: return ""
         }
     }
-    
+
     private func notificationLabel(_ minutes: Int) -> String {
         switch minutes {
-        case 0: return "정시"
-        case 60: return "1시간 전"
-        default: return "\(minutes)분 전"
+        case 0: return String(localized: "정시")
+        case 60: return String(localized: "1시간 전")
+        default: return String(localized: "\(minutes)분 전")
         }
     }
 }
@@ -459,16 +663,28 @@ struct EventDetailView: View {
 
 private struct DetailRow: View {
     let icon: String
-    let label: String
+    /// 시스템 SF Symbol 대신 Asset 이미지를 쓰고 싶을 때 (예: google 로고, 앱 아이콘) 전달.
+    /// non-nil 이면 `icon` 은 무시되고 asset 이 우선 렌더된다.
+    var assetIcon: String? = nil
+    let label: LocalizedStringKey
     let value: String
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            Image(systemName: icon)
-                .foregroundStyle(.secondary)
-                .frame(width: 24)
-                .padding(.leading, 16)
-            
+            Group {
+                if let asset = assetIcon {
+                    Image(asset)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                } else {
+                    Image(symbol: icon)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 24)
+            .padding(.leading, 16)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.caption).foregroundStyle(.secondary)

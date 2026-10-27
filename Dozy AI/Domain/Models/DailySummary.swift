@@ -80,7 +80,7 @@ struct DailyTrendPoint: Identifiable {
     
     var dateLabel: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
+        f.locale = .current
         f.dateFormat = "M/d"
         return f.string(from: date)
     }

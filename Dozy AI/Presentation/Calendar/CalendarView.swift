@@ -7,11 +7,16 @@
 
 import SwiftUI
 import Lottie
+import OSLog
+import Photos
 
 struct CalendarView: View {
 
+    let container: DependencyContainer
     @ObservedObject var viewModel: CalendarViewModel
     @State private var showLegend = false
+    @State private var showSearch = false
+    @State private var showFilter = false
     @State private var longPressDate: Date? = nil
     @State private var showLongPressAlert = false
     @State private var pageIndex = 1
@@ -22,10 +27,20 @@ struct CalendarView: View {
     @State private var showDatePicker = false
     @State private var pickerDate = Date()
     @State private var triggerScrollToList = false
+    @State private var isShowingEventList = false
+    /// 캡쳐 버튼 → 흰 플래시 오버레이 (iOS 시스템 스크린샷 모션 흉내).
+    @State private var captureFlashOpacity: Double = 0
+    /// 권한 거부 상태에서 캡쳐 시도 시 띄우는 커스텀 권한 안내 alert.
+    @State private var showCapturePermissionAlert = false
+    /// 사진 앨범 저장 성공 시 띄우는 확인 alert.
+    @State private var showCaptureSavedAlert = false
+    /// 캡쳐 후 사용자에게 편집 시트를 띄울 이미지 wrapper. nil 이면 시트 안 띄움.
+    @State private var screenshotEditItem: ScreenshotEditItem?
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var authViewModel: AuthViewModel
 
-    private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+    private let weekdays = Calendar.headerWeekdaySymbols()
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
@@ -33,7 +48,7 @@ struct CalendarView: View {
             ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
-                    viewModePicker
+                    Color.clear.frame(height: 0).id("calendarTop")
                     monthHeader
                     if viewModel.viewMode != .week {
                         weekdayHeader
@@ -51,44 +66,61 @@ struct CalendarView: View {
                         eventListSection
                             .id("eventList")
                     }
+                    // floatingScrollButton(높이 ~44 + bottom padding 100) 위에서 마지막 콘텐츠가 가려지지 않도록 여유.
+                    Color.clear.frame(height: 80)
+                }
+            }
+            .drivesTabBarChrome()   // 위로 쓸기 → 탭바 축소 / 캘린더 탭 재터치 → 맨 위로
+            .tracksTabRoot()        // 하위 화면 push 시 탭바 숨김
+            .overlay(alignment: .bottom) {
+                if viewModel.viewMode != .day {
+                    floatingScrollButton(proxy: proxy)
                 }
             }
             .refreshable {
-                viewModel.refreshData()
+                viewModel.refreshData(source: "CalendarView.refreshable")
             }
             .onChange(of: triggerScrollToList) { _, newVal in
                 if newVal {
                     withAnimation(.easeInOut(duration: 0.4)) {
                         proxy.scrollTo("eventList", anchor: .top)
                     }
+                    isShowingEventList = true
                     triggerScrollToList = false
                 }
             }
+            .onChange(of: viewModel.viewMode) { _, _ in
+                isShowingEventList = false
+            }
+            .dozyThemedShellBackground()
             .navigationTitle("캘린더")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { viewModel.startCreatingEvent() } label: {
-                        Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                    }
-                    .accessibilityLabel("일정 추가")
-                    .accessibilityIdentifier("btn_calendar_add")
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showLegend = true } label: {
-                        Image(colorScheme == .dark ? "Dark-Question" : "Light-Question")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                    }
-                }
-            }
+            .toolbar { calendarToolbar }
             .sheet(isPresented: $showLegend) {
                 CalendarLegendView()
                     .presentationDetents([.medium])
+            }
+            .modifier(CaptureOverlayModifier(
+                flashOpacity: captureFlashOpacity,
+                showPermissionAlert: $showCapturePermissionAlert,
+                showSavedAlert: $showCaptureSavedAlert
+            ))
+            .fullScreenCover(item: $screenshotEditItem) { item in
+                CalendarScreenshotEditView(
+                    image: item.image,
+                    onSave: { composed in saveComposedImage(composed) },
+                    onCancel: { screenshotEditItem = nil }
+                )
+            }
+            .sheet(isPresented: $showFilter) {
+                CalendarFilterSheet(
+                    filter: viewModel.visibilityFilter,
+                    sharedCalendars: viewModel.mySharedCalendars
+                )
+                .presentationDetents([.medium, .large])
+            }
+            .fullScreenCover(isPresented: $showSearch) {
+                SearchView(container: container)
             }
             .sheet(isPresented: $showMonthPicker) {
                 MonthYearPickerView(
@@ -119,7 +151,8 @@ struct CalendarView: View {
             .sheet(isPresented: $viewModel.showEventEdit) {
                 EventEditView(
                     eventToEdit: viewModel.eventToEdit,
-                    selectedDate: viewModel.selectedDate
+                    selectedDate: viewModel.selectedDate,
+                    sharedCalendars: viewModel.sharedCalendarsForEditing()
                 ) { event in
                     viewModel.saveEvent(event)
                 }
@@ -129,12 +162,25 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
-                    CalendarEventEditView(event: event) { edit in
+                    CalendarEventEditView(
+                        event: event,
+                        sharedCalendars: viewModel.mySharedCalendars,
+                        onShareToSharedCalendar: { edited, calendar in
+                            viewModel.performShare(edited, to: calendar)
+                        }
+                    ) { edit in
                         viewModel.saveCalendarEvent(event, edit: edit)
                     }
                 }
             }
-            .onAppear { viewModel.loadInitialData() }
+            .onAppear {
+                // ⚠️ 여기서 loadInitialData 를 부르지 않는다. MainTabView.onAppear 와 tab
+                // switch 경로가 이미 초기 로드를 트리거하고, CalendarView 가 SwiftUI
+                // TabView 안에서 신원이 갈리며 onAppear 가 반복 발화하던 케이스가
+                // 폭주의 직접 원인이었다 (#53). 로그만 남긴다.
+                Logger.nav.info("[화면: 캘린더] 🧭 onAppear")
+            }
+            .onDisappear { Logger.nav.info("[화면: 캘린더] 🧭 onDisappear") }
             .overlay {
                 if viewModel.showSuccessAnimation {
                     LottieView(name: "success", loopMode: .playOnce, animationSpeed: 1.8) {
@@ -177,14 +223,25 @@ struct CalendarView: View {
                 Text(viewModel.deleteErrorMessage ?? "")
             }
             .alert("일정 생성", isPresented: $showLongPressAlert, actions: longPressAlertActions, message: longPressAlertMessage)
+            .modifier(ShareExternalEventOverlay(viewModel: viewModel))
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase != .active {
                     showLegend = false
                     showMonthPicker = false
                     showDatePicker = false
+                    showLongPressAlert = false
                     viewModel.showEventDetail = false
                     viewModel.showEventEdit = false
                     viewModel.showCalendarEventEdit = false
+                    viewModel.showDeleteAlert = false
+                    viewModel.showDeleteSuccess = false
+                    viewModel.deleteErrorMessage = nil
+                } else {
+                    // 앱 복귀 시 외부 원본과 미러 스냅샷을 재동기화
+                    viewModel.reconcileExternalMirrors()
+                    // Realtime DELETE가 REPLICA IDENTITY DEFAULT로 인해 오지 않으므로,
+                    // 공유 이벤트 삭제/파트너 탈퇴를 포그라운드 복귀 시 resync로 커버한다.
+                    container.sharedCalendarRealtimeService.resyncAllActive()
                 }
             }
             } // ScrollViewReader
@@ -241,79 +298,93 @@ struct CalendarView: View {
 
     private var monthHeader: some View {
         HStack {
-            HStack(spacing: 16) {
-                Button {
-                    isForward = viewModel.selectedDate < Date()
-                    if viewModel.viewMode == .month {
-                        let cal = Calendar.current
-                        let todayStart = cal.date(from: cal.dateComponents([.year, .month], from: Date()))!
-                        isForward = viewModel.currentMonth < todayStart
-                        viewModel.setCurrentMonth(Date())
-                    }
-                    viewModel.selectDate(Date())
-                } label: {
-                    Image(systemName: "arrow.uturn.left")
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.orange)
+            Button {
+                isForward = viewModel.selectedDate < Date()
+                if viewModel.viewMode == .month {
+                    let cal = Calendar.current
+                    let todayStart = cal.date(from: cal.dateComponents([.year, .month], from: Date()))!
+                    isForward = viewModel.currentMonth < todayStart
+                    viewModel.setCurrentMonth(Date())
                 }
-                .opacity(isOnToday ? 0 : 1)
-                .disabled(isOnToday)
+                viewModel.selectDate(Date())
+            } label: {
+                Image(symbol: "arrow.uturn.left")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.orange)
+            }
+            .opacity(isOnToday ? 0 : 1)
+            .disabled(isOnToday)
 
+            Spacer()
+
+            HStack(spacing: 12) {
                 Button {
                     isForward = false
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.previousPeriod() }
                 } label: {
-                    Image(systemName: "chevron.left").fontWeight(.semibold)
+                    Image(symbol: "chevron.left").fontWeight(.semibold)
                 }
-            }
 
-            Group {
-                if viewModel.viewMode == .month {
-                    Button {
-                        let cal = Calendar.current
-                        pickerYear = cal.component(.year, from: viewModel.currentMonth)
-                        pickerMonth = cal.component(.month, from: viewModel.currentMonth)
-                        showMonthPicker = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(viewModel.currentPeriodString)
-                                .font(.title2).fontWeight(.bold)
-                            Image(systemName: "chevron.down")
-                                .font(.caption).fontWeight(.semibold)
+                Group {
+                    if viewModel.viewMode == .month {
+                        Button {
+                            let cal = Calendar.current
+                            pickerYear = cal.component(.year, from: viewModel.currentMonth)
+                            pickerMonth = cal.component(.month, from: viewModel.currentMonth)
+                            showMonthPicker = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(viewModel.currentPeriodString)
+                                    .font(.title2).fontWeight(.bold)
+                                Image(symbol: "chevron.down")
+                                    .font(.caption).fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.primary)
                         }
-                        .foregroundStyle(.primary)
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    Button {
-                        pickerDate = viewModel.selectedDate
-                        showDatePicker = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(viewModel.currentPeriodString)
-                                .font(.title2).fontWeight(.bold)
-                            Image(systemName: "chevron.down")
-                                .font(.caption).fontWeight(.semibold)
+                        .buttonStyle(.plain)
+                    } else {
+                        Button {
+                            pickerDate = viewModel.selectedDate
+                            showDatePicker = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(viewModel.currentPeriodString)
+                                    .font(.title2).fontWeight(.bold)
+                                Image(symbol: "chevron.down")
+                                    .font(.caption).fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.primary)
                         }
-                        .foregroundStyle(.primary)
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
-            }
-            .frame(maxWidth: .infinity)
 
-            HStack {
                 Button {
                     isForward = true
                     withAnimation(.easeInOut(duration: 0.3)) { viewModel.nextPeriod() }
                 } label: {
-                    Image(systemName: "chevron.right").fontWeight(.semibold)
+                    Image(symbol: "chevron.right").fontWeight(.semibold)
                 }
-                // 왼쪽 오늘로 돌아가기 버튼과 너비 대칭 맞춤
-                Image(systemName: "arrow.uturn.left")
-                    .fontWeight(.semibold)
-                    .hidden()
             }
+
+            Spacer()
+
+            Button {
+                let modes = CalendarViewMode.allCases
+                let idx = modes.firstIndex(of: viewModel.viewMode) ?? 0
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.viewMode = modes[(idx + 1) % modes.count]
+                }
+            } label: {
+                Text(viewModel.viewMode.title)
+                    .font(.callout)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Color.secondary.opacity(0.15)))
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -323,10 +394,10 @@ struct CalendarView: View {
     
     private var weekdayHeader: some View {
         HStack(spacing: 0) {
-            ForEach(weekdays, id: \.self) { day in
+            ForEach(Array(weekdays.enumerated()), id: \.offset) { index, day in
                 Text(day)
                     .font(.caption).fontWeight(.medium)
-                    .foregroundStyle(day == "일" ? .red : day == "토" ? .blue : .secondary)
+                    .foregroundStyle(index == 0 ? .red : index == 6 ? .blue : .secondary)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -355,6 +426,7 @@ struct CalendarView: View {
                         return cal.component(.month, from: date) == cal.component(.month, from: month)
                             && cal.component(.year, from: date) == cal.component(.year, from: month)
                     },
+                    isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
                     onSelect: { viewModel.selectDate($0) },
                     onLongPress: { date in
                         longPressDate = date
@@ -385,6 +457,7 @@ struct CalendarView: View {
                 selectedDate: viewModel.selectedDate,
                 isToday: { viewModel.isToday($0) },
                 isSelected: { viewModel.isSelected($0) },
+                isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
                 onSelect: { viewModel.selectDate($0) },
                 onLongPress: { date in longPressDate = date; showLongPressAlert = true },
                 onTapEvent: { id, date in viewModel.showDetailForEventID(id, on: date) },
@@ -435,6 +508,7 @@ struct CalendarView: View {
                     weekDates: viewModel.currentWeekDates,
                     selectedDate: viewModel.selectedDate,
                     eventBars: { viewModel.eventBars(for: $0) },
+                    isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
                     onSelectDate: { viewModel.selectDate($0) }
                 )
             case .day:
@@ -482,25 +556,43 @@ struct CalendarView: View {
         .padding(.bottom, 40)
     }
     
+    /// 파트너가 생성한 공유 캘린더 이벤트인지 판단.
+    /// 개인 이벤트, 내가 만든 공유 이벤트, 레거시(ownerID nil) 이벤트는 편집 가능.
+    private func isEventEditable(_ dozyEvent: DozyEvent) -> Bool {
+        if dozyEvent.sharedCalendarID == nil { return true }
+        guard let ownerID = dozyEvent.ownerID else { return true }
+        return ownerID == (authViewModel.currentUser?.id ?? "")
+    }
+
     @ViewBuilder
     private func eventContextMenu(for event: CalendarEvent) -> some View {
         if let dozyEvent = viewModel.dozyEvent(for: event) {
-            Button { viewModel.startEditingEvent(dozyEvent) } label: {
-                Label("수정", systemImage: "pencil")
-            }
-            Button(role: .destructive) {
-                viewModel.requestDelete(event)
-            } label: {
-                Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", systemImage: "trash")
+            let canEdit = isEventEditable(dozyEvent)
+            if canEdit {
+                Button { viewModel.startEditingEvent(dozyEvent) } label: {
+                    Label("수정", symbol: "pencil")
+                }
+                Button(role: .destructive) {
+                    viewModel.requestDelete(event)
+                } label: {
+                    Label(dozyEvent.recurrenceRule != "none" ? "반복 일정 삭제" : "삭제", symbol: "trash")
+                }
             }
         } else if event.source == .apple || event.source == .google {
             Button { viewModel.startEditingCalendarEvent(event) } label: {
-                Label("수정", systemImage: "pencil")
+                Label("수정", symbol: "pencil")
             }
             Button(role: .destructive) {
                 viewModel.requestDelete(event)
             } label: {
-                Label("삭제", systemImage: "trash")
+                Label("삭제", symbol: "trash")
+            }
+            if !viewModel.mySharedCalendars.isEmpty {
+                Button {
+                    viewModel.shareExternalEvent(event)
+                } label: {
+                    Label("공유 캘린더로 공유", symbol: "person.2.badge.plus")
+                }
             }
         }
 
@@ -511,7 +603,7 @@ struct CalendarView: View {
             viewModel.updateDisplaySettings(for: event, priority: event.priority, isPinned: !event.isPinned)
         } label: {
             Label(event.isPinned ? "고정 해제" : "상단 고정",
-                  systemImage: event.isPinned ? "pin.slash" : "pin")
+                  symbol: event.isPinned ? "pin.slash" : "pin")
         }
 
         // 우선순위 서브메뉴
@@ -521,6 +613,36 @@ struct CalendarView: View {
             Button("중간 🟡") { viewModel.updateDisplaySettings(for: event, priority: 2, isPinned: event.isPinned) }
             Button("낮음 🔵") { viewModel.updateDisplaySettings(for: event, priority: 3, isPinned: event.isPinned) }
         }
+    }
+
+    @ViewBuilder
+    private func floatingScrollButton(proxy: ScrollViewProxy) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.4)) {
+                if isShowingEventList {
+                    proxy.scrollTo("calendarTop", anchor: .top)
+                    isShowingEventList = false
+                } else {
+                    proxy.scrollTo("eventList", anchor: .top)
+                    isShowingEventList = true
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(symbol: isShowingEventList ? "calendar" : "list.bullet")
+                    .font(.subheadline)
+                Text(isShowingEventList ? "캘린더 보기" : "일정 목록 보기")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.regularMaterial, in: Capsule())
+            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+        }
+        .buttonStyle(.plain)
+        // 떠 있는 글라스 탭바 위로 올라오도록 bottom padding.
+        .padding(.bottom, DozyTabBarMetrics.scrollClearance + 8)
     }
 
     @ViewBuilder
@@ -539,34 +661,248 @@ struct CalendarView: View {
     private func longPressAlertMessage() -> some View {
         if let date = longPressDate {
             let formatter = DateFormatter()
-            let _ = { formatter.locale = Locale(identifier: "ko_KR"); formatter.dateFormat = "M월 d일(E)" }()
+            let _ = { formatter.locale = .current; formatter.dateFormat = String(localized: "M월 d일(E)") }()
             Text("\(formatter.string(from: date))에 일정을 생성하시겠습니까?")
         }
     }
 
     private var alertTitle: String {
         if let e = viewModel.pendingDeleteEvent {
-            return e.recurrenceRule != "none" ? "반복 일정 삭제" : "일정 삭제"
+            return e.recurrenceRule != "none"
+                ? String(localized: "반복 일정 삭제")
+                : String(localized: "일정 삭제")
         }
-        return "일정 삭제"
+        return String(localized: "일정 삭제")
     }
 
     private var selectedDateLabel: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "M월 d일 (E)"
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.dateFormat = String(localized: "M월 d일 (E)")
+        fmt.locale = .current
         return fmt.string(from: viewModel.selectedDate)
     }
-    
-    private var viewModePicker: some View {
-        Picker("뷰 모드", selection: $viewModel.viewMode) {
-            ForEach(CalendarViewMode.allCases, id: \.self) { mode in
-                Text(mode.title).tag(mode)
+
+    // MARK: - Calendar Capture
+
+    /// 메인 body 의 toolbar 를 별도 빌더로 추출 — body 의 type-check 시간 단축.
+    @ToolbarContentBuilder
+    private var calendarToolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button { showSearch = true } label: {
+                Image(symbol: "magnifyingglass")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
+            }
+            .accessibilityLabel("검색")
+            .accessibilityIdentifier("btn_calendar_search")
+        }
+        ToolbarItem(placement: .topBarLeading) {
+            Button { showFilter = true } label: {
+                Image(symbol: "line.3.horizontal.decrease")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
+                    .overlay(alignment: .topTrailing) {
+                        if viewModel.visibilityFilter.isFilterActive {
+                            Circle()
+                                .fill(Color.accentColor)
+                                .frame(width: 7, height: 7)
+                                .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 1.5))
+                                .offset(x: 3, y: -3)
+                        }
+                    }
+            }
+            .accessibilityLabel("캘린더 필터")
+            .accessibilityIdentifier("btn_calendar_filter")
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button { captureCalendarGrid() } label: {
+                Image(symbol: "crop")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
+            }
+            .accessibilityLabel("캘린더 스크린샷")
+            .accessibilityIdentifier("btn_calendar_screenshot")
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button { showLegend = true } label: {
+                Image(symbol: "questionmark.circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(DozyColor.Text.primary)
             }
         }
-        .pickerStyle(.segmented)
-        .padding(.horizontal)
-        .padding(.bottom, 4)
+    }
+
+    /// 캡쳐 버튼 entry point — 사진 앨범 add-only 권한을 게이트.
+    /// - .authorized / .limited : 바로 스크린샷.
+    /// - .notDetermined         : 시스템 권한 다이얼로그를 요청 → 허용 시 스크린샷.
+    /// - .denied / .restricted  : 매번 커스텀 권한 안내 alert (설정으로 이동) — 시스템 다이얼로그는
+    ///                            한 번 거부되면 다시 안 뜨므로 우리가 직접 띄움.
+    @MainActor
+    private func captureCalendarGrid() {
+        let status = PHPhotoLibrary.authorizationStatus(for: .addOnly)
+        switch status {
+        case .authorized, .limited:
+            performScreenshotAndSave()
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization(for: .addOnly) { newStatus in
+                DispatchQueue.main.async {
+                    if newStatus == .authorized || newStatus == .limited {
+                        self.performScreenshotAndSave()
+                    } else {
+                        // 사용자가 시스템 다이얼로그에서 거부 → 다음 탭부터 커스텀 alert 경로.
+                        self.showCapturePermissionAlert = true
+                    }
+                }
+            }
+        case .denied, .restricted:
+            showCapturePermissionAlert = true
+        @unknown default:
+            showCapturePermissionAlert = true
+        }
+    }
+
+    /// 상단 헤더(년월 + 모드 토글) + 요일 헤더 + 그리드만 SwiftUI 로 구성해 캡처.
+    /// `panCalendarSection` 의 .month 경로는 `MonthPageViewController` (UIKit) 라
+    /// 그대로 렌더하면 빈 이미지가 나오므로 내부의 `MonthGridContent` 를 직접 사용한다.
+    /// 캡처 후 셔터 햅틱 + 흰 플래시 모션 + 사진 앨범 저장 → 성공 시 확인 alert.
+    @MainActor
+    private func performScreenshotAndSave() {
+        let width = UIScreen.main.bounds.width
+        let captureView = calendarCaptureContent
+            .frame(width: width)
+            .environment(\.colorScheme, colorScheme)
+
+        let renderer = ImageRenderer(content: captureView)
+        renderer.scale = UIScreen.main.scale
+        guard let image = renderer.uiImage else { return }
+
+        // 셔터 햅틱 + 짧은 흰 플래시 (in/out 약 0.33s 총).
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        withAnimation(.easeOut(duration: 0.08)) { captureFlashOpacity = 1 }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+            withAnimation(.easeIn(duration: 0.25)) { captureFlashOpacity = 0 }
+        }
+
+        // 바로 저장하지 않고 편집 화면 띄우기
+        // 플래시 페이드 아웃이 끝난 직후 자연스럽게 띄우기 위해 약간 지연
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.33) {
+            self.screenshotEditItem = ScreenshotEditItem(image: image)
+        }
+    }
+    
+    /// 편집 화면 "저장" 탭 → 합성된 이미지를 사진 앨범에 저장.
+    @MainActor
+    private func saveComposedImage(_ image: UIImage) {
+        // PHPhotoLibrary 로 저장 — completion 으로 성공 여부 받아 alert 트리거.
+        PHPhotoLibrary.shared().performChanges {
+            PHAssetCreationRequest.creationRequestForAsset(from: image)
+        } completionHandler: { success, _ in
+            DispatchQueue.main.async {
+                self.screenshotEditItem = nil  // 시트 닫기
+                if success { self.showCaptureSavedAlert = true }
+            }
+        }
+    }
+
+    /// 캡처용 SwiftUI 뷰 — 화면의 캘린더 영역과 시각 1:1.
+    /// month: monthHeader + weekday header + month grid
+    /// week:  monthHeader + WeekGridView + Divider + 일정 목록
+    /// day:   monthHeader + weekday header + Divider + DayTimelineView + Divider + 일정 목록
+    @ViewBuilder
+    private var calendarCaptureContent: some View {
+        VStack(spacing: 0) {
+            monthHeader
+            if viewModel.viewMode != .week {
+                weekdayHeader
+            }
+            switch viewModel.viewMode {
+            case .month:
+                let weeksCount = viewModel.weeksFor(month: viewModel.currentMonth).count
+                MonthGridContent(
+                    month: viewModel.currentMonth,
+                    weekLayouts: viewModel.weekLayouts,
+                    selectedDate: viewModel.selectedDate,
+                    isToday: { viewModel.isToday($0) },
+                    isSelected: { viewModel.isSelected($0) },
+                    isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
+                    onSelect: { _ in },
+                    onLongPress: { _ in },
+                    onTapEvent: { _, _ in },
+                    onOverflowTap: { _ in }
+                )
+                // 빈 주 없이 실제 주 수 × MonthWeekRowView totalH (126pt) + bottom padding 8.
+                .frame(height: CGFloat(weeksCount) * 126 + 8)
+            case .week:
+                WeekGridView(
+                    weekDates: viewModel.currentWeekDates,
+                    selectedDate: viewModel.selectedDate,
+                    eventBars: { viewModel.eventBars(for: $0) },
+                    isHoliday: { viewModel.holidayDates.contains(Calendar.current.startOfDay(for: $0)) },
+                    onSelectDate: { _ in }
+                )
+                Divider().padding(.horizontal)
+                eventListSection
+            case .day:
+                Divider().padding(.horizontal)
+                DayTimelineView(
+                    events: viewModel.eventsForSelectedDate,
+                    date: viewModel.selectedDate,
+                    onTapEvent: { _ in },
+                    captureMode: true
+                )
+                .padding(.horizontal)
+                Divider().padding(.horizontal)
+                eventListSection
+            }
+        }
+        .background(Color(.systemBackground))
+    }
+}
+
+/// fullScreenCover(item:) 식별자.
+private struct ScreenshotEditItem: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
+/// 캡쳐 시 흰 플래시 + 권한 안내 alert + 저장 완료 alert 를 한 묶음으로 적용.
+/// body 의 modifier chain 이 너무 길어 컴파일러 type-check 가 폭발하는 걸 막기 위해 분리.
+private struct CaptureOverlayModifier: ViewModifier {
+    let flashOpacity: Double
+    @Binding var showPermissionAlert: Bool
+    @Binding var showSavedAlert: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                Color.white
+                    .ignoresSafeArea()
+                    .opacity(flashOpacity)
+                    .allowsHitTesting(false)
+            }
+            .alert("사진 앨범 권한 필요", isPresented: $showPermissionAlert) {
+                Button("설정으로 이동") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("취소", role: .cancel) { }
+            } message: {
+                Text("캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요.")
+            }
+            .alert("저장 완료", isPresented: $showSavedAlert) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text("스크린샷이 앨범에 저장되었습니다.")
+            }
     }
 }
 
@@ -582,7 +918,7 @@ private struct DatePickerSheetView: View {
         NavigationStack {
             DatePicker("날짜 선택", selection: $selectedDate, displayedComponents: .date)
                 .datePickerStyle(.graphical)
-                .environment(\.locale, Locale(identifier: "ko_KR"))
+                .environment(\.locale, .current)
                 .padding(.horizontal)
             .navigationTitle("날짜 이동")
             .navigationBarTitleDisplayMode(.inline)
@@ -600,5 +936,46 @@ private struct DatePickerSheetView: View {
             }
         }
         .presentationDetents([.height(430)])
+    }
+}
+
+// MARK: - 외부 이벤트 공유 오버레이
+
+/// CalendarView body의 type-check 부담을 줄이기 위해 공유 관련 modifier를 별도로 뽑아낸다.
+private struct ShareExternalEventOverlay: ViewModifier {
+    @ObservedObject var viewModel: CalendarViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .confirmationDialog(
+                "공유할 캘린더를 선택하세요",
+                isPresented: Binding(
+                    get: { viewModel.shareCandidateEvent != nil },
+                    set: { if !$0 { viewModel.shareCandidateEvent = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                ForEach(viewModel.mySharedCalendars) { cal in
+                    Button(cal.name) {
+                        if let event = viewModel.shareCandidateEvent {
+                            viewModel.performShare(event, to: cal)
+                        }
+                    }
+                }
+                Button("취소", role: .cancel) { viewModel.shareCandidateEvent = nil }
+            }
+            .alert("공유 완료", isPresented: $viewModel.showShareSuccess) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text("공유 캘린더에 일정을 추가했습니다.")
+            }
+            .alert("공유 실패", isPresented: Binding(
+                get: { viewModel.shareErrorMessage != nil },
+                set: { if !$0 { viewModel.shareErrorMessage = nil } }
+            )) {
+                Button("확인", role: .cancel) { viewModel.shareErrorMessage = nil }
+            } message: {
+                Text(viewModel.shareErrorMessage ?? "")
+            }
     }
 }

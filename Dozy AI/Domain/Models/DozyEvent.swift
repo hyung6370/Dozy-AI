@@ -16,6 +16,8 @@ final class DozyEvent {
     var endDate: Date
     var isAllDay: Bool
     var location: String?
+    var latitude: Double?
+    var longitude: Double? // 자동완성으로 고른 장소의 좌표, nil이면 지도 미표시 (텍스트만 저장된 케이스)
     var notes: String?
     var colorHex: String
     var createdAt: Date
@@ -29,6 +31,20 @@ final class DozyEvent {
     var isPinned: Bool = false
     var category: String = "일반"
     var excludedDates: [Date] = []
+    var sharedCalendarID: String? = nil
+    /// 이벤트 생성자(소유자)의 user_id. 공유 캘린더에서 파트너 이벤트를 덮어쓰지 않기 위해 추적.
+    /// nil = 로컬 생성 후 아직 동기화되지 않음 (업로드 시 현재 사용자로 간주)
+    var ownerID: String? = nil
+
+    /// Apple/Google 등 외부 캘린더에서 미러링된 스냅샷인 경우 원본 소스 표식 ("apple" | "google").
+    /// nil = 순수 Dozy 이벤트.
+    var externalSource: String? = nil
+    /// 외부 원본 이벤트의 식별자 (EKEvent.eventIdentifier 또는 Google event id).
+    var externalEventID: String? = nil
+    /// 소유자 기기에서 원본과 마지막으로 대조한 시각 (Phase D 동기화).
+    var externalLastSyncedAt: Date? = nil
+    /// 소유자 기기에서 원본이 더이상 조회되지 않을 때 true — UI에 "원본 삭제됨" 표시용.
+    var externalDeleted: Bool = false
 
     init(
         id: String = UUID().uuidString,
@@ -37,6 +53,8 @@ final class DozyEvent {
         endDate: Date,
         isAllDay: Bool = false,
         location: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
         notes: String? = nil,
         colorHex: String = "#007AFF",
         recurrenceRule: String = "none",
@@ -44,7 +62,13 @@ final class DozyEvent {
         notificationMinutesBefore: Int = -1,
         priority: Int = 0,
         isPinned: Bool = false,
-        category: String = "일반"
+        category: String = "일반",
+        sharedCalendarID: String? = nil,
+        ownerID: String? = nil,
+        externalSource: String? = nil,
+        externalEventID: String? = nil,
+        externalLastSyncedAt: Date? = nil,
+        externalDeleted: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -52,6 +76,8 @@ final class DozyEvent {
         self.endDate = endDate
         self.isAllDay = isAllDay
         self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
         self.notes = notes
         self.colorHex = colorHex
         self.createdAt = Date()
@@ -62,7 +88,15 @@ final class DozyEvent {
         self.priority = priority
         self.isPinned = isPinned
         self.category = category
+        self.sharedCalendarID = sharedCalendarID
+        self.ownerID = ownerID
+        self.externalSource = externalSource
+        self.externalEventID = externalEventID
+        self.externalLastSyncedAt = externalLastSyncedAt
+        self.externalDeleted = externalDeleted
     }
+
+    var isShared: Bool { sharedCalendarID != nil }
     
     // MARK: - 반복 헬퍼
 
@@ -135,7 +169,12 @@ final class DozyEvent {
             source: .dozy,
             priority: priority,
             isPinned: isPinned,
-            category: category
+            category: category,
+            sharedCalendarID: sharedCalendarID,
+            ownerID: ownerID,
+            externalSource: externalSource.flatMap(CalendarSource.init(rawValue:)),
+            externalEventID: externalEventID,
+            externalDeleted: externalDeleted
         )
     }
 
@@ -154,7 +193,12 @@ final class DozyEvent {
             source: .dozy,
             priority: priority,
             isPinned: isPinned,
-            category: category
+            category: category,
+            sharedCalendarID: sharedCalendarID,
+            ownerID: ownerID,
+            externalSource: externalSource.flatMap(CalendarSource.init(rawValue:)),
+            externalEventID: externalEventID,
+            externalDeleted: externalDeleted
         )
     }
 }

@@ -28,9 +28,23 @@ xcuserdata/
 .build/
 .swiftpm/
 
+# Claude Code 로컬 세션 (워크트리 · tool-results · settings.local 등)은 무시하되
+# 프로젝트 스킬(.claude/skills/)은 공유한다 — 어느 기기에서든 같은 워크플로우
+.claude/*
+!.claude/skills/
+
 # CocoaPods
 Pods/
 Podfile.lock
+
+# Build artifacts
+*.ipa
+*.xcarchive
+
+# Fastlane 실행 산출물
+fastlane/report.xml
+fastlane/README.md
+fastlane/test_output/
 
 # 🔐 Secrets — 절대 커밋하지 않음
 **/Config/Secrets.xcconfig

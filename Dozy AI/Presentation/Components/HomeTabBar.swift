@@ -84,7 +84,7 @@ struct WeeklyDayRow: View {
 
     private var dayString: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
+        f.locale = .current
         f.dateFormat = "E M/d"
         return f.string(from: date)
     }
@@ -147,13 +147,13 @@ struct WeeklyDayRow: View {
 
 struct MonthlyStatCard: View {
     let icon: String
-    let label: String
+    let label: LocalizedStringKey
     let value: String
     let color: Color
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.title3)
                 .foregroundStyle(color)
 

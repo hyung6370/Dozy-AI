@@ -16,7 +16,7 @@ struct FilterTab: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                Image(systemName: icon)
+                Image(symbol: icon)
                     .font(.caption2)
                 Text(label)
                     .font(.caption)

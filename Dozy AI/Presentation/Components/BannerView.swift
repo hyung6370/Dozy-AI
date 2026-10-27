@@ -10,16 +10,16 @@ import SwiftUI
 // MARK: - BannerItem Model
 struct BannerItem: Identifiable {
     let id: UUID
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let gradientColors: [Color]
     let iconName: String
     let action: (() -> Void)?
 
     init(
         id: UUID = UUID(),
-        title: String,
-        subtitle: String,
+        title: LocalizedStringKey,
+        subtitle: LocalizedStringKey,
         gradientColors: [Color],
         iconName: String,
         action: (() -> Void)? = nil
@@ -49,10 +49,10 @@ extension BannerItem {
             iconName: "calendar.badge.plus"
         ),
         BannerItem(
-            title: "Dozy와 함께하는 하루",
-            subtitle: "오늘의 할 일을 지금 시작해보세요",
+            title: "공유 캘린더를 만들어보세요",
+            subtitle: "파트너와 일정을 함께 관리할 수 있어요",
             gradientColors: [.teal, .green],
-            iconName: "sparkles"
+            iconName: "person.2.fill"
         ),
     ]
 }
@@ -134,7 +134,7 @@ private struct BannerCard: View {
             item.action?()
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: item.iconName)
+                Image(symbol: item.iconName)
                     .font(.title2)
                     .foregroundStyle(.white)
                     .frame(width: 40, height: 40)

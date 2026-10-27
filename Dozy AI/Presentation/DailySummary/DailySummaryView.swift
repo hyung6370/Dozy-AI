@@ -183,9 +183,9 @@ private extension DailySummaryView {
         }
     }
 
-    private func tabSectionHeader(title: String, icon: String, color: Color) -> some View {
+    private func tabSectionHeader(title: LocalizedStringKey, icon: String, color: Color) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.subheadline)
                 .foregroundStyle(color)
                 .frame(width: 28, height: 28)
@@ -297,7 +297,7 @@ private extension DailySummaryView {
 
     func summaryTextCard(_ summary: DailySummary) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("요약", systemImage: "doc.text")
+            Label("요약", symbol: "doc.text")
                 .font(.subheadline)
                 .fontWeight(.semibold)
             Text(summary.summaryText)
@@ -342,9 +342,9 @@ private extension DailySummaryView {
         }
     }
 
-    private func metaCell(icon: String, label: String, value: String) -> some View {
+    private func metaCell(icon: String, label: LocalizedStringKey, value: String) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .frame(width: 20)
@@ -378,7 +378,7 @@ private extension DailySummaryView {
 
     var regenerateButton: some View {
         Button { viewModel.generateSummary() } label: {
-            Label("다시 생성하기", systemImage: "arrow.clockwise")
+            Label("다시 생성하기", symbol: "arrow.clockwise")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -405,7 +405,7 @@ private extension DailySummaryView {
 
     func aiHighlightsCard(_ highlights: [String]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("핵심 하이라이트", systemImage: "star.fill")
+            Label("핵심 하이라이트", symbol: "star.fill")
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(.orange)
@@ -430,7 +430,7 @@ private extension DailySummaryView {
 
     var categorizedSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("카테고리별 활동", systemImage: "rectangle.3.group")
+            Label("카테고리별 활동", symbol: "rectangle.3.group")
                 .font(.subheadline).fontWeight(.semibold)
 
             ForEach(viewModel.categorizedHighlights) { group in
@@ -462,7 +462,7 @@ private extension DailySummaryView {
     var hourlyChart: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("시간대별 활동", systemImage: "chart.bar.fill")
+                Label("시간대별 활동", symbol: "chart.bar.fill")
                     .font(.subheadline).fontWeight(.semibold)
                 Spacer()
                 Text("가장 활발: \(viewModel.peakHourLabel)")
@@ -517,7 +517,7 @@ private extension DailySummaryView {
     var recommendationsTab: some View {
         VStack(spacing: 16) {
             HStack(spacing: 6) {
-                Image(systemName: "bell.badge")
+                Image(symbol: "bell.badge")
                     .font(.caption)
                     .foregroundStyle(.blue)
                 Text("탭: 상세보기, +: 미리알림 추가, AI카드 왼쪽 스와이프: 삭제")
@@ -561,7 +561,7 @@ private extension DailySummaryView {
                                         viewModel.removeAction(action)
                                     }
                                 } label: {
-                                    Label("삭제", systemImage: "trash")
+                                    Label("삭제", symbol: "trash")
                                 }
                             }
                         }
@@ -579,7 +579,7 @@ private extension DailySummaryView {
 
             if viewModel.recommendedActions.isEmpty {
                 VStack(spacing: 8) {
-                    Image(systemName: "checkmark.seal.fill").font(.largeTitle).foregroundStyle(.green)
+                    Image(symbol: "checkmark.seal.fill").font(.largeTitle).foregroundStyle(.green)
                     Text("모든 할 일을 완료했습니다!").font(.subheadline).foregroundStyle(.secondary)
                 }
                 .padding(.top, 40)
@@ -613,9 +613,9 @@ private extension DailySummaryView {
 
             Button { viewModel.addToReminder(action) } label: {
                 if viewModel.addedToReminder.contains(action.id) {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Image(symbol: "checkmark.circle.fill").foregroundStyle(.green)
                 } else {
-                    Image(systemName: "plus.circle").foregroundStyle(.blue)
+                    Image(symbol: "plus.circle").foregroundStyle(.blue)
                 }
             }
             .disabled(viewModel.addedToReminder.contains(action.id))
@@ -668,7 +668,7 @@ private extension DailySummaryView {
 
                     // 추천 이유
                     VStack(alignment: .leading, spacing: 8) {
-                        Label("추천 이유", systemImage: "info.circle")
+                        Label("추천 이유", symbol: "info.circle")
                             .font(.subheadline).fontWeight(.semibold)
                         Text(action.reason)
                             .font(.subheadline).foregroundStyle(.secondary)
@@ -680,7 +680,7 @@ private extension DailySummaryView {
                     // 원본 태스크 정보 (있을 경우)
                     if let task = action.originalTask {
                         VStack(alignment: .leading, spacing: 10) {
-                            Label("태스크 정보", systemImage: "checklist")
+                            Label("태스크 정보", symbol: "checklist")
                                 .font(.subheadline).fontWeight(.semibold)
 
                             if !task.listName.isEmpty {
@@ -709,10 +709,10 @@ private extension DailySummaryView {
                     } label: {
                         HStack {
                             if viewModel.addedToReminder.contains(action.id) {
-                                Image(systemName: "checkmark.circle.fill")
+                                Image(symbol: "checkmark.circle.fill")
                                 Text("미리알림에 추가됨")
                             } else {
-                                Image(systemName: "bell.badge")
+                                Image(symbol: "bell.badge")
                                 Text("미리알림에 추가")
                             }
                         }
@@ -744,10 +744,10 @@ private extension DailySummaryView {
 
     private func priorityLabel(_ priority: RecommendedAction.ActionPriority) -> String {
         switch priority {
-        case .critical: return "🔴 긴급"
-        case .high:     return "🟠 중요"
-        case .normal:   return "🔵 보통"
-        case .low:      return "⚪ 낮음"
+        case .critical: return String(localized: "🔴 긴급")
+        case .high:     return String(localized: "🟠 중요")
+        case .normal:   return String(localized: "🔵 보통")
+        case .low:      return String(localized: "⚪ 낮음")
         }
     }
 }
@@ -794,7 +794,7 @@ private extension DailySummaryView {
 
     var weeklyScoreChart: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("주간 생산성 추이", systemImage: "chart.line.uptrend.xyaxis")
+            Label("주간 생산성 추이", symbol: "chart.line.uptrend.xyaxis")
                 .font(.subheadline).fontWeight(.semibold)
 
             let maxScore = max(viewModel.weeklyTrend.map { $0.score }.max() ?? 1, 0.01)
@@ -829,7 +829,7 @@ private extension DailySummaryView {
 
     var weeklyActivityChart: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("주간 활동량", systemImage: "chart.bar.fill")
+            Label("주간 활동량", symbol: "chart.bar.fill")
                 .font(.subheadline).fontWeight(.semibold)
 
             let maxActivity = max(
@@ -855,7 +855,7 @@ private extension DailySummaryView {
 
     var categoryDistributionChart: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("주간 카테고리 분포", systemImage: "chart.pie.fill")
+            Label("주간 카테고리 분포", symbol: "chart.pie.fill")
                 .font(.subheadline).fontWeight(.semibold)
 
             if !viewModel.categoryDistribution.isEmpty {
@@ -921,7 +921,7 @@ private extension DailySummaryView {
 
         return VStack(spacing: 12) {
             HStack {
-                Label("카테고리 분석", systemImage: "chart.pie.fill")
+                Label("카테고리 분석", symbol: "chart.pie.fill")
                     .font(.subheadline).fontWeight(.semibold)
                     .foregroundStyle(.purple)
                 Spacer()
@@ -979,7 +979,7 @@ private extension DailySummaryView {
         let hasTime = stats.contains { $0.totalMinutes > 0 }
 
         return VStack(alignment: .leading, spacing: 12) {
-            Label("시간 분배", systemImage: "clock.fill")
+            Label("시간 분배", symbol: "clock.fill")
                 .font(.subheadline).fontWeight(.semibold)
 
             // 세그먼트 바
@@ -1038,7 +1038,7 @@ private extension DailySummaryView {
         let maxCount = max(stats.map { $0.eventCount }.max() ?? 1, 1)
 
         return VStack(alignment: .leading, spacing: 12) {
-            Label("일정 건수", systemImage: "calendar.badge.clock")
+            Label("일정 건수", symbol: "calendar.badge.clock")
                 .font(.subheadline).fontWeight(.semibold)
 
             ForEach(stats) { stat in
@@ -1078,7 +1078,7 @@ private extension DailySummaryView {
     // MARK: 피크 시간대
     var categoryPeakHourCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("선호 시간대", systemImage: "sun.max.fill")
+            Label("선호 시간대", symbol: "sun.max.fill")
                 .font(.subheadline).fontWeight(.semibold)
 
             ForEach(viewModel.categoryHourStats) { stat in
@@ -1087,7 +1087,7 @@ private extension DailySummaryView {
                         .font(.caption)
                         .frame(width: 90, alignment: .leading)
                         .lineLimit(1)
-                    Image(systemName: "arrow.right")
+                    Image(symbol: "arrow.right")
                         .font(.caption2).foregroundStyle(.tertiary)
                     Text(stat.peakHourLabel)
                         .font(.caption).fontWeight(.medium)
@@ -1112,7 +1112,7 @@ private extension DailySummaryView {
     // MARK: 주간 카테고리 지배 패턴
     var categoryWeeklyDominanceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("주간 카테고리 패턴", systemImage: "calendar.badge.checkmark")
+            Label("주간 카테고리 패턴", symbol: "calendar.badge.checkmark")
                 .font(.subheadline).fontWeight(.semibold)
 
             if !viewModel.weeklyTrend.isEmpty {
@@ -1204,7 +1204,7 @@ private extension DailySummaryView {
         }
 
         return VStack(alignment: .leading, spacing: 12) {
-            Label("집중도 분석", systemImage: "scope")
+            Label("집중도 분석", symbol: "scope")
                 .font(.subheadline).fontWeight(.semibold)
 
             HStack(spacing: 16) {
@@ -1248,16 +1248,18 @@ private extension DailySummaryView {
         if minutes >= 60 {
             let h = minutes / 60
             let m = minutes % 60
-            return m > 0 ? "\(h)시간 \(m)분" : "\(h)시간"
+            return m > 0
+                ? String(localized: "\(h)시간 \(m)분")
+                : String(localized: "\(h)시간")
         }
-        return "\(minutes)분"
+        return String(localized: "\(minutes)분")
     }
 
     func focusDescription(_ categoryCount: Int) -> String {
         switch categoryCount {
-        case 1: return "오늘 하나의 카테고리에 집중했어요"
-        case 2: return "두 가지 영역에 균형 있게 시간을 썼어요"
-        default: return "\(categoryCount)개 카테고리에 걸쳐 다양하게 활동했어요"
+        case 1: return String(localized: "오늘 하나의 카테고리에 집중했어요")
+        case 2: return String(localized: "두 가지 영역에 균형 있게 시간을 썼어요")
+        default: return String(localized: "\(categoryCount)개 카테고리에 걸쳐 다양하게 활동했어요")
         }
     }
 }
@@ -1321,14 +1323,14 @@ private extension DailySummaryView {
 
     var emptyStateSection: some View {
         VStack(spacing: 16) {
-            Image(systemName: "brain.head.profile")
+            Image(symbol: "brain.head.profile")
                 .font(.system(size: 48)).foregroundStyle(.secondary)
             Text("Dozy 요약을 생성하려면\n일정이나 메모 데이터가 필요합니다")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             Button { viewModel.generateSummary() } label: {
-                Label("요약 생성하기", systemImage: "sparkles").fontWeight(.medium)
+                Label("요약 생성하기", symbol: "sparkles").fontWeight(.medium)
             }
             .buttonStyle(.borderedProminent)
             .disabled(!viewModel.hasEnoughData)
@@ -1338,7 +1340,7 @@ private extension DailySummaryView {
 
     func errorBanner(_ message: String) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+            Image(symbol: "exclamationmark.triangle.fill").foregroundStyle(.orange)
             Text(message).font(.caption)
             Spacer()
             Button("재시도") { viewModel.generateSummary() }

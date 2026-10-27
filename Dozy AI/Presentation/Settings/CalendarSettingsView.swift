@@ -11,6 +11,7 @@ struct CalendarSettingsView: View {
     
     @StateObject private var viewModel: CalendarSettingsViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase // scenePhase 환경 추가
     
     init(
         sourceManager: CalendarSourceManager,
@@ -26,26 +27,29 @@ struct CalendarSettingsView: View {
     
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    dozyRow
-                    appleRow
-//                    googleRow  // Google Calendar API 심사 중 — 완료 후 재활성화
-//                    naverRow
-                } header: {
-                    Text("연결된 캘린더")
-                } footer: {
-                    Text("활성화된 캘린더의 일정이 Dozy AI 분석에 포함됩니다.")
+            ScrollView {
+                VStack(spacing: DozySpacing.xl) {
+                    DozyListSection(
+                        header: "연결된 캘린더",
+                        footer: "활성화된 캘린더의 일정이 Dozy AI 분석에 포함됩니다."
+                    ) {
+                        dozyRow
+                            .padding(.horizontal, DozySpacing.md)
+                        Divider().padding(.leading, DozySpacing.md)
+                        appleRow
+                            .padding(.horizontal, DozySpacing.md)
+                        Divider().padding(.leading, DozySpacing.md)
+                        googleRow
+                            .padding(.horizontal, DozySpacing.md)
+//                        naverRow
+                    }
                 }
+                .padding(.vertical, DozySpacing.lg)
             }
+            .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("캘린더 설정")
             .navigationBarTitleDisplayMode(.inline)
-//            .toolbar {
-//                ToolbarItem(placement: .topBarTrailing) {
-//                    Button("완료") { dismiss() }
-//                        .fontWeight(.semibold)
-//                }
-//            }
+            .dozyBackButton()   // 시스템 뒤로가기 → btn_navi_back 에셋 (스와이프 백 유지)
             .alert("로그인 실패", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }
@@ -54,32 +58,43 @@ struct CalendarSettingsView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
+            .alert("캘린더 접근 권한이 필요해요", isPresented: $viewModel.showAppleCalendarPermissionAlert) {
+                Button("설정으로 이동") { viewModel.openAppSettings() }
+                Button("취소", role: .cancel) { }
+            } message: {
+                Text("이전에 접근을 허용하지 않아 시스템 창을 다시 띄울 수 없어요.\n설정 앱의 Dozy AI 항목에서 캘린더 접근을 '전체 접근'으로 허용해주세요.")
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    viewModel.recheckAppleAccessAfterSettingsReturn()
+                }
+            }
         }
     }
     
     // MARK: - Apple Row
     private var appleRow: some View {
         HStack(spacing: 14) {
-            Image(systemName: "apple.logo")
+            Image(symbol: "apple.logo")
                 .font(.title2)
                 .foregroundStyle(.primary)
                 .frame(width: 34)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("Apple 캘린더")
                     .font(.subheadline).fontWeight(.medium)
                 Text("iPhone 기본 캘린더")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             Toggle("", isOn: Binding(
                 get: { viewModel.sourceManager.isEnabled(.apple) },
                 set: { _ in viewModel.toggleApple() }
             )).labelsHidden()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DozySpacing.sm)
     }
     
     // MARK: - Google Row
@@ -98,25 +113,34 @@ struct CalendarSettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Google 캘린더")
                     .font(.subheadline).fontWeight(.medium)
-                Text(viewModel.googleUserEmail ?? "연결되지 않음")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            
-            Spacer()
-            
-            if viewModel.isGoogleSignedIn {
-                VStack(spacing: 6) {
-                    Toggle("", isOn: Binding(
-                        get: { viewModel.sourceManager.isEnabled(.google) },
-                        set: { _ in viewModel.sourceManager.toggle(.google) }
-                    ))
-                    .labelsHidden()
-                    
-                    Button("연결 해제") { viewModel.disconnectGoogle() }
-                        .font(.caption2)
-                        .foregroundStyle(.red)
-                        .buttonStyle(.plain)
+                // 명시적으로 캘린더 연동을 켰을 때만 이메일 노출. 단순 앱 로그인 (Google
+                // OAuth 가 calendar grant 를 보존해도) 에는 "연결되지 않음" 으로 표시.
+                // ternary 로 묶으면 Text 가 String 오버로드를 타서 카탈로그 번역이 안 먹음 →
+                // 분기 Text 로 LocalizedStringKey 경로 보장 (이메일만 verbatim).
+                Group {
+                    if viewModel.sourceManager.isEnabled(.google) {
+                        if let email = viewModel.googleUserEmail {
+                            Text(verbatim: email)
+                        } else {
+                            Text("연결됨")
+                        }
+                    } else {
+                        Text("연결되지 않음")
+                    }
                 }
+                .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            // 사용자가 명시적으로 enable 한 source 상태로 분기. Google 의 grant 보존
+            // 정책 때문에 isGoogleSignedIn (= grantedScopes 검사) 으론 앱 로그인과
+            // 캘린더 연동을 안정적으로 구분 못 함.
+            if viewModel.sourceManager.isEnabled(.google) {
+                Button("연결 해제") { viewModel.disconnectGoogle() }
+                    .font(.subheadline).fontWeight(.medium)
+                    .foregroundStyle(.red)
+                    .buttonStyle(.plain)
             } else {
                 Button("연결") { viewModel.connectGoogle() }
                     .font(.subheadline).fontWeight(.medium)
@@ -134,7 +158,7 @@ struct CalendarSettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(hex: "#03C75A") ?? .green)
                     .frame(width: 34, height: 34)
-                Text("N")
+                Text(verbatim: "N")
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
             }
@@ -142,8 +166,18 @@ struct CalendarSettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("네이버 캘린더")
                     .font(.subheadline).fontWeight(.medium)
-                Text(viewModel.isNaverSignedIn ? (viewModel.naverUserEmail ?? "연결됨") : "연결되지 않음")
-                    .font(.caption).foregroundStyle(.secondary)
+                Group {
+                    if viewModel.isNaverSignedIn {
+                        if let email = viewModel.naverUserEmail {
+                            Text(verbatim: email)
+                        } else {
+                            Text("연결됨")
+                        }
+                    } else {
+                        Text("연결되지 않음")
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
             }
             
             Spacer()
@@ -177,20 +211,20 @@ struct CalendarSettingsView: View {
                 .scaledToFit()
                 .frame(width: 24, height: 24)
                 .frame(width: 34)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("Dozy 캘린더")
                     .font(.subheadline).fontWeight(.medium)
                 Text("앱 내 직접 생성한 일정")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             Text("항상 켜짐")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DozySpacing.sm)
     }
 }

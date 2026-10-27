@@ -98,6 +98,36 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
     func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
         Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
+
+    func mirrorExternalEvent(
+        _ origin: CalendarEvent,
+        to sharedCalendarID: String
+    ) -> AnyPublisher<DozyEvent, DozyError> {
+        let event = DozyEvent(
+            title: origin.title,
+            startDate: origin.startDate,
+            endDate: origin.endDate,
+            sharedCalendarID: sharedCalendarID,
+            externalSource: origin.source.rawValue,
+            externalEventID: origin.id
+        )
+        return Just(event).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func fetchMyExternalMirrors() -> AnyPublisher<[DozyEvent], DozyError> {
+        Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func applyExternalMirrorReconcile(
+        updates: [ExternalMirrorUpdate],
+        deletedIDs: [String]
+    ) -> AnyPublisher<Void, DozyError> {
+        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func deleteExternalMirrors(ids: [String]) -> AnyPublisher<Void, DozyError> {
+        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
 }
 
 // MARK: - MockAIService
@@ -130,6 +160,8 @@ final class MockWorkLogRepository: WorkLogRepositoryProtocol {
     var stubbedFetchError: DozyError? = nil
     var stubbedSaveError: DozyError? = nil
     private(set) var saveCallCount = 0
+    private(set) var receivedDays: Int?
+    private(set) var fetchRecentCallCount = 0
 
     func fetchLog(for date: Date) -> AnyPublisher<WorkLog?, DozyError> {
         if let error = stubbedFetchError { return Fail(error: error).eraseToAnyPublisher() }
@@ -137,6 +169,8 @@ final class MockWorkLogRepository: WorkLogRepositoryProtocol {
     }
 
     func fetchRecentLogs(days: Int) -> AnyPublisher<[WorkLog], DozyError> {
+        receivedDays = days
+        fetchRecentCallCount += 1
         if let error = stubbedFetchError { return Fail(error: error).eraseToAnyPublisher() }
         return Just(stubbedRecentLogs).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }

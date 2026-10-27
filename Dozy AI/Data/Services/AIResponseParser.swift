@@ -16,21 +16,26 @@ enum AIResponseParser {
         events: [CalendarEvent],
         completedTasks: [TaskItem]
     ) -> DailySummary {
-        
-        // 각 섹션 추출 (실패 시 폴백)
-        let summaryText = extractSection(from: response, tag: "요약")
+
+        // LLM 이 응답 전체를 ``` 로 감싸는 경우가 흔하다. 펜스를 먼저 걷어내지 않으면
+        // 마지막 섹션 추출값에 백틱이 그대로 붙어 사용자에게 노출된다.
+        let response = stripCodeFence(response)
+
+        // 각 섹션 추출 — AIPromptBuilder 와 동일한 영문 tag 사용 (한·영 공통).
+        // 이전 한글 tag 응답과의 호환을 위해 alternate tag 도 함께 시도.
+        let summaryText = extractSection(from: response, tags: ["Summary", "요약"])
             ?? String(response.prefix(200))
-        
-        let highlights = extractListSection(from: response, tag: "하이라이트")
-        
-        let nextActions = extractListSection(from: response, tag: "추천 할 일")
-        
-        let category = extractSection(from: response, tag: "카테고리")
+
+        let highlights = extractListSection(from: response, tags: ["Highlights", "하이라이트"])
+
+        let nextActions = extractListSection(from: response, tags: ["Next Actions", "추천 할 일"])
+
+        let category = extractSection(from: response, tags: ["Category", "카테고리"])
             .flatMap { normalizeCategory($0) }
             ?? detectCategoryFromEvents(events)
-        
-        let score = extractSection(from: response, tag: "생산성 점수")
-            .flatMap { Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+
+        let score = extractSection(from: response, tags: ["Score", "생산성 점수"])
+            .flatMap { parseScore($0) }
             ?? calculateFallbackScore(events: events, completedTasks: completedTasks)
         
         let totalMinutes = events
@@ -52,14 +57,24 @@ enum AIResponseParser {
     }
     
     // MARK: - 섹션 추출
-    
+
+    /// 여러 후보 tag 중 처음 매칭되는 섹션 반환. 영문 tag (현재) + 한글 tag (과거 호환) 같이 시도.
+    private static func extractSection(from text: String, tags: [String]) -> String? {
+        for tag in tags {
+            if let result = extractSection(from: text, tag: tag) { return result }
+        }
+        return nil
+    }
+
     /// [태그] 뒤의 텍스트를 정규식으로 추출
     private static func extractSection(from text: String, tag: String) -> String? {
+        // 정규식 안전화 — tag 에 공백이 들어가는 영문 ("Next Actions") 도 안전.
+        let escaped = NSRegularExpression.escapedPattern(for: tag)
         let patterns = [
-            "\\[\(tag)\\][:\\s]*\\n?([\\s\\S]*?)(?=\\n\\[|$)",
-            "\(tag)[:\\s]*\\n?([^\\[]*)"
+            "\\[\(escaped)\\][:\\s]*\\n?([\\s\\S]*?)(?=\\n\\[|$)",
+            "\(escaped)[:\\s]*\\n?([^\\[]*)"
         ]
-        
+
         for pattern in patterns {
             if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
                let match = regex.firstMatch(
@@ -67,20 +82,29 @@ enum AIResponseParser {
                 range: NSRange(text.startIndex..., in: text)
                ),
                let range = Range(match.range(at: 1), in: text) {
-                
+
                 let extracted = String(text[range])
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                
+
                 if !extracted.isEmpty { return extracted }
             }
         }
         return nil
     }
-    
+
+    /// 여러 후보 tag 중 처음 매칭되는 리스트 섹션 반환.
+    private static func extractListSection(from text: String, tags: [String]) -> [String] {
+        for tag in tags {
+            let list = extractListSection(from: text, tag: tag)
+            if !list.isEmpty { return list }
+        }
+        return []
+    }
+
     /// [태그] 뒤의 "- " 리스트 항목들을 추출
     private static func extractListSection(from text: String, tag: String) -> [String] {
         guard let section = extractSection(from: text, tag: tag) else { return [] }
-        
+
         var seen = Set<String>()
         return section
             .components(separatedBy: .newlines)
@@ -91,6 +115,40 @@ enum AIResponseParser {
             }
             .filter { !$0.isEmpty }
             .filter { seen.insert($0.lowercased()).inserted }
+    }
+    
+    // MARK: - 코드펜스 제거
+
+    /// 응답을 감싼 마크다운 코드펜스(``` 또는 ```json) 라인을 제거한다.
+    /// 첫 줄·마지막 줄만 검사한다 — 본문 중간의 백틱은 의도된 내용일 수 있어 건드리지 않는다.
+    private static func stripCodeFence(_ text: String) -> String {
+        var lines = text.components(separatedBy: .newlines)
+
+        if lines.first?.trimmingCharacters(in: .whitespaces).hasPrefix("```") == true {
+            lines.removeFirst()
+        }
+        if lines.last?.trimmingCharacters(in: .whitespaces).hasPrefix("```") == true {
+            lines.removeLast()
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    // MARK: - 점수 파싱
+    /**
+     점수 문자열 -> 0...1 스케일. 프롬프트가 0.0~1.0을 요구하지만
+     LLM이 "85%" 로 답하는 경우가 흔해 퍼센트 표기를 함께 받는다.
+     
+     `%` 가 붙은 경우만 100으로 나눈다. 접미사 없는 큰 값(예: "1.5")은
+     백분율인지 잘못된 스케일인지 구분할 수 없어, 기존처럼 clamp에 맡긴다.
+     */
+    private static func parseScore(_ raw: String) -> Double? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmed.hasSuffix("%") {
+            let numeric = trimmed.dropLast().trimmingCharacters(in: .whitespaces)
+            return Double(numeric).map { $0 / 100 }
+        }
+        return Double(trimmed)
     }
     
     // MARK: - 카테고리 정규화
@@ -125,17 +183,21 @@ enum AIResponseParser {
         tasks: [TaskItem]
     ) -> [String] {
         var highlights: [String] = []
-        
+
         if !events.isEmpty {
-            highlights.append("오늘 \(events.count)건의 일정을 소화했습니다")
+            let count = events.count
+            highlights.append(String(localized: "오늘 \(count)건의 일정을 소화했습니다"))
         }
         if !tasks.isEmpty {
-            highlights.append("\(tasks.count)개의 할 일을 완료했습니다")
+            let count = tasks.count
+            highlights.append(String(localized: "\(count)개의 할 일을 완료했습니다"))
         }
         if let longest = events.filter({ !$0.isAllDay }).max(by: { $0.durationMinutes < $1.durationMinutes }) {
-            highlights.append("'\(longest.title)'에 \(longest.durationMinutes)분을 사용했습니다")
+            let title = longest.title
+            let dur = longest.durationMinutes
+            highlights.append(String(localized: "'\(title)'에 \(dur)분을 사용했습니다"))
         }
-        
+
         return highlights
     }
 }

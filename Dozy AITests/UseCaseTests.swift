@@ -285,3 +285,102 @@ final class GenerateDailySummaryUseCaseTests: XCTestCase {
         wait(for: [expectation], timeout: 3.0)
     }
 }
+
+// MARK: - ToggleEventCompletionUseCase Tests (홈·캘린더 공용 토글)
+
+final class ToggleEventCompletionUseCaseTests: XCTestCase {
+
+    private var dozyRepository: MockDozyEventRepository!
+    private var completionRepository: MockEventCompletionRepository!
+    private var useCase: ToggleEventCompletionUseCase!
+    private var cancellables = Set<AnyCancellable>()
+
+    private let baseDate: Date = {
+        var c = DateComponents(); c.year = 2026; c.month = 4; c.day = 11; c.hour = 9
+        return Calendar.current.date(from: c)!
+    }()
+
+    override func setUp() {
+        super.setUp()
+        dozyRepository = MockDozyEventRepository()
+        completionRepository = MockEventCompletionRepository()
+        useCase = ToggleEventCompletionUseCase(
+            toggleDozy: ToggleDozyEventCompletionUseCase(repository: dozyRepository),
+            toggleCalendar: ToggleCalendarEventCompletionUseCase(repository: completionRepository)
+        )
+    }
+
+    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+
+    // MARK: target 규칙
+
+    func test_target_dozyNonRecurring_togglesDozyEvent() {
+        let dozy = DozyEvent(title: "도지", startDate: baseDate, endDate: baseDate)
+        let event = makeTestEvent(source: .dozy)
+        guard case .dozyEvent(let picked)? = ToggleEventCompletionUseCase.target(for: event, dozyEvent: dozy, on: Date()) else {
+            return XCTFail("Dozy 비반복은 .dozyEvent 여야 합니다")
+        }
+        XCTAssertTrue(picked === dozy)
+    }
+
+    func test_target_dozyRecurring_usesCompletionKeyedByStartDate() {
+        let dozy = DozyEvent(title: "반복", startDate: baseDate, endDate: baseDate)
+        dozy.recurrenceRule = "daily"
+        let event = makeTestEvent(startHour: 9, endHour: 10, source: .dozy)
+        guard case .completion(let id, let date)? = ToggleEventCompletionUseCase.target(for: event, dozyEvent: dozy, on: Date()) else {
+            return XCTFail("반복 Dozy 는 .completion 이어야 합니다")
+        }
+        XCTAssertEqual(id, event.id)
+        XCTAssertEqual(date, event.startDate)
+    }
+
+    func test_target_externalCalendar_usesCompletionKeyedByGivenDate() {
+        let event = makeTestEvent(source: .google)
+        let reference = baseDate.addingTimeInterval(86_400)
+        guard case .completion(let id, let date)? = ToggleEventCompletionUseCase.target(for: event, dozyEvent: nil, on: reference) else {
+            return XCTFail("외부 캘린더는 .completion 이어야 합니다")
+        }
+        XCTAssertEqual(id, event.id)
+        XCTAssertEqual(date, reference)
+    }
+
+    func test_target_dozyWithoutSourceEvent_isNil() {
+        let event = makeTestEvent(source: .dozy)
+        XCTAssertNil(ToggleEventCompletionUseCase.target(for: event, dozyEvent: nil, on: Date()))
+    }
+
+    // MARK: execute
+
+    func test_execute_dozyEvent_returnsNewStateAndUpdatesRepository() throws {
+        let dozy = DozyEvent(title: "도지", startDate: baseDate, endDate: baseDate)
+        dozy.isCompleted = false
+        let result = try awaitPublisher(useCase.execute(.dozyEvent(dozy)))
+        XCTAssertTrue(result)
+        XCTAssertTrue(dozy.isCompleted)
+        XCTAssertEqual(dozyRepository.updateCallCount, 1)
+        XCTAssertNil(completionRepository.toggleCalledWith)
+    }
+
+    func test_execute_completion_delegatesToCompletionRepository() throws {
+        completionRepository.stubbedToggleResult = false
+        let result = try awaitPublisher(useCase.execute(.completion(eventID: "ev-1", eventDate: baseDate)))
+        XCTAssertFalse(result)
+        XCTAssertEqual(completionRepository.toggleCalledWith?.eventID, "ev-1")
+        XCTAssertEqual(completionRepository.toggleCalledWith?.eventDate, baseDate)
+        XCTAssertEqual(dozyRepository.updateCallCount, 0)
+    }
+
+    func test_execute_event_withoutTarget_failsWithDataNotFound() {
+        let event = makeTestEvent(source: .dozy)
+        let expectation = self.expectation(description: "에러 수신")
+        useCase.execute(event, dozyEvent: nil, on: Date())
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion, case .dataNotFound = error { expectation.fulfill() }
+                },
+                receiveValue: { _ in XCTFail("값이 반환되면 안됩니다") }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 1.0)
+    }
+}

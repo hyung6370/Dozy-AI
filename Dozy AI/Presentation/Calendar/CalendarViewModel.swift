@@ -8,15 +8,17 @@
 import Foundation
 import Combine
 import SwiftUI
+import SwiftData
 import OSLog
+import WidgetKit
 
 enum CalendarViewMode: CaseIterable {
     case month, week, day
     var title: String {
         switch self {
-        case .month: return "월"
-        case .week: return "주"
-        case .day: return "일"
+        case .month: return String(localized: "월")
+        case .week: return String(localized: "주")
+        case .day: return String(localized: "일")
         }
     }
 }
@@ -42,10 +44,14 @@ enum BarPosition {
 
 struct EventBarInfo: Identifiable {
     let id: String
+    let title: String
     let colorHex: String
     let position: BarPosition
+    var isShared: Bool = false
+    let source: CalendarSource
 }
 
+@MainActor
 final class CalendarViewModel: ObservableObject {
 
     // MARK: - Published
@@ -58,6 +64,8 @@ final class CalendarViewModel: ObservableObject {
     @Published var pendingDeleteEvent: DozyEvent? = nil
     @Published var pendingDeleteCalendarEvent: CalendarEvent? = nil
     @Published var eventBarsPerDate: [Date: [EventBarInfo]] = [:]
+    /// 공휴일이 있는 날짜(startOfDay) 집합 — 캘린더 셀의 날짜 숫자를 빨강으로 표시할 때 조회.
+    @Published var holidayDates: Set<Date> = []
     @Published var viewMode: CalendarViewMode = .month
     @Published var isLoading = false
     @Published var showEventDetail = false
@@ -72,6 +80,12 @@ final class CalendarViewModel: ObservableObject {
     @Published var showDeleteSuccess = false
     @Published var showSuccessAnimation = false
     @Published var displaySettingsByID: [String: EventDisplaySettings] = [:]
+    @Published var mySharedCalendars: [SharedCalendar] = []
+    /// 외부(Apple/Google) 이벤트를 공유 캘린더로 미러링할 때, 공유 대상 캘린더가 여러 개면
+    /// 이 값을 세팅해서 선택 다이얼로그를 띄운다.
+    @Published var shareCandidateEvent: CalendarEvent? = nil
+    @Published var shareErrorMessage: String? = nil
+    @Published var showShareSuccess = false
     private var allEventsInMonth: [String: CalendarEvent] = [:]
     private var loadedMonthKeys = Set<Date>()
     
@@ -87,10 +101,18 @@ final class CalendarViewModel: ObservableObject {
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let deleteCalendarEventUseCase: DeleteCalendarEventUseCase
     private let toggleCalendarEventCompletionUseCase: ToggleCalendarEventCompletionUseCase
+    /// 홈과 같은 저장소 선택 규칙 (ToggleEventCompletionUseCase). 기존 두 유스케이스를 그대로 감싼다.
+    private lazy var toggleEventCompletionUseCase = ToggleEventCompletionUseCase(
+        toggleDozy: toggleCompletionUseCase,
+        toggleCalendar: toggleCalendarEventCompletionUseCase
+    )
     private let fetchEventCompletionsUseCase: FetchEventCompletionsUseCase
     private let fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase
     private let fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase
+    private let mirrorExternalEventUseCase: MirrorExternalEventUseCase
     private weak var calendarService: CompositeCalendarSerivce?
+    private var externalMirrorSyncService: ExternalMirrorSyncService?
+    private var sharedCalendarService: SharedCalendarServiceProtocol?
     private var cancellables = Set<AnyCancellable>()
     // 날짜별 이벤트 fetch 전용 — 새 날짜 선택 시 이전 fetch를 자동 취소하기 위해 Set이 아닌 단일 변수 사용
     private var fetchDateCancellable: AnyCancellable?
@@ -99,7 +121,26 @@ final class CalendarViewModel: ObservableObject {
     private var monthFetchCancellables: [Date: AnyCancellable] = [:]
     private var monthDozyFetchCancellables: [Date: AnyCancellable] = [:]
     private let displaySettingsRepo: EventDisplaySettingsRepository
-    
+    let visibilityFilter: CalendarVisibilityFilter
+
+    /// `loadInitialData()` 호출 throttle — onAppear / selectedTab / 노티 등 다수 트리거가
+    /// 짧은 시간에 burst 로 발화돼도 1~2회로 합쳐서 Supabase `/shared_calendars` 요청 누적 방지.
+    private let loadInitialDataSubject = PassthroughSubject<Void, Never>()
+
+    /// performLoadInitialData 의 최소 호출 간격 가드 — throttle 만으로 못 막는
+    /// "300ms 보다 길게 띄워진 반복 트리거" 케이스를 차단한다. CalendarView.onAppear
+    /// 가 SwiftUI 의 view 신원 변동으로 자가 반복 발화하던 폭주 사례 (#53) 의 안전망.
+    private var lastPerformLoadAt: Date = .distantPast
+    private let minPerformLoadInterval: TimeInterval = 5.0
+
+    /// `loadMySharedCalendars()` 의 Supabase 요청이 진행 중일 때 또 다른 요청이 동시에
+    /// 시작돼 timeout 들이 stacking 되는 걸 막기 위한 inFlight 가드.
+    private var loadCalendarsCancellable: AnyCancellable?
+
+    /// 위젯 TodayEventCache 미러용. HomeViewModel 과 같은 패턴으로 일정 변경 시점에
+    /// 바로 캐시를 upsert/remove 하기 위해 컨테이너를 보관.
+    private let modelContainer: ModelContainer
+
     init(
         fetchEventsUseCase: FetchCalendarEventUseCase,
         fetchDozyEventsUseCase: FetchDozyEventsUseCase,
@@ -115,7 +156,10 @@ final class CalendarViewModel: ObservableObject {
         fetchEventCompletionsUseCase: FetchEventCompletionsUseCase,
         fetchDozyEventsForPeriodUseCase: FetchDozyEventsForPeriodUseCase,
         fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase,
-        displaySettingsRepo: EventDisplaySettingsRepository
+        mirrorExternalEventUseCase: MirrorExternalEventUseCase,
+        displaySettingsRepo: EventDisplaySettingsRepository,
+        visibilityFilter: CalendarVisibilityFilter,
+        modelContainer: ModelContainer
     ) {
         self.fetchEventsUseCase = fetchEventsUseCase
         self.fetchDozyEventsUseCase = fetchDozyEventsUseCase
@@ -131,8 +175,46 @@ final class CalendarViewModel: ObservableObject {
         self.fetchEventCompletionsUseCase = fetchEventCompletionsUseCase
         self.fetchDozyEventsForPeriodUseCase = fetchDozyEventsForPeriodUseCase
         self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
+        self.mirrorExternalEventUseCase = mirrorExternalEventUseCase
         self.displaySettingsRepo = displaySettingsRepo
+        self.visibilityFilter = visibilityFilter
+        self.modelContainer = modelContainer
+        subscribeToVisibilityFilterChanges()
     }
+
+    /// 사용자가 가시성 필터 (소스 OR 공유 캘린더) 를 토글하면 현재 월/날짜를 다시
+    /// 계산해 화면 갱신. fetch 자체는 그대로 두고 filter 결과만 다시 publish 하기 위해
+    /// force 재fetch. 각 publisher 마다 dropFirst() 로 초기 emit 만 따로 무시 — merge
+    /// 후 dropFirst(2) 로 묶으면 user 의 첫 토글이 race 로 같이 잡혀 먹힐 수 있음.
+    private func subscribeToVisibilityFilterChanges() {
+        let sources = visibilityFilter.$hiddenSources
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+        let shared = visibilityFilter.$hiddenSharedCalendarIDs
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+
+        Publishers.Merge(sources, shared)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.fetchEventsForDate(self.selectedDate)
+                self.fetchEventsForMonth(force: true)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// 이벤트가 현재 가시성 필터로 보여야 하는지 판단 — 소스 + 공유 캘린더 두 차원 AND.
+    private func passesVisibility(_ event: CalendarEvent) -> Bool {
+        guard visibilityFilter.isVisible(event.source) else { return false }
+        if let id = event.sharedCalendarID, !visibilityFilter.isVisibleSharedCalendar(id) {
+            return false
+        }
+        return true
+    }
+
 
     convenience init(container: DependencyContainer) {
         self.init(
@@ -150,24 +232,55 @@ final class CalendarViewModel: ObservableObject {
             fetchEventCompletionsUseCase: container.fetchEventCompletionsUseCase,
             fetchDozyEventsForPeriodUseCase: container.fetchDozyEventsForPeriodUseCase,
             fetchCalendarEventsForPeriodUseCase: container.fetchCalendarEventsForPeriodUseCase,
-            displaySettingsRepo: container.eventDisplaySettingsRepository
+            mirrorExternalEventUseCase: container.mirrorExternalEventUseCase,
+            displaySettingsRepo: container.eventDisplaySettingsRepository,
+            visibilityFilter: container.calendarVisibilityFilter,
+            modelContainer: container.modelContainer
         )
         self.calendarService = container.calendarService
+        self.sharedCalendarService = container.sharedCalendarService
+        self.externalMirrorSyncService = container.externalMirrorSyncService
+
+        // throttle 구독 — 첫 호출은 즉시, 같은 윈도우(300ms) 안의 burst 는 1회로 합친 뒤
+        // 마지막 호출 시점에 한 번 더 실행 (latest: true).
+        loadInitialDataSubject
+            .throttle(for: .milliseconds(300), scheduler: DispatchQueue.main, latest: true)
+            .sink { [weak self] _ in
+                self?.performLoadInitialData()
+            }
+            .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                Logger.calendar.info("🔔 dozyDataSyncCompleted 수신 → loadInitialData 재실행")
+                Logger.calendar.info("[알림] 🔔 dozyDataSyncCompleted → loadInitialData 재실행")
                 self?.loadedMonthKeys.removeAll()
-                self?.loadInitialData()
+                self?.loadInitialData(source: "notif:dozyDataSyncCompleted")
             }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .googleSignInRestored)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                Logger.calendar.info("🔔 googleSignInRestored 수신 → 구글 캘린더 새로고침")
-                self?.refreshData()
+                Logger.calendar.info("[알림] 🔔 googleSignInRestored → 구글 캘린더 새로고침")
+                self?.refreshData(source: "notif:googleSignInRestored")
+            }
+            .store(in: &cancellables)
+
+        // 파트너의 공유 일정 INSERT/UPDATE 가 realtime 으로 들어오면 SwiftData 만
+        // 갱신되고 CalendarViewModel 의 published 캐시는 stale 해서 그리드에 안
+        // 나타나는 게 자주 발생하던 원인. .dozyEventListChanged 를 받으면 월/날짜
+        // force 재fetch. 자기-트리거 (현 디바이스 로컬 변경의 후속 broadcast) 는
+        // SharedCalendarRealtimeService 가 object: 로 자기 인스턴스를 넘기는
+        // 패턴은 아니지만, 로컬 CRUD 가 .dozyEventChanged 로 분리되어 있어 충돌
+        // 없음 — 여기선 외부 in-bound realtime 만 통과한다.
+        NotificationCenter.default.publisher(for: .dozyEventListChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Logger.calendar.info("[알림] 🔔 dozyEventListChanged → 월/날짜 재fetch")
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
             }
             .store(in: &cancellables)
     }
@@ -176,8 +289,8 @@ final class CalendarViewModel: ObservableObject {
     
     var currentMonthString: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy년 M월"
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.dateFormat = String(localized: "yyyy년 M월")
+        fmt.locale = .current
         return fmt.string(from: currentMonth)
     }
     
@@ -190,19 +303,24 @@ final class CalendarViewModel: ObservableObject {
     
     var currentPeriodString: String {
         let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "ko_KR")
+        fmt.locale = .current
         switch viewMode {
         case .month:
-            fmt.dateFormat = "yyyy년 M월"
-            return fmt.string(from: currentMonth)
+            // 영문은 "September 2026" 대신 "SEP 2026" 으로 축약한다.
+            // 한국어("2026년 9월")는 그대로 — uppercased() 는 한글에 영향이 없다.
+            // catalog 키를 그대로 쓰지 않고 분기하는 이유: "yyyy년 M월" 키는 홈·위젯·macOS 도
+            // 공유하고 있어서, 값을 바꾸면 캘린더 탭 밖까지 같이 바뀐다.
+            let isEnglish = Locale.current.language.languageCode?.identifier == "en"
+            fmt.dateFormat = isEnglish ? "MMM yyyy" : String(localized: "yyyy년 M월")
+            return fmt.string(from: currentMonth).uppercased()
         case .week:
-            fmt.dateFormat = "M월 d일"
+            fmt.dateFormat = String(localized: "M월 d일")
             let dates = currentWeekDates
             let start = fmt.string(from: dates.first ?? selectedDate)
             let end = fmt.string(from: dates.last ?? selectedDate)
             return "\(start) - \(end)"
         case .day:
-            fmt.dateFormat = "yyyy년 M월 d일 (E)"
+            fmt.dateFormat = String(localized: "yyyy년 M월 d일 (E)")
             return fmt.string(from: selectedDate)
         }
     }
@@ -257,6 +375,8 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func showDetail(for event: CalendarEvent) {
+        // 공휴일은 read-only 정보(이름·날짜)만 캘린더에 표시 — 상세 시트 진입 차단.
+        guard !event.isReadOnly else { return }
         // 항상 displaySettings를 적용 (allEventsInMonth 등 raw 이벤트에서 올 수 있음)
         let applied = event.applying(displaySettingsByID[event.id])
         Logger.calendar.debug("📋 showDetail: id=\(event.id.prefix(12)) category=\(applied.category) source=\(String(describing: event.source))")
@@ -310,35 +430,26 @@ final class CalendarViewModel: ObservableObject {
         return completionsByID[key] ?? false
     }
 
-    // 완료 토글 (source 분기)
+    // 완료 토글 (source 분기는 ToggleEventCompletionUseCase.target 이 담당)
+    // - Dozy 비반복: DozyEvent.isCompleted (기존 toggleCompletion(for: DozyEvent) 경로 → dozyEventsByID 갱신 + dozyEventChanged)
+    // - 반복 Dozy: 발생일(startDate) 키의 EventCompletion
+    // - Apple/Google: 선택 날짜를 eventDate 로 저장 → 다일 종일 일정도 날짜별 독립 완료 유지
     func toggleCompletion(for event: CalendarEvent) {
-        if event.source == .dozy {
-            guard let dozyEvent = dozyEventsByID[event.id] else { return }
-            // 반복 일정은 날짜별 독립 완료 (EventCompletion 사용)
-            if dozyEvent.recurrenceRule != "none" {
-                toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: event.startDate)
-                    .receive(on: DispatchQueue.main)
-                    .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
-                        guard let self else { return }
-                        self.completionsByID[self.completionKey(for: event)] = newValue
-                    })
-                    .store(in: &cancellables)
-            } else {
-                toggleCompletion(for: dozyEvent)
-            }
-        } else {
-            // Apple/Google: 선택 날짜를 eventDate로 저장 → 다일 종일 일정도 날짜별 독립 완료 유지
-            let eventDate = selectedDate
-            toggleCalendarEventCompletionUseCase.execute(eventID: event.id, eventDate: eventDate)
-                .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
-                    guard let self else { return }
-                    let key = EventCompletionRepository.completionKey(eventID: event.id, date: eventDate)
-                    self.completionsByID[key] = newValue
-                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
-                })
-                .store(in: &cancellables)
+        guard let target = ToggleEventCompletionUseCase.target(for: event, dozyEvent: dozyEventsByID[event.id], on: selectedDate) else { return }
+        if case .dozyEvent(let dozyEvent) = target {
+            toggleCompletion(for: dozyEvent)
+            return
         }
+        toggleEventCompletionUseCase.execute(target)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] newValue in
+                guard let self, case .completion(let eventID, let eventDate) = target else { return }
+                self.completionsByID[EventCompletionRepository.completionKey(eventID: eventID, date: eventDate)] = newValue
+                if event.source != .dozy {
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                }
+            })
+            .store(in: &cancellables)
     }
     
     // Apple/Google 수정 시작
@@ -354,6 +465,10 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.fetchEventsForDate(self?.selectedDate ?? Date())
                 self?.fetchEventsForMonth(force: true)
+                // HomeViewModel 이 .dozyEventChanged 를 구독해 loadTodayData → TodayEventCache 갱신.
+                // 위젯은 그 직후 reload 에서 새 데이터를 본다.
+                NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                WidgetCenter.shared.reloadAllTimelines()
             })
             .store(in: &cancellables)
     }
@@ -393,6 +508,10 @@ final class CalendarViewModel: ObservableObject {
                         self?.fetchEventsForDate(self?.selectedDate ?? Date())
                         self?.fetchEventsForMonth(force: true)
                     }
+                    // HomeViewModel 이 .dozyEventChanged → loadTodayData 로 TodayEventCache 를 갱신.
+                    // 위젯은 그 직후 reload 에서 새 상태 반영.
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
             )
             .store(in: &cancellables)
@@ -486,7 +605,24 @@ final class CalendarViewModel: ObservableObject {
     
     // MARK: - Fetch
     
-    func loadInitialData() {
+    /// 외부에서 호출하는 공개 진입점 — 실제 fetch 는 throttle 거쳐 `performLoadInitialData` 에서 실행.
+    /// 8개 트리거 (onAppear / selectedTab / scenePhase / 노티 등) 가 burst 로 발화돼도 1~2회로 합쳐짐.
+    /// source/file/line 은 호출자 자동 캡처 — 폭주 진단용 임시 로그.
+    func loadInitialData(source: String = #function, file: String = #file, line: Int = #line) {
+        let filename = (file as NSString).lastPathComponent
+        Logger.calendar.info("[데이터] 🔵 loadInitialData ← \(source) (\(filename):\(line))")
+        loadInitialDataSubject.send(())
+    }
+
+    private func performLoadInitialData() {
+        let now = Date()
+        let elapsed = now.timeIntervalSince(lastPerformLoadAt)
+        if elapsed < minPerformLoadInterval {
+            Logger.calendar.info("[데이터] ⏭ performLoadInitialData skipped — \(String(format: "%.1f", elapsed))s 경과 (< \(self.minPerformLoadInterval)s)")
+            return
+        }
+        lastPerformLoadAt = now
+        Logger.calendar.info("[데이터] ⚡️ performLoadInitialData fire (throttle pass)")
         // displaySettings를 먼저 로드한 뒤 fetch — buildLayouts에서 설정이 반영되도록
         displaySettingsRepo.fetchAll()
             .receive(on: DispatchQueue.main)
@@ -497,12 +633,92 @@ final class CalendarViewModel: ObservableObject {
                 self.fetchEventsForMonth()
             }
             .store(in: &cancellables)
+        loadMySharedCalendars()
+        reconcileExternalMirrors()
     }
 
-    func refreshData() {
+    /// Phase D: 외부(Apple/Google) 원본과 Dozy 미러 스냅샷을 단방향 동기화.
+    /// 완료 후 현재 날짜/월 이벤트를 refresh해 UI에 즉시 반영.
+    func reconcileExternalMirrors() {
+        externalMirrorSyncService?.reconcile { [weak self] in
+            guard let self else { return }
+            Task { @MainActor in
+                self.fetchEventsForDate(self.selectedDate, showLoading: false)
+                self.fetchEventsForMonth(force: true)
+            }
+        }
+    }
+
+    /// 일정 생성/편집 시 Picker에 노출할 공유 캘린더 목록.
+    /// 사용자가 어느 공유 캘린더에든 일정을 만들 수 있도록 항상 전체 목록을 반환.
+    /// (기본 캘린더 필터는 "표시" 단계에서만 적용 — 작성 단계는 유연하게)
+    func sharedCalendarsForEditing() -> [SharedCalendar] {
+        return mySharedCalendars
+    }
+
+    // MARK: - 외부 이벤트 공유 (Apple/Google → Dozy 공유 캘린더 미러링)
+
+    /// 공유 캘린더가 1개면 즉시 미러링, 2개 이상이면 선택 다이얼로그를 띄운다.
+    /// 0개면 에러 메시지 세팅.
+    func shareExternalEvent(_ event: CalendarEvent) {
+        guard event.source == .apple || event.source == .google else { return }
+        switch mySharedCalendars.count {
+        case 0:
+            shareErrorMessage = "공유할 수 있는 공유 캘린더가 없습니다. 먼저 공유 캘린더를 만들거나 참여해주세요."
+        case 1:
+            performShare(event, to: mySharedCalendars[0])
+        default:
+            shareCandidateEvent = event
+        }
+    }
+
+    func performShare(_ event: CalendarEvent, to calendar: SharedCalendar) {
+        shareCandidateEvent = nil
+        mirrorExternalEventUseCase.execute(event, to: calendar.id)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        Logger.calendar.error("❌ 외부 이벤트 공유 실패: \(error.localizedDescription)")
+                        self?.shareErrorMessage = "공유에 실패했습니다. 잠시 후 다시 시도해주세요."
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    self?.showShareSuccess = true
+                    self?.refreshData(source: "performShare.success")
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func loadMySharedCalendars() {
+        // 이미 Supabase 요청이 진행 중이면 새로 요청하지 않음 — timeout (60s) 이 stack 되며
+        // pending NSURLSessionTask 누적으로 메모리/소켓 폭증하던 문제 방지.
+        guard loadCalendarsCancellable == nil else {
+            Logger.calendar.debug("[데이터] ⏭ loadMySharedCalendars — 이미 진행 중, 스킵")
+            return
+        }
+        loadCalendarsCancellable = sharedCalendarService?.fetchMyCalendars()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] _ in
+                    self?.loadCalendarsCancellable = nil
+                },
+                receiveValue: { [weak self] calendars in
+                    self?.mySharedCalendars = calendars
+                    ActiveSharedCalendarStore.shared.reconcile(with: calendars)
+                    // 탈퇴/삭제로 사라진 공유 캘린더 ID 가 hidden 셋에 남아있으면 정리.
+                    self?.visibilityFilter.reconcileSharedCalendars(with: calendars)
+                }
+            )
+    }
+
+    func refreshData(source: String = #function, file: String = #file, line: Int = #line) {
+        let filename = (file as NSString).lastPathComponent
+        Logger.calendar.info("[데이터] 🟣 refreshData ← \(source) (\(filename):\(line))")
         calendarService?.invalidateGoogleCache()
         loadedMonthKeys.removeAll()
-        loadInitialData()
+        loadInitialData(source: "refreshData<-\(source)", file: file, line: line)
     }
     
     private func fetchEventsForDate(_ date: Date, showLoading: Bool = true) {
@@ -536,20 +752,22 @@ final class CalendarViewModel: ObservableObject {
                 }
 
                 // Apple/Google 이벤트에 display settings 오버라이드 적용 후 정렬
-                Logger.calendar.debug("🔄 fetchEventsForDate → fetchAll(for: \(nonDozyIDs.count)건)")
+                Logger.calendar.debug("[데이터] 🔄 fetchEventsForDate → fetchAll(for: \(nonDozyIDs.count)건)")
                 // 전용 cancellable 사용 → 새 날짜 선택 시 이전 settings fetch 자동 취소
                 self.fetchDateSettingsCancellable = self.displaySettingsRepo.fetchAll(for: nonDozyIDs)
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self] settings in
                         guard let self else { return }
-                        Logger.calendar.debug("🔄 fetchAll 결과: \(settings.count)건")
+                        Logger.calendar.debug("[데이터] 🔄 fetchAll 결과: \(settings.count)건")
                         for (id, s) in settings {
                             Logger.calendar.debug("   ↳ id=\(id.prefix(12)) category=\(s.category)")
                         }
                         self.displaySettingsByID.merge(settings) { _, new in new }
-                        let applied = events.map { $0.applying(self.displaySettingsByID[$0.id]) }
+                        let applied = events
+                            .filter { self.passesVisibility($0) }
+                            .map { $0.applying(self.displaySettingsByID[$0.id]) }
                         for e in applied where e.source == .google {
-                            Logger.calendar.debug("🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
+                            Logger.calendar.debug("[데이터] 🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
                         }
                         withAnimation(.easeInOut(duration: 0.25)) {
                             self.eventsForSelectedDate = applied.sorted { a, b in
@@ -575,7 +793,14 @@ final class CalendarViewModel: ObservableObject {
             guard let dozy = dozyEventsByID[event.id] else { return }
             dozy.priority = priority
             dozy.isPinned = isPinned
-            if let category { dozy.category = category }
+            if let category {
+                dozy.category = category
+                // 카테고리가 바뀌면 일정 색상도 해당 카테고리 색으로 동기화
+                if let ctx = dozy.modelContext,
+                   let cat = try? ctx.fetch(FetchDescriptor<UserCategory>()).first(where: { $0.name == category }) {
+                    dozy.colorHex = cat.colorHex
+                }
+            }
             updateEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
@@ -596,7 +821,12 @@ final class CalendarViewModel: ObservableObject {
                     location: old.location, notes: old.notes, isAllDay: old.isAllDay,
                     calendarName: old.calendarName, calendarColorHex: old.calendarColorHex,
                     source: old.source,
-                    priority: priority, isPinned: isPinned, category: finalCategory
+                    priority: priority, isPinned: isPinned, category: finalCategory,
+                    sharedCalendarID: old.sharedCalendarID,
+                    ownerID: old.ownerID,
+                    externalSource: old.externalSource,
+                    externalEventID: old.externalEventID,
+                    externalDeleted: old.externalDeleted
                 )
                 Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
             } else {
@@ -719,11 +949,13 @@ final class CalendarViewModel: ObservableObject {
     private func buildLayouts(from results: [(Date, [CalendarEvent])], forMonth month: Date) {
         let cal = Calendar.current
 
-        // 이벤트별 날짜 집합 구성
+        // 이벤트별 날짜 집합 구성. 사용자 visibility 필터 (소스 + 공유 캘린더) 로
+        // 숨긴 일정은 여기서 미리 걸러내어 bar prefix(3) overflow 가 보이는 일정 기준으로
+        // 정확히 잡히게 함.
         var eventDatesMap: [String: (CalendarEvent, Set<Date>)] = [:]
         for (date, events) in results {
             let key = cal.startOfDay(for: date)
-            for event in events {
+            for event in events where passesVisibility(event) {
                 if eventDatesMap[event.id] == nil {
                     eventDatesMap[event.id] = (event, [key])
                 } else {
@@ -732,12 +964,18 @@ final class CalendarViewModel: ObservableObject {
             }
         }
 
-        // 월 전체 이벤트 캐시 갱신 (pill 탭 → 상세 조회용)
+        // 월 전체 이벤트 캐시 갱신 (pill 탭 → 상세 조회용). 필터로 가린 소스는
+        // bar 도 안 그려져서 탭할 일이 없어 캐시에 빠져 있어도 무해.
         allEventsInMonth.merge(eventDatesMap.mapValues { $0.0 }) { _, new in new }
         
         var barsDict: [Date: [EventBarInfo]] = [:]
+        var holidaysFound: Set<Date> = []
         for (id, (event, dates)) in eventDatesMap {
             let sorted = dates.sorted()
+            // 공휴일은 날짜 숫자를 빨강으로 표시하기 위해 별도로 collect.
+            if event.source == .holiday {
+                for d in sorted { holidaysFound.insert(d) }
+            }
             for date in sorted {
                 let pos: BarPosition
                 if sorted.count <= 1 { pos = .single }
@@ -745,7 +983,7 @@ final class CalendarViewModel: ObservableObject {
                 else if date == sorted.last { pos = .end }
                 else { pos = .middle }
                 barsDict[date, default: []].append(
-                    EventBarInfo(id: id, colorHex: event.calendarColorHex, position: pos)
+                    EventBarInfo(id: id, title: event.title, colorHex: event.calendarColorHex, position: pos, isShared: event.isShared, source: event.source)
                 )
             }
         }
@@ -759,6 +997,9 @@ final class CalendarViewModel: ObservableObject {
                 let key = cal.startOfDay(for: date)
                 eventBarsPerDate[key] = barsDict[key]
             }
+            // holidayDates 도 같이 갱신 — 다른 월의 공휴일은 별도 fetch 호출에서 갱신됨.
+            // 명시적 덮어쓰기 대신 union 으로 유지하여 인접 월의 공휴일도 보존.
+            holidayDates.formUnion(holidaysFound)
         }
 
         // 주간 레이아웃 계산 (forMonth 기준 주 배열 로컬 계산)
@@ -909,7 +1150,7 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
-                
+
                 // 신규 등록 시: 일정 시작일로 포커스 이동
                 if self.eventToEdit == nil {
                     let cal = Calendar.current
@@ -920,7 +1161,11 @@ final class CalendarViewModel: ObservableObject {
                     }
                     self.showSuccessAnimation = true
                 }
-                
+
+                // 위젯 즉시 반영 — TodayEventCache 에 새/수정 일정 mirror 후 timeline reload.
+                TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
                 NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
@@ -942,13 +1187,19 @@ final class CalendarViewModel: ObservableObject {
     }
 
     func deleteEvent(_ event: DozyEvent) {
-        cancelNotificationUseCase.execute(identifier: event.id)
+        let eventID = event.id
+        cancelNotificationUseCase.execute(identifier: eventID)
         deleteEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
+
+                // 위젯 즉시 반영 — TodayEventCache 에서 해당 id 제거 후 timeline reload.
+                TodayEventCacheWriter.removeSingleEvent(id: eventID, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)
@@ -965,6 +1216,11 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
+
+                // 위젯 캐시 재미러 + reload — excludedDates 변경이 즉시 반영되도록.
+                TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)
@@ -982,6 +1238,11 @@ final class CalendarViewModel: ObservableObject {
                 guard let self else { return }
                 self.showEventDetail = false
                 self.showDeleteSuccess = true
+
+                // 위젯 캐시 재미러 + reload — 반복 종료일 변경이 즉시 반영되도록.
+                TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
+                WidgetCenter.shared.reloadAllTimelines()
+
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
             }).store(in: &cancellables)

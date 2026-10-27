@@ -1,0 +1,304 @@
+//
+//  SharedCalendarViewModel.swift
+//  Dozy AI
+//
+
+import Foundation
+import Combine
+import SwiftUI
+
+@MainActor
+final class SharedCalendarViewModel: ObservableObject {
+
+    // MARK: - Published
+
+    @Published var calendars: [SharedCalendar] = []
+    @Published var membersMap: [String: [SharedCalendarMember]] = [:]
+    @Published var isLoading = false
+    @Published var errorMessage: String? = nil
+    @Published var creationResult: SharedCalendarCreationResult? = nil
+
+    // MARK: - Dependencies
+
+    private let createUseCase: CreateSharedCalendarUseCase
+    private let joinUseCase: JoinSharedCalendarUseCase
+    private let leaveUseCase: LeaveSharedCalendarUseCase
+    private let regenerateUseCase: RegenerateSharedCalendarInviteCodeUseCase
+    private let updateNicknameUseCase: UpdateSharedCalendarNicknameUseCase
+    private let service: SharedCalendarServiceProtocol
+    private var cancellables = Set<AnyCancellable>()
+
+    private let orderKey = "shared_calendar_order"
+
+    init(
+        createUseCase: CreateSharedCalendarUseCase,
+        joinUseCase: JoinSharedCalendarUseCase,
+        leaveUseCase: LeaveSharedCalendarUseCase,
+        regenerateUseCase: RegenerateSharedCalendarInviteCodeUseCase,
+        updateNicknameUseCase: UpdateSharedCalendarNicknameUseCase,
+        service: SharedCalendarServiceProtocol
+    ) {
+        self.createUseCase = createUseCase
+        self.joinUseCase = joinUseCase
+        self.leaveUseCase = leaveUseCase
+        self.regenerateUseCase = regenerateUseCase
+        self.updateNicknameUseCase = updateNicknameUseCase
+        self.service = service
+    }
+
+    // MARK: - Load
+
+    func loadCalendars() {
+        isLoading = true
+        service.fetchMyCalendars()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] calendars in
+                    guard let self else { return }
+                    let sorted = self.applyPersistedOrder(calendars)
+                    self.calendars = sorted
+                    for cal in sorted { self.loadMembers(calendarID: cal.id) }
+                    ActiveSharedCalendarStore.shared.reconcile(with: sorted)
+                    NotificationCenter.default.post(name: .dozySharedCalendarsChanged, object: nil)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func loadMembers(calendarID: String) {
+        service.fetchMembers(calendarID: calendarID)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] members in
+                    self?.membersMap[calendarID] = members
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Create
+
+    func create(name: String, completion: @escaping (SharedCalendarCreationResult) -> Void) {
+        isLoading = true
+        createUseCase.execute(name: name)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] result in
+                    self?.loadCalendars()
+                    completion(result)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Join
+
+    func join(code: String, completion: @escaping () -> Void) {
+        isLoading = true
+        joinUseCase.execute(inviteCode: code)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] _ in
+                    self?.loadCalendars()
+                    completion()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Leave / Delete
+
+    func leave(calendar: SharedCalendar, currentUserID: String, completion: @escaping () -> Void) {
+        let isOwner = membersMap[calendar.id]?.first(where: { $0.userID == currentUserID })?.role == .owner
+        isLoading = true
+        leaveUseCase.execute(calendarID: calendar.id, isOwner: isOwner)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] in
+                    self?.calendars.removeAll { $0.id == calendar.id }
+                    self?.membersMap.removeValue(forKey: calendar.id)
+                    ActiveSharedCalendarStore.shared.clearIfMatches(calendar.id)
+                    NotificationCenter.default.post(name: .dozySharedCalendarsChanged, object: nil)
+                    completion()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Update Calendar Name
+
+    func updateCalendarName(calendarID: String, name: String, completion: @escaping () -> Void) {
+        service.updateCalendarName(calendarID: calendarID, name: name)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] in
+                    if let idx = self?.calendars.firstIndex(where: { $0.id == calendarID }) {
+                        let old = self!.calendars[idx]
+                        self?.calendars[idx] = SharedCalendar(
+                            id: old.id, name: name,
+                            inviteCode: old.inviteCode,
+                            inviteCodeExpiresAt: old.inviteCodeExpiresAt,
+                            createdBy: old.createdBy, createdAt: old.createdAt,
+                            imagePath: old.imagePath
+                        )
+                    }
+                    completion()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Update Nickname
+
+    func updateNickname(calendarID: String, nickname: String, currentUserID: String, completion: @escaping () -> Void) {
+        updateNicknameUseCase.execute(calendarID: calendarID, nickname: nickname)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] in
+                    // 로컬 membersMap 즉시 반영
+                    if var members = self?.membersMap[calendarID],
+                       let idx = members.firstIndex(where: { $0.userID == currentUserID }) {
+                        members[idx].nickname = nickname
+                        self?.membersMap[calendarID] = members
+                    }
+                    completion()
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Reorder (local per-user)
+
+    func moveCalendar(from source: IndexSet, to destination: Int) {
+        var reordered = calendars
+        reordered.move(fromOffsets: source, toOffset: destination)
+        calendars = reordered
+        persistOrder(reordered)
+    }
+
+    private func applyPersistedOrder(_ calendars: [SharedCalendar]) -> [SharedCalendar] {
+        let stored = UserDefaults.standard.stringArray(forKey: orderKey) ?? []
+        let byID = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0) })
+        var ordered: [SharedCalendar] = []
+        for id in stored {
+            if let cal = byID[id] { ordered.append(cal) }
+        }
+        let known = Set(ordered.map { $0.id })
+        for cal in calendars where !known.contains(cal.id) {
+            ordered.append(cal)
+        }
+        return ordered
+    }
+
+    private func persistOrder(_ calendars: [SharedCalendar]) {
+        UserDefaults.standard.set(calendars.map { $0.id }, forKey: orderKey)
+    }
+
+    // MARK: - Calendar Image
+
+    func updateCalendarImage(calendarID: String, jpegData: Data, completion: @escaping (Bool) -> Void) {
+        let previousPath = calendars.first(where: { $0.id == calendarID })?.imagePath
+        isLoading = true
+        service.uploadCalendarImage(calendarID: calendarID, jpegData: jpegData, previousPath: previousPath)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    }
+                },
+                receiveValue: { [weak self] newPath in
+                    self?.applyImagePath(calendarID: calendarID, path: newPath)
+                    completion(true)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    func removeCalendarImage(calendarID: String, completion: @escaping (Bool) -> Void) {
+        guard let path = calendars.first(where: { $0.id == calendarID })?.imagePath, !path.isEmpty else {
+            completion(true); return
+        }
+        isLoading = true
+        service.removeCalendarImage(calendarID: calendarID, path: path)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.isLoading = false
+                    if case .failure(let error) = $0 {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    }
+                },
+                receiveValue: { [weak self] in
+                    self?.applyImagePath(calendarID: calendarID, path: nil)
+                    completion(true)
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    private func applyImagePath(calendarID: String, path: String?) {
+        guard let idx = calendars.firstIndex(where: { $0.id == calendarID }) else { return }
+        let old = calendars[idx]
+        calendars[idx] = SharedCalendar(
+            id: old.id, name: old.name,
+            inviteCode: old.inviteCode,
+            inviteCodeExpiresAt: old.inviteCodeExpiresAt,
+            createdBy: old.createdBy, createdAt: old.createdAt,
+            imagePath: path
+        )
+    }
+
+    // MARK: - Regenerate Invite Code
+
+    func regenerateCode(calendarID: String, completion: @escaping (String) -> Void) {
+        regenerateUseCase.execute(calendarID: calendarID)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] in
+                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                },
+                receiveValue: { [weak self] result in
+                    // Update local calendar invite code
+                    if let idx = self?.calendars.firstIndex(where: { $0.id == calendarID }) {
+                        let old = self!.calendars[idx]
+                        self?.calendars[idx] = SharedCalendar(
+                            id: old.id, name: old.name,
+                            inviteCode: result.inviteCode,
+                            inviteCodeExpiresAt: result.inviteCodeExpiresAt,
+                            createdBy: old.createdBy, createdAt: old.createdAt,
+                            imagePath: old.imagePath
+                        )
+                    }
+                    completion(result.inviteCode)
+                }
+            )
+            .store(in: &cancellables)
+    }
+}

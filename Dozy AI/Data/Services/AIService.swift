@@ -4,36 +4,64 @@
 //
 //  Created by HyungJun's mac on 3/18/26.
 //
+//  일일 요약 / 한 줄 요약 생성.
+//  1) iOS 26+ 에서 Apple Intelligence 가 켜져 있으면 온디바이스 Foundation Models (FoundationModelsEngine)
+//  2) 아니면, 또는 모델 호출이 실패하면 NaturalLanguage 기반 로컬 분석으로 폴백 — 사용자에게 에러를 보이지 않는다.
+//
 
 import Foundation
 import Combine
 import NaturalLanguage
+import OSLog
 
 final class AIService: AIServiceProtocol {
-    
-    // MARK: - 일일 요약 생성
-    
-    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) async throws -> DailySummary {
-        
-        // Foundation Models 사용 가능 시 (iOS 26+)
-        if #available(iOS 26.0, *), Self.isFoundationModelsAvailable() {
-            let prompt = AIPromptBuilder.buildDailySummaryPrompt(
-                events: events,
-                completedTasks: completedTasks,
-                pendingTasks: pendingTasks,
-                memos: memos
-            )
-            let response = try await requestFoundationModels(prompt: prompt)
-            
-            return AIResponseParser.parse(
-                response: response,
-                date: Date(),
-                events: events,
-                completedTasks: completedTasks
-            )
+
+    // MARK: - 엔진 상태
+
+    /// 가용성 API 는 .available 이라도 실제 생성이 실패할 수 있다(시뮬레이터처럼 모델 자산이 없는 경우 등).
+    /// 마지막 시도 결과를 기억해 설정 화면이 "사용 가능" 으로만 보이지 않게 한다.
+    private var lastOnDeviceGenerationFailed = false
+
+    var engineStatus: AIEngineStatus {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            let status = FoundationModelsEngine().status
+            if status == .onDevice, lastOnDeviceGenerationFailed { return .onDeviceFailed }
+            return status
         }
-        
-        // 폴백: NaturalLanguage 기반 로컬 분석
+        #endif
+        return .deviceNotEligible
+    }
+
+    // MARK: - 일일 요약 생성
+
+    func generateDailySummary(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) async throws -> DailySummary {
+
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            let engine = FoundationModelsEngine()
+            if engine.status == .onDevice {
+                do {
+                    let prompt = AIPromptBuilder.buildDailySummaryPrompt(
+                        events: events,
+                        completedTasks: completedTasks,
+                        pendingTasks: pendingTasks,
+                        memos: memos,
+                        includeFormatInstruction: false   // 형식은 @Generable 이 강제
+                    )
+                    let draft = try await engine.dailyReport(prompt: prompt)
+                    lastOnDeviceGenerationFailed = false
+                    Logger.ai.info("[요약] 온디바이스 모델 생성 완료 (highlights \(draft.highlights.count), score \(draft.score))")
+                    return makeSummary(from: draft, events: events, completedTasks: completedTasks)
+                } catch {
+                    // 컨텍스트 초과·가드레일·언어 미지원·모델 자산 없음 등 → 로컬 분석으로 조용히 폴백
+                    lastOnDeviceGenerationFailed = true
+                    Logger.ai.error("[요약] 온디바이스 모델 실패, 로컬 분석 폴백: \(error.localizedDescription, privacy: .public)")
+                }
+            }
+        }
+        #endif
+
         return generateWithLocalAnalysis(
             events: events,
             completedTasks: completedTasks,
@@ -42,45 +70,58 @@ final class AIService: AIServiceProtocol {
             completedEventCount: completedEventCount
         )
     }
-    
-    // MARK: - 빠른 한줄 요약 (async)
+
+    // MARK: - 빠른 한줄 요약 (위젯·Siri)
+
     func generateQuickSummary(events: [CalendarEvent], completedTasks: [TaskItem]) async throws -> String {
-        if #available(iOS 26.0, *), Self.isFoundationModelsAvailable() {
-            let prompt = AIPromptBuilder.buildQuickSummaryPrompt(
-                events: events,
-                completedTasks: completedTasks
-            )
-            return try await requestFoundationModels(prompt: prompt)
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            let engine = FoundationModelsEngine()
+            if engine.status == .onDevice {
+                do {
+                    let prompt = AIPromptBuilder.buildQuickSummaryPrompt(events: events, completedTasks: completedTasks)
+                    let line = try await engine.quickLine(prompt: prompt)
+                    lastOnDeviceGenerationFailed = false
+                    if !line.isEmpty { return String(line.prefix(60)) }
+                } catch {
+                    lastOnDeviceGenerationFailed = true
+                    Logger.ai.error("[한줄 요약] 온디바이스 모델 실패, 로컬 폴백: \(error.localizedDescription, privacy: .public)")
+                }
+            }
         }
-        
+        #endif
         return buildQuickSummaryLocally(events: events, completedTasks: completedTasks)
     }
-    
-    // MARK: - Foundation Models (iOS 26+)
-    
-    /// Foundation Models 사용 가능 여부 체크
-    private static func isFoundationModelsAvailable() -> Bool {
-        // Xcode 26+에서 FoundationModels.isAvailable 등으로 교체
-        if #available(iOS 26.0, *) {
-            return false  // Xcode 26 전까지 false
-        }
-        return false
+
+    // MARK: - Foundation Models 응답 → DailySummary
+
+    #if canImport(FoundationModels)
+    /// 모델 응답을 도메인 모델로. 수치(총 소요시간·완료 수)는 모델이 아니라 입력 데이터에서 계산 — 모델이 숫자를 틀릴 수 있다.
+    @available(iOS 26.0, macOS 26.0, *)
+    private func makeSummary(from draft: DailyReportDraft, events: [CalendarEvent], completedTasks: [TaskItem]) -> DailySummary {
+        let totalMinutes = events
+            .filter { !$0.isAllDay }
+            .reduce(0) { $0 + $1.durationMinutes }
+
+        // 모델이 고른 카테고리가 입력에 없는 이름이면 규칙 기반 감지로 대체 (지어낸 카테고리 방지)
+        let knownCategories = Set(events.map(\.category))
+        let category = knownCategories.contains(draft.category)
+            ? draft.category
+            : detectCategory(events: events, tasks: completedTasks)
+
+        return DailySummary(
+            date: Date(),
+            summaryText: draft.summary.trimmingCharacters(in: .whitespacesAndNewlines),
+            highlights: draft.highlights.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty },
+            nextActions: draft.nextActions.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty },
+            detectedCategory: category,
+            productivityScore: min(max(draft.score, 0.0), 1.0),
+            totalEventMinutes: totalMinutes,
+            completedTaskCount: completedTasks.count
+        )
     }
-    
-    /// Foundation Models 호출
-    @available(iOS 26.0, *)
-    private func requestFoundationModels(prompt: String) async throws -> String {
-        // ──────────────────────────────────────────
-        // Xcode 26+ 에서 아래 코드를 활성화:
-        //
-        // import FoundationModels
-        // let session = LanguageModelSession()
-        // let response = try await session.respond(to: prompt)
-        // return response.content
-        // ──────────────────────────────────────────
-        throw DozyError.aiSummarizationFailed
-    }
-    
+    #endif
+
     // MARK: - NaturalLanguage 기반 로컬 분석
     // NLTagger 키워드 추출 + 규칙 기반 로직 조합
     private func generateWithLocalAnalysis(events: [CalendarEvent], completedTasks: [TaskItem], pendingTasks: [TaskItem], memos: [String], completedEventCount: Int = 0) -> DailySummary {
@@ -134,7 +175,7 @@ final class AIService: AIServiceProtocol {
         var parts: [String] = []
 
         if completedEventCount == 0 {
-            parts.append("오늘은 아직 완료된 일정이 없습니다.")
+            parts.append(String(localized: "오늘은 아직 완료된 일정이 없습니다."))
         } else {
             let now = Date()
             let pastEvents = events.filter { $0.endDate <= now }
@@ -143,25 +184,29 @@ final class AIService: AIServiceProtocol {
                 .reduce(0) { $0 + $1.durationMinutes }
             let hours = totalMinutes / 60
             let mins = totalMinutes % 60
-            let timeStr = hours > 0 ? "\(hours)시간 \(mins)분" : "\(mins)분"
+            let timeStr = hours > 0
+                ? String(localized: "\(hours)시간 \(mins)분")
+                : String(localized: "\(mins)분")
 
-            parts.append("오늘 \(completedEventCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다.")
+            parts.append(String(localized: "오늘 \(completedEventCount)건의 일정을 소화했으며, 총 \(timeStr)을 사용했습니다."))
 
             if let longest = pastEvents.filter({ !$0.isAllDay }).max(by: { $0.durationMinutes < $1.durationMinutes }) {
-                parts.append("가장 긴 일정은 '\(longest.title)'(\(longest.durationMinutes)분)이었습니다.")
+                let title = longest.title
+                let dur = longest.durationMinutes
+                parts.append(String(localized: "가장 긴 일정은 '\(title)'(\(dur)분)이었습니다."))
             }
         }
-        
+
         if !completedTasks.isEmpty {
-            parts.append("\(completedTasks.count)개의 할 일을 완료했습니다.")
+            parts.append(String(localized: "\(completedTasks.count)개의 할 일을 완료했습니다."))
         }
         if !pendingTasks.isEmpty {
-            parts.append("아직 \(pendingTasks.count)개의 할 일이 남아있습니다.")
+            parts.append(String(localized: "아직 \(pendingTasks.count)개의 할 일이 남아있습니다."))
         }
         if !memos.isEmpty {
-            parts.append("총 \(memos.count)건의 메모를 기록했습니다.")
+            parts.append(String(localized: "총 \(memos.count)건의 메모를 기록했습니다."))
         }
-        
+
         return parts.joined(separator: " ")
     }
     
@@ -180,39 +225,44 @@ final class AIService: AIServiceProtocol {
         if !categoryGroups.isEmpty {
             for (category, grouped) in categoryGroups.sorted(by: { $0.value.count > $1.value.count }).prefix(3) {
                 let minutes = grouped.filter { !$0.isAllDay }.reduce(0) { $0 + $1.durationMinutes }
+                let count = grouped.count
                 if minutes > 0 {
-                    highlights.append("📌 \(category) 관련 일정 \(grouped.count)건 (총 \(minutes)분)")
+                    highlights.append(String(localized: "📌 \(category) 관련 일정 \(count)건 (총 \(minutes)분)"))
                 } else {
-                    highlights.append("📌 \(category) 관련 일정 \(grouped.count)건")
+                    highlights.append(String(localized: "📌 \(category) 관련 일정 \(count)건"))
                 }
             }
         } else {
-            // 폴백: 키워드 기반 회의 수 체크
+            // 폴백: 키워드 기반 회의 수 체크 — 한·영 양쪽 keyword 매칭.
             let meetingCount = events.filter { event in
                 let t = event.title.lowercased()
                 return t.contains("회의") || t.contains("미팅") || t.contains("meeting")
             }.count
             if meetingCount > 0 {
-                highlights.append("\(meetingCount)건의 회의에 참석했습니다")
+                highlights.append(String(localized: "\(meetingCount)건의 회의에 참석했습니다"))
             }
         }
 
         // 바쁜 하루 체크
         let totalMinutes = events.filter { !$0.isAllDay }.reduce(0) { $0 + $1.durationMinutes }
         if totalMinutes > 240 {
-            highlights.append("4시간 이상 일정에 투입되어 바쁜 하루였습니다")
+            highlights.append(String(localized: "4시간 이상 일정에 투입되어 바쁜 하루였습니다"))
         }
 
         // 할 일 성과
         if completedTasks.count >= 5 {
-            highlights.append("할 일 \(completedTasks.count)개를 완료하여 생산적인 하루였습니다")
+            let count = completedTasks.count
+            highlights.append(String(localized: "할 일 \(count)개를 완료하여 생산적인 하루였습니다"))
         } else if let topTask = completedTasks.first {
-            highlights.append("'\(topTask.title)' 등 \(completedTasks.count)건을 완료했습니다")
+            let title = topTask.title
+            let count = completedTasks.count
+            highlights.append(String(localized: "'\(title)' 등 \(count)건을 완료했습니다"))
         }
 
         // 키워드
         if !keywords.isEmpty {
-            highlights.append("주요 키워드: \(keywords.joined(separator: ", "))")
+            let joined = keywords.joined(separator: ", ")
+            highlights.append(String(localized: "주요 키워드: \(joined)"))
         }
 
         return Array(highlights.prefix(5))
@@ -227,9 +277,10 @@ final class AIService: AIServiceProtocol {
         // 1) 우선순위 높은 항목
         let highPriority = pendingTasks.filter { $0.priority == 1 }
         for task in highPriority.prefix(2) {
-            actions.append("🔴 \(task.title) (높은 우선순위)")
+            let title = task.title
+            actions.append(String(localized: "🔴 \(title) (높은 우선순위)"))
         }
-        
+
         // 2) 마감 임박 항목
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!.endOfDay
         let urgent = pendingTasks.filter { task in
@@ -237,28 +288,30 @@ final class AIService: AIServiceProtocol {
             return due <= tomorrow && task.priority != 1
         }
         for task in urgent.prefix(2) {
-            actions.append("⏰ \(task.title) (마감 임박)")
+            let title = task.title
+            actions.append(String(localized: "⏰ \(title) (마감 임박)"))
         }
-        
+
         // 3) 회의 후속 작업
         let hadMeetings = events.contains { event in
             let t = event.title.lowercased()
             return t.contains("회의") || t.contains("미팅") || t.contains("meeting")
         }
         if hadMeetings && actions.count < 3 {
-            actions.append("📋 오늘 회의 내용 정리 및 액션 아이템 확인")
+            actions.append(String(localized: "📋 오늘 회의 내용 정리 및 액션 아이템 확인"))
         }
-        
+
         // 4) 일반 미완료 항목으로 채움
         if actions.count < 3 {
             let remaining = pendingTasks
                 .filter { task in !actions.contains(where: { $0.contains(task.title) }) }
                 .prefix(3 - actions.count)
             for task in remaining {
-                actions.append("📌 \(task.title)")
+                let title = task.title
+                actions.append(String(localized: "📌 \(title)"))
             }
         }
-        
+
         return Array(actions.prefix(3))
     }
     
@@ -322,11 +375,18 @@ final class AIService: AIServiceProtocol {
     // MARK: - 빠른 로컬 요약
     private func buildQuickSummaryLocally(events: [CalendarEvent], completedTasks: [TaskItem]) -> String {
         if events.isEmpty && completedTasks.isEmpty {
-            return "오늘은 기록된 활동이 없습니다."
+            return String(localized: "오늘은 기록된 활동이 없습니다.")
         }
         var parts: [String] = []
-        if !events.isEmpty { parts.append("일정 \(events.count)건") }
-        if !completedTasks.isEmpty { parts.append("완료 \(completedTasks.count)건") }
-        return "오늘: \(parts.joined(separator: ", "))"
+        if !events.isEmpty {
+            let count = events.count
+            parts.append(String(localized: "일정 \(count)건"))
+        }
+        if !completedTasks.isEmpty {
+            let count = completedTasks.count
+            parts.append(String(localized: "완료 \(count)건"))
+        }
+        let joined = parts.joined(separator: ", ")
+        return String(localized: "오늘: \(joined)")
     }
 }

@@ -78,8 +78,11 @@ final class SyncService {
             guard let self else { return }
             Task {
                 do {
-                    let events = try self.modelContext.fetch(FetchDescriptor<DozyEvent>())
-                    Logger.sync.info("⬆️ DozyEvents 업로드 시작 (\(events.count)건)")
+                    let allEvents = try self.modelContext.fetch(FetchDescriptor<DozyEvent>())
+                    // 파트너 소유 이벤트는 내가 덮어쓰지 않도록 필터링.
+                    // nil은 로컬 생성 후 미동기화 상태 → 내 소유로 간주하고 업로드.
+                    let events = allEvents.filter { $0.ownerID == nil || $0.ownerID == userID }
+                    Logger.sync.info("⬆️ DozyEvents 업로드 시작 (\(events.count)건, 전체 \(allEvents.count)건 중)")
                     let rows = events.map { event in
                         DozyEventRow(
                             id: event.id,
@@ -89,6 +92,8 @@ final class SyncService {
                             endDate: event.endDate,
                             isAllDay: event.isAllDay,
                             location: event.location,
+                            latitude: event.latitude,
+                            longitude: event.longitude,
                             notes: event.notes,
                             colorHex: event.colorHex,
                             recurrenceRule: event.recurrenceRule,
@@ -99,6 +104,11 @@ final class SyncService {
                             priority: event.priority,
                             isPinned: event.isPinned,
                             category: event.category,
+                            sharedCalendarID: event.sharedCalendarID,
+                            externalSource: event.externalSource,
+                            externalEventID: event.externalEventID,
+                            externalLastSyncedAt: event.externalLastSyncedAt,
+                            externalDeleted: event.externalDeleted,
                             createdAt: event.createdAt,
                             updatedAt: event.updatedAt
                         )
@@ -248,34 +258,49 @@ final class SyncService {
             guard let self else { return }
             Task {
                 do {
+                    // user_id 필터 제거: RLS가 (내 이벤트) OR (내가 멤버인 공유 캘린더 이벤트)를 반환
                     let rows: [DozyEventRow] = try await supabase
                         .from("dozy_events")
                         .select()
-                        .eq("user_id", value: userID)
                         .execute()
                         .value
                     let existing = try self.modelContext.fetch(FetchDescriptor<DozyEvent>())
-                    let existingIDs = Set(existing.map { $0.id })
-                    for row in rows where !existingIDs.contains(row.id) {
-                        let event = DozyEvent(
-                            id: row.id,
-                            title: row.title,
-                            startDate: row.startDate,
-                            endDate: row.endDate,
-                            isAllDay: row.isAllDay,
-                            location: row.location,
-                            notes: row.notes,
-                            colorHex: row.colorHex,
-                            recurrenceRule: row.recurrenceRule,
-                            recurrenceEndDate: row.recurrenceEndDate,
-                            notificationMinutesBefore: row.notificationMinutesBefore,
-                            priority: row.priority,
-                            isPinned: row.isPinned,
-                            category: row.category
-                        )
-                        event.memos = row.memos
-                        event.isCompleted = row.isCompleted
-                        self.modelContext.insert(event)
+                    let existingByID = Dictionary(uniqueKeysWithValues: existing.map { ($0.id, $0) })
+                    for row in rows {
+                        if let local = existingByID[row.id] {
+                            // 기존 이벤트: ownerID가 nil이면 한 번 backfill (업로드 소유권 구분용)
+                            if local.ownerID == nil {
+                                local.ownerID = row.userID
+                            }
+                        } else {
+                            let event = DozyEvent(
+                                id: row.id,
+                                title: row.title,
+                                startDate: row.startDate,
+                                endDate: row.endDate,
+                                isAllDay: row.isAllDay,
+                                location: row.location,
+                                latitude: row.latitude,
+                                longitude: row.longitude,
+                                notes: row.notes,
+                                colorHex: row.colorHex,
+                                recurrenceRule: row.recurrenceRule,
+                                recurrenceEndDate: row.recurrenceEndDate,
+                                notificationMinutesBefore: row.notificationMinutesBefore,
+                                priority: row.priority,
+                                isPinned: row.isPinned,
+                                category: row.category,
+                                sharedCalendarID: row.sharedCalendarID,
+                                ownerID: row.userID,
+                                externalSource: row.externalSource,
+                                externalEventID: row.externalEventID,
+                                externalLastSyncedAt: row.externalLastSyncedAt,
+                                externalDeleted: row.externalDeleted
+                            )
+                            event.memos = row.memos
+                            event.isCompleted = row.isCompleted
+                            self.modelContext.insert(event)
+                        }
                     }
                     try self.modelContext.save()
                     Logger.sync.info("⬇️ DozyEvents 다운로드 완료 (\(rows.count)건)")
@@ -406,31 +431,53 @@ final class SyncService {
                         .eq("user_id", value: userID)
                         .execute()
                         .value
-                    let existing = try self.modelContext.fetch(FetchDescriptor<UserCategory>())
+                    let allLocal = try self.modelContext.fetch(FetchDescriptor<UserCategory>())
+
+                    // 로컬 중복(같은 이름 여러 개) 먼저 정리 — updatedAt 기준 최신 하나만 남김
+                    var seenNames: [String: UserCategory] = [:]
+                    for cat in allLocal {
+                        if let existing = seenNames[cat.name] {
+                            self.modelContext.delete(cat.updatedAt >= existing.updatedAt ? existing : cat)
+                            seenNames[cat.name] = cat.updatedAt >= existing.updatedAt ? cat : existing
+                        } else {
+                            seenNames[cat.name] = cat
+                        }
+                    }
+
+                    // 루프 중 insert도 추적하기 위해 딕셔너리 사용
+                    var byID: [String: UserCategory] = Dictionary(
+                        allLocal.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a }
+                    )
+                    var byName: [String: UserCategory] = Dictionary(
+                        allLocal.map { ($0.name, $0) }, uniquingKeysWith: { a, b in
+                            a.updatedAt >= b.updatedAt ? a : b
+                        }
+                    )
+
                     for row in rows {
-                        if let local = existing.first(where: { $0.id == row.id }) {
-                            // 원격이 더 최신이면 덮어쓰기
+                        if let local = byID[row.id] {
                             if row.updatedAt > local.updatedAt {
                                 local.name = row.name
                                 local.emoji = row.emoji
                                 local.colorHex = row.colorHex
                                 local.order = row.order
                                 local.updatedAt = row.updatedAt
+                                byName[row.name] = local
                             }
+                        } else if let nameMatch = byName[row.name] {
+                            nameMatch.id = row.id
+                            nameMatch.emoji = row.emoji
+                            nameMatch.colorHex = row.colorHex
+                            nameMatch.order = row.order
+                            nameMatch.updatedAt = row.updatedAt
+                            byID[row.id] = nameMatch
                         } else {
-                            // 이름 중복 방지: 같은 이름의 로컬 카테고리가 있으면 원격 데이터로 업데이트
-                            if let duplicate = existing.first(where: { $0.name == row.name }) {
-                                duplicate.id = row.id
-                                duplicate.emoji = row.emoji
-                                duplicate.colorHex = row.colorHex
-                                duplicate.order = row.order
-                                duplicate.updatedAt = row.updatedAt
-                            } else {
-                                let cat = UserCategory(name: row.name, emoji: row.emoji, colorHex: row.colorHex, order: row.order)
-                                cat.id = row.id
-                                cat.updatedAt = row.updatedAt
-                                self.modelContext.insert(cat)
-                            }
+                            let cat = UserCategory(name: row.name, emoji: row.emoji, colorHex: row.colorHex, order: row.order)
+                            cat.id = row.id
+                            cat.updatedAt = row.updatedAt
+                            self.modelContext.insert(cat)
+                            byID[row.id] = cat
+                            byName[row.name] = cat
                         }
                     }
                     try self.modelContext.save()
@@ -452,7 +499,10 @@ final class SyncService {
             { try self.modelContext.delete(model: EventCompletion.self) },
             { try self.modelContext.delete(model: EventDisplaySettings.self) },
             { try self.modelContext.delete(model: UserCategory.self) },
-            { try self.modelContext.delete(model: DozyEvent.self) }
+            { try self.modelContext.delete(model: DozyEvent.self) },
+            // 알림 카드도 계정 종속이라 로그아웃 / 탈퇴 시 같이 정리.
+            // 빠지면 다음 미로그인 진입 시 알림 페이지에 이전 사용자 카드가 남음.
+            { try self.modelContext.delete(model: NotificationRecord.self) }
         ]
         for deletion in deletions { try? deletion() }
         try? modelContext.save()
@@ -469,6 +519,8 @@ private struct DozyEventRow: Codable {
     let endDate: Date
     let isAllDay: Bool
     let location: String?
+    let latitude: Double?
+    let longitude: Double?
     let notes: String?
     let colorHex: String
     let recurrenceRule: String
@@ -479,6 +531,11 @@ private struct DozyEventRow: Codable {
     let priority: Int
     let isPinned: Bool
     let category: String
+    let sharedCalendarID: String?
+    let externalSource: String?
+    let externalEventID: String?
+    let externalLastSyncedAt: Date?
+    let externalDeleted: Bool
     let createdAt: Date
     let updatedAt: Date
 
@@ -489,7 +546,7 @@ private struct DozyEventRow: Codable {
         case startDate = "start_date"
         case endDate = "end_date"
         case isAllDay = "is_all_day"
-        case location, notes
+        case location, latitude, longitude, notes
         case colorHex = "color_hex"
         case recurrenceRule = "recurrence_rule"
         case recurrenceEndDate = "recurrence_end_date"
@@ -499,8 +556,84 @@ private struct DozyEventRow: Codable {
         case priority
         case isPinned = "is_pinned"
         case category
+        case sharedCalendarID = "shared_calendar_id"
+        case externalSource = "external_source"
+        case externalEventID = "external_event_id"
+        case externalLastSyncedAt = "external_last_synced_at"
+        case externalDeleted = "external_deleted"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+    }
+
+    init(
+        id: String, userID: String, title: String,
+        startDate: Date, endDate: Date, isAllDay: Bool,
+        location: String?, latitude: Double?, longitude: Double?,
+        notes: String?, colorHex: String,
+        recurrenceRule: String, recurrenceEndDate: Date?,
+        notificationMinutesBefore: Int, memos: [String], isCompleted: Bool,
+        priority: Int, isPinned: Bool, category: String,
+        sharedCalendarID: String?,
+        externalSource: String? = nil, externalEventID: String? = nil,
+        externalLastSyncedAt: Date? = nil, externalDeleted: Bool = false,
+        createdAt: Date, updatedAt: Date
+    ) {
+        self.id = id
+        self.userID = userID
+        self.title = title
+        self.startDate = startDate
+        self.endDate = endDate
+        self.isAllDay = isAllDay
+        self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
+        self.notes = notes
+        self.colorHex = colorHex
+        self.recurrenceRule = recurrenceRule
+        self.recurrenceEndDate = recurrenceEndDate
+        self.notificationMinutesBefore = notificationMinutesBefore
+        self.memos = memos
+        self.isCompleted = isCompleted
+        self.priority = priority
+        self.isPinned = isPinned
+        self.category = category
+        self.sharedCalendarID = sharedCalendarID
+        self.externalSource = externalSource
+        self.externalEventID = externalEventID
+        self.externalLastSyncedAt = externalLastSyncedAt
+        self.externalDeleted = externalDeleted
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        userID = try c.decode(String.self, forKey: .userID)
+        title = try c.decode(String.self, forKey: .title)
+        startDate = try c.decode(Date.self, forKey: .startDate)
+        endDate = try c.decode(Date.self, forKey: .endDate)
+        isAllDay = try c.decode(Bool.self, forKey: .isAllDay)
+        location = try c.decodeIfPresent(String.self, forKey: .location)
+        latitude = try c.decodeIfPresent(Double.self, forKey: .latitude)
+        longitude = try c.decodeIfPresent(Double.self, forKey: .longitude)
+        notes = try c.decodeIfPresent(String.self, forKey: .notes)
+        colorHex = try c.decode(String.self, forKey: .colorHex)
+        recurrenceRule = try c.decode(String.self, forKey: .recurrenceRule)
+        recurrenceEndDate = try c.decodeIfPresent(Date.self, forKey: .recurrenceEndDate)
+        notificationMinutesBefore = try c.decode(Int.self, forKey: .notificationMinutesBefore)
+        memos = try c.decodeIfPresent([String].self, forKey: .memos) ?? []
+        isCompleted = try c.decode(Bool.self, forKey: .isCompleted)
+        priority = try c.decode(Int.self, forKey: .priority)
+        isPinned = try c.decode(Bool.self, forKey: .isPinned)
+        category = try c.decode(String.self, forKey: .category)
+        sharedCalendarID = try c.decodeIfPresent(String.self, forKey: .sharedCalendarID)
+        externalSource = try c.decodeIfPresent(String.self, forKey: .externalSource)
+        externalEventID = try c.decodeIfPresent(String.self, forKey: .externalEventID)
+        externalLastSyncedAt = try c.decodeIfPresent(Date.self, forKey: .externalLastSyncedAt)
+        externalDeleted = try c.decodeIfPresent(Bool.self, forKey: .externalDeleted) ?? false
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        updatedAt = try c.decode(Date.self, forKey: .updatedAt)
     }
 }
 

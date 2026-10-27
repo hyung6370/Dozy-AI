@@ -7,9 +7,15 @@
 
 import Foundation
 import Combine
+import OSLog
 import Supabase
 import AuthenticationServices
 import GoogleSignIn
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 import CryptoKit
 
 final class AuthService: NSObject {
@@ -44,7 +50,7 @@ final class AuthService: NSObject {
                                 credentials: .init(provider: .apple, idToken: tokenString, nonce: nonce)
                             )
                             let user = AuthUser(
-                                id: session.user.id.uuidString,
+                                id: session.user.id.uuidString.lowercased(),
                                 email: session.user.email,
                                 displayName: credential.fullName?.givenName,
                                 provider: .apple
@@ -67,17 +73,16 @@ final class AuthService: NSObject {
 
     // MARK: - Google 로그인
 
+    /// iOS 는 topViewController, macOS 는 keyWindow 를 presenting anchor 로 넘겨
+    /// GoogleSignIn SDK 의 네이티브 ID Token 플로우를 사용한다. redirect_uri 방식이 아니므로
+    /// Web 타입 OAuth 클라이언트 / Supabase "Client ID (for OAuth)" 설정은 불필요.
     func signInWithGoogle() -> AnyPublisher<AuthUser, DozyError> {
         Future { [weak self] promise in
             guard let self else { return }
-            guard let topVC = UIApplication.shared.topViewController else {
-                promise(.failure(.unknown(underlying: NSError(domain: "AuthService", code: -1))))
-                return
-            }
             let nonce = self.randomNonceString()
             let hashedNonce = self.sha256(nonce)
 
-            GIDSignIn.sharedInstance.signIn(withPresenting: topVC, hint: nil, additionalScopes: nil, nonce: hashedNonce) { result, error in
+            let completion: (GIDSignInResult?, Error?) -> Void = { result, error in
                 if let error {
                     promise(.failure(.googleSignInFailed(underlying: error)))
                     return
@@ -95,7 +100,7 @@ final class AuthService: NSObject {
                             credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken, nonce: nonce)
                         )
                         let user = AuthUser(
-                            id: session.user.id.uuidString,
+                            id: session.user.id.uuidString.lowercased(),
                             email: email ?? session.user.email,
                             displayName: displayName,
                             provider: .google
@@ -106,8 +111,342 @@ final class AuthService: NSObject {
                     }
                 }
             }
+
+            #if os(iOS)
+            guard let topVC = UIApplication.shared.topViewController else {
+                promise(.failure(.unknown(underlying: NSError(domain: "AuthService", code: -1))))
+                return
+            }
+            GIDSignIn.sharedInstance.signIn(
+                withPresenting: topVC,
+                hint: nil,
+                additionalScopes: nil,
+                nonce: hashedNonce,
+                completion: completion
+            )
+            #elseif os(macOS)
+            guard let window = NSApplication.shared.keyWindow ?? NSApplication.shared.windows.first else {
+                promise(.failure(.unknown(underlying: NSError(domain: "AuthService", code: -1))))
+                return
+            }
+            GIDSignIn.sharedInstance.signIn(
+                withPresenting: window,
+                hint: nil,
+                additionalScopes: nil,
+                nonce: hashedNonce,
+                completion: completion
+            )
+            #endif
         }
         .eraseToAnyPublisher()
+    }
+
+    // MARK: - Email / Password 로그인
+
+    /// 이메일/비밀번호로 로그인. 계정이 없으면 .emailAuthFailed 로 실패하므로
+    /// 호출자는 필요 시 signUpWithEmail 를 이어 호출할 수 있다.
+    func signInWithEmail(email: String, password: String) -> AnyPublisher<AuthUser, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            #if DEBUG
+            let pwTrim = password.trimmingCharacters(in: .whitespacesAndNewlines)
+            Logger.auth.debug("📧 signIn attempt email='\(normalizedEmail)' pwLen=\(password.count) pwTrimmedLen=\(pwTrim.count) env=\(AppEnvironment.current.displayName)")
+            #endif
+            if let validationError = Self.validate(email: normalizedEmail, password: password) {
+                promise(.failure(validationError))
+                return
+            }
+            Task {
+                do {
+                    let session = try await supabase.auth.signIn(email: normalizedEmail, password: password)
+                    let user = AuthUser(
+                        id: session.user.id.uuidString.lowercased(),
+                        email: session.user.email,
+                        displayName: nil,
+                        provider: .email
+                    )
+                    promise(.success(user))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 signIn failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(Self.mapSignInError(error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// 이메일/비밀번호로 신규 가입. Supabase 프로젝트에서 이메일 확인이 꺼져 있으면
+    /// 즉시 세션이 반환되고, 켜져 있으면 session 이 nil 인 상태에서 확인 메일 링크 클릭을 기다린다.
+    func signUpWithEmail(email: String, password: String) -> AnyPublisher<AuthUser, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            #if DEBUG
+            Logger.auth.debug("📧 signUp attempt email='\(normalizedEmail)' pwLen=\(password.count) env=\(AppEnvironment.current.displayName)")
+            #endif
+            if let validationError = Self.validate(email: normalizedEmail, password: password) {
+                promise(.failure(validationError))
+                return
+            }
+            Task {
+                do {
+                    let response = try await supabase.auth.signUp(email: normalizedEmail, password: password)
+                    let authUser = response.user
+                    if (authUser.identities ?? []).isEmpty {
+                        promise(.failure(.emailAlreadyRegistered))
+                        return
+                    }
+                    let user = AuthUser(
+                        id: authUser.id.uuidString.lowercased(),
+                        email: authUser.email,
+                        displayName: nil,
+                        provider: .email
+                    )
+                    promise(.success(user))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 signUp failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(Self.mapSignUpError(error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    // MARK: - Email OTP (이메일 사전 검증 흐름)
+
+    /// auth.users 에 해당 이메일이 이미 존재하는지 확인. Supabase 에 정의된
+    /// public.check_email_exists(text) → bool RPC 호출.
+    func checkEmailExists(email: String) -> AnyPublisher<Bool, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            Task {
+                do {
+                    let exists: Bool = try await supabase
+                        .rpc("check_email_exists", params: ["email_to_check": normalizedEmail])
+                        .execute()
+                        .value
+                    promise(.success(exists))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 check_email_exists failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// 이메일 검증용 OTP 코드 발송. 이미 가입된 이메일이면 .emailAlreadyRegistered 로
+    /// 실패시켜 호출자가 안내. 신규 이메일만 OTP 발송 (shouldCreateUser: true 로
+    /// passwordless user 즉시 생성, 검증 후 비밀번호 별도 set).
+    func sendEmailOTP(email: String) -> AnyPublisher<Void, DozyError> {
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        #if DEBUG
+        Logger.auth.debug("📧 OTP send → email='\(normalizedEmail)' env=\(AppEnvironment.current.displayName)")
+        #endif
+        let emailRegex = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        if normalizedEmail.range(of: emailRegex, options: .regularExpression) == nil {
+            return Fail(error: .emailInvalid).eraseToAnyPublisher()
+        }
+        // 1) 이미 가입된 이메일이면 OTP 보내지 말고 즉시 실패.
+        return checkEmailExists(email: normalizedEmail)
+            .flatMap { exists -> AnyPublisher<Void, DozyError> in
+                if exists {
+                    return Fail(error: .emailAlreadyRegistered).eraseToAnyPublisher()
+                }
+                // 2) 신규 이메일 → OTP 발송.
+                return Future<Void, DozyError> { promise in
+                    Task {
+                        do {
+                            try await supabase.auth.signInWithOTP(
+                                email: normalizedEmail,
+                                shouldCreateUser: true
+                            )
+                            promise(.success(()))
+                        } catch {
+                            #if DEBUG
+                            Logger.auth.error("🔴 OTP send failed: \(error.localizedDescription)")
+                            #endif
+                            promise(.failure(.emailAuthFailed(underlying: error)))
+                        }
+                    }
+                }
+                .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// OTP 코드 검증. 성공 시 사용자가 signed-in 상태가 되며, 호출자는 이어서
+    /// `setPasswordForCurrentSession` 으로 비밀번호를 부여해야 한다.
+    func verifyEmailOTP(email: String, code: String) -> AnyPublisher<Void, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+            Task {
+                do {
+                    _ = try await supabase.auth.verifyOTP(
+                        email: normalizedEmail,
+                        token: trimmedCode,
+                        type: .email
+                    )
+                    promise(.success(()))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 OTP verify failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailInvalidCredentials))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// 입력 비밀번호가 현재 저장된 비밀번호와 같은지 확인 (RPC). 비밀번호 재설정에서
+    /// "이전과 똑같이 못 하게" 가드용. authenticated 상태에서만 호출 가능.
+    func isSameAsCurrentPassword(_ password: String) -> AnyPublisher<Bool, DozyError> {
+        Future { promise in
+            Task {
+                do {
+                    let same: Bool = try await supabase
+                        .rpc("is_same_as_current_password", params: ["input_password": password])
+                        .execute()
+                        .value
+                    promise(.success(same))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 is_same_as_current_password failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    // MARK: - Password reset (OTP)
+
+    /// 비밀번호 재설정용 OTP 발송. resetPasswordForEmail 은 Reset Password 템플릿을
+    /// 사용하므로 sign-up Magic Link 와 별개의 메일 — 템플릿에 `{{ .Token }}` 가
+    /// 포함돼 있어야 6자리 코드가 메일에 표시된다.
+    func sendPasswordResetOTP(email: String) -> AnyPublisher<Void, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            #if DEBUG
+            Logger.auth.debug("📧 Reset OTP send → email='\(normalizedEmail)' env=\(AppEnvironment.current.displayName)")
+            #endif
+            let emailRegex = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+            if normalizedEmail.range(of: emailRegex, options: .regularExpression) == nil {
+                promise(.failure(.emailInvalid))
+                return
+            }
+            Task {
+                do {
+                    try await supabase.auth.resetPasswordForEmail(normalizedEmail)
+                    promise(.success(()))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 reset OTP send failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// 재설정 OTP 검증. type: .recovery 로 verify — 성공 시 사용자가 recovery
+    /// 세션으로 signed-in 상태가 되고, 그 위에 setPasswordForCurrentSession 호출.
+    func verifyPasswordResetOTP(email: String, code: String) -> AnyPublisher<Void, DozyError> {
+        Future { promise in
+            let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+            Task {
+                do {
+                    _ = try await supabase.auth.verifyOTP(
+                        email: normalizedEmail,
+                        token: trimmedCode,
+                        type: .recovery
+                    )
+                    promise(.success(()))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 reset OTP verify failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailInvalidCredentials))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// OTP 검증 후 현재 signed-in 세션에 비밀번호 설정 + signup_completed marker 기록.
+    /// 이 marker 가 있어야 pg_cron 의 미인증 사용자 정리 작업이 이 사용자를 보호한다
+    /// (Supabase 가 signInWithOTP 시점에 email_confirmed_at 등 모든 컬럼을 채워버려서
+    /// 클라이언트 측 마커 외엔 가입 완료 여부를 구분할 방법이 없음).
+    func setPasswordForCurrentSession(_ password: String) -> AnyPublisher<AuthUser, DozyError> {
+        Future { promise in
+            // 정책: PasswordPolicy.minLength (8자) 이상. 그 외 변형/블록리스트/이메일 일치는
+            // View 측 체크리스트가 1차 검증 — 여기선 길이만 server-bound 가드로.
+            if password.count < PasswordPolicy.minLength {
+                promise(.failure(.passwordTooShort))
+                return
+            }
+            Task {
+                do {
+                    let updatedUser = try await supabase.auth.update(
+                        user: UserAttributes(
+                            password: password,
+                            data: ["signup_completed": .bool(true)]
+                        )
+                    )
+                    let user = AuthUser(
+                        id: updatedUser.id.uuidString.lowercased(),
+                        email: updatedUser.email,
+                        displayName: nil,
+                        provider: .email
+                    )
+                    promise(.success(user))
+                } catch {
+                    #if DEBUG
+                    Logger.auth.error("🔴 password set failed: \(error.localizedDescription)")
+                    #endif
+                    promise(.failure(.emailAuthFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    private static func mapSignInError(_ error: Error) -> DozyError {
+        let msg = error.localizedDescription.lowercased()
+        if msg.contains("invalid login credentials") || msg.contains("invalid_credentials") {
+            return .emailInvalidCredentials
+        }
+        return .emailAuthFailed(underlying: error)
+    }
+
+    private static func mapSignUpError(_ error: Error) -> DozyError {
+        let msg = error.localizedDescription.lowercased()
+        if msg.contains("already registered") || msg.contains("user already") || msg.contains("user_already_exists") {
+            return .emailAlreadyRegistered
+        }
+        return .emailAuthFailed(underlying: error)
+    }
+
+    private static func validate(email: String, password: String) -> DozyError? {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let emailRegex = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        if trimmed.range(of: emailRegex, options: .regularExpression) == nil {
+            return .emailInvalid
+        }
+        if password.count < PasswordPolicy.minLength {
+            return .passwordTooShort
+        }
+        return nil
     }
 
     // MARK: - 로그아웃
@@ -127,9 +466,25 @@ final class AuthService: NSObject {
     }
     
     // MARK: - 회원탈퇴
+    /// 회원 탈퇴 — Supabase 계정 삭제와 함께 Google OAuth grant 도 서버측 revoke.
+    /// 단순 signOut 은 로컬 토큰만 비우므로 Google 입장에선 동의가 그대로 남아있어
+    /// 같은 사용자가 다시 가입할 때 calendar scope consent 화면이 안 떠 (이전 동의가
+    /// 캐시됨). 회원 탈퇴는 명시적으로 권한까지 끊어, Privacy Policy 의 "탈퇴 시
+    /// 외부 캘린더 액세스 토큰 정리" 와도 일관성 유지.
     func deleteAccount() -> AnyPublisher<Void, DozyError> {
         Future { promise in
             Task {
+                // 1) Google OAuth grant 서버측 revoke — 실패해도 다음 단계로 진행 (사용자가
+                //    Google 로그인 하지 않은 케이스 / 네트워크 오류 등에 막히지 않게).
+                await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                    GIDSignIn.sharedInstance.disconnect { error in
+                        if let error {
+                            Logger.auth.warning("⚠️ Google OAuth disconnect 실패 (계속 진행): \(error.localizedDescription)")
+                        }
+                        continuation.resume()
+                    }
+                }
+                // 2) Supabase 사용자 데이터 삭제
                 do {
                     try await supabase.rpc("delete_user_account").execute()
                     promise(.success(()))
@@ -194,8 +549,29 @@ final class AppleSignInDelegate: NSObject,
     }
 
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        UIApplication.shared.connectedScenes
+        #if os(iOS)
+        // 활성 foreground scene 의 key window 를 우선 반환. nil 이면 새 UIWindow() 가
+        // 시스템 시트 attach 대상이 없는 phantom anchor 가 되므로 ASPresentationAnchor()
+        // 빈 객체 대신 가능한 실제 표시 중인 window 를 찾는다.
+        let scenes = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .filter { $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive }
+        if let key = scenes.flatMap({ $0.windows }).first(where: { $0.isKeyWindow }) { return key }
+        if let any = scenes.flatMap({ $0.windows }).first(where: { !$0.isHidden }) { return any }
+        return UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first?.windows.first ?? UIWindow()
+        #elseif os(macOS)
+        // App Store 리뷰 리젝 원인 — 기존 fallback `NSWindow()` 가 화면에 attach 되지 않은
+        // phantom window 를 반환해 Sign-In-with-Apple 시트가 보이지 않거나 콜백이 유실됐다.
+        // visible 한 실제 window 만 반환하도록 강화.
+        if let key = NSApplication.shared.keyWindow, key.isVisible { return key }
+        if let main = NSApplication.shared.mainWindow, main.isVisible { return main }
+        if let visible = NSApplication.shared.windows.first(where: { $0.isVisible }) { return visible }
+        // 모든 window 가 invisible 인 비정상 상황 — 그래도 phantom NSWindow 보다는
+        // 첫 등록 window 가 안전. 보통 이 분기까지 오지 않음.
+        return NSApplication.shared.windows.first ?? NSWindow()
+        #endif
     }
 }
+

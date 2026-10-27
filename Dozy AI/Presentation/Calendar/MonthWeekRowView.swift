@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct MonthWeekRowView: View {
-    
+
     let weekDates: [Date]
     let layouts: [CalendarEventLayout]
     let selectedDate: Date
     let isToday: (Date) -> Bool
     let isSelected: (Date) -> Bool
     let isInMonth: (Date) -> Bool
+    let isHoliday: (Date) -> Bool
     let onSelect: (Date) -> Void
     let onLongPress: (Date) -> Void
     let onTapEvent: (String, Date) -> Void
@@ -133,16 +134,26 @@ struct MonthWeekRowView: View {
     private func dayLabel(date: Date) -> some View {
         let day = Calendar.current.component(.day, from: date)
         let inMonth = isInMonth(date)
-        Text("\(day)")
+        Text(verbatim: "\(day)")
             .font(.subheadline)
             .fontWeight(isToday(date) ? .bold : .regular)
-            .foregroundStyle(
-                (isSelected(date) || isToday(date)) ? .white :
-                inMonth ? Color.primary : Color.secondary.opacity(0.4)
-            )
+            .foregroundStyle(dayLabelColor(date: date, inMonth: inMonth))
             .frame(width: 34, height: 34)
             .background(Circle().fill(isSelected(date) ? Color.blue : isToday(date) ? Color.orange : .clear))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// 날짜 숫자 색 — 한국 캘린더 관습: 공휴일 / 일요일 빨강, 토요일 파랑.
+    private func dayLabelColor(date: Date, inMonth: Bool) -> Color {
+        if isSelected(date) || isToday(date) { return .white }
+        guard inMonth else { return .secondary.opacity(0.4) }
+        if isHoliday(date) { return .red }
+        let weekday = Calendar.current.component(.weekday, from: date)
+        switch weekday {
+        case 1:  return .red
+        case 7:  return .blue
+        default: return .primary
+        }
     }
 }
 
@@ -153,9 +164,24 @@ struct EventPill: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
-    private var color: Color { Color(hex: layout.colorHex) ?? .blue }
+    /// 카테고리 색 (다크모드에서 너무 어두우면 자동으로 살짝 끌어올림 — fill 용 보수적 보정).
+    private var color: Color {
+        (Color(hex: layout.colorHex) ?? .blue).eventDisplayColor(in: colorScheme)
+    }
+    /// Dozy 일정 텍스트에 쓰는 색 — fill 보다 더 적극적으로 끌어올려 다크모드 가독성 확보.
+    private var dozyTextColor: Color {
+        (Color(hex: layout.colorHex) ?? .blue).eventTextColor(in: colorScheme)
+    }
     private var isDozy: Bool { layout.source == .dozy }
     private var isGoogle: Bool { layout.source == .google }
+    private var isHoliday: Bool { layout.source == .holiday }
+
+    /// 공휴일 텍스트 색 — 라이트는 기존대로 흰색, 다크모드는 채도 있는 코랄.
+    /// pill 배경(#E54848 × 0.75 ≈ 짙은 빨강) 위에 시스템 `.red` 를 올리면 둘 다 빨강이라
+    /// 가독성이 떨어지고, 너무 옅으면 흰색으로 보여서 채도 있는 코랄 톤으로 분리.
+    private var holidayTextColor: Color {
+        colorScheme == .dark ? Color(red: 1.0, green: 0.42, blue: 0.42) : .white
+    }
 
     /// Google 이벤트 텍스트: 같은 색조·채도 0.85·밝기 0.65 고정 → 중간 톤으로 검정과 거리를 둠
     private var googleTextColor: Color {
@@ -191,9 +217,9 @@ struct EventPill: View {
                 if layout.isActualStart {
                     HStack(spacing: 2) {
                         if layout.isPinned {
-                            Image(systemName: "pin.fill")
+                            Image(symbol: "pin.fill")
                                 .font(.system(size: 7, weight: .bold))
-                                .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : .white)
+                                .foregroundStyle(isDozy ? dozyTextColor : isGoogle ? googleTextColor : isHoliday ? holidayTextColor : .white)
                         }
                         if let pc = priorityColor {
                             Circle()
@@ -202,7 +228,7 @@ struct EventPill: View {
                         }
                         Text(layout.title)
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : .white)
+                            .foregroundStyle(isDozy ? color : isGoogle ? googleTextColor : isHoliday ? holidayTextColor : .white)
                             .lineLimit(1)
                     }
                     .padding(.leading, 5)

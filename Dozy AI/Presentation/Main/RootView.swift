@@ -6,13 +6,14 @@
 //
 
 import SwiftUI
+import UIKit
 import OSLog
 
 struct RootView: View {
 
     let container: DependencyContainer
-    @State private var showIntro = true
-    @State private var showPrivacyScreen = false
+    // UI 테스트에서는 인트로 애니메이션(약 3.1초)을 건너뛰어 대기 시간과 flakiness 를 줄인다.
+    @State private var showIntro = !UITestMode.isEnabled
     @State private var forceUpdateRequired = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -44,12 +45,6 @@ struct RootView: View {
                 .zIndex(2)
             }
 
-            if showPrivacyScreen {
-                IntroView(isPrivacy: true, onFinished: {})
-                    .zIndex(3)
-                    .transition(.opacity)
-            }
-
             // 강제 업데이트 화면 — 모든 UI 위에 표시하여 앱 사용 차단
             if forceUpdateRequired {
                 ForceUpdateView(appStoreURL: AppStoreConfig.appStoreURL)
@@ -59,6 +54,7 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.35), value: networkMonitor.isConnected)
         .animation(.easeInOut(duration: 0.25), value: forceUpdateRequired)
+        .dismissesKeyboardOnTap()   // 키보드가 떠 있을 때 여백 탭 → 키보드 내림 (윈도우 단위, 시트 포함)
         .task {
             await checkForceUpdate()
         }
@@ -67,11 +63,15 @@ struct RootView: View {
 
             switch newPhase {
             case .inactive, .background:
-                showPrivacyScreen = true
+                // 키보드 / sheet / system alert 위에도 깔리도록 별도 UIWindow (alert+1
+                // level) 로 표시. 키보드는 함께 dismiss 해서 입력 상태도 정리.
+                UIApplication.shared.sendAction(
+                    #selector(UIResponder.resignFirstResponder),
+                    to: nil, from: nil, for: nil
+                )
+                PrivacyScreenManager.shared.show()
             case .active:
-                withAnimation(.easeInOut(duration: 0.4)) {
-                    showPrivacyScreen = false
-                }
+                PrivacyScreenManager.shared.hide()
                 // 포그라운드 복귀 시에도 재체크 (사용자가 업데이트 후 돌아온 경우 해제)
                 Task { await checkForceUpdate() }
             @unknown default:
@@ -99,7 +99,7 @@ struct RootView: View {
 
     private var offlineBanner: some View {
         HStack(spacing: 8) {
-            Image(systemName: "wifi.slash")
+            Image(symbol: "wifi.slash")
                 .font(.footnote)
                 .fontWeight(.semibold)
             Text("네트워크 연결 없음 — 오프라인 모드로 동작 중입니다")

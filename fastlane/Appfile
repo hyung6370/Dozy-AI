@@ -1,1 +1,7 @@
-app_identifier("com.dozy-ai.Dozy-AI")
+for_platform :ios do
+  app_identifier("com.dozy-ai.Dozy-AI")
+end
+
+for_platform :mac do
+  app_identifier("com.dozy-ai.DozyAI.macOS")
+end

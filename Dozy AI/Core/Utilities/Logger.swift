@@ -14,4 +14,8 @@ extension Logger {
     static let auth     = Logger(subsystem: subsystem, category: "Auth")
     static let settings = Logger(subsystem: subsystem, category: "Settings")
     static let network  = Logger(subsystem: subsystem, category: "Network")
+    static let nav      = Logger(subsystem: subsystem, category: "Nav")
+    static let ai       = Logger(subsystem: subsystem, category: "AI")
+    static let reminder = Logger(subsystem: subsystem, category: "Reminder")
+    static let liveActivity = Logger(subsystem: subsystem, category: "LiveActivity")
 }

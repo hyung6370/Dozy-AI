@@ -9,7 +9,15 @@ import Foundation
 import Supabase
 import OSLog
 
-let supabase: SupabaseClient = {
+var supabase: SupabaseClient = buildSupabaseClient()
+
+/// 환경 선택 후 supabase를 올바른 환경으로 재초기화합니다.
+/// DEBUG 전용 — AppCoordinator.setup() 진입 시 AppEnvironment 설정 직후 호출.
+func rebuildSupabaseClient() {
+    supabase = buildSupabaseClient()
+}
+
+private func buildSupabaseClient() -> SupabaseClient {
     let info = Bundle.main.infoDictionary ?? [:]
 
     #if DEBUG
@@ -36,7 +44,14 @@ let supabase: SupabaseClient = {
         supabaseURL: url,
         supabaseKey: key,
         options: .init(
-            auth: .init(emitLocalSessionAsInitialSession: true)
+            auth: .init(
+                // ⚠️ macOS 리뷰 리젝 (4e056eac) 해결 — 기본 KeychainLocalStorage 가
+                // macOS legacy file-based keychain 사용해 첫 실행 시 user 의 login
+                // keychain password prompt 가 떴음. DozyAuthLocalStorage 는
+                // `kSecUseDataProtectionKeychain` 으로 modern keychain 사용 → prompt 없음.
+                storage: DozyAuthLocalStorage(),
+                emitLocalSessionAsInitialSession: true
+            )
         )
     )
-}()
+}

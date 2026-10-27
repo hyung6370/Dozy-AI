@@ -12,48 +12,91 @@ import Supabase
 struct CategoryManagementView: View {
 
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
+    @Query private var allDozyEvents: [DozyEvent]
     @Environment(\.modelContext) private var context
     @State private var showAddSheet = false
+    /// 순서 변경 편집 모드. 시스템 EditButton 대신 아이콘 버튼(square.and.pencil)이 토글한다.
+    @State private var editMode: EditMode = .inactive
     @State private var editingCategory: UserCategory? = nil
     @State private var deletingCategory: UserCategory? = nil
 
     var body: some View {
-        List {
-            ForEach(categories) { cat in
-                HStack(spacing: 14) {
-                    Text(cat.emoji).font(.title2)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(cat.name).font(.subheadline).fontWeight(.medium)
-                    }
-                    Spacer()
-                    Circle()
-                        .fill(Color(hex: cat.colorHex) ?? .gray)
-                        .frame(width: 20, height: 20)
-                }
-                .contentShape(Rectangle())
-                .onTapGesture { editingCategory = cat }
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button(role: .destructive) {
-                        deletingCategory = cat
+        Group {
+            if categories.isEmpty {
+                ContentUnavailableView {
+                    Label("아직 카테고리가 없어요", symbol: "tag")
+                } description: {
+                    Text("우측 상단 + 버튼을 눌러 첫 카테고리를 추가해보세요.")
+                } actions: {
+                    Button {
+                        showAddSheet = true
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Text("카테고리 추가")
+                            .fontWeight(.semibold)
                     }
+                    .buttonStyle(.borderedProminent)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
+            } else {
+                List {
+                    ForEach(categories) { cat in
+                        HStack(spacing: 14) {
+                            Text(cat.emoji).font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(cat.name).font(.subheadline).fontWeight(.medium)
+                            }
+                            Spacer()
+                            Circle()
+                                .fill(Color(hex: cat.colorHex) ?? .gray)
+                                .frame(width: 20, height: 20)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture { editingCategory = cat }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                deletingCategory = cat
+                            } label: {
+                                Label("삭제", symbol: "trash")
+                            }
+                        }
+                    }
+                    .onMove(perform: move)
+                }
+                // List 유지 (swipeActions/onMove 보존). themed shell bg 가 비치도록 투명.
+                .environment(\.editMode, $editMode)
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             }
-            .onMove(perform: move)
         }
         .navigationTitle("카테고리 관리")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAddSheet = true } label: {
-                    Image(systemName: "plus")
+                    Image(symbol: "plus")
+                        .foregroundStyle(Color(.label))   // 틴트(파랑) 대신 라이트 검정 / 다크 흰색
                 }
+                .accessibilityLabel("카테고리 추가")
             }
             ToolbarItem(placement: .topBarLeading) {
-                EditButton()
+                // 편집 아이콘 ↔ 편집 중엔 "완료" 텍스트
+                Button {
+                    withAnimation { editMode = editMode == .active ? .inactive : .active }
+                } label: {
+                    if editMode == .active {
+                        Text("완료").fontWeight(.semibold)
+                    } else {
+                        Image(symbol: "square.and.pencil")   // 색은 아래 foregroundStyle: 라이트 검정 / 다크 흰색
+                    }
+                }
+                .foregroundStyle(Color(.label))
+                .accessibilityLabel(editMode == .active ? "편집 완료" : "순서 편집")
+                .accessibilityIdentifier("btn_category_edit")
             }
         }
+        .dozyBackButton()   // 시스템 뒤로가기 → btn_navi_back 에셋 (스와이프 백 유지 — 자체 toolbar(편집) 뒤에 둬야 가장 왼쪽)
         .sheet(isPresented: $showAddSheet) {
             CategoryEditSheet()
         }
@@ -66,15 +109,26 @@ struct CategoryManagementView: View {
         )) {
             Button("삭제", role: .destructive) {
                 if let cat = deletingCategory {
+                    let catName = cat.name
                     let catID = cat.id
+                    var affected: [DozyEvent] = []
+                    for event in allDozyEvents where event.category == catName {
+                        event.category = UserCategory.defaultName
+                        event.updatedAt = Date()
+                        affected.append(event)
+                    }
                     context.delete(cat)
-                    Task { await deleteFromSupabase(id: catID) }
+                    try? context.save()
+                    Task {
+                        await deleteFromSupabase(id: catID)
+                        if !affected.isEmpty { await upsertEventsToSupabase(affected) }
+                    }
                 }
                 deletingCategory = nil
             }
             Button("취소", role: .cancel) { deletingCategory = nil }
         } message: {
-            Text("'\(deletingCategory?.name ?? "")'을(를) 삭제하시겠습니까?\n해당 카테고리로 등록된 일정은 유지됩니다.")
+            Text("'\(deletingCategory?.name ?? "")'을(를) 삭제하시겠습니까?\n해당 카테고리의 일정은 '일반'으로 변경됩니다.")
         }
     }
 
@@ -97,6 +151,73 @@ struct CategoryManagementView: View {
         guard let userID = try? await supabase.auth.session.user.id.uuidString else { return }
         let rows = cats.map { UserCategoryRow(id: $0.id, userID: userID, name: $0.name, emoji: $0.emoji, colorHex: $0.colorHex, order: $0.order, updatedAt: $0.updatedAt) }
         try? await supabase.from("user_categories").upsert(rows, onConflict: "id").execute()
+    }
+
+    private func upsertEventsToSupabase(_ events: [DozyEvent]) async {
+        guard let userID = try? await supabase.auth.session.user.id.uuidString else { return }
+        let rows = events.map { e in
+            DozyEventRow(
+                id: e.id, userID: userID,
+                title: e.title, startDate: e.startDate, endDate: e.endDate,
+                isAllDay: e.isAllDay, location: e.location, notes: e.notes,
+                colorHex: e.colorHex, recurrenceRule: e.recurrenceRule,
+                recurrenceEndDate: e.recurrenceEndDate,
+                notificationMinutesBefore: e.notificationMinutesBefore,
+                memos: e.memos, isCompleted: e.isCompleted,
+                priority: e.priority, isPinned: e.isPinned,
+                category: e.category,
+                sharedCalendarID: e.sharedCalendarID,
+                createdAt: e.createdAt, updatedAt: e.updatedAt
+            )
+        }
+        try? await supabase.from("dozy_events").upsert(rows, onConflict: "id").execute()
+    }
+}
+
+// MARK: - Supabase Event DTO
+
+private struct DozyEventRow: Codable {
+    let id: String
+    let userID: String
+    let title: String
+    let startDate: Date
+    let endDate: Date
+    let isAllDay: Bool
+    let location: String?
+    let notes: String?
+    let colorHex: String
+    let recurrenceRule: String
+    let recurrenceEndDate: Date?
+    let notificationMinutesBefore: Int
+    let memos: [String]
+    let isCompleted: Bool
+    let priority: Int
+    let isPinned: Bool
+    let category: String
+    let sharedCalendarID: String?
+    let createdAt: Date
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userID = "user_id"
+        case title
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case isAllDay = "is_all_day"
+        case location, notes
+        case colorHex = "color_hex"
+        case recurrenceRule = "recurrence_rule"
+        case recurrenceEndDate = "recurrence_end_date"
+        case notificationMinutesBefore = "notification_minutes_before"
+        case memos
+        case isCompleted = "is_completed"
+        case priority
+        case isPinned = "is_pinned"
+        case category
+        case sharedCalendarID = "shared_calendar_id"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
 }
 

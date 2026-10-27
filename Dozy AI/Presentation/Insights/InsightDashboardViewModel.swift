@@ -15,13 +15,14 @@ enum InsightPeriod: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .week: return "7일"
-        case .month: return "30일"
-        case .quarter: return "90일"
+        case .week: return String(localized: "7일")
+        case .month: return String(localized: "30일")
+        case .quarter: return String(localized: "90일")
         }
     }
 }
 
+@MainActor
 final class InsightDashboardViewModel: ObservableObject {
 
     @Published var insights: [InsightMessage] = []
