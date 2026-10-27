@@ -107,18 +107,18 @@ struct CalendarScreenshotEditView: View {
 
             // 액션 그룹: 되돌리기 / 회전CCW / 회전CW / 자르기 / 공유.
             Button { performUndo() } label: {
-                Image(systemName: "arrow.uturn.backward").font(.title3)
+                Image(symbol: "arrow.uturn.backward").font(.title3)
             }
             .disabled(!canUndo)
             .accessibilityLabel("되돌리기")
 
             Button { rotate(byDegrees: -90) } label: {
-                Image(systemName: "rotate.left").font(.title3)
+                Image(symbol: "rotate.left").font(.title3)
             }
             .accessibilityLabel("왼쪽으로 회전")
 
             Button { rotate(byDegrees: 90) } label: {
-                Image(systemName: "rotate.right").font(.title3)
+                Image(symbol: "rotate.right").font(.title3)
             }
             .accessibilityLabel("오른쪽으로 회전")
 
@@ -126,7 +126,7 @@ struct CalendarScreenshotEditView: View {
                 hideToolPicker()
                 showCropView = true
             } label: {
-                Image(systemName: "crop").font(.title3)
+                Image(symbol: "crop").font(.title3)
             }
             .accessibilityLabel("자르기")
 
@@ -134,7 +134,7 @@ struct CalendarScreenshotEditView: View {
                 hideToolPicker()
                 shareItem = ShareItem(image: composeImage())
             } label: {
-                Image(systemName: "square.and.arrow.up").font(.title3)
+                Image(symbol: "square.and.arrow.up").font(.title3)
             }
             .accessibilityLabel("공유")
 
@@ -168,7 +168,7 @@ struct CalendarScreenshotEditView: View {
             }
             .buttonStyle(.plain)
 
-            Image(systemName: "minus.magnifyingglass")
+            Image(symbol: "minus.magnifyingglass")
                 .foregroundStyle(.secondary)
 
             Slider(
@@ -180,7 +180,7 @@ struct CalendarScreenshotEditView: View {
                 }
             )
 
-            Image(systemName: "plus.magnifyingglass")
+            Image(symbol: "plus.magnifyingglass")
                 .foregroundStyle(.secondary)
 
             Text("\(Int((zoomScale * 100).rounded()))%")

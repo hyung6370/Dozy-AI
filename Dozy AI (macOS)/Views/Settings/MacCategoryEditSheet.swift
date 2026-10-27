@@ -89,7 +89,7 @@ struct MacCategoryEditSheet: View {
                             ZStack {
                                 Circle().fill(color).frame(width: 32, height: 32)
                                 if color.toHex() == selectedColor.toHex() {
-                                    Image(systemName: "checkmark")
+                                    Image(symbol: "checkmark")
                                         .font(.caption).fontWeight(.bold)
                                         .foregroundStyle(.white)
                                 }

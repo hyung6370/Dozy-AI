@@ -40,7 +40,7 @@ struct MacNotificationListView: View {
 
     private var emptyView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "bell.slash")
+            Image(symbol: "bell.slash")
                 .font(.system(size: 44))
                 .foregroundStyle(.secondary)
                 .opacity(0.5)
@@ -62,14 +62,14 @@ struct MacNotificationListView: View {
                         Button(role: .destructive) {
                             viewModel.delete(record)
                         } label: {
-                            Label("삭제", systemImage: "trash")
+                            Label("삭제", symbol: "trash")
                         }
                     }
                     .contextMenu {
                         Button(role: .destructive) {
                             viewModel.delete(record)
                         } label: {
-                            Label("삭제", systemImage: "trash")
+                            Label("삭제", symbol: "trash")
                         }
                     }
             }
@@ -108,7 +108,7 @@ private struct MacNotificationRow: View {
         let (system, tint): (String, Color) = record.kind == "shared"
             ? ("person.2.fill", .blue)
             : ("bell.fill", .indigo)
-        Image(systemName: system)
+        Image(symbol: system)
             .font(.subheadline)
             .foregroundStyle(tint)
             .frame(width: 32, height: 32)

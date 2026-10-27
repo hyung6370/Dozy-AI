@@ -133,7 +133,7 @@ struct SearchView: View {
 
     private var searchBar: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
+            Image(symbol: "magnifyingglass")
                 .foregroundStyle(.secondary)
             TextField("검색", text: $query)
                 .focused($isSearchFocused)
@@ -141,7 +141,7 @@ struct SearchView: View {
                 .textInputAutocapitalization(.never)
             if !query.isEmpty {
                 Button { query = "" } label: {
-                    Image(systemName: "xmark.circle.fill")
+                    Image(symbol: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -156,7 +156,7 @@ struct SearchView: View {
     private func emptyState(message: String) -> some View {
         VStack(spacing: 8) {
             Spacer()
-            Image(systemName: "magnifyingglass")
+            Image(symbol: "magnifyingglass")
                 .font(.system(size: 40))
                 .foregroundStyle(.tertiary)
             Text(message)
@@ -272,7 +272,7 @@ struct SearchView: View {
     @ViewBuilder
     private func memoSnippet(_ memo: String, onDelete: (() -> Void)?) -> some View {
         HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "note.text").font(.caption2)
+            Image(symbol: "note.text").font(.caption2)
                 .foregroundStyle(.secondary)
             Text(memo).font(.caption).foregroundStyle(.secondary).lineLimit(2)
             Spacer(minLength: 0)

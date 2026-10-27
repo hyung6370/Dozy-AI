@@ -12,7 +12,7 @@ struct SectionHeader: View {
     let icon: String
     
     var body: some View {
-        Label(title, systemImage: icon)
+        Label(title, symbol: icon)
             .font(.headline)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

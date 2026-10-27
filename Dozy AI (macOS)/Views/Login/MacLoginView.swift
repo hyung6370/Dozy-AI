@@ -102,7 +102,7 @@ struct MacLoginView: View {
     /// SwiftUI 가 `Text(_:LocalizedStringKey)` 경로로 추출해 catalog 에 들어간다.
     private func passwordRule(_ label: LocalizedStringKey, passed: Bool) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: passed ? "checkmark.circle.fill" : "circle")
+            Image(symbol: passed ? "checkmark.circle.fill" : "circle")
                 .font(.caption)
                 .foregroundStyle(passed ? .green : .secondary)
             Text(label)
@@ -142,7 +142,7 @@ struct MacLoginView: View {
                 authViewModel.signInWithApple()
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "apple.logo")
+                    Image(symbol: "apple.logo")
                         .font(.title3)
                     Text("Apple로 로그인")
                         .fontWeight(.medium)
@@ -254,7 +254,7 @@ struct MacLoginView: View {
                         switchTo(.signIn)
                     } label: {
                         HStack(spacing: 4) {
-                            Image(systemName: "chevron.left").font(.caption)
+                            Image(symbol: "chevron.left").font(.caption)
                             Text("로그인으로 돌아가기").font(.caption)
                         }
                     }
@@ -403,7 +403,7 @@ struct MacLoginView: View {
                 if mode == .signIn && emailPasswordLimiter.count > 0 {
                     let isReset = emailPasswordLimiter.hasReachedLimit
                     HStack(spacing: 8) {
-                        Image(systemName: isReset ? "lock.rotation" : "exclamationmark.circle")
+                        Image(symbol: isReset ? "lock.rotation" : "exclamationmark.circle")
                             .font(.subheadline)
                         Text(
                             isReset

@@ -114,7 +114,7 @@ struct MacMainShellView: View {
                         MacSettingsView()
                     case nil:
                         VStack(spacing: 8) {
-                            Image(systemName: "sidebar.left")
+                            Image(symbol: "sidebar.left")
                                 .font(.system(size: 40))
                                 .foregroundStyle(.tertiary)
                             Text("섹션을 선택하세요")

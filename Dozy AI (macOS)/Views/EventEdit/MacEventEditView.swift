@@ -80,7 +80,7 @@ struct MacEventEditView: View {
                     Button {
                         showCategoryManagement = true
                     } label: {
-                        Label("카테고리 관리", systemImage: "pencil.line")
+                        Label("카테고리 관리", symbol: "pencil.line")
                             .font(.subheadline)
                     }
                 } header: {
@@ -94,7 +94,7 @@ struct MacEventEditView: View {
                         Picker("공유", selection: $viewModel.sharedCalendarID) {
                             Text("없음").tag(String?.none)
                             ForEach(viewModel.sharedCalendars) { cal in
-                                Label(cal.name, systemImage: "person.2.fill")
+                                Label(cal.name, symbol: "person.2.fill")
                                     .tag(Optional(cal.id))
                             }
                         }

@@ -37,7 +37,6 @@ struct HomeTopBarView: View {
         return formatter.string(from: Date())
     }
 
-    @Environment(\.colorScheme) private var colorScheme
 
     /// 내부 요소가 축소될 수 있는 최소 비율. 값이 클수록 축소 폭이 작아진다.
     /// 0.85 → 최대 15% 축소, 절제된 미세 인터랙션.
@@ -91,28 +90,28 @@ struct HomeTopBarView: View {
             HStack(spacing: 16) {
                 if isLoggedIn {
                     Button { onSharedCalendarTap() } label: {
-                        Image(colorScheme == .dark ? "Dark-Home-Share-Calendar" : "Light-Home-Share-Calendar")
+                        Image(symbol: "person.2")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 28, height: 28)
+                            .foregroundStyle(DozyColor.Text.primary)
                     }
                 }
 
                 Button { onNotificationTap() } label: {
-                    Image(hasNotification
-                        ? (colorScheme == .dark ? "Dark-Bell-on" : "Light-Bell-on")
-                        : (colorScheme == .dark ? "Dark-Bell-non" : "Light-Bell-non")
-                    )
+                    Image(symbol: hasNotification ? "bell.badge" : "bell")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
+                        .foregroundStyle(DozyColor.Text.primary)
                 }
 
                 Button { onProfileTap() } label: {
-                    Image(colorScheme == .dark ? "Dark-User" : "Light-User")
+                    Image(symbol: "person")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
+                        .foregroundStyle(DozyColor.Text.primary)
                 }
             }
         }

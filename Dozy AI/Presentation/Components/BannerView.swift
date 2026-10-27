@@ -134,7 +134,7 @@ private struct BannerCard: View {
             item.action?()
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: item.iconName)
+                Image(symbol: item.iconName)
                     .font(.title2)
                     .foregroundStyle(.white)
                     .frame(width: 40, height: 40)

@@ -253,7 +253,7 @@ struct MacPasswordChangeSheet: View {
 
     private func rule(_ label: LocalizedStringKey, passed: Bool) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: passed ? "checkmark.circle.fill" : "circle")
+            Image(symbol: passed ? "checkmark.circle.fill" : "circle")
                 .font(.subheadline)
                 .foregroundStyle(passed ? .green : .secondary)
             Text(label)

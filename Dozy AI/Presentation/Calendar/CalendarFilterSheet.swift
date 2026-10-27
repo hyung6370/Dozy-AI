@@ -46,7 +46,7 @@ struct CalendarFilterSheet: View {
                                 Label {
                                     Text(cal.name)
                                 } icon: {
-                                    Image(systemName: "person.2.fill")
+                                    Image(symbol: "person.2.fill")
                                         .foregroundStyle(.secondary)
                                         .frame(width: 24, height: 24)
                                 }
@@ -60,7 +60,7 @@ struct CalendarFilterSheet: View {
                         Button(role: .destructive) {
                             filter.reset()
                         } label: {
-                            Label("모두 표시", systemImage: "arrow.counterclockwise")
+                            Label("모두 표시", symbol: "arrow.counterclockwise")
                         }
                     }
                 } footer: {
@@ -87,7 +87,7 @@ struct CalendarFilterSheet: View {
     private func iconView(for source: CalendarSource) -> some View {
         switch source {
         case .apple:
-            Image(systemName: "apple.logo")
+            Image(symbol: "apple.logo")
                 .foregroundStyle(.black)
                 .frame(width: 24, height: 24)
         case .google:
@@ -103,12 +103,12 @@ struct CalendarFilterSheet: View {
                     .frame(width: 24, height: 24)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
             } else {
-                Image(systemName: source.iconName)
+                Image(symbol: source.iconName)
                     .foregroundStyle(.secondary)
                     .frame(width: 24, height: 24)
             }
         default:
-            Image(systemName: source.iconName)
+            Image(symbol: source.iconName)
                 .foregroundStyle(.secondary)
                 .frame(width: 24, height: 24)
         }

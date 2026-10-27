@@ -164,7 +164,7 @@ private struct TodayAgendaEntryRow: View {
 
             if showCheck {
                 Button(intent: ToggleEventCompletionIntent(eventID: entry.id, eventDate: entry.start)) {
-                    Image(systemName: "checkmark.circle")
+                    Image(symbol: "checkmark.circle")
                         .font(.title3)
                         .foregroundStyle(Color(hex: entry.colorHex))
                 }
@@ -201,7 +201,7 @@ private struct TodayAgendaExpandedBottom: View {
                 Spacer(minLength: 0)
                 if let focus = state.focus {
                     Button(intent: ToggleEventCompletionIntent(eventID: focus.id, eventDate: focus.start)) {
-                        Label("완료", systemImage: "checkmark.circle")
+                        Label("완료", symbol: "checkmark.circle")
                             .font(.caption.weight(.semibold))
                     }
                     .buttonStyle(.bordered)

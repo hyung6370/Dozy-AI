@@ -21,7 +21,7 @@ struct TodayEventsAccessoryCircularView: View {
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 0) {
-                    Image(systemName: "plus")
+                    Image(symbol: "plus")
                         .font(.system(size: 20, weight: .bold))
                     Text("일정")
                         .font(.system(size: 9, weight: .semibold))

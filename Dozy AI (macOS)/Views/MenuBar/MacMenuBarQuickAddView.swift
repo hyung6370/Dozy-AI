@@ -51,7 +51,7 @@ struct MacMenuBarQuickAddView: View {
                 Button {
                     onCancel()
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
+                    Image(symbol: "xmark.circle.fill")
                         .font(.title3)
                         .foregroundStyle(.secondary)
                 }

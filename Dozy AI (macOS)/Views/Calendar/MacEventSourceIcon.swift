@@ -16,7 +16,7 @@ struct MacEventSourceIcon: View {
     @ViewBuilder
     var body: some View {
         if source == .apple {
-            Image(systemName: "apple.logo")
+            Image(symbol: "apple.logo")
                 .font(.system(size: size))
                 .foregroundStyle(tint ?? .primary)
         } else if source == .google {

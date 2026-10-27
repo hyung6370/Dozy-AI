@@ -12,14 +12,14 @@ import SafariServices
 struct SettingsView: View {
     
     @EnvironmentObject private var authViewModel: AuthViewModel
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
 
-    private func settingIcon(_ lightName: String, _ darkName: String) -> some View {
-        Image(colorScheme == .dark ? darkName : lightName)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 22, height: 22)
+    /// 설정 행 아이콘. 색은 한 가지로 통일하고, 강조할 행(AI 엔진)만 accent.
+    private func settingIcon(_ symbol: String, accent: Bool = false) -> some View {
+        Image(symbol: symbol)
+            .font(.system(size: 16))
+            .foregroundStyle(accent ? DozyColor.Brand.primary : DozyColor.Text.primary)
+            .frame(width: 34)
     }
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
@@ -204,10 +204,11 @@ struct SettingsView: View {
             withAnimation(.spring()) { showLoginSheet = true }
         } label: {
             HStack(spacing: 14) {
-                Image(colorScheme == .dark ? "Dark-User-Add-Line" : "Light-User-Add-Line")
+                Image(symbol: "person.badge.plus")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 26, height: 26)
+                    .foregroundStyle(DozyColor.Text.primary)
                     .frame(width: 34)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -233,7 +234,7 @@ struct SettingsView: View {
     private func providerIcon(for provider: AuthProvider?) -> some View {
         switch provider {
         case .apple:
-            Image(systemName: "apple.logo")
+            Image(symbol: "apple.logo")
                 .font(.title2)
                 .foregroundStyle(.primary)
                 .frame(width: 34)
@@ -248,7 +249,7 @@ struct SettingsView: View {
                     .frame(width: 20, height: 20)
             }
         case .email:
-            Image(systemName: "envelope.fill")
+            Image(symbol: "envelope.fill")
                 .font(.title2)
                 .foregroundStyle(.primary)
                 .frame(width: 34)
@@ -265,10 +266,7 @@ struct SettingsView: View {
                 BackgroundThemePickerView()
             } label: {
                 DozyListRow(title: "테마") {
-                    Image(systemName: "paintpalette.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(DozyColor.Brand.primary)
-                        .frame(width: 22, height: 22)
+                    settingIcon("paintpalette.fill")
                 } trailing: {
                     HStack(spacing: DozySpacing.xs) {
                         DozyTrailingValue(text: backgroundTheme.displayName)
@@ -289,10 +287,7 @@ struct SettingsView: View {
             footer: "정한 시각에 오늘 하루 요약을 알려드려요. 알림을 누르면 요약 화면이 바로 열립니다."
         ) {
             DozyListRow(title: "저녁 요약 알림") {
-                Image(systemName: "bell.badge.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(DozyColor.Brand.primary)
-                    .frame(width: 34)
+                settingIcon("bell.badge.fill")
             } trailing: {
                 Toggle("저녁 요약 알림", isOn: $reminderSettings.isEnabled)
                     .labelsHidden()
@@ -301,10 +296,7 @@ struct SettingsView: View {
 
             if reminderSettings.isEnabled {
                 DozyListRow(title: "알림 시각") {
-                    Image(systemName: "clock.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(DozyColor.Brand.primary)
-                        .frame(width: 34)
+                    settingIcon("clock.fill")
                 } trailing: {
                     DatePicker("알림 시각", selection: reminderTimeBinding, displayedComponents: .hourAndMinute)
                         .labelsHidden()
@@ -313,10 +305,7 @@ struct SettingsView: View {
             }
 
             DozyListRow(title: "저녁 일정 체크") {
-                Image(systemName: "checklist")
-                    .font(.system(size: 16))
-                    .foregroundStyle(DozyColor.Brand.primary)
-                    .frame(width: 34)
+                settingIcon("checklist")
             } trailing: {
                 Toggle("저녁 일정 체크", isOn: $eveningCheckEnabled)
                     .labelsHidden()
@@ -366,10 +355,7 @@ struct SettingsView: View {
             footer: "오늘 시간제 일정이 있으면 잠금화면과 다이나믹 아일랜드에 진행 중·다음 일정을 보여줘요. 앱을 열 때 시작되고 마지막 일정이 끝나면 사라져요."
         ) {
             DozyListRow(title: "오늘 일정 Live Activity") {
-                Image(systemName: "platter.filled.top.iphone")
-                    .font(.system(size: 16))
-                    .foregroundStyle(DozyColor.Brand.primary)
-                    .frame(width: 34)
+                settingIcon("platter.filled.top.iphone")
             } trailing: {
                 Toggle("오늘 일정 Live Activity", isOn: $liveActivityEnabled)
                     .labelsHidden()
@@ -399,7 +385,7 @@ struct SettingsView: View {
                 CategoryManagementView()
             } label: {
                 DozyListRow(title: "카테고리 관리") {
-                    settingIcon("Light-Management-Category", "Dark-Management-Category")
+                    settingIcon("square.grid.2x2")
                 } trailing: {
                     DozyChevron()
                 }
@@ -419,7 +405,7 @@ struct SettingsView: View {
                 topVC.present(safari, animated: true)
             } label: {
                 DozyListRow(title: "개인정보 처리방침") {
-                    settingIcon("Light-Privacy", "Dark-Privacy")
+                    settingIcon("lock.shield")
                 } trailing: {
                     DozyChevron()
                 }
@@ -428,17 +414,14 @@ struct SettingsView: View {
             .disabled(privacyPolicyURL == nil)
 
             DozyListRow(title: "AI 엔진") {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 16))
-                    .foregroundStyle(DozyColor.Brand.primary)
-                    .frame(width: 34)
+                settingIcon("sparkles", accent: true)
             } trailing: {
                 // 온디바이스 모델(Apple Intelligence) 사용 가능 여부 / 불가 사유
                 DozyTrailingValue(text: container.aiService.engineStatus.displayName)
             }
 
             DozyListRow(title: "버전") {
-                settingIcon("Light-Version", "Dark-Version")
+                settingIcon("info.circle")
             } trailing: {
                 DozyTrailingValue(text: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
             }
@@ -454,10 +437,7 @@ struct SettingsView: View {
                 showPasswordChange = true
             } label: {
                 DozyListRow(title: "비밀번호 변경") {
-                    Image(systemName: "key.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(DozyColor.Text.secondary)
-                        .frame(width: 22, height: 22)
+                    settingIcon("key.fill")
                 } trailing: {
                     DozyChevron()
                 }
@@ -479,7 +459,7 @@ struct SettingsView: View {
                         title: "계정 탈퇴",
                         titleColor: DozyColor.State.danger
                     ) {
-                        settingIcon("Light-Delete-Account", "Dark-Delete-Account")
+                        settingIcon("person.crop.circle.badge.xmark")
                     }
                 }
                 .buttonStyle(.plain)
@@ -499,7 +479,7 @@ struct SettingsView: View {
                 )
             } label: {
                 DozyListRow(title: "캘린더 연동") {
-                    settingIcon("Light-Integrate-Calendar", "Dark-Integrate-Calendar")
+                    settingIcon("calendar.badge.plus")
                 } trailing: {
                     DozyChevron()
                 }
@@ -511,7 +491,7 @@ struct SettingsView: View {
                     SharedCalendarListView(container: container)
                 } label: {
                     DozyListRow(title: "공유 캘린더") {
-                        settingIcon("Light-Share-Calendar", "Dark-Share-Calendar")
+                        settingIcon("person.2")
                     } trailing: {
                         DozyChevron()
                     }

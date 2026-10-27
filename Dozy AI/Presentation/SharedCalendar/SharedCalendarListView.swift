@@ -12,7 +12,6 @@ struct SharedCalendarListView: View {
     @ObservedObject private var activeStore = ActiveSharedCalendarStore.shared
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.colorScheme) private var colorScheme
     @State private var showCreateSheet = false
     @State private var showJoinSheet = false
 
@@ -51,18 +50,19 @@ struct SharedCalendarListView: View {
                     Button {
                         showCreateSheet = true
                     } label: {
-                        Label("새 공유 캘린더 만들기", systemImage: "plus.circle")
+                        Label("새 공유 캘린더 만들기", symbol: "plus.circle")
                     }
                     Button {
                         showJoinSheet = true
                     } label: {
-                        Label("초대 코드로 참여", systemImage: "person.badge.plus")
+                        Label("초대 코드로 참여", symbol: "person.badge.plus")
                     }
                 } label: {
-                    Image(colorScheme == .dark ? "Dark-Plus" : "Light-Plus")
+                    Image(symbol: "plus")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 24, height: 24)
+                        .foregroundStyle(DozyColor.Text.primary)
                 }
             }
         }
@@ -96,7 +96,7 @@ struct SharedCalendarListView: View {
     private var emptyState: some View {
         VStack(spacing: 24) {
             Spacer()
-            Image(systemName: "calendar.badge.plus")
+            Image(symbol: "calendar.badge.plus")
                 .font(.system(size: 56))
                 .foregroundStyle(.secondary)
             VStack(spacing: 8) {
@@ -175,7 +175,7 @@ struct SharedCalendarListView: View {
                         .frame(width: 44, height: 44)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else {
-                    Image(systemName: "person.2.fill")
+                    Image(symbol: "person.2.fill")
                         .font(.system(size: 20))
                         .foregroundStyle(Color.accentColor)
                 }
@@ -185,7 +185,7 @@ struct SharedCalendarListView: View {
                     Text(calendar.name)
                         .font(.subheadline).fontWeight(.medium)
                     if activeStore.isActive(calendar.id) {
-                        Image(systemName: "star.fill")
+                        Image(symbol: "star.fill")
                             .font(.caption2)
                             .foregroundStyle(.yellow)
                     }

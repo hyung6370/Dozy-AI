@@ -53,23 +53,23 @@ struct EventRow: View {
                         .foregroundStyle(.secondary)
 
                     if let partnerTag {
-                        Label(partnerTag, systemImage: "person.fill")
+                        Label(partnerTag, symbol: "person.fill")
                             .font(.caption2)
                             .foregroundStyle(labelTextColor)
                     } else if event.isShared {
-                        Label("공유", systemImage: "person.2.fill")
+                        Label("공유", symbol: "person.2.fill")
                             .font(.caption2)
                             .foregroundStyle(labelTextColor)
                     }
 
                     if event.isExternalMirror && event.externalDeleted {
-                        Label("원본 삭제됨", systemImage: "exclamationmark.triangle.fill")
+                        Label("원본 삭제됨", symbol: "exclamationmark.triangle.fill")
                             .font(.caption2)
                             .foregroundStyle(.orange)
                     }
 
                     if let location = event.location, !location.isEmpty {
-                        Label(location, systemImage: "mappin")
+                        Label(location, symbol: "mappin")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -80,7 +80,7 @@ struct EventRow: View {
             
             if let onToggle {
                 Button(action: onToggle) {
-                    Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                    Image(symbol: isCompleted ? "checkmark.circle.fill" : "circle")
                         .font(.title3)
                         .foregroundStyle(isCompleted ? .green : Color(.systemGray3))
                 }

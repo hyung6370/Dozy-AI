@@ -62,7 +62,7 @@ struct MacMenuBarView: View {
 
     private var signInPrompt: some View {
         VStack(spacing: 10) {
-            Image(systemName: "person.crop.circle.badge.questionmark")
+            Image(symbol: "person.crop.circle.badge.questionmark")
                 .font(.title2)
                 .foregroundStyle(.secondary)
             Text("로그인 해서 일정을 확인하세요")
@@ -110,7 +110,7 @@ struct MacMenuBarView: View {
                         .frame(width: 3, height: 38)
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 6) {
-                            Image(systemName: focusIcon(isNow: isNow, isUpcoming: isUpcoming))
+                            Image(symbol: focusIcon(isNow: isNow, isUpcoming: isUpcoming))
                                 .font(.system(size: 9))
                                 .foregroundStyle(isNow ? Color.green : Color.secondary)
                             Text(focusLabel(isNow: isNow, isUpcoming: isUpcoming))
@@ -132,7 +132,7 @@ struct MacMenuBarView: View {
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
             } else {
                 HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image(symbol: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                     Text(viewModel.todayEvents.isEmpty ? "오늘 일정이 없습니다" : "오늘 일정 모두 완료!")
                         .font(.subheadline)
@@ -200,7 +200,7 @@ struct MacMenuBarView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Spacer()
-                                Image(systemName: "chevron.right")
+                                Image(symbol: "chevron.right")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
@@ -237,7 +237,7 @@ struct MacMenuBarView: View {
             Button {
                 viewModel.toggleCompletion(for: event)
             } label: {
-                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                Image(symbol: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.caption)
                     .foregroundStyle(isCompleted ? .green : .secondary.opacity(0.6))
                     .contentShape(Rectangle())
@@ -260,7 +260,7 @@ struct MacMenuBarView: View {
             Button {
                 showQuickAdd = true
             } label: {
-                Label("새 일정", systemImage: "plus.circle")
+                Label("새 일정", symbol: "plus.circle")
             }
             .keyboardShortcut("n")
             // 로그인 안 한 상태에선 새 일정 만들기 비활성 — 데이터 저장 / 동기화 대상이 없음.
@@ -269,7 +269,7 @@ struct MacMenuBarView: View {
             Button {
                 openMainWindow()
             } label: {
-                Label("앱 열기", systemImage: "macwindow")
+                Label("앱 열기", symbol: "macwindow")
             }
 
             Spacer()
@@ -277,7 +277,7 @@ struct MacMenuBarView: View {
             Button {
                 NSApp.terminate(nil)
             } label: {
-                Label("종료", systemImage: "power")
+                Label("종료", symbol: "power")
             }
             .keyboardShortcut("q")
         }

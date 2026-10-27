@@ -12,7 +12,7 @@ struct MetaChip: View {
     let text: String
     
     var body: some View {
-        Label(text, systemImage: icon)
+        Label(text, symbol: icon)
             .font(.caption2)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)

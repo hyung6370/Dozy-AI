@@ -13,7 +13,6 @@ struct SharedCalendarDetailView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.colorScheme) private var colorScheme
 
     @State private var showLeaveAlert = false
     @State private var showNicknameAlert = false
@@ -56,10 +55,11 @@ struct SharedCalendarDetailView: View {
                 Button {
                     showEditSheet = true
                 } label: {
-                    Image(colorScheme == .dark ? "Dark-Peoples" : "Light-Peoples")
+                    Image(symbol: "person.2")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 24, height: 24)
+                        .foregroundStyle(DozyColor.Text.primary)
                 }
             }
         }
@@ -132,7 +132,7 @@ struct SharedCalendarDetailView: View {
                 Label {
                     Text("기본 캘린더로 설정")
                 } icon: {
-                    Image(systemName: activeStore.isActive(calendar.id) ? "star.fill" : "star")
+                    Image(symbol: activeStore.isActive(calendar.id) ? "star.fill" : "star")
                         .foregroundStyle(.yellow)
                 }
             }
@@ -163,14 +163,15 @@ struct SharedCalendarDetailView: View {
 
         return HStack(spacing: 12) {
             if member.role == .owner {
-                Image(systemName: "crown.fill")
+                Image(symbol: "crown.fill")
                     .foregroundStyle(.yellow)
                     .frame(width: 24)
             } else {
-                Image(colorScheme == .dark ? "Dark-User" : "Light-User")
+                Image(symbol: "person")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 22, height: 22)
+                    .foregroundStyle(DozyColor.Text.primary)
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayName).font(.subheadline)
@@ -206,7 +207,7 @@ struct SharedCalendarDetailView: View {
                 }
 
                 if isCodeExpired {
-                    Label("코드가 만료됐어요", systemImage: "clock.badge.exclamationmark")
+                    Label("코드가 만료됐어요", symbol: "clock.badge.exclamationmark")
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }
@@ -221,12 +222,13 @@ struct SharedCalendarDetailView: View {
                             Text(copied ? "복사됨" : "복사")
                         } icon: {
                             if copied {
-                                Image(systemName: "checkmark")
+                                Image(symbol: "checkmark")
                             } else {
-                                Image(colorScheme == .dark ? "Dark-Copy" : "Light-Copy")
+                                Image(symbol: "doc.on.doc")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 18, height: 18)
+                                    .foregroundStyle(DozyColor.Text.primary)
                             }
                         }
                         .font(.subheadline)
@@ -245,10 +247,11 @@ struct SharedCalendarDetailView: View {
                         Label {
                             Text("공유")
                         } icon: {
-                            Image(colorScheme == .dark ? "Dark-Share" : "Light-Share")
+                            Image(symbol: "square.and.arrow.up")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 18, height: 18)
+                                .foregroundStyle(DozyColor.Text.primary)
                         }
                         .font(.subheadline)
                         .frame(maxWidth: .infinity)
@@ -270,10 +273,11 @@ struct SharedCalendarDetailView: View {
                     Label {
                         Text("새 코드 발급")
                     } icon: {
-                        Image(colorScheme == .dark ? "Dark-Refresh" : "Light-Refresh")
+                        Image(symbol: "arrow.clockwise")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 20, height: 20)
+                            .foregroundStyle(DozyColor.Text.primary)
                     }
                     .foregroundStyle(.primary)
                 }
@@ -298,15 +302,17 @@ struct SharedCalendarDetailView: View {
                     Text(isOwner ? "공유 캘린더 삭제" : "공유 캘린더 나가기")
                 } icon: {
                     if isOwner {
-                        Image(colorScheme == .dark ? "Dark-Trash" : "Light-Trash")
+                        Image(symbol: "trash")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 22, height: 22)
+                            .foregroundStyle(DozyColor.Text.primary)
                     } else {
-                        Image(colorScheme == .dark ? "Dark-Exit" : "Light-Exit")
+                        Image(symbol: "rectangle.portrait.and.arrow.right")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 22, height: 22)
+                            .foregroundStyle(DozyColor.Text.primary)
                     }
                 }
             }

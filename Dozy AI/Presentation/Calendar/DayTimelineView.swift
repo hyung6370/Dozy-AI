@@ -169,7 +169,7 @@ struct DayTimelineView: View {
                     .lineLimit(height > 40 ? 2 : 1)
                 Spacer(minLength: 0)
                 if event.isShared {
-                    Image(systemName: "person.2.fill")
+                    Image(symbol: "person.2.fill")
                         .font(.system(size: 8))
                         .foregroundStyle(c.opacity(0.8))
                 }

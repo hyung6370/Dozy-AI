@@ -62,7 +62,7 @@ struct BackgroundThemePickerView: View {
                 }
                 Spacer(minLength: DozySpacing.sm)
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image(symbol: "checkmark.circle.fill")
                         .font(.system(size: 22))
                         .foregroundStyle(DozyColor.Brand.primary)
                         .transition(.scale.combined(with: .opacity))

@@ -57,6 +57,7 @@ Presentation (View / ViewModel) → Domain (UseCase / Model / Protocol) → Data
 - 모든 사용자 문구는 한국어 소스 + `Localizable.xcstrings` 에 `en` 번역 추가. 앱 문구는 `Dozy AI/Resources/`, 위젯 문구는 `DozyWidgets/`.
 - xcstrings 는 JSON 재직렬화하지 말고 **텍스트로 항목을 덧붙인다** (Xcode 정렬 규칙과 달라 diff 가 수백 줄로 불어난다). 파일 끝은 개행 없이 `}` 로 끝난다.
 - 로그는 `Logger.<category>` (`Core/Utilities/Logger.swift`). 새 기능은 카테고리를 추가하고 Console 필터를 이슈 본문 "참고"에 적는다.
+- **아이콘은 `Image(symbol:)` · `Label(_:symbol:)`** (`Core/Utilities/DozyIcon.swift`). SF 이름을 그대로 넘기면 `DozyIcons.xcassets` 의 Iconsax 심볼셋으로 그리고, 매핑이 없으면 SF Symbol 로 폴백한다. `Image(systemName:)` 직접 호출은 하단 탭바(`DozyMainTabBar`)만. 새 아이콘 추가는 `scripts/iconsax/mapping.py` 에 한 줄 → `python3 -I scripts/iconsax/build_icons.py <sf이름>` → `DozyIcon.customNames` 에 추가.
 
 ## 빌드 · 테스트 명령
 

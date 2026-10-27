@@ -51,15 +51,15 @@ struct MacSharedCalendarListView: View {
                         Button {
                             showCreateSheet = true
                         } label: {
-                            Label("새 공유 캘린더 만들기", systemImage: "plus.circle")
+                            Label("새 공유 캘린더 만들기", symbol: "plus.circle")
                         }
                         Button {
                             showJoinSheet = true
                         } label: {
-                            Label("초대 코드로 참여", systemImage: "person.badge.plus")
+                            Label("초대 코드로 참여", symbol: "person.badge.plus")
                         }
                     } label: {
-                        Label("추가", systemImage: "plus")
+                        Label("추가", symbol: "plus")
                     }
                 }
             }
@@ -115,7 +115,7 @@ struct MacSharedCalendarListView: View {
     private var emptyState: some View {
         VStack(spacing: 20) {
             Spacer()
-            Image(systemName: "calendar.badge.plus")
+            Image(symbol: "calendar.badge.plus")
                 .font(.system(size: 56))
                 .foregroundStyle(.secondary)
             Text("공유 캘린더가 없어요")
@@ -128,13 +128,13 @@ struct MacSharedCalendarListView: View {
                 Button {
                     showCreateSheet = true
                 } label: {
-                    Label("만들기", systemImage: "plus.circle.fill")
+                    Label("만들기", symbol: "plus.circle.fill")
                 }
                 .buttonStyle(.borderedProminent)
                 Button {
                     showJoinSheet = true
                 } label: {
-                    Label("초대 코드 참여", systemImage: "person.badge.plus")
+                    Label("초대 코드 참여", symbol: "person.badge.plus")
                 }
             }
             Spacer()
@@ -152,7 +152,7 @@ struct MacSharedCalendarListView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color.accentColor.opacity(0.12))
                             .frame(width: 32, height: 32)
-                        Image(systemName: "person.2.fill")
+                        Image(symbol: "person.2.fill")
                             .font(.subheadline)
                             .foregroundStyle(Color.accentColor)
                     }
@@ -165,7 +165,7 @@ struct MacSharedCalendarListView: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Image(systemName: "chevron.right")
+                    Image(symbol: "chevron.right")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -176,19 +176,19 @@ struct MacSharedCalendarListView: View {
                     Button(role: .destructive) {
                         deletingCalendar = cal
                     } label: {
-                        Label("나가기", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label("나가기", symbol: "rectangle.portrait.and.arrow.right")
                     }
                 }
                 .contextMenu {
                     Button {
                         selectedCalendar = cal
                     } label: {
-                        Label("상세 보기", systemImage: "info.circle")
+                        Label("상세 보기", symbol: "info.circle")
                     }
                     Button(role: .destructive) {
                         deletingCalendar = cal
                     } label: {
-                        Label("나가기", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label("나가기", symbol: "rectangle.portrait.and.arrow.right")
                     }
                 }
             }

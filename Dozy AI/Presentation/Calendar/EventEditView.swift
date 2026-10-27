@@ -106,7 +106,7 @@ struct EventEditView: View {
     private var quickInputCard: some View {
         VStack(alignment: .leading, spacing: DozySpacing.xs) {
             HStack(spacing: DozySpacing.xs) {
-                Image(systemName: "sparkles")
+                Image(symbol: "sparkles")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(DozyColor.Brand.primary)
                 TextField("한 줄로 입력 (예: 내일 오후 3시 치과 30분)", text: $quickText)
@@ -118,7 +118,7 @@ struct EventEditView: View {
 
                 if let speechService, !isParsing {
                     Button { showVoiceInput = true } label: {
-                        Image(systemName: "mic.fill")
+                        Image(symbol: "mic.fill")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(DozyColor.Brand.primary)
                             .frame(width: 28, height: 28)
@@ -247,7 +247,7 @@ struct EventEditView: View {
 
     private var addCategoryChip: some View {
         Button { showAddCategory = true } label: {
-            Label("추가", systemImage: "plus")
+            Label("추가", symbol: "plus")
                 .font(.footnote.weight(.medium))
                 .padding(.horizontal, DozySpacing.sm)
                 .padding(.vertical, DozySpacing.xs)
@@ -395,7 +395,7 @@ struct EventEditView: View {
                     Picker("공유", selection: $viewModel.sharedCalendarID) {
                         Text("없음").tag(String?.none)
                         ForEach(viewModel.sharedCalendars) { cal in
-                            Label(cal.name, systemImage: "person.2.fill")
+                            Label(cal.name, symbol: "person.2.fill")
                                 .tag(Optional(cal.id))
                         }
                     }
@@ -417,7 +417,7 @@ struct EventEditView: View {
             Text(text)
                 .font(DozyFont.footnote)
                 .foregroundStyle(DozyColor.Text.secondary)
-            Image(systemName: "chevron.up.chevron.down")
+            Image(symbol: "chevron.up.chevron.down")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(DozyColor.Text.tertiary)
         }

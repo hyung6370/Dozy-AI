@@ -78,7 +78,7 @@ struct MacInsightDashboardView: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "chart.bar.xaxis")
+            Image(symbol: "chart.bar.xaxis")
                 .font(.system(size: 60))
                 .foregroundStyle(.secondary)
             Text("아직 분석할 데이터가 없어요")
@@ -95,7 +95,7 @@ struct MacInsightDashboardView: View {
     private var headlineCard: some View {
         let (title, message, icon, color) = headlineMessage()
         return HStack(spacing: 18) {
-            Image(systemName: icon)
+            Image(symbol: icon)
                 .font(.largeTitle)
                 .foregroundStyle(color)
                 .frame(width: 64, height: 64)
@@ -223,7 +223,7 @@ struct MacInsightDashboardView: View {
     private func summaryCard(value: String, label: String, change: Double?, icon: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Image(systemName: icon)
+                Image(symbol: icon)
                     .font(.title3)
                     .foregroundStyle(color)
                     .frame(width: 38, height: 38)
@@ -231,7 +231,7 @@ struct MacInsightDashboardView: View {
                 Spacer()
                 if let change {
                     HStack(spacing: 3) {
-                        Image(systemName: trendIcon(for: change))
+                        Image(symbol: trendIcon(for: change))
                         Text(trendLabel(for: change))
                     }
                     .font(.caption)
@@ -295,7 +295,7 @@ struct MacInsightDashboardView: View {
         let data = useWeekly ? viewModel.weeklyCompletionRates : viewModel.dailyCompletionRates
         let title: LocalizedStringKey = useWeekly ? "주간 평균 완료율" : "일별 완료율"
 
-        return InsightCard(title: title, systemImage: "chart.line.uptrend.xyaxis", accent: .green) {
+        return InsightCard(title: title, symbol: "chart.line.uptrend.xyaxis", accent: .green) {
             if data.isEmpty {
                 cardEmpty(message: "완료 데이터가 없습니다")
             } else {
@@ -323,7 +323,7 @@ struct MacInsightDashboardView: View {
 
     private var weekdayCard: some View {
         let labels = ["일", "월", "화", "수", "목", "금", "토"]
-        return InsightCard(title: "요일별 평균 일정 수", systemImage: "calendar", accent: .blue) {
+        return InsightCard(title: "요일별 평균 일정 수", symbol: "calendar", accent: .blue) {
             if viewModel.weekdayAvgCounts.isEmpty {
                 cardEmpty(message: "일정 데이터가 없습니다")
             } else {
@@ -345,7 +345,7 @@ struct MacInsightDashboardView: View {
     // MARK: - Hourly
 
     private var hourlyCard: some View {
-        InsightCard(title: "시간대 분포", systemImage: "clock", accent: .orange) {
+        InsightCard(title: "시간대 분포", symbol: "clock", accent: .orange) {
             if viewModel.hourlyDistribution.isEmpty {
                 cardEmpty(message: "일정 데이터가 없습니다")
             } else {
@@ -379,7 +379,7 @@ struct MacInsightDashboardView: View {
 
     private var recurrenceCard: some View {
         let total = viewModel.recurringCount + viewModel.oneTimeCount
-        return InsightCard(title: "반복 vs 일회성", systemImage: "repeat", accent: .purple) {
+        return InsightCard(title: "반복 vs 일회성", symbol: "repeat", accent: .purple) {
             if total == 0 {
                 cardEmpty(message: "일정 데이터가 없습니다")
             } else {
@@ -418,7 +418,7 @@ struct MacInsightDashboardView: View {
     // MARK: - Productivity
 
     private var productivityCard: some View {
-        InsightCard(title: "일별 생산성 점수", systemImage: "sparkles", accent: .indigo) {
+        InsightCard(title: "일별 생산성 점수", symbol: "sparkles", accent: .indigo) {
             if viewModel.productivityScores.isEmpty {
                 cardEmpty(message: "생산성 기록이 없습니다")
             } else {
@@ -448,7 +448,7 @@ struct MacInsightDashboardView: View {
         Button {
             showCategoryAnalysis = true
         } label: {
-            InsightCard(title: "카테고리 분포", systemImage: "chart.pie.fill", accent: .pink) {
+            InsightCard(title: "카테고리 분포", symbol: "chart.pie.fill", accent: .pink) {
                 VStack(alignment: .leading, spacing: 10) {
                     if viewModel.categoryDistribution.isEmpty {
                         cardEmpty(message: "카테고리 기록이 없습니다")
@@ -474,7 +474,7 @@ struct MacInsightDashboardView: View {
                     }
                     HStack {
                         Spacer()
-                        Label("자세히 보기", systemImage: "chevron.right")
+                        Label("자세히 보기", symbol: "chevron.right")
                             .font(.subheadline)
                             .foregroundStyle(.pink)
                             .labelStyle(.titleAndIcon)
@@ -490,7 +490,7 @@ struct MacInsightDashboardView: View {
 
     private func cardEmpty(message: LocalizedStringKey) -> some View {
         VStack(spacing: 8) {
-            Image(systemName: "tray")
+            Image(symbol: "tray")
                 .font(.title2)
                 .foregroundStyle(.tertiary)
             Text(message)
@@ -512,14 +512,14 @@ private extension Array {
 
 private struct InsightCard<Content: View>: View {
     let title: LocalizedStringKey
-    let systemImage: String
+    let symbol: String
     var accent: Color = .secondary
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 10) {
-                Image(systemName: systemImage)
+                Image(symbol: symbol)
                     .font(.title3)
                     .foregroundStyle(accent)
                     .frame(width: 34, height: 34)

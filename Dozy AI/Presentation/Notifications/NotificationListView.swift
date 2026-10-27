@@ -10,7 +10,6 @@ import SwiftUI
 struct NotificationListView: View {
 
     @StateObject private var viewModel: NotificationViewModel
-    @Environment(\.colorScheme) private var colorScheme
 
     init(repository: NotificationRepository) {
         _viewModel = StateObject(wrappedValue: NotificationViewModel(repository: repository))
@@ -32,10 +31,11 @@ struct NotificationListView: View {
 
     private var emptyView: some View {
         VStack(spacing: 12) {
-            Image(colorScheme == .dark ? "Dark-Bell-non" : "Light-Bell-non")
+            Image(symbol: "bell")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 48, height: 48)
+                .foregroundStyle(DozyColor.Text.primary)
                 .opacity(0.4)
             Text("아직 아무런 알림이 없습니다!\n알림을 설정해서 일정을 미리 확인하세요!")
                 .font(.subheadline)
@@ -56,7 +56,7 @@ struct NotificationListView: View {
                         Button(role: .destructive) {
                             viewModel.delete(record)
                         } label: {
-                            Label("삭제", systemImage: "trash")
+                            Label("삭제", symbol: "trash")
                         }
                     }
             }
@@ -96,7 +96,7 @@ private struct NotificationRowView: View {
         let (system, tint): (String, Color) = record.kind == "shared"
             ? ("person.2.fill", .blue)
             : ("bell.fill", .indigo)
-        Image(systemName: system)
+        Image(symbol: system)
             .font(.subheadline)
             .foregroundStyle(tint)
             .frame(width: 32, height: 32)

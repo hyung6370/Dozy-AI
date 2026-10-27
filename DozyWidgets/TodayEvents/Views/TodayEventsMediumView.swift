@@ -53,7 +53,7 @@ struct TodayEventsMediumView: View {
                 HStack {
                     Spacer()
                     VStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(symbol: "checkmark.circle.fill")
                             .font(.title2)
                             .foregroundStyle(.green)
                         Text("오늘 일정 모두 완료!")
@@ -109,7 +109,7 @@ struct TodayEventsMediumView: View {
     /// 탭 시 ToggleEventCompletionIntent.perform 이 widget extension 프로세스에서 실행됨.
     private func completionButton(_ ev: WidgetEventSnapshot) -> some View {
         Button(intent: ToggleEventCompletionIntent(eventID: ev.id, eventDate: entry.date)) {
-            Image(systemName: ev.isCompleted ? "checkmark.circle.fill" : "circle")
+            Image(symbol: ev.isCompleted ? "checkmark.circle.fill" : "circle")
                 .font(.title3)
                 .foregroundStyle(ev.isCompleted ? Color.green : Color.secondary)
                 .symbolRenderingMode(.hierarchical)
@@ -121,7 +121,7 @@ struct TodayEventsMediumView: View {
     /// CreateQuickEventIntent.perform 이 메인 앱에서 실행되어 생성 시트가 열림.
     private var createEventButton: some View {
         Button(intent: CreateQuickEventIntent()) {
-            Image(systemName: "plus.circle.fill")
+            Image(symbol: "plus.circle.fill")
                 .font(.title3)
                 .foregroundStyle(Color.accentColor)
                 .symbolRenderingMode(.hierarchical)

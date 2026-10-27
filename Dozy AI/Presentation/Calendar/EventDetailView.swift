@@ -148,7 +148,7 @@ struct EventDetailView: View {
                         .font(.caption).foregroundStyle(.secondary)
                     if let partnerTag {
                         Text(verbatim: "·").font(.caption).foregroundStyle(.tertiary)
-                        Label(partnerTag, systemImage: "person.fill")
+                        Label(partnerTag, symbol: "person.fill")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 6)
@@ -244,13 +244,13 @@ struct EventDetailView: View {
                         editingMemoText = memo
                         showEditMemoAlert = true
                     } label: {
-                        Label("수정", systemImage: "pencil")
+                        Label("수정", symbol: "pencil")
                     }
                     Button(role: .destructive) {
                         deletingMemoIndex = index
                         showDeleteMemoAlert = true
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Label("삭제", symbol: "trash")
                     }
                 }
             }
@@ -260,7 +260,7 @@ struct EventDetailView: View {
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { submitMemo(dozy) }
                 Button { submitMemo(dozy) } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(symbol: "plus.circle.fill")
                         .font(.title2)
                         .foregroundStyle(.blue)
                 }
@@ -310,7 +310,7 @@ struct EventDetailView: View {
     private var editableDisplaySettings: some View {
         VStack(spacing: 0) {
             Toggle(isOn: $displayIsPinned) {
-                Label("상단 고정", systemImage: displayIsPinned ? "pin.fill" : "pin")
+                Label("상단 고정", symbol: displayIsPinned ? "pin.fill" : "pin")
             }
             .padding(.horizontal)
             .padding(.vertical, 12)
@@ -318,7 +318,7 @@ struct EventDetailView: View {
             Divider().padding(.leading)
 
             HStack {
-                Label("우선순위", systemImage: "chart.bar").foregroundStyle(.primary)
+                Label("우선순위", symbol: "chart.bar").foregroundStyle(.primary)
                 Spacer()
                 Picker("", selection: $displayPriority) {
                     Text("없음").tag(0)
@@ -334,7 +334,7 @@ struct EventDetailView: View {
             Divider().padding(.leading)
 
             HStack {
-                Label("카테고리", systemImage: "tag").foregroundStyle(.primary)
+                Label("카테고리", symbol: "tag").foregroundStyle(.primary)
                 Spacer()
                 Picker("", selection: $displayCategory) {
                     ForEach(categories) { cat in
@@ -354,7 +354,7 @@ struct EventDetailView: View {
     private func readOnlyDisplaySettings(for dozyEvent: DozyEvent) -> some View {
         VStack(spacing: 0) {
             HStack {
-                Label("상단 고정", systemImage: dozyEvent.isPinned ? "pin.fill" : "pin")
+                Label("상단 고정", symbol: dozyEvent.isPinned ? "pin.fill" : "pin")
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text(verbatim: dozyEvent.isPinned ? "ON" : "OFF")
@@ -366,7 +366,7 @@ struct EventDetailView: View {
             Divider().padding(.leading)
 
             HStack {
-                Label("우선순위", systemImage: "chart.bar").foregroundStyle(.secondary)
+                Label("우선순위", symbol: "chart.bar").foregroundStyle(.secondary)
                 Spacer()
                 Text(priorityLabel(dozyEvent.priority))
                     .font(.subheadline)
@@ -377,7 +377,7 @@ struct EventDetailView: View {
             Divider().padding(.leading)
 
             HStack {
-                Label("카테고리", systemImage: "tag").foregroundStyle(.secondary)
+                Label("카테고리", symbol: "tag").foregroundStyle(.secondary)
                 Spacer()
                 Text(dozyEvent.category.isEmpty ? "-" : dozyEvent.category)
                     .font(.subheadline)
@@ -424,7 +424,7 @@ struct EventDetailView: View {
                     Button(role: .destructive) {
                         showDozyDeleteConfirm = true
                     } label: {
-                        Label("공유 해제", systemImage: "person.2.slash")
+                        Label("공유 해제", symbol: "person.2.slash")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -446,7 +446,7 @@ struct EventDetailView: View {
                             onEdit?(dozyEvent)
                         }
                     } label: {
-                        Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
+                        Label("수정", symbol: "pencil").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
                     .padding(.horizontal)
@@ -462,7 +462,7 @@ struct EventDetailView: View {
                     Button(role: .destructive) {
                         showDozyDeleteConfirm = true
                     } label: {
-                        Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
+                        Label("삭제", symbol: "trash").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
                     .padding(.horizontal)
@@ -496,7 +496,7 @@ struct EventDetailView: View {
                     }
                 }
             } else {
-                Label("파트너가 만든 일정은 수정 · 삭제할 수 없습니다.", systemImage: "lock")
+                Label("파트너가 만든 일정은 수정 · 삭제할 수 없습니다.", symbol: "lock")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
@@ -510,7 +510,7 @@ struct EventDetailView: View {
     /// 외부 원본이 삭제된 미러 스냅샷에 대한 경고 배너. 소유자·파트너 모두에게 표시.
     private var externalDeletedBanner: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("원본이 삭제되었습니다", systemImage: "exclamationmark.triangle.fill")
+            Label("원본이 삭제되었습니다", symbol: "exclamationmark.triangle.fill")
                 .font(.subheadline)
                 .foregroundStyle(.orange)
             Text("원본 Apple · Google 일정이 더이상 존재하지 않습니다. 공유 캘린더에서는 계속 표시되며, 소유자가 공유를 해제할 수 있습니다.")
@@ -532,7 +532,7 @@ struct EventDetailView: View {
             // 표시 설정
             VStack(spacing: 0) {
                 Toggle(isOn: $displayIsPinned) {
-                    Label("상단 고정", systemImage: displayIsPinned ? "pin.fill" : "pin")
+                    Label("상단 고정", symbol: displayIsPinned ? "pin.fill" : "pin")
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -540,7 +540,7 @@ struct EventDetailView: View {
                 Divider().padding(.leading)
 
                 HStack {
-                    Label("우선순위", systemImage: "chart.bar")
+                    Label("우선순위", symbol: "chart.bar")
                         .foregroundStyle(.primary)
                     Spacer()
                     Picker("", selection: $displayPriority) {
@@ -557,7 +557,7 @@ struct EventDetailView: View {
                 Divider().padding(.leading)
 
                 HStack {
-                    Label("카테고리", systemImage: "tag")
+                    Label("카테고리", symbol: "tag")
                         .foregroundStyle(.primary)
                     Spacer()
                     Picker("", selection: $displayCategory) {
@@ -582,7 +582,7 @@ struct EventDetailView: View {
                 dismiss()
                 onEditCalendar?(event)
             } label: {
-                Label("수정", systemImage: "pencil").frame(maxWidth: .infinity)
+                Label("수정", symbol: "pencil").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
@@ -590,7 +590,7 @@ struct EventDetailView: View {
             Button(role: .destructive) {
                 showCalendarDeleteConfirm = true
             } label: {
-                Label("삭제", systemImage: "trash").frame(maxWidth: .infinity)
+                Label("삭제", symbol: "trash").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .padding(.horizontal)
@@ -678,7 +678,7 @@ private struct DetailRow: View {
                         .scaledToFit()
                         .frame(width: 18, height: 18)
                 } else {
-                    Image(systemName: icon)
+                    Image(symbol: icon)
                         .foregroundStyle(.secondary)
                 }
             }

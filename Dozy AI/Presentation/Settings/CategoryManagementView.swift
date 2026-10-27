@@ -24,7 +24,7 @@ struct CategoryManagementView: View {
         Group {
             if categories.isEmpty {
                 ContentUnavailableView {
-                    Label("아직 카테고리가 없어요", systemImage: "tag")
+                    Label("아직 카테고리가 없어요", symbol: "tag")
                 } description: {
                     Text("우측 상단 + 버튼을 눌러 첫 카테고리를 추가해보세요.")
                 } actions: {
@@ -57,7 +57,7 @@ struct CategoryManagementView: View {
                             Button(role: .destructive) {
                                 deletingCategory = cat
                             } label: {
-                                Label("삭제", systemImage: "trash")
+                                Label("삭제", symbol: "trash")
                             }
                         }
                     }
@@ -75,7 +75,7 @@ struct CategoryManagementView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAddSheet = true } label: {
-                    Image(systemName: "plus")
+                    Image(symbol: "plus")
                         .foregroundStyle(Color(.label))   // 틴트(파랑) 대신 라이트 검정 / 다크 흰색
                 }
                 .accessibilityLabel("카테고리 추가")
@@ -88,7 +88,7 @@ struct CategoryManagementView: View {
                     if editMode == .active {
                         Text("완료").fontWeight(.semibold)
                     } else {
-                        Image(systemName: "square.and.pencil")   // 색은 아래 foregroundStyle: 라이트 검정 / 다크 흰색
+                        Image(symbol: "square.and.pencil")   // 색은 아래 foregroundStyle: 라이트 검정 / 다크 흰색
                     }
                 }
                 .foregroundStyle(Color(.label))

@@ -80,14 +80,14 @@ struct MacCalendarWeekRow: View {
                             Button {
                                 onCreateEvent(date)
                             } label: {
-                                Label("새 일정", systemImage: "plus.circle")
+                                Label("새 일정", symbol: "plus.circle")
                             }
                             if !Calendar.current.isDateInToday(date) {
                                 Divider()
                                 Button {
                                     onGoToToday()
                                 } label: {
-                                    Label("오늘로 이동", systemImage: "calendar.circle")
+                                    Label("오늘로 이동", symbol: "calendar.circle")
                                 }
                             }
                         }
@@ -149,12 +149,12 @@ struct MacCalendarWeekRow: View {
                     Button {
                         onEditEvent?(bar.event)
                     } label: {
-                        Label("수정", systemImage: "pencil")
+                        Label("수정", symbol: "pencil")
                     }
                     Button(role: .destructive) {
                         onDeleteEvent?(bar.event)
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Label("삭제", symbol: "trash")
                     }
                 }
             }
@@ -209,7 +209,7 @@ private struct EventBarView: View {
         HStack(spacing: 3) {
             Rectangle().fill(color).frame(width: 3)
             if event.isPinned {
-                Image(systemName: "pin.fill")
+                Image(symbol: "pin.fill")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(foreground)
                     .padding(.leading, 3)

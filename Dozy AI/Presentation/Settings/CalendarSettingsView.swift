@@ -75,7 +75,7 @@ struct CalendarSettingsView: View {
     // MARK: - Apple Row
     private var appleRow: some View {
         HStack(spacing: 14) {
-            Image(systemName: "apple.logo")
+            Image(symbol: "apple.logo")
                 .font(.title2)
                 .foregroundStyle(.primary)
                 .frame(width: 34)

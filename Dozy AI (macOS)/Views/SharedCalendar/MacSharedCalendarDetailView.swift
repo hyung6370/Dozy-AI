@@ -120,7 +120,7 @@ struct MacSharedCalendarDetailView: View {
                 Button {
                     copyCode()
                 } label: {
-                    Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                    Image(symbol: copied ? "checkmark" : "doc.on.doc")
                 }
                 .buttonStyle(.bordered)
                 .disabled(currentCalendar.inviteCode == nil)
@@ -129,7 +129,7 @@ struct MacSharedCalendarDetailView: View {
                     Button {
                         viewModel.regenerateCode(calendarID: calendar.id) { _ in }
                     } label: {
-                        Image(systemName: "arrow.triangle.2.circlepath")
+                        Image(symbol: "arrow.triangle.2.circlepath")
                     }
                     .buttonStyle(.bordered)
                     .help("초대 코드 재생성")
@@ -172,7 +172,7 @@ struct MacSharedCalendarDetailView: View {
                             Circle()
                                 .fill(member.role == .owner ? Color.blue.opacity(0.15) : Color.purple.opacity(0.12))
                                 .frame(width: 30, height: 30)
-                            Image(systemName: member.role == .owner ? "crown.fill" : "person.fill")
+                            Image(symbol: member.role == .owner ? "crown.fill" : "person.fill")
                                 .font(.caption)
                                 .foregroundStyle(member.role == .owner ? .blue : .purple)
                         }
@@ -232,7 +232,7 @@ struct MacSharedCalendarDetailView: View {
                 showLeaveAlert = true
             } label: {
                 HStack {
-                    Image(systemName: isOwner ? "trash.fill" : "rectangle.portrait.and.arrow.right")
+                    Image(symbol: isOwner ? "trash.fill" : "rectangle.portrait.and.arrow.right")
                     Text(isOwner ? "공유 캘린더 삭제" : "나가기")
                 }
                 .foregroundStyle(.red)

@@ -83,7 +83,7 @@ struct CalendarEventEditView: View {
                         Picker("공유", selection: $shareTargetID) {
                             Text("없음").tag(String?.none)
                             ForEach(sharedCalendars) { cal in
-                                Label(cal.name, systemImage: "person.2.fill")
+                                Label(cal.name, symbol: "person.2.fill")
                                     .tag(Optional(cal.id))
                             }
                         }
