@@ -171,6 +171,9 @@ final class DependencyContainer: ObservableObject {
             }
         }
         seedDefaultCategoriesIfNeeded()
+        #if DEBUG
+        if DemoDataSeeder.isRequested { DemoDataSeeder.seed(in: modelContainer) }
+        #endif
     }
 
     // MARK: - App Group Store

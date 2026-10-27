@@ -5,7 +5,11 @@
 //  [Data Layer] ActivityKit 호출을 한 곳에 격리한다 — "오늘 아젠다" Live Activity 1개를 유지.
 //
 //  생명주기 (플랫폼 제약)
-//  - 시작(Activity.request)은 앱이 포그라운드일 때만 가능. 백그라운드 자동 시작은 APNs push-to-start 전용(#95).
+//  - 시작(Activity.request)은 앱이 포그라운드일 때만 한다. LiveActivityIntent(위젯 체크박스·잠금화면 완료 버튼)가
+//    앱을 백그라운드로 깨웠을 때도 ActivityKit 은 시작을 허용하지만, 그렇게 만들어진 액티비티에는 iOS 가
+//    "실시간 현황을 허용하겠습니까?" 승인 프롬프트를 붙인다(포그라운드 시작에는 안 붙음). 사용자가 "허용 안 함" 을
+//    누르면 앱의 Live Activity 가 통째로 꺼지므로 백그라운드에서는 갱신·종료만 하고 시작은 다음 포그라운드로 미룬다.
+//    백그라운드 자동 시작은 APNs push-to-start 전용(#95).
 //  - 갱신(update)·종료(end)는 앱 프로세스가 돌 때(포그라운드·BGAppRefresh·LiveActivityIntent) 가능.
 //  - 마지막 일정이면 end(dismissalPolicy: .after(종료 시각)) 로 마무리해 앱이 안 떠 있어도 종료 시각에 사라진다.
 //    ended 상태에서도 timerInterval 뷰는 계속 움직이므로 진행 바·카운트다운은 그대로 보인다.
@@ -20,6 +24,7 @@ import OSLog
 
 #if os(iOS)
 import ActivityKit
+import UIKit
 
 @MainActor
 final class TodayAgendaActivityService: LiveActivityServiceProtocol {
@@ -98,8 +103,13 @@ final class TodayAgendaActivityService: LiveActivityServiceProtocol {
             return
         }
 
-        // 새로 시작 — 포그라운드가 아니면 ActivityKit 이 throw 한다 (백그라운드 갱신 경로에서는 정상).
-        // 내용이 달라진 ended 는 새 액티비티가 떴을 때만 내린다. 백그라운드라 요청이 실패하면 옛 카드라도 남겨 두는 편이 낫다.
+        // 새로 시작 — 포그라운드에서만. 백그라운드(LiveActivityIntent·BGAppRefresh)에서 시작하면 iOS 가 카드에
+        // 승인 프롬프트를 붙이므로 다음 포그라운드 동기화로 미룬다. 내용이 달라진 ended 는 새 액티비티가 떴을 때만
+        // 내린다 — 시작을 건너뛰면 옛 카드라도 남겨 두는 편이 낫다.
+        guard UIApplication.shared.applicationState != .background else {
+            Logger.liveActivity.info("[아젠다] 백그라운드라 시작 보류 — 다음 포그라운드에서 띄움")
+            return
+        }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             Logger.liveActivity.info("[아젠다] Live Activity 가 시스템 설정에서 꺼져 있음")
             return
