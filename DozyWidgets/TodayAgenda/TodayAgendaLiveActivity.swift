@@ -36,6 +36,8 @@ struct TodayAgendaLiveActivity: Widget {
                         Text(context.state.current != nil ? "진행 중" : "다음 일정")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)   // "In progress" 가 두 줄로 꺾이지 않게. 제목(center)이 대신 말줄임
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {

@@ -62,7 +62,14 @@
       }
     },
     "다음" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
     },
     "데이터 접근 실패" : {
       "extractionState" : "stale",

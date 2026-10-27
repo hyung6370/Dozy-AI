@@ -5,6 +5,8 @@
 //  [Domain] "오늘 아젠다" Live Activity 의 순수 계산 부분.
 //  ActivityKit 에 의존하지 않는 값 타입과 계획 함수만 둬서 macOS 타깃·위젯 extension·단위 테스트에서
 //  그대로 컴파일된다. 실제 Activity 시작/갱신/종료는 Data 레이어(TodayAgendaActivityService)가 맡는다.
+//  앱 타깃은 기본 격리가 MainActor 라(SWIFT_DEFAULT_ACTOR_ISOLATION) 순수 값 타입·계산은 nonisolated 로 선언해
+//  Equatable 비교·Optional.map 전달이 어느 컨텍스트에서나 되게 한다.
 //
 //  규칙
 //  - 시간제 일정만 대상 (종일 일정은 카운트다운·진행 바 의미가 없음)
@@ -20,7 +22,7 @@
 import Foundation
 
 /// 위젯 캐시(TodayEventCache) 한 줄을 플래너 입력으로 옮긴 값.
-struct TodayAgendaItem: Equatable, Sendable {
+nonisolated struct TodayAgendaItem: Equatable, Sendable {
     let id: String
     let title: String
     let start: Date
@@ -41,7 +43,7 @@ struct TodayAgendaItem: Equatable, Sendable {
 }
 
 /// Live Activity 에 표시할 일정 1건. ContentState 로 그대로 옮겨진다.
-struct TodayAgendaEntry: Equatable, Sendable {
+nonisolated struct TodayAgendaEntry: Equatable, Sendable {
     let id: String
     let title: String
     let start: Date
@@ -50,7 +52,7 @@ struct TodayAgendaEntry: Equatable, Sendable {
 }
 
 /// 액티비티에 표시할 스냅샷. ContentState + 갱신 메타데이터.
-struct TodayAgendaSnapshot: Equatable, Sendable {
+nonisolated struct TodayAgendaSnapshot: Equatable, Sendable {
     let current: TodayAgendaEntry?
     let next: TodayAgendaEntry?
     /// 아직 끝나지 않은 시간제 일정 수 (진행 중 포함, 완료 제외).
@@ -67,14 +69,14 @@ struct TodayAgendaSnapshot: Equatable, Sendable {
     let dismissalDate: Date?
 }
 
-enum TodayAgendaPlan: Equatable, Sendable {
+nonisolated enum TodayAgendaPlan: Equatable, Sendable {
     /// 오늘 남은 시간제 일정이 없다 → 떠 있는 액티비티를 즉시 내린다.
     case end
     /// 표시할 내용이 있다.
     case show(TodayAgendaSnapshot)
 }
 
-enum TodayAgendaPlanner {
+nonisolated enum TodayAgendaPlanner {
 
     /// ActivityKit 이 예약 종료(dismissalPolicy .after)에 허용하는 최대 지연.
     static let maxScheduledDismissal: TimeInterval = 4 * 60 * 60

@@ -43,7 +43,7 @@ Presentation (View / ViewModel) → Domain (UseCase / Model / Protocol) → Data
   ```
   (버전은 `ls /opt/homebrew/Cellar/fastlane` 로 확인. 시스템 `bundle exec` 은 bundler 버전 불일치로 실패한다.)
 - 타깃 배치 기준: Domain 공통 → iOS + macOS. 위젯이 쓰는 모델(`TodayEventCache`, `DozyEvent`, `EventCompletion`, `UserCategory`, `Color+Hex`, 플래너류) → + `DozyWidgetsExtension`. iOS 전용 Data 서비스 → iOS 만. 테스트 → `Dozy AITests` + `Dozy AI (macOS)Tests` 둘 다.
-- 위젯 extension 배포 타깃은 iOS 26.0 (앱은 17.6). 위젯·Live Activity 는 iOS 26 기기에서만 보인다.
+- 위젯 extension 배포 타깃은 앱과 같은 iOS 17.6 (#71 검증 중 26.0 에서 내림). 위젯·Live Activity 는 iOS 17.6 이상 기기에서 보인다.
 
 ## 데이터 흐름 (알아야 할 것)
 
