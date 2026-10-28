@@ -15,6 +15,7 @@ struct MacTodayView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @EnvironmentObject private var container: DependencyContainer
     @State private var selectedEvent: CalendarEvent? = nil
+    @Environment(\.macTheme) private var theme
     @State private var showNewEventSheet = false
     @State private var showSummarySheet = false
     @State private var showNotificationSheet = false
@@ -260,7 +261,7 @@ struct MacTodayView: View {
         let upcomingEvent = viewModel.upcomingEvent
         let displayEvent = currentEvent ?? upcomingEvent
         let label = currentEvent != nil ? "지금 일정" : upcomingEvent != nil ? "다음 일정" : ""
-        let accent = displayEvent.flatMap { Color(hex: $0.calendarColorHex) } ?? .blue
+        let accent = displayEvent.flatMap { Color(hex: $0.calendarColorHex) } ?? theme.accent
 
         return VStack(alignment: .leading, spacing: 0) {
             if let event = displayEvent {
@@ -369,7 +370,7 @@ struct MacTodayView: View {
         if event.startDate <= now { return .green }
         let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
         if minutes < 30 { return .orange }
-        return .blue
+        return theme.accent
     }
 
     // MARK: - Stats Row
@@ -446,7 +447,7 @@ struct MacTodayView: View {
     private func progressColor(_ value: Double) -> Color {
         switch value {
         case 1.0:       return .green
-        case 0.5..<1.0: return .blue
+        case 0.5..<1.0: return theme.accent
         case 0.01..<0.5: return .orange
         default:        return .secondary
         }
@@ -491,7 +492,7 @@ struct MacTodayView: View {
                         .textCase(.uppercase)
                         .tracking(0.5)
                 }
-                .foregroundStyle(.indigo)
+                .foregroundStyle(theme.accent)
                 Spacer()
                 Text("\(viewModel.scorePercentage)점")
                     .font(.subheadline)
@@ -529,7 +530,7 @@ struct MacTodayView: View {
                     HStack(alignment: .top, spacing: 8) {
                         Image(symbol: "arrow.right.circle")
                             .font(.system(size: 13))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(theme.accent)
                             .padding(.top, 3)
                         Text(action)
                             .font(.subheadline)
@@ -544,18 +545,18 @@ struct MacTodayView: View {
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(LinearGradient(
-                    colors: [Color.indigo.opacity(0.08), Color.indigo.opacity(0.02)],
+                    colors: [theme.accent.opacity(0.10), theme.accent.opacity(0.02)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ))
         )
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Color.indigo.opacity(0.15), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(theme.accentStroke, lineWidth: 1))
     }
 
     private func scoreColor(_ score: Double) -> Color {
         switch score {
         case 0.8...1.0: return .green
-        case 0.6..<0.8: return .blue
+        case 0.6..<0.8: return theme.accent
         case 0.4..<0.6: return .orange
         default:        return .red
         }
@@ -613,7 +614,7 @@ struct MacTodayView: View {
                 } label: {
                     Image(symbol: "plus.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(theme.accent)
                 }
                 .buttonStyle(.plain)
                 .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -659,7 +660,7 @@ struct MacTodayView: View {
                 } else {
                     Image(symbol: "sparkles")
                         .font(.title3)
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(theme.accent)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Dozy 요약 생성")

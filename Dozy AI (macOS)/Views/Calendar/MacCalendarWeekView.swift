@@ -12,6 +12,7 @@ import SwiftUI
 
 struct MacCalendarWeekView: View {
     let weekDates: [Date]                       // 7일
+    @Environment(\.macTheme) private var theme
     let selectedDate: Date
     let eventsByDate: [Date: [CalendarEvent]]
     let onSelectDate: (Date) -> Void
@@ -59,13 +60,13 @@ struct MacCalendarWeekView: View {
                         .fontWeight(cal.isDateInToday(date) ? .bold : .medium)
                         .foregroundStyle(cal.isDateInToday(date) ? Color.white : .primary)
                         .frame(width: 30, height: 30)
-                        .background(cal.isDateInToday(date) ? Color.accentColor : Color.clear, in: Circle())
+                        .background(cal.isDateInToday(date) ? theme.accent : Color.clear, in: Circle())
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
                 .background(
                     cal.isDate(date, inSameDayAs: selectedDate) && !cal.isDateInToday(date)
-                        ? Color.accentColor.opacity(0.12)
+                        ? theme.accentSoft
                         : Color.clear
                 )
                 .contentShape(Rectangle())
@@ -153,7 +154,7 @@ struct MacCalendarWeekView: View {
         let width = cellWidth * span - 6
         let xCenter = cellWidth * CGFloat(bar.startCol) + cellWidth * span / 2
         let y = 6 + CGFloat(bar.stackRow) * 20
-        let color = Color(hex: bar.event.calendarColorHex) ?? .blue
+        let color = Color(hex: bar.event.calendarColorHex) ?? theme.accent
         // 공휴일은 빨강 시그널 유지 (다크모드 흰색 통일에서 제외).
         let foreground: Color = colorScheme == .dark
             ? (bar.event.source == .holiday ? color : .white)
@@ -375,7 +376,7 @@ struct MacCalendarWeekView: View {
     }
 
     private func eventBlockView(block: TimedBlock, cellWidth: CGFloat) -> some View {
-        let color = Color(hex: block.event.calendarColorHex) ?? .blue
+        let color = Color(hex: block.event.calendarColorHex) ?? theme.accent
         let subColumnWidth = cellWidth / CGFloat(block.totalSubCols)
         let y = CGFloat(block.startMinute) * (hourHeight / 60)
         let height = CGFloat(block.durationMinutes) * (hourHeight / 60)

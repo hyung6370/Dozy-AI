@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MacCalendarDayView: View {
     let date: Date
+    @Environment(\.macTheme) private var theme
     let eventsByDate: [Date: [CalendarEvent]]
     let onSelectEvent: (CalendarEvent) -> Void
     let onCreateEvent: (Date) -> Void
@@ -44,7 +45,7 @@ struct MacCalendarDayView: View {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(cal.isDateInToday(date) ? Color.white : .primary)
                     .frame(width: 52, height: 52)
-                    .background(cal.isDateInToday(date) ? Color.accentColor : Color.clear, in: Circle())
+                    .background(cal.isDateInToday(date) ? theme.accent : Color.clear, in: Circle())
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
@@ -92,7 +93,7 @@ struct MacCalendarDayView: View {
     }
 
     private func allDayBar(event: CalendarEvent) -> some View {
-        let color = Color(hex: event.calendarColorHex) ?? .blue
+        let color = Color(hex: event.calendarColorHex) ?? theme.accent
         // 공휴일은 빨강 시그널 유지 (다크모드 흰색 통일에서 제외).
         let foreground: Color = colorScheme == .dark
             ? (event.source == .holiday ? color : .white)
@@ -271,7 +272,7 @@ struct MacCalendarDayView: View {
     }
 
     private func blockView(block: TimedBlock, width: CGFloat) -> some View {
-        let color = Color(hex: block.event.calendarColorHex) ?? .blue
+        let color = Color(hex: block.event.calendarColorHex) ?? theme.accent
         let subColumnWidth = width / CGFloat(block.totalSubCols)
         let y = CGFloat(block.startMinute) * (hourHeight / 60)
         let height = CGFloat(block.durationMinutes) * (hourHeight / 60)

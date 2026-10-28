@@ -13,6 +13,7 @@ import Lottie
 
 struct MacCalendarView: View {
     @ObservedObject var viewModel: MacCalendarViewModel
+    @Environment(\.macTheme) private var theme
     @StateObject private var swipeState = MonthSwipeState()
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @EnvironmentObject private var container: DependencyContainer
@@ -151,7 +152,7 @@ struct MacCalendarView: View {
                         .overlay(alignment: .topTrailing) {
                             if viewModel.visibilityFilter.isFilterActive {
                                 Circle()
-                                    .fill(Color.accentColor)
+                                    .fill(theme.accent)
                                     .frame(width: 6, height: 6)
                                     .overlay(
                                         Circle().stroke(Color(nsColor: .windowBackgroundColor), lineWidth: 1)

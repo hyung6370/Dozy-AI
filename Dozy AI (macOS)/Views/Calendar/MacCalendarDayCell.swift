@@ -10,6 +10,7 @@ import SwiftUI
 
 struct MacCalendarDayCell: View {
     let date: Date
+    @Environment(\.macTheme) private var theme
     let isInCurrentMonth: Bool
     let isSelected: Bool
     let isToday: Bool
@@ -24,7 +25,7 @@ struct MacCalendarDayCell: View {
                     .fontWeight(isToday ? .bold : .medium)
                     .foregroundStyle(isToday ? Color.white : dayColor)
                     .frame(width: 28, height: 28)
-                    .background(isToday ? Color.accentColor : Color.clear, in: Circle())
+                    .background(isToday ? theme.accent : Color.clear, in: Circle())
                 Spacer()
             }
 
@@ -47,7 +48,7 @@ struct MacCalendarDayCell: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             isSelected
-                ? Color.accentColor.opacity(0.12)
+                ? theme.accentSoft
                 : Color.clear
         )
         .contentShape(Rectangle())

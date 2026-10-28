@@ -7246,6 +7246,26 @@
           }
         }
       }
+    },
+    "저채도 메시 그라디언트 — 라벤더 카드와 페리윙클 강조색." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soft mesh gradient — lavender cards with a periwinkle accent."
+          }
+        }
+      }
+    },
+    "컬러 블롭 — 생동감 있는 배경에 보라 강조색." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color blobs — a vivid background with a violet accent."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

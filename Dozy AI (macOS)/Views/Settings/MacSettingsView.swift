@@ -11,6 +11,7 @@ import SwiftData
 
 struct MacSettingsView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @Environment(\.macTheme) private var theme
 
     @EnvironmentObject private var container: DependencyContainer
     @Environment(\.colorScheme) private var colorScheme
@@ -106,7 +107,7 @@ struct MacSettingsView: View {
             Text("계정")
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.sectionTitle)
 
             HStack(spacing: 16) {
                 providerIcon(for: authViewModel.currentUser?.provider)
@@ -130,14 +131,14 @@ struct MacSettingsView: View {
             .background(
                 RoundedRectangle(cornerRadius: 14)
                     .fill(LinearGradient(
-                        colors: [Color.accentColor.opacity(0.08), Color.accentColor.opacity(0.02)],
+                        colors: [theme.accent.opacity(0.10), theme.accent.opacity(0.02)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.accentColor.opacity(0.15), lineWidth: 1)
+                    .strokeBorder(theme.accentStroke, lineWidth: 1)
             )
         }
     }
@@ -578,6 +579,7 @@ private struct ShortcutRow: View {
 
 private struct TipRow: View {
     let icon: String
+    @Environment(\.macTheme) private var theme
     let title: LocalizedStringKey
     let detail: LocalizedStringKey
 
@@ -585,7 +587,7 @@ private struct TipRow: View {
         HStack(alignment: .top, spacing: 12) {
             Image(symbol: icon)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(theme.accent)
                 .frame(width: 22, height: 22)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -605,13 +607,14 @@ private struct TipRow: View {
 private struct SettingsSection<Content: View>: View {
     let title: LocalizedStringKey
     @ViewBuilder let content: () -> Content
+    @Environment(\.macTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.sectionTitle)
 
             VStack(alignment: .leading, spacing: 12) {
                 content()

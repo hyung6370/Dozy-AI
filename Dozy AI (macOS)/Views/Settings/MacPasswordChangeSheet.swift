@@ -11,6 +11,7 @@ import SwiftUI
 private let sheetWidth: CGFloat = 380
 
 struct MacPasswordChangeSheet: View {
+    @Environment(\.macTheme) private var theme
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -114,7 +115,7 @@ struct MacPasswordChangeSheet: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
                     .frame(width: sheetWidth, height: 42)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8))
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
             .disabled(authViewModel.isChangingPassword || email.isEmpty)
@@ -149,7 +150,7 @@ struct MacPasswordChangeSheet: View {
                         .fontWeight(.medium)
                         .foregroundStyle(.white)
                         .frame(width: 92, height: 32)
-                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 6))
+                        .background(theme.accent, in: RoundedRectangle(cornerRadius: 6))
                 }
                 .buttonStyle(.plain)
                 .disabled(authViewModel.isChangingPassword || otpCode.count < 6 || otpExpired)
@@ -230,7 +231,7 @@ struct MacPasswordChangeSheet: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
                     .frame(width: sheetWidth, height: 42)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8))
+                    .background(theme.accent, in: RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
             .disabled(!canSubmitNewPassword)

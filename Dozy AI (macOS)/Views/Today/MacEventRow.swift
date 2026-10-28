@@ -14,6 +14,7 @@ import SwiftUI
 
 struct MacEventRow: View {
     let event: CalendarEvent
+    @Environment(\.macTheme) private var theme
     var isCompleted: Bool = false
     /// 체크 아이콘 탭 시 호출. nil 이면 체크 영역은 시각적 표시만, 인터랙션 비활성.
     var onToggleCompletion: (() -> Void)? = nil
@@ -21,7 +22,7 @@ struct MacEventRow: View {
     var onSelect: (() -> Void)? = nil
 
     var body: some View {
-        let accent = Color(hex: event.calendarColorHex) ?? .blue
+        let accent = Color(hex: event.calendarColorHex) ?? theme.accent
         return HStack(spacing: 14) {
             // 좌측: 완료 체크 — 자체 Button.
             Button {

@@ -11,6 +11,7 @@ import SwiftUI
 import Charts
 
 struct MacInsightDashboardView: View {
+    @Environment(\.macTheme) private var theme
     @StateObject private var viewModel: MacInsightViewModel
     @State private var showCategoryAnalysis = false
 
@@ -172,7 +173,7 @@ struct MacInsightDashboardView: View {
                 "패턴 분석",
                 "가장 바쁜 요일은 \(label)요일 (평균 \(String(format: "%.1f", busiest.avg))개)",
                 "calendar.badge.clock",
-                .blue
+                theme.accent
             )
         }
 
@@ -181,7 +182,7 @@ struct MacInsightDashboardView: View {
             "이번 기간 한눈에",
             "평균 완료율 \(pct)% — 꾸준히 잘 하고 있어요",
             "chart.line.uptrend.xyaxis",
-            .indigo
+            theme.accent
         )
     }
 
@@ -191,7 +192,7 @@ struct MacInsightDashboardView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(viewModel.selectedPeriod.label)
                 .font(.headline).fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.sectionTitle)
             HStack(spacing: 14) {
                 summaryCard(
                     value: "\(Int(viewModel.averageCompletionRate * 100))%",
@@ -323,7 +324,7 @@ struct MacInsightDashboardView: View {
 
     private var weekdayCard: some View {
         let labels = ["일", "월", "화", "수", "목", "금", "토"]
-        return InsightCard(title: "요일별 평균 일정 수", symbol: "calendar", accent: .blue) {
+        return InsightCard(title: "요일별 평균 일정 수", symbol: "calendar", accent: theme.accent) {
             if viewModel.weekdayAvgCounts.isEmpty {
                 cardEmpty(message: "일정 데이터가 없습니다")
             } else {
@@ -333,7 +334,7 @@ struct MacInsightDashboardView: View {
                             x: .value("요일", labels[item.weekday]),
                             y: .value("평균", item.avg)
                         )
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(theme.accent)
                         .cornerRadius(4)
                     }
                 }
@@ -355,7 +356,7 @@ struct MacInsightDashboardView: View {
                             x: .value("시", item.hour),
                             y: .value("건수", item.count)
                         )
-                        .foregroundStyle(viewModel.peakHours.contains(item.hour) ? Color.orange : Color.blue)
+                        .foregroundStyle(viewModel.peakHours.contains(item.hour) ? Color.orange : theme.accent)
                         .cornerRadius(3)
                     }
                 }
@@ -418,7 +419,7 @@ struct MacInsightDashboardView: View {
     // MARK: - Productivity
 
     private var productivityCard: some View {
-        InsightCard(title: "일별 생산성 점수", symbol: "sparkles", accent: .indigo) {
+        InsightCard(title: "일별 생산성 점수", symbol: "sparkles", accent: theme.accent) {
             if viewModel.productivityScores.isEmpty {
                 cardEmpty(message: "생산성 기록이 없습니다")
             } else {
@@ -428,12 +429,12 @@ struct MacInsightDashboardView: View {
                             x: .value("날짜", item.date),
                             y: .value("점수", item.score)
                         )
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(theme.accent)
                         PointMark(
                             x: .value("날짜", item.date),
                             y: .value("점수", item.score)
                         )
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(theme.accent)
                     }
                 }
                 .chartYScale(domain: 0...1)
