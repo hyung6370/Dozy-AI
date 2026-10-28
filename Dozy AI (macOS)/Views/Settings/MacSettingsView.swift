@@ -373,6 +373,20 @@ struct MacSettingsView: View {
             .contentShape(Rectangle())
             .disabled(privacyPolicyURL == nil)
 
+            // 온디바이스 모델(Apple Intelligence) 사용 가능 여부 / 불가 사유 — iOS 설정과 같은 문구 (#102).
+            // macOS 26 미만은 "기본 분석 (기기 미지원)" 으로 그대로 보여 준다.
+            HStack(spacing: 10) {
+                Image(symbol: "sparkles")
+                    .font(.system(size: 16))
+                    .foregroundStyle(theme.accent)
+                    .frame(width: 22, height: 22)
+                Text("AI 엔진")
+                Spacer()
+                Text(container.aiService.engineStatus.displayName)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.trailing)
+            }
+
             HStack(spacing: 10) {
                 Image(settingsAsset("Version"))
                     .resizable()
