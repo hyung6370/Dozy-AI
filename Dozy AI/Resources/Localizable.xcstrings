@@ -7266,6 +7266,26 @@
           }
         }
       }
+    },
+    "사용 통계 전송" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Usage Statistics"
+          }
+        }
+      }
+    },
+    "앱 개선을 위해 기능 사용 횟수 같은 익명 통계를 보내요. 일정 내용은 보내지 않아요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sends anonymous statistics such as feature usage counts to help improve the app. Your event content is never sent."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

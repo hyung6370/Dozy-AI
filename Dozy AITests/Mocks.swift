@@ -73,6 +73,8 @@ final class MockEventCompletionRepository: EventCompletionRepositoryProtocol {
 
 final class MockDozyEventRepository: DozyEventRepositoryProtocol {
     var stubbedError: DozyError? = nil
+    /// save 실패 시나리오용 (#90 — 실패하면 event_created 를 보내지 않아야 한다).
+    var stubbedSaveError: DozyError? = nil
     private(set) var updateCallCount = 0
     private(set) var lastUpdatedEvent: DozyEvent? = nil
 
@@ -85,7 +87,8 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
     }
 
     func save(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
-        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedSaveError { return Fail(error: error).eraseToAnyPublisher() }
+        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
 
     func update(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
@@ -135,6 +138,8 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
 final class MockAIService: AIServiceProtocol {
     var stubbedSummary: DailySummary?
     var stubbedError: Error? = nil
+    var stubbedEngineStatus: AIEngineStatus = .unavailable
+    var engineStatus: AIEngineStatus { stubbedEngineStatus }
 
     func generateDailySummary(
         events: [CalendarEvent], completedTasks: [TaskItem],
@@ -184,4 +189,45 @@ final class MockWorkLogRepository: WorkLogRepositoryProtocol {
     func delete(_ log: WorkLog) -> AnyPublisher<Void, DozyError> {
         Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
+}
+
+// MARK: - MockAnalyticsService (#90)
+
+final class MockAnalyticsService: AnalyticsServiceProtocol {
+    private(set) var trackedEvents: [AnalyticsEvent] = []
+    private(set) var userProperties: [AnalyticsUserProperty: String?] = [:]
+    private(set) var collectionEnabled: Bool?
+
+    func track(_ event: AnalyticsEvent) { trackedEvents.append(event) }
+    func setUserProperty(_ value: String?, for property: AnalyticsUserProperty) { userProperties[property] = value }
+    func setCollectionEnabled(_ enabled: Bool) { collectionEnabled = enabled }
+}
+
+// MARK: - MockSharedCalendarService (#90)
+
+final class MockSharedCalendarService: SharedCalendarServiceProtocol {
+    var stubbedError: DozyError? = nil
+
+    private func result<T>(_ value: T) -> AnyPublisher<T, DozyError> {
+        if let error = stubbedError { return Fail(error: error).eraseToAnyPublisher() }
+        return Just(value).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
+    func create(name: String) -> AnyPublisher<SharedCalendarCreationResult, DozyError> {
+        result(SharedCalendarCreationResult(calendarID: "cal-1", inviteCode: "ABC123", inviteCodeExpiresAt: Date()))
+    }
+    func join(inviteCode: String) -> AnyPublisher<SharedCalendarJoinResult, DozyError> {
+        result(SharedCalendarJoinResult(calendarID: "cal-1"))
+    }
+    func regenerateInviteCode(calendarID: String) -> AnyPublisher<SharedCalendarInviteCodeResult, DozyError> {
+        result(SharedCalendarInviteCodeResult(inviteCode: "XYZ789", inviteCodeExpiresAt: Date()))
+    }
+    func fetchMyCalendars() -> AnyPublisher<[SharedCalendar], DozyError> { result([]) }
+    func fetchMembers(calendarID: String) -> AnyPublisher<[SharedCalendarMember], DozyError> { result([]) }
+    func leave(calendarID: String) -> AnyPublisher<Void, DozyError> { result(()) }
+    func delete(calendarID: String) -> AnyPublisher<Void, DozyError> { result(()) }
+    func updateNickname(calendarID: String, nickname: String) -> AnyPublisher<Void, DozyError> { result(()) }
+    func updateCalendarName(calendarID: String, name: String) -> AnyPublisher<Void, DozyError> { result(()) }
+    func uploadCalendarImage(calendarID: String, jpegData: Data, previousPath: String?) -> AnyPublisher<String, DozyError> { result("path") }
+    func removeCalendarImage(calendarID: String, path: String) -> AnyPublisher<Void, DozyError> { result(()) }
 }

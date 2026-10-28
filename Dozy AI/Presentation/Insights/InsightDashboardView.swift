@@ -75,12 +75,16 @@ struct InsightDashboardView: View {
                     .frame(width: 180)
                 }
             }
-            .onChange(of: viewModel.selectedPeriod) { _, _ in
+            .onChange(of: viewModel.selectedPeriod) { _, period in
                 viewModel.loadData()
+                container.analyticsService.track(.insightsOpened(periodDays: period.rawValue))
             }
             .onAppear { viewModel.loadData() }
             .onChange(of: selectedTab) { _, newTab in
-                if newTab == 2 { viewModel.loadData() }
+                guard newTab == 2 else { return }
+                viewModel.loadData()
+                // 탭 진입만 센다 — TabView 안의 onAppear 는 재발화가 잦아 지표로 쓰지 않는다 (#90).
+                container.analyticsService.track(.insightsOpened(periodDays: viewModel.selectedPeriod.rawValue))
             }
             .refreshable { viewModel.loadData() }
             .navigationDestination(isPresented: $showCalendarSettings) {

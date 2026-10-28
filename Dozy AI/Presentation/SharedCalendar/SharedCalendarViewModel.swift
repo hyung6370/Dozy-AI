@@ -102,9 +102,9 @@ final class SharedCalendarViewModel: ObservableObject {
 
     // MARK: - Join
 
-    func join(code: String, completion: @escaping () -> Void) {
+    func join(code: String, via: SharedCalendarJoinVia = .code, completion: @escaping () -> Void) {
         isLoading = true
-        joinUseCase.execute(inviteCode: code)
+        joinUseCase.execute(inviteCode: code, via: via)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in

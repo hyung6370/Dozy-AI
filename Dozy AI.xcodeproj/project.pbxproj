@@ -41,6 +41,7 @@
 		3F8CE622E5B84685303BB066 /* TodayAgendaPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8596CDEC854DE02A468899B9 /* TodayAgendaPlannerTests.swift */; };
 		41711C2ECF8FD688F9018EA8 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCEF2F7CB13B00FA0476 /* NotificationService.swift */; };
 		4176F8FD8030E25911CA6A17 /* DozyIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C952A327510DE462AB91F82 /* DozyIcons.xcassets */; };
+		418D7ED7CE7EE66937B9EE8B /* AnalyticsServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72DCD7116E0199E983F8AB8B /* AnalyticsServiceProtocol.swift */; };
 		41CA189E759F615475FF68CC /* AIResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9412F73B38B00084C61 /* AIResponseParser.swift */; };
 		44039241C37345B9A25246E9 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D808CA427DE3411D99E36895 /* SearchView.swift */; };
 		444FE9C09B264D31BBF541F7 /* MirrorExternalEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */; };
@@ -53,6 +54,7 @@
 		4EDD2742975D5157B74941DA /* DeleteCalendarEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650682A2F7D086B00F9C124 /* DeleteCalendarEventUseCase.swift */; };
 		50EC191D983750D6731F17D8 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D98A2F7A4C8400084C61 /* Color+Hex.swift */; };
 		510BD3FDCC7B48115B145337 /* DailySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68F32F6ACD80001952F6 /* DailySummary.swift */; };
+		51BB8E29640983194B4E2F91 /* AnalyticsEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19F580F9ACC9D25FE668488 /* AnalyticsEvent.swift */; };
 		53496E83FFBE3A1F4BED45CD /* ToggleEventCompletionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */; };
 		537D603E1FCE461BB9A004F8 /* AppVersionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138EDD04FB7644938FBB1BBD /* AppVersionService.swift */; };
 		54BCFADE4A50BB72910F8047 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E92F6ACD2E001952F6 /* Logger.swift */; };
@@ -90,8 +92,10 @@
 		855C050A758054D1558BE426 /* WorkLogRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */; };
 		857D0475217A34782DC60979 /* SharedCalendarResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = E96E6A9C368B4064B7176A9A /* SharedCalendarResults.swift */; };
 		86D3ECAFA3730CF636CFFC13 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69132F6ACF33001952F6 /* AIService.swift */; };
+		872A15557AEBF13B79850E0D /* FirebaseAnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F44BD55BD2E9D57D240AD8A /* FirebaseAnalyticsService.swift */; };
 		8786C17F4B4435191645C92B /* MacEveningCheckSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F961C6AB3DE3A9A44E8549 /* MacEveningCheckSheet.swift */; };
 		87BF234CA70E48C7ADC1DFF3 /* WeatherCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2E5C2128D432DB7FA7A8C /* WeatherCardView.swift */; };
+		8962EA34D11E2C01D7197FCC /* FirebaseAnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F44BD55BD2E9D57D240AD8A /* FirebaseAnalyticsService.swift */; };
 		89C14C98DF2C403E41923200 /* DozyIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C952A327510DE462AB91F82 /* DozyIcons.xcassets */; };
 		8AD7157770B4B2626139375B /* NotificationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68682F84F481003464E8 /* NotificationRecord.swift */; };
 		8BB6A979D5F502ABE0B2E735 /* CalendarEventDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69212F6ACFF2001952F6 /* CalendarEventDTO.swift */; };
@@ -105,7 +109,9 @@
 		9B076DE9625C6E9E584D4664 /* AIPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D93F2F73B0A700084C61 /* AIPromptBuilder.swift */; };
 		9CD55D908EA26C210F86B32C /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F6EC8AA02F9705A300CFFF87 /* Kingfisher */; };
 		9D84A593BE6A7E51E541533C /* DozyEventRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96C2F7A355C00084C61 /* DozyEventRepositoryProtocol.swift */; };
+		9F0B3CB1AB02ACEEB64F66ED /* AnalyticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E7CABE9322C8F9D182208B /* AnalyticsTests.swift */; };
 		A35D47E144D81DA6DFF5D554 /* UpdateDozyEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9742F7A371900084C61 /* UpdateDozyEventUseCase.swift */; };
+		A3FC1BD73CEF70C65CF3A502 /* AnalyticsServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72DCD7116E0199E983F8AB8B /* AnalyticsServiceProtocol.swift */; };
 		A404F86409DDECE2CE1503C7 /* TodayAgendaLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665BB66E8DEA517945094EFD /* TodayAgendaLiveActivity.swift */; };
 		A408B592124EA399C5D1032F /* DozyCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D97A2F7A3A6000084C61 /* DozyCalendarService.swift */; };
 		A461CC4832C74438806A2785 /* LeaveSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */; };
@@ -133,6 +139,7 @@
 		BC21258D79F7B15C5A1B861D /* TodayAgendaAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3EEAFB9FAED68675BE97F33 /* TodayAgendaAttributes.swift */; };
 		BEDBAC0D5C430ABDFB0A57C6 /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */; };
 		BF0B976768ED331A7479E90E /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B39B22F83721600FEAFB0 /* SyncService.swift */; };
+		C255CF82D65D98DDF80A3486 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 12BF32C400DB20A44E07FD1E /* FirebaseAnalyticsCore */; };
 		C56216131A337FABE51EB98E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68EB2F6ACD36001952F6 /* Constants.swift */; };
 		C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		C9281237CC6E4AABA7AB5BA5 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
@@ -198,6 +205,7 @@
 		D02ACQEI000000000000A03 /* CreateQuickEventIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ACQEI000000000000A01 /* CreateQuickEventIntent.swift */; };
 		D02ACQET000000000000A02 /* CreateQuickEventIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ACQET000000000000A01 /* CreateQuickEventIntentTests.swift */; };
 		D02ATOGGLE000000000000A02 /* ToggleEventCompletionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02ATOGGLE000000000000A01 /* ToggleEventCompletionIntent.swift */; };
+		D1C916A44C1B051C4A734DE5 /* AnalyticsEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19F580F9ACC9D25FE668488 /* AnalyticsEvent.swift */; };
 		D4667C311D34F971A24D66FD /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000004 /* TestHelpers.swift */; };
 		D564E4A541B4F8497AB0824F /* AppVersionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138EDD04FB7644938FBB1BBD /* AppVersionService.swift */; };
 		D71D0CC4B99017C93CF3F0FC /* EventCompletionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65068302F7D115300F9C124 /* EventCompletionRepository.swift */; };
@@ -274,10 +282,12 @@
 		E4DD460FD7EECCBE7C5A1A68 /* NotificationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F616DCE92F7CAFA400FA0476 /* NotificationServiceProtocol.swift */; };
 		E5FAF054B59D083A0F0F43E2 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADF032F7FAA01007B8D9F /* Realtime */; };
 		E64E8D7DEE2904F2AF41AA37 /* SharedCalendarRealtimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */; };
+		E72CE0BA2002F60E499032CD /* AnalyticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E7CABE9322C8F9D182208B /* AnalyticsTests.swift */; };
 		E75D1231C01579E54A5A6FE7 /* ToggleDozyEventCompletionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650681A2F7CDAFB00F9C124 /* ToggleDozyEventCompletionUseCase.swift */; };
 		E7B05E5E910D4AB002A24F46 /* DemoDataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59E40F5C125D155B93E562A4 /* DemoDataSeeder.swift */; };
 		E7E5F48B89DB443EB5FE5A72 /* CreateSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */; };
 		E9E3499D4DAB5458917C608D /* TodayAgendaPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48265506FD81F8102344D97F /* TodayAgendaPlanner.swift */; };
+		EA2B40E57327B5E8554D987B /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = ECCEA8C519D1AE9914AF55F4 /* FirebaseAnalyticsCore */; };
 		F0358D60D97649A39C84BD8B /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		F0E98384934E29E7CDA72AE6 /* FetchEventCompletionsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650682E2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift */; };
 		F341742481770B52F526A95A /* SharedEventContentDiffTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 375F7A3569F332CF1CEFA752 /* SharedEventContentDiffTests.swift */; };
@@ -613,9 +623,12 @@
 		672B3124C9F24FBD919B40D0 /* CreateSharedCalendarUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSharedCalendarUseCase.swift; sourceTree = "<group>"; };
 		68E74C13AD0E4860A1AE7875 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorExternalEventUseCase.swift; sourceTree = "<group>"; };
+		72DCD7116E0199E983F8AB8B /* AnalyticsServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalyticsServiceProtocol.swift; sourceTree = "<group>"; };
 		741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarMember.swift; sourceTree = "<group>"; };
+		7F44BD55BD2E9D57D240AD8A /* FirebaseAnalyticsService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirebaseAnalyticsService.swift; sourceTree = "<group>"; };
 		80F36075F1E54A78D2BF0438 /* TodayAgendaActivityService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayAgendaActivityService.swift; sourceTree = "<group>"; };
 		81F2A847B998470E88E165D7 /* Production.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Production.xcconfig; sourceTree = "<group>"; };
+		84E7CABE9322C8F9D182208B /* AnalyticsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalyticsTests.swift; sourceTree = "<group>"; };
 		8596CDEC854DE02A468899B9 /* TodayAgendaPlannerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayAgendaPlannerTests.swift; sourceTree = "<group>"; };
 		8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarRealtimeService.swift; sourceTree = "<group>"; };
 		96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarService.swift; sourceTree = "<group>"; };
@@ -738,6 +751,7 @@
 		E52E9135FC4F4C559A927798 /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
 		E96E6A9C368B4064B7176A9A /* SharedCalendarResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarResults.swift; sourceTree = "<group>"; };
 		EA62A1932AC1B206A3A6017F /* MacAppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacAppDelegate.swift; sourceTree = "<group>"; };
+		F19F580F9ACC9D25FE668488 /* AnalyticsEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalyticsEvent.swift; sourceTree = "<group>"; };
 		F3EEAFB9FAED68675BE97F33 /* TodayAgendaAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayAgendaAttributes.swift; sourceTree = "<group>"; };
 		F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUser.swift; sourceTree = "<group>"; };
@@ -955,6 +969,7 @@
 				F6EC8AA12F9705A300CFFF87 /* Kingfisher in Frameworks */,
 				F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */,
 				F619D94D2F75113C00084C61 /* GoogleSignInSwift in Frameworks */,
+				EA2B40E57327B5E8554D987B /* FirebaseAnalyticsCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -995,6 +1010,7 @@
 				5B7182A224756F74A04B9382 /* Storage in Frameworks */,
 				1BC96F8C4DCEC267B80DBBA8 /* Supabase in Frameworks */,
 				9CD55D908EA26C210F86B32C /* Kingfisher in Frameworks */,
+				C255CF82D65D98DDF80A3486 /* FirebaseAnalyticsCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1149,6 +1165,7 @@
 				F6611CCC30217AC6009292A7 /* CalendarHeaderSymbolsTests.swift */,
 				8596CDEC854DE02A468899B9 /* TodayAgendaPlannerTests.swift */,
 				375F7A3569F332CF1CEFA752 /* SharedEventContentDiffTests.swift */,
+				84E7CABE9322C8F9D182208B /* AnalyticsTests.swift */,
 			);
 			path = "Dozy AITests";
 			sourceTree = "<group>";
@@ -1279,6 +1296,7 @@
 				F6934853308ADDB400FB5E1C /* SummaryReminderSettings.swift */,
 				D02AFFFF000000000000F304 /* EveningCheckPrompt.swift */,
 				48265506FD81F8102344D97F /* TodayAgendaPlanner.swift */,
+				F19F580F9ACC9D25FE668488 /* AnalyticsEvent.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1415,6 +1433,7 @@
 				DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */,
 				F69348443089E5D600FB5E1C /* EventParsingServiceProtocol.swift */,
 				4EAB31B6F040A0BC3B9B802E /* LiveActivityServiceProtocol.swift */,
+				72DCD7116E0199E983F8AB8B /* AnalyticsServiceProtocol.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -1464,6 +1483,7 @@
 				E52E9135FC4F4C559A927798 /* WeatherService.swift */,
 				F6934856308AE28400FB5E1C /* SummaryReminderService.swift */,
 				80F36075F1E54A78D2BF0438 /* TodayAgendaActivityService.swift */,
+				7F44BD55BD2E9D57D240AD8A /* FirebaseAnalyticsService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -1893,6 +1913,7 @@
 				DD808E812F694B2100F4956A /* Frameworks */,
 				DD808E822F694B2100F4956A /* Resources */,
 				F63A139D2FB54F14006C580D /* Embed Foundation Extensions */,
+				277E0A0E786CC3DD392296F9 /* Copy GoogleService-Info.plist (optional) */,
 			);
 			buildRules = (
 			);
@@ -1912,6 +1933,7 @@
 				F60ADF072F7FAA01007B8D9F /* Supabase */,
 				F63C68722F85E35F003464E8 /* Lottie */,
 				F6EC8AA02F9705A300CFFF87 /* Kingfisher */,
+				ECCEA8C519D1AE9914AF55F4 /* FirebaseAnalyticsCore */,
 			);
 			productName = "Dozy AI";
 			productReference = DD808E842F694B2100F4956A /* Dozy AI.app */;
@@ -1977,6 +1999,7 @@
 				F6EC8AB42F9896CE00CFFF87 /* Sources */,
 				F6EC8AB52F9896CE00CFFF87 /* Frameworks */,
 				F6EC8AB62F9896CE00CFFF87 /* Resources */,
+				CCC46F6348FF953D8B0CB2F7 /* Copy GoogleService-Info.plist (optional) */,
 			);
 			buildRules = (
 			);
@@ -1994,6 +2017,7 @@
 				F60ADF072F7FAA01007B8D9F /* Supabase */,
 				F6EC8AA02F9705A300CFFF87 /* Kingfisher */,
 				F67333032FA836C4000A610A /* Lottie */,
+				12BF32C400DB20A44E07FD1E /* FirebaseAnalyticsCore */,
 			);
 			productName = "Dozy AI (macOS)";
 			productReference = F6EC8AB82F9896CE00CFFF87 /* Dozy.app */;
@@ -2088,6 +2112,7 @@
 				F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				F63C68712F85E35F003464E8 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				F6EC8A9F2F9705A300CFFF87 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				061635EC9580225223F92CC7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD808E852F694B2100F4956A /* Products */;
@@ -2180,6 +2205,51 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		277E0A0E786CC3DD392296F9 /* Copy GoogleService-Info.plist (optional) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Dozy AI/GoogleService-Info.plist",
+			);
+			name = "Copy GoogleService-Info.plist (optional)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Firebase 설정 파일(#90)은 공개 저장소라 .gitignore — 있으면 번들에 복사, 없으면 애널리틱스만 꺼진 채로 빌드한다.\nSRC=\"${SCRIPT_INPUT_FILE_0}\"\nDST=\"${SCRIPT_OUTPUT_FILE_0}\"\nif [ -f \"$SRC\" ]; then\n  cp \"$SRC\" \"$DST\"\nelse\n  echo \"warning: GoogleService-Info.plist 없음 — Firebase 콘솔(dozy-7fa39)에서 내려받아 Dozy AI/ 에 두면 애널리틱스가 켜집니다.\"\n  rm -f \"$DST\"\nfi\n";
+		};
+		CCC46F6348FF953D8B0CB2F7 /* Copy GoogleService-Info.plist (optional) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Dozy AI (macOS)/GoogleService-Info.plist",
+			);
+			name = "Copy GoogleService-Info.plist (optional)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Firebase 설정 파일(#90)은 공개 저장소라 .gitignore — 있으면 번들에 복사, 없으면 애널리틱스만 꺼진 채로 빌드한다.\nSRC=\"${SCRIPT_INPUT_FILE_0}\"\nDST=\"${SCRIPT_OUTPUT_FILE_0}\"\nif [ -f \"$SRC\" ]; then\n  cp \"$SRC\" \"$DST\"\nelse\n  echo \"warning: GoogleService-Info.plist 없음 — Firebase 콘솔(dozy-7fa39)에서 내려받아 Dozy AI (macOS)/ 에 두면 애널리틱스가 켜집니다.\"\n  rm -f \"$DST\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		DD808E802F694B2100F4956A /* Sources */ = {
@@ -2414,6 +2484,9 @@
 				53496E83FFBE3A1F4BED45CD /* ToggleEventCompletionIntent.swift in Sources */,
 				6EBAA7DB93A3BF62DCBA434A /* DozyIcon.swift in Sources */,
 				E7B05E5E910D4AB002A24F46 /* DemoDataSeeder.swift in Sources */,
+				D1C916A44C1B051C4A734DE5 /* AnalyticsEvent.swift in Sources */,
+				418D7ED7CE7EE66937B9EE8B /* AnalyticsServiceProtocol.swift in Sources */,
+				8962EA34D11E2C01D7197FCC /* FirebaseAnalyticsService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2441,6 +2514,7 @@
 				F6611CC430201031009292A7 /* AIResponseParserTests.swift in Sources */,
 				3F8CE622E5B84685303BB066 /* TodayAgendaPlannerTests.swift in Sources */,
 				DB29AE6F794A6DD955156AB2 /* SharedEventContentDiffTests.swift in Sources */,
+				E72CE0BA2002F60E499032CD /* AnalyticsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2672,6 +2746,9 @@
 				79C2328FDE8D7614E6C0A6AC /* MacAppDelegate.swift in Sources */,
 				8786C17F4B4435191645C92B /* MacEveningCheckSheet.swift in Sources */,
 				DBA5AF2640125BDA4C512EB7 /* MacThemePalette.swift in Sources */,
+				51BB8E29640983194B4E2F91 /* AnalyticsEvent.swift in Sources */,
+				A3FC1BD73CEF70C65CF3A502 /* AnalyticsServiceProtocol.swift in Sources */,
+				872A15557AEBF13B79850E0D /* FirebaseAnalyticsService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2698,6 +2775,7 @@
 				F341742481770B52F526A95A /* SharedEventContentDiffTests.swift in Sources */,
 				47C1DF84AE20C32A1DA82D15 /* MacThemePaletteTests.swift in Sources */,
 				B212ED66A0238DA3E5DEBEDF /* MacSectionTests.swift in Sources */,
+				9F0B3CB1AB02ACEEB64F66ED /* AnalyticsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3355,6 +3433,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		061635EC9580225223F92CC7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.19.3;
+			};
+		};
 		F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift";
@@ -3398,6 +3484,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		12BF32C400DB20A44E07FD1E /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 061635EC9580225223F92CC7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		ECCEA8C519D1AE9914AF55F4 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 061635EC9580225223F92CC7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
 		F60ADEFD2F7FAA01007B8D9F /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F60ADEFC2F7FAA01007B8D9F /* XCRemoteSwiftPackageReference "supabase-swift" */;

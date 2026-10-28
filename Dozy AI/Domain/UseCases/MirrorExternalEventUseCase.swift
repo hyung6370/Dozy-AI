@@ -11,9 +11,11 @@ import Combine
 final class MirrorExternalEventUseCase {
 
     private let repository: DozyEventRepositoryProtocol
+    private let analytics: AnalyticsServiceProtocol
 
-    init(repository: DozyEventRepositoryProtocol) {
+    init(repository: DozyEventRepositoryProtocol, analytics: AnalyticsServiceProtocol = NoopAnalyticsService()) {
         self.repository = repository
+        self.analytics = analytics
     }
 
     func execute(
@@ -21,5 +23,9 @@ final class MirrorExternalEventUseCase {
         to sharedCalendarID: String
     ) -> AnyPublisher<DozyEvent, DozyError> {
         repository.mirrorExternalEvent(origin, to: sharedCalendarID)
+            .handleEvents(receiveOutput: { [analytics] _ in
+                analytics.track(.externalEventMirrored(provider: origin.source))
+            })
+            .eraseToAnyPublisher()
     }
 }

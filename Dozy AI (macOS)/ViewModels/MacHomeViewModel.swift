@@ -314,10 +314,10 @@ final class MacHomeViewModel: ObservableObject {
     }
 
     /// 새 일정이면 create, 기존이면 update. Supabase 동기화 후 로컬 Today 재로드.
-    func saveDozyEvent(_ event: DozyEvent) {
+    func saveDozyEvent(_ event: DozyEvent, method: EventInputMethod = .manual) {
         let isNew = dozyEventsByID[event.id] == nil
         let publisher = isNew
-            ? createDozyEventUseCase.execute(event)
+            ? createDozyEventUseCase.execute(event, method: method)
             : updateDozyEventUseCase.execute(event)
         publisher
             .receive(on: DispatchQueue.main)

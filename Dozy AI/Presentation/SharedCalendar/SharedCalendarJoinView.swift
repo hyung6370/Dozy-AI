@@ -165,7 +165,8 @@ struct SharedCalendarJoinView: View {
     // MARK: - Submit
 
     private func submit() {
-        viewModel.join(code: code) {
+        // 초대 링크(dozyapp.kr/shared-calendar/join)로 열리면 initialCode 가 채워져 있다 (#90).
+        viewModel.join(code: code, via: initialCode.isEmpty ? .code : .link) {
             withAnimation { joined = true }
         }
     }
