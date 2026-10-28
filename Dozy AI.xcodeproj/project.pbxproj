@@ -144,7 +144,6 @@
 		C8635C02778049349BF61B26 /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		C9281237CC6E4AABA7AB5BA5 /* SharedCalendarServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */; };
 		CB59A68D6B2B40D1A0CA65ED /* SharedCalendarCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32D9C889818496F87916ECA /* SharedCalendarCreateView.swift */; };
-		CBB606CC3D7E4D01F928ED04 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 86D847442A6D0124F8F18EF2 /* GoogleService-Info.plist */; };
 		CD962B22ED55A5E31E4EB388 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60ADF0D2F7FB10F007B8D9F /* AuthService.swift */; };
 		CEEBF7E3E8D2D65697104350 /* FetchCalendarEventsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D609A16950029B6BD4B332 /* FetchCalendarEventsForPeriodUseCase.swift */; };
 		D02AACCESS000000000000B02 /* TodayEventsAccessoryCircularView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */; };
@@ -292,7 +291,6 @@
 		F0358D60D97649A39C84BD8B /* SharedCalendarMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741E6DA5DE0340F787B50D87 /* SharedCalendarMember.swift */; };
 		F0E98384934E29E7CDA72AE6 /* FetchEventCompletionsUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650682E2F7D092E00F9C124 /* FetchEventCompletionsUseCase.swift */; };
 		F341742481770B52F526A95A /* SharedEventContentDiffTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 375F7A3569F332CF1CEFA752 /* SharedEventContentDiffTests.swift */; };
-		F3B9A8C77C266AB782205854 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF42230CF3E2589DCDFDCA6E /* GoogleService-Info.plist */; };
 		F4656376E2828E2826D19E21 /* UserPatternRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F690C2F6ACEEB001952F6 /* UserPatternRepository.swift */; };
 		F603DC338A1489D8D11733E3 /* CalendarSourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9592F7525DB00084C61 /* CalendarSourceManager.swift */; };
 		F60ADEFE2F7FAA01007B8D9F /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFD2F7FAA01007B8D9F /* Auth */; };
@@ -632,7 +630,6 @@
 		81F2A847B998470E88E165D7 /* Production.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Production.xcconfig; sourceTree = "<group>"; };
 		84E7CABE9322C8F9D182208B /* AnalyticsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalyticsTests.swift; sourceTree = "<group>"; };
 		8596CDEC854DE02A468899B9 /* TodayAgendaPlannerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayAgendaPlannerTests.swift; sourceTree = "<group>"; };
-		86D847442A6D0124F8F18EF2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8AA44E2572D14F548B8AA5F4 /* SharedCalendarRealtimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarRealtimeService.swift; sourceTree = "<group>"; };
 		96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarService.swift; sourceTree = "<group>"; };
 		9885C44E183149258A057270 /* SharedCalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarViewModel.swift; sourceTree = "<group>"; };
@@ -645,7 +642,6 @@
 		AB424825EF9C4C8DA2B3D529 /* RegenerateSharedCalendarInviteCodeUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegenerateSharedCalendarInviteCodeUseCase.swift; sourceTree = "<group>"; };
 		B207C320B48349D3AF81CA62 /* UpdateSharedCalendarNicknameUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateSharedCalendarNicknameUseCase.swift; sourceTree = "<group>"; };
 		BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalMirrorSyncService.swift; sourceTree = "<group>"; };
-		BF42230CF3E2589DCDFDCA6E /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C693465AD6A74CE3B35E2111 /* SharedCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendar.swift; sourceTree = "<group>"; };
 		D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryCircularView.swift; sourceTree = "<group>"; };
 		D02AACCESS000000000000B03 /* TodayEventsAccessoryRectangularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryRectangularView.swift; sourceTree = "<group>"; };
@@ -1142,7 +1138,6 @@
 				DD808EBE2F694BC600F4956A /* Presentation */,
 				DD9F68DC2F6ACC8B001952F6 /* Intents */,
 				DD808EBD2F694BBB00F4956A /* Resources */,
-				BF42230CF3E2589DCDFDCA6E /* GoogleService-Info.plist */,
 			);
 			path = "Dozy AI";
 			sourceTree = "<group>";
@@ -1766,7 +1761,6 @@
 				F6EC8AEE2F98980B00CFFF87 /* Dozy AI (macOS)Release.entitlements */,
 				F6EC8AE72F9896E000CFFF87 /* Assets.xcassets */,
 				4A7C52AE1E278D52E6C7B6FB /* Info.plist */,
-				86D847442A6D0124F8F18EF2 /* GoogleService-Info.plist */,
 			);
 			path = "Dozy AI (macOS)";
 			sourceTree = "<group>";
@@ -1919,6 +1913,7 @@
 				DD808E812F694B2100F4956A /* Frameworks */,
 				DD808E822F694B2100F4956A /* Resources */,
 				F63A139D2FB54F14006C580D /* Embed Foundation Extensions */,
+				277E0A0E786CC3DD392296F9 /* Copy GoogleService-Info.plist (optional) */,
 			);
 			buildRules = (
 			);
@@ -2004,6 +1999,7 @@
 				F6EC8AB42F9896CE00CFFF87 /* Sources */,
 				F6EC8AB52F9896CE00CFFF87 /* Frameworks */,
 				F6EC8AB62F9896CE00CFFF87 /* Resources */,
+				CCC46F6348FF953D8B0CB2F7 /* Copy GoogleService-Info.plist (optional) */,
 			);
 			buildRules = (
 			);
@@ -2151,7 +2147,6 @@
 				F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */,
 				F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */,
 				4176F8FD8030E25911CA6A17 /* DozyIcons.xcassets in Resources */,
-				F3B9A8C77C266AB782205854 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2192,7 +2187,6 @@
 				F63A13822FB30FE7006C580D /* InfoPlist.xcstrings in Resources */,
 				F67333072FA836F2000A610A /* loading.json in Resources */,
 				89C14C98DF2C403E41923200 /* DozyIcons.xcassets in Resources */,
-				CBB606CC3D7E4D01F928ED04 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2211,6 +2205,51 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		277E0A0E786CC3DD392296F9 /* Copy GoogleService-Info.plist (optional) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Dozy AI/GoogleService-Info.plist",
+			);
+			name = "Copy GoogleService-Info.plist (optional)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Firebase 설정 파일(#90)은 공개 저장소라 .gitignore — 있으면 번들에 복사, 없으면 애널리틱스만 꺼진 채로 빌드한다.\nSRC=\"${SCRIPT_INPUT_FILE_0}\"\nDST=\"${SCRIPT_OUTPUT_FILE_0}\"\nif [ -f \"$SRC\" ]; then\n  cp \"$SRC\" \"$DST\"\nelse\n  echo \"warning: GoogleService-Info.plist 없음 — Firebase 콘솔(dozy-7fa39)에서 내려받아 Dozy AI/ 에 두면 애널리틱스가 켜집니다.\"\n  rm -f \"$DST\"\nfi\n";
+		};
+		CCC46F6348FF953D8B0CB2F7 /* Copy GoogleService-Info.plist (optional) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Dozy AI (macOS)/GoogleService-Info.plist",
+			);
+			name = "Copy GoogleService-Info.plist (optional)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Firebase 설정 파일(#90)은 공개 저장소라 .gitignore — 있으면 번들에 복사, 없으면 애널리틱스만 꺼진 채로 빌드한다.\nSRC=\"${SCRIPT_INPUT_FILE_0}\"\nDST=\"${SCRIPT_OUTPUT_FILE_0}\"\nif [ -f \"$SRC\" ]; then\n  cp \"$SRC\" \"$DST\"\nelse\n  echo \"warning: GoogleService-Info.plist 없음 — Firebase 콘솔(dozy-7fa39)에서 내려받아 Dozy AI (macOS)/ 에 두면 애널리틱스가 켜집니다.\"\n  rm -f \"$DST\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		DD808E802F694B2100F4956A /* Sources */ = {
