@@ -430,7 +430,7 @@ struct SettingsView: View {
                     .tint(DozyColor.Brand.primary)
             }
             .onChange(of: analyticsEnabled) { _, enabled in
-                container.analyticsService.setCollectionEnabled(enabled)
+                container.setUsageDataCollectionEnabled(enabled)
             }
 
             DozyListRow(title: "버전") {

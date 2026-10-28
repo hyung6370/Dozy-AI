@@ -18,5 +18,6 @@ extension Logger {
     static let ai       = Logger(subsystem: subsystem, category: "AI")
     static let reminder = Logger(subsystem: subsystem, category: "Reminder")
     static let liveActivity = Logger(subsystem: subsystem, category: "LiveActivity")
-    static let analytics = Logger(subsystem: subsystem, category: "Analytics")
+    /// 백그라운드 크래시 리포팅에서도 쓰므로 메인 액터에 묶지 않는다 (#117). Logger 는 스레드 안전.
+    nonisolated static let analytics = Logger(subsystem: subsystem, category: "Analytics")
 }

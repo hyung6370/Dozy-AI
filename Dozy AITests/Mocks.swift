@@ -231,3 +231,15 @@ final class MockSharedCalendarService: SharedCalendarServiceProtocol {
     func uploadCalendarImage(calendarID: String, jpegData: Data, previousPath: String?) -> AnyPublisher<String, DozyError> { result("path") }
     func removeCalendarImage(calendarID: String, path: String) -> AnyPublisher<Void, DozyError> { result(()) }
 }
+
+// MARK: - MockCrashReportingService (#117)
+
+nonisolated final class MockCrashReportingService: CrashReportingServiceProtocol {
+    private(set) var recorded: [(error: Error, context: String)] = []
+    private(set) var logs: [String] = []
+    private(set) var collectionEnabled: Bool?
+
+    func record(_ error: Error, context: String) { recorded.append((error, context)) }
+    func log(_ message: String) { logs.append(message) }
+    func setCollectionEnabled(_ enabled: Bool) { collectionEnabled = enabled }
+}

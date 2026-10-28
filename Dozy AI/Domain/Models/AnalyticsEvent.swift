@@ -110,7 +110,7 @@ enum SharedCalendarJoinVia: String, Equatable, CaseIterable {
 // MARK: - 수집 동의 설정
 
 /// 설정 "사용 통계 전송" 토글. 기본 켜짐 — 익명 사용 통계만 보내고 사용자가 끌 수 있다.
-enum AnalyticsSettings {
+nonisolated enum AnalyticsSettings {
     static let enabledKey = "analytics.isEnabled"
 
     static func isEnabled(defaults: UserDefaults = .standard) -> Bool {

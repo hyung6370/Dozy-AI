@@ -177,6 +177,7 @@ final class SharedCalendarRealtimeService: ObservableObject {
             if changed { await postEventListChanged() }
         } catch {
             Logger.realtime.error("⚠️ 초기 fetch 실패 (\(calendarID)): \(error.localizedDescription)")
+            CrashReporting.record(error, context: "realtime.initial_fetch")   // #117 비치명 오류
         }
     }
 

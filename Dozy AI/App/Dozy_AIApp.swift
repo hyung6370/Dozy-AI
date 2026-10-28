@@ -209,6 +209,9 @@ final class AppCoordinator: ObservableObject {
         container = c
         // Siri/단축어 인텐트가 살아있는 컨테이너를 재사용하도록 등록 (AppIntentStore 참고).
         AppIntentStore.register(c)
+        // 크래시 리포팅 (#117): 가장 먼저 만들어 CrashReporting.current 에 등록 — 이후 단계의 비치명 오류 · 크래시도 잡힌다.
+        _ = c.crashReportingService
+        CrashReportingTestHook.scheduleTestCrashIfRequested()
         // 애널리틱스 (#90): 실행 신호 + 외부 캘린더 소스 수 사용자 속성.
         c.analyticsService.track(.appOpened)
         c.calendarSourceManager.reportSourceCount()
