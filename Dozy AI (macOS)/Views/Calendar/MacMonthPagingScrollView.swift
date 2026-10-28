@@ -57,7 +57,14 @@ struct MacMonthPagingScrollView<Page: View>: View {
             currentOffset: lastReportedOffset,
             windowRadius: Self.windowRadius
         ))
-        .scrollPosition(id: $scrolledOffset, anchor: .center)
+        // anchor 는 반드시 .topLeading. .center 로 두면 SwiftUI 가 페이지를 컨테이너 중앙에
+        // 맞추는 offset 을 (page.minX + pageW/2 - containerW/2) 로 계산하는데, 레이아웃 pass
+        // 에 따라 containerW 를 사이드바를 뺀 detail 폭이 아니라 윈도우 폭으로 잡는 경우가
+        // 있어 논리 scroll offset 이 (윈도우폭 - detail폭)/2 만큼 어긋난다. 화면은 paging
+        // snap 으로 정상이지만 hit-test · GeometryReader 좌표는 어긋난 offset 을 쓰기 때문에
+        // 클릭한 셀의 옆 칸(또는 세로 중앙 정렬 오차로 윗줄) 날짜가 선택되는 버그가 됐다.
+        // .topLeading 이면 offset = page.minX 로 컨테이너 크기와 무관하게 정확하다.
+        .scrollPosition(id: $scrolledOffset, anchor: .topLeading)
         .onChange(of: scrolledOffset) { _, newValue in
             guard let newValue, newValue != lastReportedOffset else { return }
             lastReportedOffset = newValue
