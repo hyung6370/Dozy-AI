@@ -32,20 +32,32 @@ struct EventEditView: View {
     /// 음성으로 한 줄 입력. nil 이면 마이크 버튼을 그리지 않는다.
     private let speechService: SpeechServiceProtocol?
     @State private var showVoiceInput = false
+    /// 마지막 빠른 입력이 음성에서 왔는지 — 폼을 채울 때 입력 방식(voice / natural_language) 구분용.
+    @State private var quickInputFromVoice = false
+
+    /// 새 일정 생성 호출부용 — 입력 방식(수동 · 자연어 · 음성)을 함께 받는다 (#90).
+    init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [],
+         parseUseCase: ParseNaturalLanguageEventUseCase? = nil,
+         speechService: SpeechServiceProtocol? = nil,
+         onSaveWithMethod: @escaping (DozyEvent, EventInputMethod) -> Void, onCancel: (() -> Void)? = nil) {
+        _viewModel = StateObject(wrappedValue: EventEditViewModel(
+            eventToEdit: eventToEdit,
+            selectedDate: selectedDate,
+            sharedCalendars: sharedCalendars,
+            onSave: onSaveWithMethod
+        ))
+        self.parseUseCase = parseUseCase
+        self.speechService = speechService
+        self.onCancel = onCancel
+    }
 
     init(eventToEdit: DozyEvent?, selectedDate: Date, sharedCalendars: [SharedCalendar] = [],
          parseUseCase: ParseNaturalLanguageEventUseCase? = nil,
          speechService: SpeechServiceProtocol? = nil,
          onSave: @escaping (DozyEvent) -> Void, onCancel: (() -> Void)? = nil) {
-        _viewModel = StateObject(wrappedValue: EventEditViewModel(
-            eventToEdit: eventToEdit,
-            selectedDate: selectedDate,
-            sharedCalendars: sharedCalendars,
-            onSave: onSave
-        ))
-        self.parseUseCase = parseUseCase
-        self.speechService = speechService
-        self.onCancel = onCancel
+        self.init(eventToEdit: eventToEdit, selectedDate: selectedDate, sharedCalendars: sharedCalendars,
+                  parseUseCase: parseUseCase, speechService: speechService,
+                  onSaveWithMethod: { event, _ in onSave(event) }, onCancel: onCancel)
     }
 
     private func performDismiss() {
@@ -130,6 +142,7 @@ struct EventEditView: View {
                     .sheet(isPresented: $showVoiceInput) {
                         VoiceInputView(speechService: speechService, style: .event) { text in
                             quickText = text
+                            quickInputFromVoice = true
                             parseQuickText()   // 받아쓴 문장을 바로 파싱 → 폼 채움
                         }
                     }
@@ -179,7 +192,9 @@ struct EventEditView: View {
             defer { isParsing = false }
             do {
                 let draft = try await parseUseCase.execute(text: text)
-                withAnimation(.snappy(duration: 0.25)) { viewModel.apply(draft) }
+                let method: EventInputMethod = quickInputFromVoice ? .voice : .naturalLanguage
+                quickInputFromVoice = false
+                withAnimation(.snappy(duration: 0.25)) { viewModel.apply(draft, method: method) }
                 parsedSourceLabel = draft.sourceLabel
                 quickFieldFocused = false
             } catch {

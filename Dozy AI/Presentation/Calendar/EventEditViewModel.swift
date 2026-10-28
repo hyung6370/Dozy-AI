@@ -31,8 +31,11 @@ final class EventEditViewModel: ObservableObject {
     let sharedCalendars: [SharedCalendar]
 
     let isEditing: Bool
+    /// 새 일정을 어떻게 채웠는지 — 저장 시 onSave 로 함께 넘겨 `event_created(method:)` 에 쓴다 (#90).
+    /// 자연어 · 음성으로 폼을 채우면 apply(_:method:) 가 바꾸고, 그 외는 manual.
+    private(set) var inputMethod: EventInputMethod = .manual
     private let eventToEdit: DozyEvent?
-    private let onSave: (DozyEvent) -> Void
+    private let onSave: (DozyEvent, EventInputMethod) -> Void
     private var cancellables = Set<AnyCancellable>()
 
     init(
@@ -40,7 +43,7 @@ final class EventEditViewModel: ObservableObject {
         selectedDate: Date,
         sharedCalendars: [SharedCalendar] = [],
         useTimeHint: Bool = false,
-        onSave: @escaping (DozyEvent) -> Void
+        onSave: @escaping (DozyEvent, EventInputMethod) -> Void
     ) {
         self.eventToEdit = eventToEdit
         self.onSave = onSave
@@ -118,10 +121,23 @@ final class EventEditViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    /// 입력 방식이 필요 없는 호출부(일정 수정 전용)용.
+    convenience init(
+        eventToEdit: DozyEvent?,
+        selectedDate: Date,
+        sharedCalendars: [SharedCalendar] = [],
+        useTimeHint: Bool = false,
+        onSave: @escaping (DozyEvent) -> Void
+    ) {
+        self.init(eventToEdit: eventToEdit, selectedDate: selectedDate, sharedCalendars: sharedCalendars,
+                  useTimeHint: useTimeHint, onSave: { event, _ in onSave(event) })
+    }
+
     var isSavable: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
     
     /// 자연어 파싱 결과로 폼을 채운다. 반복/알림/카테고리는 건드리지 않는다 - 사용자가 이어서 고른다
-    func apply(_ draft: EventDraft) {
+    func apply(_ draft: EventDraft, method: EventInputMethod = .naturalLanguage) {
+        inputMethod = method
         title = draft.title
         isAllDay = draft.isAllDay
         startDate = draft.startDate
@@ -153,7 +169,7 @@ final class EventEditViewModel: ObservableObject {
             event.isPinned = isPinned
             event.category = category
             event.sharedCalendarID = sharedCalendarID
-            onSave(event)
+            onSave(event, inputMethod)
         } else {
             onSave(DozyEvent(
                 title: title,
@@ -172,7 +188,7 @@ final class EventEditViewModel: ObservableObject {
                 isPinned: isPinned,
                 category: category,
                 sharedCalendarID: sharedCalendarID
-            ))
+            ), inputMethod)
         }
     }
 }

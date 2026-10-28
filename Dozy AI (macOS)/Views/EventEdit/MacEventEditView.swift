@@ -31,16 +31,30 @@ struct MacEventEditView: View {
         sharedCalendars: [SharedCalendar] = [],
         useTimeHint: Bool = false,
         parseUseCase: ParseNaturalLanguageEventUseCase? = nil,
-        onSave: @escaping (DozyEvent) -> Void
+        onSaveWithMethod: @escaping (DozyEvent, EventInputMethod) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
             eventToEdit: eventToEdit,
             selectedDate: selectedDate,
             sharedCalendars: sharedCalendars,
             useTimeHint: useTimeHint,
-            onSave: onSave
+            onSave: onSaveWithMethod
         ))
         self.parseUseCase = parseUseCase
+    }
+
+    /// 입력 방식이 필요 없는 호출부(일정 수정)용.
+    init(
+        eventToEdit: DozyEvent?,
+        selectedDate: Date,
+        sharedCalendars: [SharedCalendar] = [],
+        useTimeHint: Bool = false,
+        parseUseCase: ParseNaturalLanguageEventUseCase? = nil,
+        onSave: @escaping (DozyEvent) -> Void
+    ) {
+        self.init(eventToEdit: eventToEdit, selectedDate: selectedDate, sharedCalendars: sharedCalendars,
+                  useTimeHint: useTimeHint, parseUseCase: parseUseCase,
+                  onSaveWithMethod: { event, _ in onSave(event) })
     }
 
     var body: some View {

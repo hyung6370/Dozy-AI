@@ -1144,8 +1144,8 @@ final class CalendarViewModel: ObservableObject {
         showEventEdit = true
     }
     
-    func saveEvent(_ event: DozyEvent) {
-        let useCase = eventToEdit != nil ? updateEventUseCase.execute(event) : createEventUseCase.execute(event)
+    func saveEvent(_ event: DozyEvent, method: EventInputMethod = .manual) {
+        let useCase = eventToEdit != nil ? updateEventUseCase.execute(event) : createEventUseCase.execute(event, method: method)
         useCase
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in

@@ -220,8 +220,8 @@ struct MacCalendarView: View {
                 sharedCalendars: viewModel.mySharedCalendars,
                 useTimeHint: newEventTimeHint != nil,
                 parseUseCase: container.parseNaturalLanguageEventUseCase,
-                onSave: { saved in
-                    viewModel.saveDozyEvent(saved)
+                onSaveWithMethod: { saved, method in
+                    viewModel.saveDozyEvent(saved, method: method)
                 }
             )
         }

@@ -31,13 +31,15 @@ final class DependencyContainer: ObservableObject {
     lazy var notificationService: NotificationServiceProtocol = NotificationService()
     lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
     lazy var aiService: AIServiceProtocol = AIService()
+    /// Firebase Analytics (#90). GoogleService-Info.plist 가 없으면 내부에서 아무것도 보내지 않는다.
+    lazy var analyticsService: AnalyticsServiceProtocol = FirebaseAnalyticsService()
     lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
     lazy var authService = AuthService()
     lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(
         modelContext: modelContainer.mainContext,
         notificationRepository: notificationRepository
     )
-    lazy var calendarSourceManager = CalendarSourceManager()
+    lazy var calendarSourceManager = CalendarSourceManager(analytics: analyticsService)
     lazy var calendarVisibilityFilter = CalendarVisibilityFilter()
     lazy var patternAnalysisService = PatternAnalysisService()
     lazy var speechService: SpeechServiceProtocol = SpeechService()
@@ -102,14 +104,14 @@ final class DependencyContainer: ObservableObject {
     // MARK: - UseCases (Domain Layer)
 
     lazy var saveWorkLogUseCase = SaveWorkLogUseCase(repository: workLogRepository)
-    lazy var generateDailySummaryUseCase = GenerateDailySummaryUseCase(aiService: aiService, repository: workLogRepository)
+    lazy var generateDailySummaryUseCase = GenerateDailySummaryUseCase(aiService: aiService, repository: workLogRepository, analytics: analyticsService)
     lazy var fetchRecentLogsUseCase = FetchRecentLogsUseCase(repository: workLogRepository)
     lazy var fetchDozyEventsUseCase = FetchDozyEventsUseCase(repository: dozyEventRepository)
-    lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
+    lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository, analytics: analyticsService)
     lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)
     lazy var deleteDozyEventUseCase = DeleteDozyEventUseCase(repository: dozyEventRepository)
     lazy var toggleDozyEventCompletionUseCase = ToggleDozyEventCompletionUseCase(repository: dozyEventRepository)
-    lazy var mirrorExternalEventUseCase = MirrorExternalEventUseCase(repository: dozyEventRepository)
+    lazy var mirrorExternalEventUseCase = MirrorExternalEventUseCase(repository: dozyEventRepository, analytics: analyticsService)
     lazy var toggleCalendarEventCompletionUseCase = ToggleCalendarEventCompletionUseCase(repository: eventCompletionRepository)
     lazy var fetchEventCompletionsUseCase = FetchEventCompletionsUseCase(repository: eventCompletionRepository)
     /// 홈·캘린더가 공유하는 완료 토글 (source/반복 여부로 저장소 선택).
@@ -119,8 +121,8 @@ final class DependencyContainer: ObservableObject {
     )
     lazy var fetchDozyEventsForPeriodUseCase = FetchDozyEventsForPeriodUseCase(repository: dozyEventRepository)
     lazy var fetchEventCompletionsForPeriodUseCase = FetchEventCompletionsForPeriodUseCase(repository: eventCompletionRepository)
-    lazy var createSharedCalendarUseCase = CreateSharedCalendarUseCase(service: sharedCalendarService)
-    lazy var joinSharedCalendarUseCase = JoinSharedCalendarUseCase(service: sharedCalendarService)
+    lazy var createSharedCalendarUseCase = CreateSharedCalendarUseCase(service: sharedCalendarService, analytics: analyticsService)
+    lazy var joinSharedCalendarUseCase = JoinSharedCalendarUseCase(service: sharedCalendarService, analytics: analyticsService)
     lazy var leaveSharedCalendarUseCase = LeaveSharedCalendarUseCase(service: sharedCalendarService)
     lazy var regenerateSharedCalendarInviteCodeUseCase = RegenerateSharedCalendarInviteCodeUseCase(service: sharedCalendarService)
     lazy var updateSharedCalendarNicknameUseCase = UpdateSharedCalendarNicknameUseCase(service: sharedCalendarService)
@@ -312,7 +314,8 @@ extension DependencyContainer {
             completedTasks: today.completedTasks,
             pendingTasks: today.pendingTasks,
             memos: log.memos,
-            completedEventCount: completedEventCount
+            completedEventCount: completedEventCount,
+            tracksEvent: false
         ).firstValue()
         return BackgroundSummaryResult(summary: summary, completedEventCount: completedEventCount)
     }
@@ -330,7 +333,8 @@ extension DependencyContainer {
             completedTasks: [],
             pendingTasks: [],
             memos: log.memos,
-            completedEventCount: completedEventCount
+            completedEventCount: completedEventCount,
+            tracksEvent: false
         ).firstValue()
         return BackgroundSummaryResult(summary: summary, completedEventCount: completedEventCount)
     }

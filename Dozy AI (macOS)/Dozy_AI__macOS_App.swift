@@ -340,6 +340,9 @@ final class MacAppCoordinator: ObservableObject {
         container = c
         isReady = true
         wireSummaryReminder(c)
+        // 애널리틱스 (#90): 실행 신호 + 외부 캘린더 소스 수 사용자 속성.
+        c.analyticsService.track(.appOpened)
+        c.calendarSourceManager.reportSourceCount()
     }
 
     /// 저녁 요약 알림 (#101): 미리 생성 공급자 연결 → 켜져 있으면 7일치 예약 + 알림 10분 전 타이머.

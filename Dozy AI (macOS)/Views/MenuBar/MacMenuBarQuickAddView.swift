@@ -162,7 +162,7 @@ struct MacMenuBarQuickAddView: View {
         )
         isSaving = true
         errorMessage = nil
-        container.createDozyEventUseCase.execute(event)
+        container.createDozyEventUseCase.execute(event, method: .menubar)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { completion in

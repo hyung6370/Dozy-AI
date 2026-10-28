@@ -152,10 +152,11 @@ struct CalendarView: View {
                 EventEditView(
                     eventToEdit: viewModel.eventToEdit,
                     selectedDate: viewModel.selectedDate,
-                    sharedCalendars: viewModel.sharedCalendarsForEditing()
-                ) { event in
-                    viewModel.saveEvent(event)
-                }
+                    sharedCalendars: viewModel.sharedCalendarsForEditing(),
+                    onSaveWithMethod: { event, method in
+                        viewModel.saveEvent(event, method: method)
+                    }
+                )
             }
             .sheet(isPresented: $viewModel.showEventDetail) {
                 eventDetailSheet

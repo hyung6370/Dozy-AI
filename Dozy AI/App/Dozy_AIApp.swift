@@ -209,6 +209,9 @@ final class AppCoordinator: ObservableObject {
         container = c
         // Siri/단축어 인텐트가 살아있는 컨테이너를 재사용하도록 등록 (AppIntentStore 참고).
         AppIntentStore.register(c)
+        // 애널리틱스 (#90): 실행 신호 + 외부 캘린더 소스 수 사용자 속성.
+        c.analyticsService.track(.appOpened)
+        c.calendarSourceManager.reportSourceCount()
         // 백그라운드 요약 갱신이 컨테이너의 유스케이스를 쓰도록 연결 + 켜져 있으면 다음 갱신 제출.
         SummaryReminderService.backgroundSummaryProvider = { [weak c] in
             guard let c else { throw CancellationError() }

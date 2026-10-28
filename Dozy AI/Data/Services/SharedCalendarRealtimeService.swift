@@ -546,7 +546,7 @@ private extension Logger {
 /// 프레임워크 의존 없는 순수 비교라 단위 테스트 대상 (#112).
 enum SharedEventContentDiff {
     /// upsert 가 덮어쓰는 필드 전부를 비교한다. 하나라도 다르면 false. ownerID · sharedCalendarID 는 덮어쓰지 않으므로 비교하지 않는다.
-    static func isSame(_ event: DozyEvent, _ row: SharedEventRow) -> Bool {
+    nonisolated static func isSame(_ event: DozyEvent, _ row: SharedEventRow) -> Bool {
         event.title == row.title
             && event.startDate == row.startDate
             && event.endDate == row.endDate
