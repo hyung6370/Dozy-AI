@@ -40,7 +40,9 @@ struct MacTodayView: View {
                 focusCard
                 statsRow
 
-                if viewModel.isLoading {
+                // 스피너는 첫 로드에만. 이미 내용이 있으면 재로드(공유 캘린더 동기화 등) 중에도 그대로 둔다 —
+                // 내용을 ProgressView 로 바꿔치기하면 알림이 연달아 올 때 카드가 깜빡인다 (#110).
+                if viewModel.isLoading && !viewModel.hasLoadedOnce {
                     ProgressView()
                         .padding(.top, 40)
                 } else {
