@@ -406,6 +406,10 @@ final class MacAuthViewModel: ObservableObject {
     /// 공유 캘린더 목록을 가져와 각각에 대해 Realtime 채널 구독 시작.
     /// 파트너가 INSERT 하는 일정에 대해 알림 카드를 생성하려면 이 구독이 필요함.
     private func startSharedCalendarRealtime() {
+        #if DEBUG
+        // 데모 데이터 모드(-seedDemoData)는 로컬 샘플만 보여 준다 — 서버와 섞이면 중복되고 샘플이 업로드된다.
+        if DemoDataSeeder.isRequested { Logger.sync.info("데모 데이터 모드 — 동기화 · Realtime 생략"); return }
+        #endif
         sharedCalendarService.fetchMyCalendars()
             .receive(on: DispatchQueue.main)
             .sink(
@@ -428,6 +432,10 @@ final class MacAuthViewModel: ObservableObject {
     }
 
     private func syncAfterLogin(userID: String) {
+        #if DEBUG
+        // 데모 데이터 모드(-seedDemoData)는 로컬 샘플만 보여 준다 — 서버와 섞이면 중복되고 샘플이 업로드된다.
+        if DemoDataSeeder.isRequested { Logger.sync.info("데모 데이터 모드 — 동기화 · Realtime 생략"); return }
+        #endif
         syncService.syncAll(userID: userID)
             .receive(on: DispatchQueue.main)
             .sink(
