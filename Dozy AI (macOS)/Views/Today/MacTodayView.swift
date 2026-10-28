@@ -18,6 +18,8 @@ struct MacTodayView: View {
     @State private var showNewEventSheet = false
     @State private var showSummarySheet = false
     @State private var showNotificationSheet = false
+    /// 저녁 체크 시트가 떠 있는 동안 요약 요청이 오면 체크 시트를 닫은 뒤 요약을 연다 (시트 충돌 방지).
+    @State private var pendingSummaryAfterCheck = false
 
     @State private var memoText: String = ""
     @State private var editingMemoIndex: Int? = nil
@@ -107,12 +109,35 @@ struct MacTodayView: View {
         }
         .onAppear {
             viewModel.loadTodayData()
+            consumePendingOpenSummary()
         }
         .refreshable {
             viewModel.loadTodayData()
         }
         .onReceive(NotificationCenter.default.publisher(for: .dozyRequestSummary)) { _ in
-            showSummarySheet = true
+            requestSummarySheet()
+        }
+        // 저녁 요약 알림 탭 (MacAppDelegate). 뷰가 이미 떠 있으면 여기서, 아니면 onAppear 가 플래그를 소비한다.
+        .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
+            consumePendingOpenSummary()
+        }
+        .onChange(of: showSummarySheet) { _, isPresented in
+            // 요약을 봤으면 오늘 저녁 알림은 생략한다 (오늘 요청만 제거, 내일 이후는 유지).
+            // 요약을 보는 중에는 저녁 체크 프롬프트도 오늘은 띄우지 않는다.
+            if isPresented {
+                container.summaryReminderService.markSummaryViewed()
+                viewModel.skipEveningCheckForToday()
+            }
+        }
+        // 저녁 일정 체크 (#101). 18시 이후 완료 로드가 끝나면 MacHomeViewModel 이 하루 1회 켠다.
+        .sheet(isPresented: $viewModel.showEveningCheck, onDismiss: {
+            if pendingSummaryAfterCheck {
+                pendingSummaryAfterCheck = false
+                showSummarySheet = true
+            }
+        }) {
+            MacEveningCheckSheet(viewModel: viewModel) { viewModel.showEveningCheck = false }
+                .frame(minWidth: 520, idealWidth: 560, minHeight: 360, idealHeight: 420)
         }
         // Detail sheet — 모든 편집이 인라인으로 이루어짐
         .sheet(item: $selectedEvent) { event in
@@ -594,6 +619,24 @@ struct MacTodayView: View {
                 .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
+    }
+
+    /// 요약 시트 열기. 저녁 체크 시트가 떠 있으면 먼저 닫고 onDismiss 에서 연다.
+    private func requestSummarySheet() {
+        if viewModel.showEveningCheck {
+            pendingSummaryAfterCheck = true
+            viewModel.showEveningCheck = false
+        } else {
+            showSummarySheet = true
+        }
+    }
+
+    /// 요약 알림 탭(MacAppDelegate)이 켠 플래그를 소비해 요약 시트를 연다.
+    private func consumePendingOpenSummary() {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: MacAppDelegate.pendingOpenSummaryKey) else { return }
+        defaults.set(false, forKey: MacAppDelegate.pendingOpenSummaryKey)
+        requestSummarySheet()
     }
 
     private func submitMemo() {

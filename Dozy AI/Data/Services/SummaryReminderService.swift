@@ -15,12 +15,16 @@
     WorkLog에 저장해 두고(탭하면 즉시 열림), 오늘 알림 본문을 수치로 바꾸고, 다음 날 분을 재예약한다. 등록 자체는 AppDelegate가 한다.
  */
 
-// macOS 타깃에도 포함되지만 BackgroundTasks 가 macOS 에 없으므로 iOS 에서만 컴파일한다.
-#if os(iOS)
+// 알림 스케줄 · 본문 교체 · 확인 기록은 iOS/macOS 공통. 미리 생성만 플랫폼이 갈린다 (#101):
+//  - iOS: BGAppRefreshTask (앱이 꺼져 있어도 시스템이 깨워 준다)
+//  - macOS: BackgroundTasks 가 없으므로 앱이 떠 있는 동안 알림 10분 전에 도는 Task 타이머.
+//    메뉴바 상주 사용자가 많아 실효성 있고, 앱이 꺼져 있으면 고정 문구 알림 → 탭 시 생성.
 import Foundation
 import UserNotifications
-import BackgroundTasks
 import OSLog
+#if os(iOS)
+import BackgroundTasks
+#endif
 
 /// 백그라운드에서 만든 요약과, 알림 본문에 쓰는 오늘 완료 일정 수.
 struct BackgroundSummaryResult {
@@ -32,15 +36,25 @@ struct BackgroundSummaryResult {
 final class SummaryReminderService {
 
     static let notificationCategory = "DOZY_SUMMARY_REMINDER"
-    static let backgroundTaskIdentifier = "com.dozy-ai.Dozy-AI.summaryRefresh"
 
-    /// 백그라운드 갱신 때 요약을 만들어 줄 공급자. AppCoordinator.setup()이 컨테이너로 연결한다.
+    /// 미리 생성 때 요약을 만들어 줄 공급자. AppCoordinator.setup()이 컨테이너로 연결한다.
     /// nil(DEBUG 환경 선택 전 등)이면 생성은 건너뛰고 재예약만 한다.
     nonisolated(unsafe) static var backgroundSummaryProvider: (() async throws -> BackgroundSummaryResult)?
+
+    #if os(iOS)
+    static let backgroundTaskIdentifier = "com.dozy-ai.Dozy-AI.summaryRefresh"
 
     /// 백그라운드 갱신 때 잠금화면 "오늘 아젠다" Live Activity 를 지금 시각 기준으로 다시 맞춘다 (#71).
     /// 시작은 못 하지만(포그라운드 전용) 이미 떠 있는 것의 current/next 전환·종료는 여기서 따라잡는다.
     nonisolated(unsafe) static var backgroundLiveActivityRefresh: (@MainActor () async -> Void)?
+    #endif
+
+    #if os(macOS)
+    /// 알림 시각 이만큼 전에 요약을 미리 만든다.
+    static let preGenerationLead: TimeInterval = 10 * 60
+    /// 앱이 떠 있는 동안 도는 미리 생성 타이머. apply/refresh 때마다 새로 시작한다.
+    private var preGenerationTask: Task<Void, Never>?
+    #endif
 
     private let center = UNUserNotificationCenter.current()
 
@@ -51,26 +65,68 @@ final class SummaryReminderService {
     func apply(_ settings: SummaryReminderSettings) async -> Bool {
         guard settings.isEnabled else {
             await Self.cancelAll()
+            cancelPreGeneration()
             Logger.reminder.info("[요약 알림] 해제")
             return true
         }
         guard await requestAuthorizationIfNeeded() else {
             await Self.cancelAll()
+            cancelPreGeneration()
             Logger.reminder.error("[요약 알림] 알림 권한 없음 → 예약 취소")
             return false
         }
         await Self.rescheduleAll(settings)
-        Self.scheduleBackgroundRefresh(settings)
+        schedulePreGeneration(settings)
         Logger.reminder.info("[요약 알림] 매일 \(settings.hour):\(String(format: "%02d", settings.minute)) 예약")
         return true
     }
 
-    /// 앱 시작, 포그라운드 복귀 때 - 켜져 있으면 7일치를 다시 채우고 백그라운드 갱신을 재제출한다.
+    /// 앱 시작, 포그라운드 복귀(활성화) 때 - 켜져 있으면 7일치를 다시 채우고 미리 생성을 다시 건다.
     func refreshSchedulesIfEnabled() {
         let settings = SummaryReminderSettings.load()
         guard settings.isEnabled else { return }
         Task { await Self.topUpUpcoming(settings) }
+        schedulePreGeneration(settings)
+    }
+
+    // MARK: - 미리 생성 (플랫폼 분기)
+
+    /// iOS 는 BGAppRefreshTask 제출, macOS 는 앱 생존 중 타이머.
+    private func schedulePreGeneration(_ settings: SummaryReminderSettings) {
+        #if os(iOS)
         Self.scheduleBackgroundRefresh(settings)
+        #else
+        startPreGenerationLoop(settings)
+        #endif
+    }
+
+    private func cancelPreGeneration() {
+        #if os(iOS)
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.backgroundTaskIdentifier)
+        #else
+        preGenerationTask?.cancel()
+        preGenerationTask = nil
+        #endif
+    }
+
+    /// 미리 생성 본체 (양쪽 공통). 7일치를 채운 뒤 요약을 만들어 오늘 알림 본문을 수치로 바꾼다.
+    /// 오늘 알림 시각이 이미 지났으면(기기 잠자기 뒤 늦게 깬 경우 등) 내일 알림에 오늘 수치가 들어가므로 건너뛴다.
+    static func runPreGeneration(_ settings: SummaryReminderSettings, now: Date = Date()) async {
+        guard settings.isEnabled else { return }
+        await topUpUpcoming(settings, now: now)
+        guard let fire = settings.nextFireDate(after: now),
+              SummaryReminderSchedule.dayKey(for: fire) == SummaryReminderSchedule.dayKey(for: now) else {
+            Logger.reminder.info("[요약 알림] 오늘 알림 시각이 지나 미리 생성 생략")
+            return
+        }
+        guard let provider = backgroundSummaryProvider else { return }
+        do {
+            let result = try await provider()
+            Logger.reminder.info("[요약 알림] 미리 생성 완료 — score \(result.summary.productivityScore)")
+            await applyBackgroundResult(result, settings: settings, now: now)
+        } catch {
+            Logger.reminder.error("[요약 알림] 미리 생성 실패: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     /// 요약 화면을 열었을 때 호출. 오늘 요약을 이미 봤으니 오늘 알림은 지운다 (내일 이후는 그대로).
@@ -103,13 +159,12 @@ final class SummaryReminderService {
         return Set(requests.map(\.identifier).filter(SummaryReminderSchedule.isReminderIdentifier))
     }
 
-    /// 요약 알림 요청과 백그라운드 갱신을 모두 취소한다.
+    /// 대기 중인 요약 알림 요청을 모두 취소한다. (미리 생성 취소는 인스턴스의 cancelPreGeneration)
     static func cancelAll() async {
         let ids = await pendingReminderIdentifiers()
         if !ids.isEmpty {
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: Array(ids))
         }
-        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundTaskIdentifier)
     }
 
     /// 시각이 바뀌었을 때 - 기존 요청을 전부 지우고 새 시각으로 7일치를 다시 만든다.
@@ -192,8 +247,39 @@ final class SummaryReminderService {
         return content
     }
 
-    // MARK: - 백그라운드 갱신
+    // MARK: - macOS 포그라운드 미리 생성
 
+    #if os(macOS)
+    /// 알림 10분 전까지 자다가 깨어 요약을 만들고, 알림 시각이 지나면 다음 날 분으로 다시 잔다.
+    /// 앱이 종료되면 Task 도 사라진다 — 그날은 고정 문구 알림이 가고 탭 시 생성된다.
+    private func startPreGenerationLoop(_ settings: SummaryReminderSettings) {
+        preGenerationTask?.cancel()
+        preGenerationTask = Task { @MainActor in
+            while !Task.isCancelled {
+                let now = Date()
+                guard let runAt = SummaryReminderSchedule.preGenerationDate(
+                    settings: settings, from: now, lead: Self.preGenerationLead
+                ) else { return }
+                let delay = runAt.timeIntervalSince(now)
+                if delay > 0 {
+                    Logger.reminder.info("[요약 알림] 미리 생성 대기 — \(Int(delay / 60))분 후")
+                    guard (try? await Task.sleep(for: .seconds(delay))) != nil else { return }
+                }
+                guard !Task.isCancelled else { return }
+                await Self.runPreGeneration(settings)
+                // 오늘 알림 시각을 넘긴 뒤에 다음 루프를 돌아야 내일 분으로 계산된다.
+                if let fire = settings.nextFireDate(after: Date()) {
+                    let untilFire = fire.timeIntervalSinceNow + 60
+                    if untilFire > 0, (try? await Task.sleep(for: .seconds(untilFire))) == nil { return }
+                }
+            }
+        }
+    }
+    #endif
+
+    // MARK: - iOS 백그라운드 갱신
+
+    #if os(iOS)
     /// 알림 1시간 전을 earliestBeginDate로 제출. 실제 실행 시점은 iOS 재량
     nonisolated static func scheduleBackgroundRefresh(_ settings: SummaryReminderSettings) {
         guard let fireDate = settings.nextFireDate() else { return }
@@ -241,5 +327,5 @@ final class SummaryReminderService {
             task.setTaskCompleted(success: false)
         }
     }
+    #endif
 }
-#endif

@@ -79,8 +79,6 @@ final class DependencyContainer: ObservableObject {
         googleService: googleCalendarService,
         sourceManager: calendarSourceManager
     )
-    /// 저녁 요약 알림 + 백그라운드 미리 생성 스케줄러.
-    @MainActor lazy var summaryReminderService = SummaryReminderService()
     /// 잠금화면 · 다이나믹 아일랜드 "오늘 아젠다" Live Activity (#71).
     @MainActor lazy var liveActivityService: LiveActivityServiceProtocol = TodayAgendaActivityService()
     /// 위젯 캐시(TodayEventCache) → 플래너 → Live Activity. 캐시 저장 훅·포그라운드 복귀·백그라운드 갱신·설정 토글이 부른다.
@@ -89,6 +87,9 @@ final class DependencyContainer: ObservableObject {
         loadItems: { [modelContainer] in TodayEventCacheWriter.loadTodayAgendaItems(container: modelContainer) }
     )
     #endif
+
+    /// 저녁 요약 알림 + 미리 생성 스케줄러 (iOS: BGTask, macOS: 포그라운드 타이머). 양쪽 공통 (#101).
+    @MainActor lazy var summaryReminderService = SummaryReminderService()
 
     // MARK: - Repository (Data Layer)
 
@@ -293,10 +294,10 @@ final class DependencyContainer: ObservableObject {
     }
 }
 
-// MARK: - 백그라운드 요약 생성 (iOS)
+// MARK: - UI 없이 오늘 요약 미리 생성 (저녁 요약 알림)
 
-#if os(iOS)
 extension DependencyContainer {
+    #if os(iOS)
     /// BGAppRefreshTask 안에서 UI 없이 오늘 요약을 만들어 WorkLog 에 저장하고, 알림 본문용 완료 일정 수와 함께 돌려준다.
     /// 완료 수 조회가 실패해도 요약 생성은 계속한다 (그 경우 0 으로 보수적으로 넘긴다).
     @MainActor
@@ -315,6 +316,25 @@ extension DependencyContainer {
         ).firstValue()
         return BackgroundSummaryResult(summary: summary, completedEventCount: completedEventCount)
     }
+    #else
+    /// macOS 미리 생성 (#101). iOS 와 달리 EventKit 리마인더(FetchTodayDataUseCase)가 없어
+    /// MacHomeViewModel.generateAISummary 와 같은 입력(캘린더 일정 + 메모, 할 일 없음)으로 만든다.
+    @MainActor
+    func generateTodaySummaryInBackground() async throws -> BackgroundSummaryResult {
+        let now = Date()
+        let events = try await fetchCalendarEventUseCase.execute(for: now).firstValue()
+        let completedEventCount = (try? await completedEventCount(for: events, on: now)) ?? 0
+        let log = try await saveWorkLogUseCase.execute(events: events, tasks: []).firstValue()
+        let summary = try await generateDailySummaryUseCase.execute(
+            events: events,
+            completedTasks: [],
+            pendingTasks: [],
+            memos: log.memos,
+            completedEventCount: completedEventCount
+        ).firstValue()
+        return BackgroundSummaryResult(summary: summary, completedEventCount: completedEventCount)
+    }
+    #endif
 
     /// HomeViewModel.loadCompletions 와 같은 규칙으로 오늘 완료된 일정 수를 센다.
     /// 완료 맵의 복합키(eventID_timestamp)를 eventID 로 환원하고, Dozy 비반복 일정은 isCompleted 를 우선한다.
@@ -340,4 +360,3 @@ extension DependencyContainer {
         return events.filter { merged[$0.id] == true }.count
     }
 }
-#endif

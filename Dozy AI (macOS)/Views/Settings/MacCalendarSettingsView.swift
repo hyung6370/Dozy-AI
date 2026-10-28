@@ -44,6 +44,7 @@ struct MacCalendarSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
         }
         .toggleStyle(.switch)
         .disabled(viewModel.isRequestingAccess)

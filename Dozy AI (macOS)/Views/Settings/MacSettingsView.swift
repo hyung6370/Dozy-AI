@@ -21,6 +21,10 @@ struct MacSettingsView: View {
     @State private var showShortcutsHelp = false
     @State private var showPasswordChange = false
     @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
+    // 저녁 요약 알림 · 저녁 일정 체크 (#101). iOS SettingsView 와 같은 저장소(UserDefaults)를 공유하는 값 타입.
+    @State private var reminderSettings = SummaryReminderSettings.load()
+    @State private var showReminderDeniedAlert = false
+    @AppStorage(EveningCheckPrompt.enabledKey) private var eveningCheckEnabled = true
     @AppStorage("macBackgroundTheme")
     private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
 
@@ -40,6 +44,7 @@ struct MacSettingsView: View {
                 categorySection
                 appearanceSection
                 menuBarSection
+                summaryReminderSection
                 calendarIntegrationSection
                 sharedCalendarSection
                 helpSection
@@ -218,11 +223,90 @@ struct MacSettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
             }
             .toggleStyle(.switch)
         }
     }
     
+    // MARK: - AI 요약 알림 (#101)
+
+    private var summaryReminderSection: some View {
+        SettingsSection(title: "AI 요약 알림") {
+            Toggle(isOn: $reminderSettings.isEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("저녁 요약 알림", symbol: "bell.badge.fill")
+                    Text("정한 시각에 오늘 하루 요약을 알려드려요. 알림을 누르면 요약 화면이 바로 열립니다.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
+            }
+            .toggleStyle(.switch)
+
+            if reminderSettings.isEnabled {
+                HStack {
+                    Label("알림 시각", symbol: "clock.fill")
+                    Spacer()
+                    DatePicker("알림 시각", selection: reminderTimeBinding, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .environment(\.locale, .koreanForce24h)
+                }
+                Text("앱이 켜져 있으면 알림 10분 전에 오늘 요약을 미리 만들어 둬요.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Divider()
+
+            Toggle(isOn: $eveningCheckEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("저녁 일정 체크", symbol: "checklist")
+                    Text("18시 이후 앱을 열면 끝났는데 체크하지 않은 일정을 하루 한 번 물어봐요.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
+            }
+            .toggleStyle(.switch)
+        }
+        .animation(.snappy(duration: 0.25), value: reminderSettings.isEnabled)
+        .onChange(of: reminderSettings) { _, newValue in applyReminderSettings(newValue) }
+        .alert("알림 권한이 꺼져 있어요", isPresented: $showReminderDeniedAlert) {
+            Button("시스템 설정 열기") {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("시스템 설정 > 알림에서 Dozy의 알림을 허용한 뒤 다시 켜 주세요.")
+        }
+    }
+
+    /// hour/minute ↔ DatePicker 의 Date.
+    private var reminderTimeBinding: Binding<Date> {
+        Binding(
+            get: { reminderSettings.timeAsDate },
+            set: { date in
+                let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+                reminderSettings.hour = parts.hour ?? 21
+                reminderSettings.minute = parts.minute ?? 0
+            }
+        )
+    }
+
+    private func applyReminderSettings(_ settings: SummaryReminderSettings) {
+        settings.save()
+        Task { @MainActor in
+            let granted = await container.summaryReminderService.apply(settings)
+            if settings.isEnabled, !granted {
+                reminderSettings.isEnabled = false   // onChange 재진입 → 해제 경로로 정리됨
+                showReminderDeniedAlert = true
+            }
+        }
+    }
+
     // MARK: - Calendar Integration
     
     private var calendarIntegrationSection: some View {
