@@ -4,7 +4,8 @@
 //
 //  M4.7 — 일정 생성/수정 시트. iOS EventEditView 와 동일한 EventEditViewModel 을
 //  재사용하되 macOS Form 레이아웃과 toolbar 배치로 재구성.
-//  카테고리/공유 캘린더 피커는 후속 페이즈로 유보.
+//  새 일정일 때 맨 위에 자연어 한 줄 입력 섹션 — 파싱 결과로 폼을 채운다 (#100). 음성 입력은 iOS 전용.
+//  parseUseCase 가 nil 이면 그 섹션을 그리지 않는다 (수정 모드 · 외부 호출부 호환).
 //
 
 import SwiftUI
@@ -16,11 +17,20 @@ struct MacEventEditView: View {
     @Query(sort: \UserCategory.order) private var categories: [UserCategory]
     @State private var showCategoryManagement = false
 
+    /// 자연어 한 줄 → 폼 채우기. nil 이면 빠른 입력 섹션을 그리지 않는다.
+    private let parseUseCase: ParseNaturalLanguageEventUseCase?
+    @State private var quickText = ""
+    @State private var isParsing = false
+    @State private var parseError: String?
+    @State private var parsedSourceLabel: String?
+    @FocusState private var quickFieldFocused: Bool
+
     init(
         eventToEdit: DozyEvent?,
         selectedDate: Date,
         sharedCalendars: [SharedCalendar] = [],
         useTimeHint: Bool = false,
+        parseUseCase: ParseNaturalLanguageEventUseCase? = nil,
         onSave: @escaping (DozyEvent) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: EventEditViewModel(
@@ -30,11 +40,16 @@ struct MacEventEditView: View {
             useTimeHint: useTimeHint,
             onSave: onSave
         ))
+        self.parseUseCase = parseUseCase
     }
 
     var body: some View {
         NavigationStack {
             Form {
+                if parseUseCase != nil, !viewModel.isEditing {
+                    quickInputSection
+                }
+
                 Section("기본 정보") {
                     TextField("제목", text: $viewModel.title)
                         .textFieldStyle(.roundedBorder)
@@ -154,6 +169,7 @@ struct MacEventEditView: View {
             .sheet(isPresented: $showCategoryManagement) {
                 MacCategoryManagementView()
             }
+
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }
@@ -169,5 +185,61 @@ struct MacEventEditView: View {
             }
         }
         .frame(minWidth: 520, idealWidth: 560, minHeight: 620)
+    }
+
+    // MARK: - 빠른 입력 (자연어)
+
+    private var quickInputSection: some View {
+        Section {
+            HStack(spacing: 8) {
+                Image(symbol: "sparkles")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                TextField("한 줄로 입력 (예: 내일 오후 3시 치과 30분)", text: $quickText)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($quickFieldFocused)
+                    .onSubmit { parseQuickText() }
+                    .disabled(isParsing)
+
+                if isParsing {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button("채우기") { parseQuickText() }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .tint(DozyColor.Brand.primary)
+                        .disabled(quickText.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        } header: {
+            Text("빠른 입력")
+        } footer: {
+            if let parseError {
+                Text(parseError).foregroundStyle(DozyColor.State.danger)
+            } else if let parsedSourceLabel {
+                Text("\(parsedSourceLabel) 결과로 채웠어요. 내용을 확인하고 저장하세요.")
+            } else {
+                Text("날짜·시간·장소가 들어간 문장을 적으면 아래 항목을 채워 드려요.")
+            }
+        }
+    }
+
+    private func parseQuickText() {
+        guard let parseUseCase, !isParsing else { return }
+        let text = quickText
+        isParsing = true
+        parseError = nil
+        parsedSourceLabel = nil
+        Task {
+            defer { isParsing = false }
+            do {
+                let draft = try await parseUseCase.execute(text: text)
+                withAnimation(.snappy(duration: 0.25)) { viewModel.apply(draft) }
+                parsedSourceLabel = draft.sourceLabel
+                quickFieldFocused = false
+            } catch {
+                parseError = (error as? DozyError)?.errorDescription ?? error.localizedDescription
+            }
+        }
     }
 }

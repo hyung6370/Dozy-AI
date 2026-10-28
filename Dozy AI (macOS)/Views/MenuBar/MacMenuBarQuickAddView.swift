@@ -5,6 +5,7 @@
 //  M4.10 — 메뉴바 팝오버 안에서 빠르게 새 일정을 추가하는 인라인 폼.
 //  제목 / 종일 / 시작·종료만 포함한 경량 UI. 그 외 필드(색상/반복/알림 등)는
 //  앱 본체의 MacEventEditView 에서 편집.
+//  맨 위 한 줄 입력에 "내일 오후 3시 치과 30분" 처럼 적고 채우기(↩)를 누르면 제목·시간이 채워진다 (#100).
 //
 
 import SwiftUI
@@ -21,6 +22,9 @@ struct MacMenuBarQuickAddView: View {
     @State private var endDate: Date
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var quickText = ""
+    @State private var isParsing = false
+    @State private var parseHint: String?
     @State private var cancellables = Set<AnyCancellable>()
 
     init(
@@ -56,6 +60,28 @@ struct MacMenuBarQuickAddView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
+            }
+
+            HStack(spacing: 6) {
+                Image(symbol: "sparkles")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                TextField("한 줄로 입력 (예: 내일 오후 3시 치과 30분)", text: $quickText)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { parseQuickText() }
+                    .disabled(isParsing)
+                if isParsing {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button("채우기") { parseQuickText() }
+                        .controlSize(.small)
+                        .disabled(quickText.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            if let parseHint {
+                Text(parseHint)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
 
             TextField("제목", text: $title)
@@ -101,6 +127,26 @@ struct MacMenuBarQuickAddView: View {
                 .disabled(!isSavable)
             }
             .padding(.top, 4)
+        }
+    }
+
+    private func parseQuickText() {
+        guard !isParsing else { return }
+        let text = quickText
+        isParsing = true
+        parseHint = nil
+        Task { @MainActor in
+            defer { isParsing = false }
+            do {
+                let draft = try await container.parseNaturalLanguageEventUseCase.execute(text: text)
+                title = draft.title
+                isAllDay = draft.isAllDay
+                startDate = draft.startDate
+                endDate = draft.isAllDay ? draft.startDate : draft.endDate
+                parseHint = String(localized: "\(draft.sourceLabel) 결과로 채웠어요. 내용을 확인하고 저장하세요.")
+            } catch {
+                parseHint = (error as? DozyError)?.errorDescription ?? error.localizedDescription
+            }
         }
     }
 
