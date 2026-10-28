@@ -16,9 +16,11 @@ Dozy는 Apple Calendar, Google Calendar 등 기존 캘린더와 연동해 하루
 
 - 여러 캘린더 소스를 하나의 뷰에서 통합 관리
 - 완료한 일정과 할 일을 기록하고 생산성 점수로 확인
-- AI가 오늘 하루를 요약하고 다음 액션을 추천
-- 주간/월간/분기별 패턴 분석으로 업무 흐름 파악
-- 파트너와 공유 캘린더 + 메모 + 실시간 알림 카드
+- 온디바이스 AI가 오늘 하루를 요약하고 다음 액션을 추천, 저녁에 요약 알림
+- 잠금화면 · 다이나믹 아일랜드 Live Activity 와 홈 · 잠금화면 위젯으로 진행 중 일정 확인
+- 한 줄 문장이나 음성으로 일정 입력, Siri 단축어
+- 7일 · 30일 · 90일 패턴 분석과 카테고리별 시간 분배
+- 파트너와 공유 캘린더(최대 4명) + 메모 + 실시간 알림 카드
 - macOS 메뉴바 팝오버 + 캘린더 단독 창 + 키보드 단축키
 
 ---
@@ -30,17 +32,28 @@ Dozy는 Apple Calendar, Google Calendar 등 기존 캘린더와 연동해 하루
 | 기능 | 설명 |
 |------|------|
 | 홈 / 오늘 대시보드 | 오늘 일정, AI 요약, 빠른 메모, 생산성 통계, 날씨 카드 |
-| 캘린더 | Apple·Google·Dozy 자체 캘린더 통합, 일정 생성·수정·삭제·반복 |
-| 공유 캘린더 | 초대 코드로 두 사람 공유, 파트너와 일정·메모 실시간 동기화 |
+| 캘린더 | Apple·Google·Dozy 자체 캘린더 통합, 월·주·일 보기, 일정 생성·수정·삭제·반복·상단 고정, 캘린더 스크린샷 |
+| 자연어 · 음성 일정 입력 | "내일 오후 3시 치과 30분" 한 줄 또는 마이크로 제목·날짜·시간 자동 채움 (`NaturalLanguageEventParser`) |
+| 공유 캘린더 | 초대 코드로 최대 4명 공유, 파트너와 일정·메모 실시간 동기화, 캘린더 필터 |
 | 외부 일정 공유 | Apple·Google 일정을 공유 캘린더로 미러링, 원본 변경 자동 반영 |
 | 일정 완료 체크 | 완료 여부 기록, EventCompletion 기반 날짜별 상태 관리 |
-| AI 일일 요약 | iOS 26+ Foundation Models / NaturalLanguage 로컬 폴백 |
-| 인사이트 | 카테고리별 활동 분석, 완료율, 패턴 기반 추천 |
+| AI 일일 요약 | iOS 26+ Foundation Models(온디바이스) / NaturalLanguage 로컬 폴백. 외부 LLM 호출 없음 |
+| 저녁 요약 알림 · 일정 체크 | 정한 시각에 요약 알림(탭하면 요약 화면), BGAppRefreshTask 로 백그라운드 미리 생성, 저녁 미완료 일정 체크 |
+| 인사이트 | 7 · 30 · 90일 완료율 · 연속 달성 · 생산성 추이, 카테고리별 시간 분배 · 완료율 · 요일 패턴 · 집중 시간대 |
 | 카테고리 관리 | 사용자 정의 카테고리 — 24색 프리셋 + 시스템 이모지 패널 |
 | 알림 카드 | 파트너가 공유 일정을 등록하면 내 알림 화면에 카드 노출 |
 | Lottie 애니메이션 | 일정 저장 / 로그인 성공 시 Success / Congratulation 모션 |
 | 클라우드 동기화 | Supabase 기반 멀티 디바이스 데이터 동기화 |
-| 다중 로그인 | Apple · Google · Email (iOS 는 Naver 추가) |
+| 다중 로그인 | Apple · Google · Email |
+| 아이콘 | Iconsax 커스텀 SF 심볼셋(`DozyIcons.xcassets`) — `Image(symbol:)` 로 SF Symbol 과 같은 크기 규칙 |
+
+### iOS 전용
+
+| 기능 | 설명 |
+|------|------|
+| Live Activity | 오늘 시간제 일정이 있으면 잠금화면 · 다이나믹 아일랜드에 진행 중 일정의 남은 시간 + 다음 일정, 잠금화면에서 완료 체크 (`TodayAgendaPlanner` → `TodayAgendaActivityService`) |
+| 홈 · 잠금화면 위젯 | Small / Medium / Large(월 달력 포함) + accessory 위젯. 체크박스로 완료 토글, `+` 로 일정 추가 딥링크 (`DozyWidgetsExtension`) |
+| Siri 단축어 | 음성 메모 · 하루 요약 · 음성 일정 입력 (`DozyAppIntents`) |
 
 ### macOS 전용
 
@@ -61,25 +74,29 @@ Dozy는 Apple Calendar, Google Calendar 등 기존 캘린더와 연동해 하루
 - **SwiftData** — 로컬 데이터 영속성 (`@ModelActor` 백그라운드 컨텍스트 활용)
 - **Combine** — 비동기 이벤트 스트림
 - **EventKit** — 시스템 캘린더·리마인더 연동
+- **ActivityKit · WidgetKit · App Intents** — Live Activity, 홈·잠금화면 위젯, 위젯 인터랙션, Siri 단축어
+- **Speech · AVFoundation** — 음성 일정·메모 입력
+- **FoundationModels (iOS 26+)** — 온디바이스 일일 요약, 실패 시 **NaturalLanguage** 로컬 폴백
+- **UserNotifications · BackgroundTasks** — 저녁 요약 알림, BGAppRefreshTask 백그라운드 갱신
 - **CoreLocation + Open-Meteo** — 위치 기반 날씨 카드
 - **Lottie** — Success / Loading / Congratulation 애니메이션
-- **NaturalLanguage** — 온디바이스 NLP 키워드 추출
 
 ### Backend
 - **Supabase** — Auth, PostgreSQL, Realtime (공유 캘린더 INSERT/UPDATE 구독)
 - **Google Sign-In SDK**
-- **Naver Login SDK** (iOS only)
+- **Naver Login SDK** (iOS, 캘린더 연동은 현재 비활성)
 
 ### 인프라 / 개발 도구
 - **Fastlane** — iOS · macOS TestFlight·App Store 자동 배포
 - **Swift Package Manager** — 의존성 관리
 - **App Store Connect API** — 빌드 번호 자동 관리
+- **Claude Code** — `CLAUDE.md` 작업 규칙 + `.claude/skills/` 슬래시 명령(`/issue-new`, `/issue-start`, `/verify`, `/pr`)
 
 ---
 
 ## 아키텍처
 
-Clean Architecture + MVVM 패턴을 적용했습니다. iOS·macOS가 Domain·Data 레이어를 **공유**하고 Presentation 만 플랫폼별로 분기합니다.
+Clean Architecture + MVVM 패턴을 적용했습니다. iOS·macOS가 Domain·Data 레이어를 **공유**하고 Presentation 만 플랫폼별로 분기합니다. 위젯 extension 은 Domain 의 순수 계산(`TodayAgendaPlanner` 등)과 캐시 모델만 공유합니다. 앱이 떠 있지 않을 때 도는 코드(인텐트 · BGTask · 위젯)는 App Group store 를 직접 열거나 static 훅을 써서 `DependencyContainer` 없이 동작합니다.
 
 ```
 Presentation  ──▶  Domain  ──▶  Data
@@ -88,27 +105,40 @@ Presentation  ──▶  Domain  ──▶  Data
 
 ```
 Dozy AI/                      iOS 타겟 + 공통 Domain·Data 레이어
-├── App/                       앱 진입점
+├── App/                       앱 진입점, AppDelegate (BGTask · Live Activity 독립 실행 훅)
+├── Intents/                   Siri 단축어 (음성 메모 · 하루 요약 · 음성 일정)
 ├── Presentation/              iOS UI (View + ViewModel)
 │   ├── Home/
 │   ├── Calendar/
+│   ├── DailySummary/
 │   ├── Insights/
+│   ├── Search/
 │   ├── Settings/
 │   ├── Notifications/
 │   ├── SharedCalendar/
-│   └── Components/            재사용 컴포넌트 (Lottie / Weather 등)
+│   ├── VoiceInput/
+│   └── Components/            재사용 컴포넌트 (Lottie / Weather / 탭바 등)
 ├── Domain/                    비즈니스 로직 (양 타겟 공유)
-│   ├── UseCases/              (20+ UseCase)
-│   ├── Models/                도메인 엔티티
+│   ├── UseCases/              (28 UseCase)
+│   ├── Models/                도메인 엔티티 + 순수 계산 (TodayAgendaPlanner, SummaryReminderSchedule 등)
 │   └── Protocols/             서비스 추상화
 ├── Data/                      데이터 접근 (양 타겟 공유)
-│   ├── Services/              Calendar, AI, Auth, Realtime 등
+│   ├── Services/              Calendar, AI(FoundationModels), Auth, Realtime, Reminder, Live Activity 등
 │   ├── Repositories/          SwiftData CRUD + Supabase 동기화
 │   └── DTO/                   Supabase 매핑
+├── Resources/                 Assets, DozyIcons.xcassets(Iconsax 심볼셋), Localizable.xcstrings(ko/en), Lottie
 └── Core/
     ├── DI/                    DependencyContainer
     ├── Extensions/
-    └── Utilities/             Logger, Keychain 등
+    └── Utilities/             Logger, Keychain, DozyIcon, DemoDataSeeder(DEBUG) 등
+
+DozyWidgets/                  위젯 extension (iOS 17.6+)
+├── TodayEvents/               홈 · 잠금화면 위젯 (Small / Medium / Large / accessory)
+├── TodayAgenda/               Live Activity (잠금화면 · 다이나믹 아일랜드)
+├── ToggleEventCompletionIntent.swift   위젯 · Live Activity 완료 토글 (LiveActivityIntent)
+└── CreateQuickEventIntent.swift        위젯 + 버튼 → 일정 추가 딥링크
+
+scripts/iconsax/              Iconsax SVG → SF Symbols 템플릿 심볼셋 생성 (mapping.py + build_icons.py)
 
 Dozy AI (macOS)/              macOS 타겟 — 자체 ViewModel·View 만 별도
 ├── App/                       MacAppRootView (signedOut/signedIn 분기)
@@ -128,7 +158,7 @@ Dozy AI (macOS)/              macOS 타겟 — 자체 ViewModel·View 만 별도
     └── Components/            MacLottieView (NSViewRepresentable)
 ```
 
-**DependencyContainer**가 양 타겟의 모든 의존성을 조립하며, ViewModel은 UseCase만 주입받습니다.
+**DependencyContainer**가 양 타겟의 모든 의존성을 조립하며, ViewModel은 UseCase만 주입받습니다. 프로젝트는 synchronized group 을 쓰지 않으므로 새 파일은 `project.pbxproj` 에 직접 등록합니다 (`CLAUDE.md` 참고).
 
 ---
 
@@ -144,11 +174,11 @@ Dozy AI (macOS)/              macOS 타겟 — 자체 ViewModel·View 만 별도
 ### 설치
 
 ```bash
-git clone https://github.com/your-username/Dozy-AI.git
+git clone https://github.com/hyung6370/Dozy-AI.git
 cd Dozy-AI
 ```
 
-Xcode에서 `Dozy AI.xcodeproj`를 열면 Swift Package Manager가 의존성을 자동으로 설치합니다. 스킴은 두 개 — `Dozy AI` (iOS) / `Dozy AI (macOS)`.
+Xcode에서 `Dozy AI.xcodeproj`를 열면 Swift Package Manager가 의존성을 자동으로 설치합니다. 스킴은 두 개 — `Dozy AI` (iOS, 위젯 extension 포함) / `Dozy AI (macOS)`. 타깃은 7개(앱 2 · 테스트 4 · `DozyWidgetsExtension`).
 
 ### 환경 설정
 
@@ -170,6 +200,39 @@ NAVER_CLIENT_SECRET = your-naver-client-secret
 > 프로덕션 환경은 `Dozy AI/Config/Production.xcconfig`에 별도로 관리합니다.
 
 > macOS 타겟의 위치 권한·샌드박스 위치 entitlement 는 이미 프로젝트에 포함되어 있어 별도 설정 불필요.
+
+### 빌드 · 테스트
+
+```bash
+# iOS (시뮬레이터)
+xcodebuild -project "Dozy AI.xcodeproj" -scheme "Dozy AI" -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -configuration Debug CODE_SIGNING_ALLOWED=NO build
+# macOS
+xcodebuild -project "Dozy AI.xcodeproj" -scheme "Dozy AI (macOS)" -destination 'platform=macOS' -configuration Debug CODE_SIGNING_ALLOWED=NO build
+# 단위 테스트 (iOS 380건 · macOS 181건)
+xcodebuild ... -scheme "Dozy AI" ... test -only-testing:'Dozy AITests'
+xcodebuild ... -scheme "Dozy AI (macOS)" ... test -only-testing:'Dozy AI (macOS)Tests'
+```
+
+> 시뮬레이터에 설치해 Live Activity · 위젯 · App Group 을 확인하려면 `CODE_SIGNING_ALLOWED=NO` 없이 서명을 켜고 빌드합니다 (entitlement 가 빠지면 App Group store 를 열지 못해 실행 직후 종료됩니다).
+
+### DEBUG 실행 인자
+
+| 인자 | 동작 |
+|------|------|
+| `-uiTesting` | 환경 선택 다이얼로그와 인트로를 건너뛰고 개발 환경으로 진입 |
+| `-seedDemoData` | 로컬 SwiftData 를 비우고 지난 30일 + 다음 7일치 한국어 샘플 일정 · 완료 · 작업 기록 · 카테고리를 채움 (App Store 스크린샷용) |
+
+```bash
+xcrun simctl launch <UDID> com.dozy-ai.Dozy-AI -uiTesting -seedDemoData
+```
+
+### 아이콘 추가
+
+Iconsax 아이콘은 `scripts/iconsax/mapping.py` 에 SF 이름 → Iconsax 컴포넌트 한 줄을 추가하고 스크립트를 돌린 뒤, `DozyIcon.customNames` 에 이름을 넣습니다. 호출부는 `Image(symbol:)` · `Label(_:symbol:)` 만 씁니다 — 매핑이 없으면 SF Symbol 로 폴백.
+
+```bash
+python3 -I scripts/iconsax/build_icons.py chevron.right bell.fill
+```
 
 ### Supabase 스키마
 

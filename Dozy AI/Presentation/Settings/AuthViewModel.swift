@@ -652,6 +652,10 @@ final class AuthViewModel: ObservableObject {
     }
 
     private func syncAfterLogin(userID: String) {
+        #if DEBUG
+        // 데모 데이터 모드(-seedDemoData)는 로컬 샘플만 보여 준다 — 서버와 섞이면 중복되고 샘플이 업로드된다.
+        if DemoDataSeeder.isRequested { Logger.sync.info("데모 데이터 모드 — 동기화 · Realtime 생략"); return }
+        #endif
         Logger.auth.info("[동기화] 🔄 syncAfterLogin 시작 userID=\(userID)")
         syncService.syncAll(userID: userID)
             .receive(on: DispatchQueue.main)
@@ -670,6 +674,10 @@ final class AuthViewModel: ObservableObject {
     }
 
     private func startSharedCalendarRealtime() {
+        #if DEBUG
+        // 데모 데이터 모드(-seedDemoData)는 로컬 샘플만 보여 준다 — 서버와 섞이면 중복되고 샘플이 업로드된다.
+        if DemoDataSeeder.isRequested { Logger.sync.info("데모 데이터 모드 — 동기화 · Realtime 생략"); return }
+        #endif
         sharedCalendarService.fetchMyCalendars()
             .receive(on: DispatchQueue.main)
             .sink(

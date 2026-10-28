@@ -140,6 +140,25 @@ enum SummaryReminderSchedule {
         )
     }
 
+    /// 앱이 떠 있는 동안(macOS) 요약을 미리 만들 시각. 다음 알림 시각의 `lead` 전이고,
+    /// 이미 그 창 안이면 지금 바로. 오늘 알림 시각이 지났으면 nextFireDate 가 내일이라 내일 분이 된다.
+    static func preGenerationDate(
+        settings: SummaryReminderSettings,
+        from now: Date = Date(),
+        lead: TimeInterval = 10 * 60,
+        calendar: Calendar = .current
+    ) -> Date? {
+        guard let fire = settings.nextFireDate(after: now, calendar: calendar) else { return nil }
+        return max(fire.addingTimeInterval(-lead), now)
+    }
+
+    /// 지금 미리 생성을 해도 되는가 — 다음 알림이 "오늘" 이어야 한다. 오늘 알림 시각이 이미 지났으면(기기 잠자기 뒤
+    /// 늦게 깬 경우 등) 다음 알림은 내일이라, 오늘 수치를 내일 알림 본문에 넣게 되므로 false.
+    static func shouldPreGenerate(settings: SummaryReminderSettings, now: Date = Date(), calendar: Calendar = .current) -> Bool {
+        guard settings.isEnabled, let fire = settings.nextFireDate(after: now, calendar: calendar) else { return false }
+        return dayKey(for: fire, calendar: calendar) == dayKey(for: now, calendar: calendar)
+    }
+
     /// 백그라운드에서 요약을 만들었을 때 오늘 알림에 넣는 수치 본문.
     static func numericBody(completedEventCount: Int, productivityScore: Double) -> String {
         let percent = Int((productivityScore * 100).rounded())

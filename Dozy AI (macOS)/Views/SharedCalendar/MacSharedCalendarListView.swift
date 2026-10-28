@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct MacSharedCalendarListView: View {
+    @Environment(\.macTheme) private var theme
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @StateObject private var viewModel: SharedCalendarViewModel
@@ -150,11 +151,11 @@ struct MacSharedCalendarListView: View {
                 HStack(spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.accentColor.opacity(0.12))
+                            .fill(theme.accentSoft)
                             .frame(width: 32, height: 32)
                         Image(symbol: "person.2.fill")
                             .font(.subheadline)
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(theme.accent)
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text(cal.name)

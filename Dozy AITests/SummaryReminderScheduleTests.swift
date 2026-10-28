@@ -21,6 +21,50 @@ struct SummaryReminderScheduleTests {
         cal.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute))!
     }
 
+    // MARK: - preGenerationDate (macOS 포그라운드 미리 생성)
+
+    @Test("알림 10분 전이 아직 안 왔으면 그 시각")
+    func preGenerationBeforeWindow() {
+        let now = date(2026, 3, 5, 10)
+        #expect(SummaryReminderSchedule.preGenerationDate(settings: settings, from: now, calendar: cal) == date(2026, 3, 5, 20, 50))
+    }
+
+    @Test("10분 창 안에 들어와 있으면 지금 바로")
+    func preGenerationInsideWindow() {
+        let now = date(2026, 3, 5, 20, 55)
+        #expect(SummaryReminderSchedule.preGenerationDate(settings: settings, from: now, calendar: cal) == now)
+    }
+
+    @Test("오늘 알림 시각이 지났으면 내일 10분 전")
+    func preGenerationAfterFire() {
+        let now = date(2026, 3, 5, 21, 30)
+        #expect(SummaryReminderSchedule.preGenerationDate(settings: settings, from: now, calendar: cal) == date(2026, 3, 6, 20, 50))
+    }
+
+    // MARK: - shouldPreGenerate (오늘 알림이 남아 있을 때만)
+
+    @Test("오늘 알림 시각 전이면 미리 생성한다")
+    func shouldPreGenerateBeforeFire() {
+        #expect(SummaryReminderSchedule.shouldPreGenerate(settings: settings, now: date(2026, 3, 5, 20, 55), calendar: cal))
+    }
+
+    @Test("오늘 알림 시각이 지났으면 내일 알림에 오늘 수치가 들어가므로 생략")
+    func shouldNotPreGenerateAfterFire() {
+        #expect(!SummaryReminderSchedule.shouldPreGenerate(settings: settings, now: date(2026, 3, 5, 21, 1), calendar: cal))
+    }
+
+    @Test("자정 직후는 그날 알림 전이라 생성, 자정 직전은 그날 알림이 지나 생략")
+    func shouldPreGenerateAroundMidnight() {
+        #expect(SummaryReminderSchedule.shouldPreGenerate(settings: settings, now: date(2026, 3, 6, 0, 1), calendar: cal))
+        #expect(!SummaryReminderSchedule.shouldPreGenerate(settings: settings, now: date(2026, 3, 5, 23, 59), calendar: cal))
+    }
+
+    @Test("꺼져 있으면 항상 생략")
+    func shouldNotPreGenerateWhenDisabled() {
+        let off = SummaryReminderSettings(isEnabled: false, hour: 21, minute: 0)
+        #expect(!SummaryReminderSchedule.shouldPreGenerate(settings: off, now: date(2026, 3, 5, 10), calendar: cal))
+    }
+
     // MARK: - nextFireDate
 
     @Test("오늘 시각이 아직 안 지났으면 오늘, 지났으면 내일")

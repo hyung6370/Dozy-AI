@@ -15,9 +15,12 @@ struct MacTodayView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
     @EnvironmentObject private var container: DependencyContainer
     @State private var selectedEvent: CalendarEvent? = nil
+    @Environment(\.macTheme) private var theme
     @State private var showNewEventSheet = false
     @State private var showSummarySheet = false
     @State private var showNotificationSheet = false
+    /// 저녁 체크 시트가 떠 있는 동안 요약 요청이 오면 체크 시트를 닫은 뒤 요약을 연다 (시트 충돌 방지).
+    @State private var pendingSummaryAfterCheck = false
 
     @State private var memoText: String = ""
     @State private var editingMemoIndex: Int? = nil
@@ -37,7 +40,9 @@ struct MacTodayView: View {
                 focusCard
                 statsRow
 
-                if viewModel.isLoading {
+                // 스피너는 첫 로드에만. 이미 내용이 있으면 재로드(공유 캘린더 동기화 등) 중에도 그대로 둔다 —
+                // 내용을 ProgressView 로 바꿔치기하면 알림이 연달아 올 때 카드가 깜빡인다 (#110).
+                if viewModel.isLoading && !viewModel.hasLoadedOnce {
                     ProgressView()
                         .padding(.top, 40)
                 } else {
@@ -107,12 +112,35 @@ struct MacTodayView: View {
         }
         .onAppear {
             viewModel.loadTodayData()
+            consumePendingOpenSummary()
         }
         .refreshable {
             viewModel.loadTodayData()
         }
         .onReceive(NotificationCenter.default.publisher(for: .dozyRequestSummary)) { _ in
-            showSummarySheet = true
+            requestSummarySheet()
+        }
+        // 저녁 요약 알림 탭 (MacAppDelegate). 뷰가 이미 떠 있으면 여기서, 아니면 onAppear 가 플래그를 소비한다.
+        .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
+            consumePendingOpenSummary()
+        }
+        .onChange(of: showSummarySheet) { _, isPresented in
+            // 요약을 봤으면 오늘 저녁 알림은 생략한다 (오늘 요청만 제거, 내일 이후는 유지).
+            // 요약을 보는 중에는 저녁 체크 프롬프트도 오늘은 띄우지 않는다.
+            if isPresented {
+                container.summaryReminderService.markSummaryViewed()
+                viewModel.skipEveningCheckForToday()
+            }
+        }
+        // 저녁 일정 체크 (#101). 18시 이후 완료 로드가 끝나면 MacHomeViewModel 이 하루 1회 켠다.
+        .sheet(isPresented: $viewModel.showEveningCheck, onDismiss: {
+            if pendingSummaryAfterCheck {
+                pendingSummaryAfterCheck = false
+                showSummarySheet = true
+            }
+        }) {
+            MacEveningCheckSheet(viewModel: viewModel) { viewModel.showEveningCheck = false }
+                .frame(minWidth: 520, idealWidth: 560, minHeight: 360, idealHeight: 420)
         }
         // Detail sheet — 모든 편집이 인라인으로 이루어짐
         .sheet(item: $selectedEvent) { event in
@@ -148,6 +176,7 @@ struct MacTodayView: View {
                 eventToEdit: nil,
                 selectedDate: Date(),
                 sharedCalendars: viewModel.mySharedCalendars,
+                parseUseCase: container.parseNaturalLanguageEventUseCase,
                 onSave: { saved in
                     viewModel.saveDozyEvent(saved)
                 }
@@ -234,7 +263,7 @@ struct MacTodayView: View {
         let upcomingEvent = viewModel.upcomingEvent
         let displayEvent = currentEvent ?? upcomingEvent
         let label = currentEvent != nil ? "지금 일정" : upcomingEvent != nil ? "다음 일정" : ""
-        let accent = displayEvent.flatMap { Color(hex: $0.calendarColorHex) } ?? .blue
+        let accent = displayEvent.flatMap { Color(hex: $0.calendarColorHex) } ?? theme.accent
 
         return VStack(alignment: .leading, spacing: 0) {
             if let event = displayEvent {
@@ -343,7 +372,7 @@ struct MacTodayView: View {
         if event.startDate <= now { return .green }
         let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
         if minutes < 30 { return .orange }
-        return .blue
+        return theme.accent
     }
 
     // MARK: - Stats Row
@@ -420,7 +449,7 @@ struct MacTodayView: View {
     private func progressColor(_ value: Double) -> Color {
         switch value {
         case 1.0:       return .green
-        case 0.5..<1.0: return .blue
+        case 0.5..<1.0: return theme.accent
         case 0.01..<0.5: return .orange
         default:        return .secondary
         }
@@ -465,7 +494,7 @@ struct MacTodayView: View {
                         .textCase(.uppercase)
                         .tracking(0.5)
                 }
-                .foregroundStyle(.indigo)
+                .foregroundStyle(theme.accent)
                 Spacer()
                 Text("\(viewModel.scorePercentage)점")
                     .font(.subheadline)
@@ -503,7 +532,7 @@ struct MacTodayView: View {
                     HStack(alignment: .top, spacing: 8) {
                         Image(symbol: "arrow.right.circle")
                             .font(.system(size: 13))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(theme.accent)
                             .padding(.top, 3)
                         Text(action)
                             .font(.subheadline)
@@ -518,18 +547,18 @@ struct MacTodayView: View {
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(LinearGradient(
-                    colors: [Color.indigo.opacity(0.08), Color.indigo.opacity(0.02)],
+                    colors: [theme.accent.opacity(0.10), theme.accent.opacity(0.02)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ))
         )
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Color.indigo.opacity(0.15), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(theme.accentStroke, lineWidth: 1))
     }
 
     private func scoreColor(_ score: Double) -> Color {
         switch score {
         case 0.8...1.0: return .green
-        case 0.6..<0.8: return .blue
+        case 0.6..<0.8: return theme.accent
         case 0.4..<0.6: return .orange
         default:        return .red
         }
@@ -587,12 +616,30 @@ struct MacTodayView: View {
                 } label: {
                     Image(symbol: "plus.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(theme.accent)
                 }
                 .buttonStyle(.plain)
                 .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
+    }
+
+    /// 요약 시트 열기. 저녁 체크 시트가 떠 있으면 먼저 닫고 onDismiss 에서 연다.
+    private func requestSummarySheet() {
+        if viewModel.showEveningCheck {
+            pendingSummaryAfterCheck = true
+            viewModel.showEveningCheck = false
+        } else {
+            showSummarySheet = true
+        }
+    }
+
+    /// 요약 알림 탭(MacAppDelegate)이 켠 플래그를 소비해 요약 시트를 연다.
+    private func consumePendingOpenSummary() {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: MacAppDelegate.pendingOpenSummaryKey) else { return }
+        defaults.set(false, forKey: MacAppDelegate.pendingOpenSummaryKey)
+        requestSummarySheet()
     }
 
     private func submitMemo() {
@@ -615,7 +662,7 @@ struct MacTodayView: View {
                 } else {
                     Image(symbol: "sparkles")
                         .font(.title3)
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(theme.accent)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Dozy 요약 생성")

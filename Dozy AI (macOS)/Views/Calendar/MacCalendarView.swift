@@ -13,8 +13,10 @@ import Lottie
 
 struct MacCalendarView: View {
     @ObservedObject var viewModel: MacCalendarViewModel
+    @Environment(\.macTheme) private var theme
     @StateObject private var swipeState = MonthSwipeState()
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @EnvironmentObject private var container: DependencyContainer
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var showNewEventSheet = false
@@ -150,7 +152,7 @@ struct MacCalendarView: View {
                         .overlay(alignment: .topTrailing) {
                             if viewModel.visibilityFilter.isFilterActive {
                                 Circle()
-                                    .fill(Color.accentColor)
+                                    .fill(theme.accent)
                                     .frame(width: 6, height: 6)
                                     .overlay(
                                         Circle().stroke(Color(nsColor: .windowBackgroundColor), lineWidth: 1)
@@ -217,6 +219,7 @@ struct MacCalendarView: View {
                 selectedDate: newEventTimeHint ?? viewModel.selectedDate,
                 sharedCalendars: viewModel.mySharedCalendars,
                 useTimeHint: newEventTimeHint != nil,
+                parseUseCase: container.parseNaturalLanguageEventUseCase,
                 onSave: { saved in
                     viewModel.saveDozyEvent(saved)
                 }

@@ -14,6 +14,7 @@ import SwiftData
 
 struct MacCategoryAnalysisView: View {
 
+    @Environment(\.macTheme) private var theme
     let events: [CalendarEvent]
     let dozyEvents: [DozyEvent]
     let period: MacInsightPeriod
@@ -416,7 +417,7 @@ struct MacCategoryAnalysisView: View {
             if catStats.count == 1 { return ("완전 집중", .green) }
             switch score {
             case 0.6...:    return ("집중형", .green)
-            case 0.35..<0.6: return ("균형형", .blue)
+            case 0.35..<0.6: return ("균형형", theme.accent)
             default:        return ("분산형", .orange)
             }
         }()
@@ -471,7 +472,7 @@ struct MacCategoryAnalysisView: View {
     private func completionColor(_ rate: Double) -> Color {
         switch rate {
         case 0.8...:     return .green
-        case 0.5..<0.8:  return .blue
+        case 0.5..<0.8:  return theme.accent
         default:         return .orange
         }
     }

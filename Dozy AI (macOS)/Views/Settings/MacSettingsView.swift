@@ -11,6 +11,7 @@ import SwiftData
 
 struct MacSettingsView: View {
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @Environment(\.macTheme) private var theme
 
     @EnvironmentObject private var container: DependencyContainer
     @Environment(\.colorScheme) private var colorScheme
@@ -21,6 +22,10 @@ struct MacSettingsView: View {
     @State private var showShortcutsHelp = false
     @State private var showPasswordChange = false
     @AppStorage("menuBarShowBadge") private var menuBarShowBadge: Bool = true
+    // 저녁 요약 알림 · 저녁 일정 체크 (#101). iOS SettingsView 와 같은 저장소(UserDefaults)를 공유하는 값 타입.
+    @State private var reminderSettings = SummaryReminderSettings.load()
+    @State private var showReminderDeniedAlert = false
+    @AppStorage(EveningCheckPrompt.enabledKey) private var eveningCheckEnabled = true
     @AppStorage("macBackgroundTheme")
     private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
 
@@ -40,6 +45,7 @@ struct MacSettingsView: View {
                 categorySection
                 appearanceSection
                 menuBarSection
+                summaryReminderSection
                 calendarIntegrationSection
                 sharedCalendarSection
                 helpSection
@@ -101,7 +107,7 @@ struct MacSettingsView: View {
             Text("계정")
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.sectionTitle)
 
             HStack(spacing: 16) {
                 providerIcon(for: authViewModel.currentUser?.provider)
@@ -125,14 +131,14 @@ struct MacSettingsView: View {
             .background(
                 RoundedRectangle(cornerRadius: 14)
                     .fill(LinearGradient(
-                        colors: [Color.accentColor.opacity(0.08), Color.accentColor.opacity(0.02)],
+                        colors: [theme.accent.opacity(0.10), theme.accent.opacity(0.02)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.accentColor.opacity(0.15), lineWidth: 1)
+                    .strokeBorder(theme.accentStroke, lineWidth: 1)
             )
         }
     }
@@ -218,11 +224,90 @@ struct MacSettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
             }
             .toggleStyle(.switch)
         }
     }
     
+    // MARK: - AI 요약 알림 (#101)
+
+    private var summaryReminderSection: some View {
+        SettingsSection(title: "AI 요약 알림") {
+            Toggle(isOn: $reminderSettings.isEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("저녁 요약 알림", symbol: "bell.badge.fill")
+                    Text("정한 시각에 오늘 하루 요약을 알려드려요. 알림을 누르면 요약 화면이 바로 열립니다.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
+            }
+            .toggleStyle(.switch)
+
+            if reminderSettings.isEnabled {
+                HStack {
+                    Label("알림 시각", symbol: "clock.fill")
+                    Spacer()
+                    DatePicker("알림 시각", selection: reminderTimeBinding, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .environment(\.locale, .koreanForce24h)
+                }
+                Text("앱이 켜져 있으면 알림 10분 전에 오늘 요약을 미리 만들어 둬요.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Divider()
+
+            Toggle(isOn: $eveningCheckEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("저녁 일정 체크", symbol: "checklist")
+                    Text("18시 이후 앱을 열면 끝났는데 체크하지 않은 일정을 하루 한 번 물어봐요.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
+            }
+            .toggleStyle(.switch)
+        }
+        .animation(.snappy(duration: 0.25), value: reminderSettings.isEnabled)
+        .onChange(of: reminderSettings) { _, newValue in applyReminderSettings(newValue) }
+        .alert("알림 권한이 꺼져 있어요", isPresented: $showReminderDeniedAlert) {
+            Button("시스템 설정 열기") {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("시스템 설정 > 알림에서 Dozy의 알림을 허용한 뒤 다시 켜 주세요.")
+        }
+    }
+
+    /// hour/minute ↔ DatePicker 의 Date.
+    private var reminderTimeBinding: Binding<Date> {
+        Binding(
+            get: { reminderSettings.timeAsDate },
+            set: { date in
+                let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+                reminderSettings.hour = parts.hour ?? 21
+                reminderSettings.minute = parts.minute ?? 0
+            }
+        )
+    }
+
+    private func applyReminderSettings(_ settings: SummaryReminderSettings) {
+        settings.save()
+        Task { @MainActor in
+            let granted = await container.summaryReminderService.apply(settings)
+            if settings.isEnabled, !granted {
+                reminderSettings.isEnabled = false   // onChange 재진입 → 해제 경로로 정리됨
+                showReminderDeniedAlert = true
+            }
+        }
+    }
+
     // MARK: - Calendar Integration
     
     private var calendarIntegrationSection: some View {
@@ -287,6 +372,20 @@ struct MacSettingsView: View {
             .buttonStyle(.plain)
             .contentShape(Rectangle())
             .disabled(privacyPolicyURL == nil)
+
+            // 온디바이스 모델(Apple Intelligence) 사용 가능 여부 / 불가 사유 — iOS 설정과 같은 문구 (#102).
+            // macOS 26 미만은 "기본 분석 (기기 미지원)" 으로 그대로 보여 준다.
+            HStack(spacing: 10) {
+                Image(symbol: "sparkles")
+                    .font(.system(size: 16))
+                    .foregroundStyle(theme.accent)
+                    .frame(width: 22, height: 22)
+                Text("AI 엔진")
+                Spacer()
+                Text(container.aiService.engineStatus.displayName)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.trailing)
+            }
 
             HStack(spacing: 10) {
                 Image(settingsAsset("Version"))
@@ -494,6 +593,7 @@ private struct ShortcutRow: View {
 
 private struct TipRow: View {
     let icon: String
+    @Environment(\.macTheme) private var theme
     let title: LocalizedStringKey
     let detail: LocalizedStringKey
 
@@ -501,7 +601,7 @@ private struct TipRow: View {
         HStack(alignment: .top, spacing: 12) {
             Image(symbol: icon)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(theme.accent)
                 .frame(width: 22, height: 22)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -521,13 +621,14 @@ private struct TipRow: View {
 private struct SettingsSection<Content: View>: View {
     let title: LocalizedStringKey
     @ViewBuilder let content: () -> Content
+    @Environment(\.macTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.sectionTitle)
 
             VStack(alignment: .leading, spacing: 12) {
                 content()
