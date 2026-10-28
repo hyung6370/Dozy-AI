@@ -400,7 +400,7 @@ struct MacSettingsView: View {
             }
             .toggleStyle(.switch)
             .onChange(of: analyticsEnabled) { _, enabled in
-                container.analyticsService.setCollectionEnabled(enabled)
+                container.setUsageDataCollectionEnabled(enabled)
             }
 
             HStack(spacing: 10) {

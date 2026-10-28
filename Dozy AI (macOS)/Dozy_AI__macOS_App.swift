@@ -340,6 +340,9 @@ final class MacAppCoordinator: ObservableObject {
         container = c
         isReady = true
         wireSummaryReminder(c)
+        // 크래시 리포팅 (#117): 가장 먼저 만들어 CrashReporting.current 에 등록 — 이후 단계의 비치명 오류 · 크래시도 잡힌다.
+        _ = c.crashReportingService
+        CrashReportingTestHook.scheduleTestCrashIfRequested()
         // 애널리틱스 (#90): 실행 신호 + 외부 캘린더 소스 수 사용자 속성.
         c.analyticsService.track(.appOpened)
         c.calendarSourceManager.reportSourceCount()

@@ -14,7 +14,6 @@
 //
 
 import Foundation
-import FirebaseCore
 import FirebaseAnalytics
 import OSLog
 
@@ -27,28 +26,25 @@ final class FirebaseAnalyticsService: AnalyticsServiceProtocol {
     /// - Parameter hasConfigFile: 번들에 `GoogleService-Info.plist` 가 있는지. 테스트에서 false 를 넣어 무동작 경로를 검증한다.
     init(
         enabled: Bool = AnalyticsSettings.isEnabled(),
-        hasConfigFile: Bool = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil
+        hasConfigFile: Bool = FirebaseBootstrap.hasConfigFile
     ) {
         self.isEnabled = enabled
-        guard hasConfigFile else {
-            Logger.analytics.info("GoogleService-Info.plist 없음 — 애널리틱스 비활성")
+        guard FirebaseBootstrap.configureIfAvailable(hasConfigFile: hasConfigFile) else {
+            Logger.analytics.info("GoogleService-Info.plist 없음 — 애널리틱스 · 크래시 리포팅 비활성")
             return
-        }
-        if FirebaseApp.app() == nil {
-            FirebaseApp.configure()
         }
         isConfigured = true
         applyCollectionState()
     }
 
     func track(_ event: AnalyticsEvent) {
-        guard isConfigured, isEnabled, Self.buildAllowsCollection else { return }
+        guard isConfigured, isEnabled, FirebaseBootstrap.buildAllowsCollection else { return }
         Analytics.logEvent(event.name, parameters: Self.firebaseParameters(event.parameters))
         Logger.analytics.debug("track \(event.name, privacy: .public)")
     }
 
     func setUserProperty(_ value: String?, for property: AnalyticsUserProperty) {
-        guard isConfigured, isEnabled, Self.buildAllowsCollection else { return }
+        guard isConfigured, isEnabled, FirebaseBootstrap.buildAllowsCollection else { return }
         Analytics.setUserProperty(value, forName: property.rawValue)
     }
 
@@ -62,17 +58,7 @@ final class FirebaseAnalyticsService: AnalyticsServiceProtocol {
 
     private func applyCollectionState() {
         guard isConfigured else { return }
-        Analytics.setAnalyticsCollectionEnabled(isEnabled && Self.buildAllowsCollection)
-    }
-
-    /// Release 는 항상 허용, DEBUG 는 Firebase 디버그 인자로 실행할 때만.
-    private static var buildAllowsCollection: Bool {
-        #if DEBUG
-        let args = ProcessInfo.processInfo.arguments
-        return args.contains("-FIRAnalyticsDebugEnabled") || args.contains("-FIRDebugEnabled")
-        #else
-        return true
-        #endif
+        Analytics.setAnalyticsCollectionEnabled(isEnabled && FirebaseBootstrap.buildAllowsCollection)
     }
 
     static func firebaseParameters(_ parameters: [String: AnalyticsValue]) -> [String: Any]? {

@@ -33,6 +33,19 @@ final class DependencyContainer: ObservableObject {
     lazy var aiService: AIServiceProtocol = AIService()
     /// Firebase Analytics (#90). GoogleService-Info.plist 가 없으면 내부에서 아무것도 보내지 않는다.
     lazy var analyticsService: AnalyticsServiceProtocol = FirebaseAnalyticsService()
+    /// Firebase Crashlytics (#117). 생성 시 `CrashReporting.current` 로도 등록돼 Data 서비스의 비치명 오류를 받는다.
+    lazy var crashReportingService: CrashReportingServiceProtocol = {
+        let service = FirebaseCrashReportingService()
+        CrashReporting.current = service
+        return service
+    }()
+
+    /// 설정 "사용 통계 전송" 토글 — Analytics 와 Crashlytics 를 함께 켜고 끈다 (#117).
+    func setUsageDataCollectionEnabled(_ enabled: Bool) {
+        AnalyticsSettings.setEnabled(enabled)
+        analyticsService.setCollectionEnabled(enabled)
+        crashReportingService.setCollectionEnabled(enabled)
+    }
     lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
     lazy var authService = AuthService()
     lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(
