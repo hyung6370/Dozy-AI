@@ -195,10 +195,11 @@ extension MacCalendarWeekRow: Equatable {
 
 private struct EventBarView: View {
     let event: CalendarEvent
+    @Environment(\.macTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        let color = Color(hex: event.calendarColorHex) ?? .blue
+        let color = Color(hex: event.calendarColorHex) ?? theme.accent
         // 다크 모드에선 가독성을 위해 텍스트·아이콘을 흰색으로 통일. 단, 공휴일은
         // 빨강이 의미를 갖는 시그널이라 다크모드에서도 원색 유지.
         // 다크 모드: 일반 일정은 흰색, 공휴일은 원래 빨강 그대로 (어둡게 처리하면 안 보임).

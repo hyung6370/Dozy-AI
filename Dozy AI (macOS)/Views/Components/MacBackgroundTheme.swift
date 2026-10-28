@@ -29,8 +29,8 @@ enum MacBackgroundTheme: String, CaseIterable, Identifiable {
     var summary: String {
         switch self {
         case .system:       return String(localized: "macOS 표준 배경 — 사이드바 머티리얼 그대로.")
-        case .ambientMesh:  return String(localized: "저채도 메시 그라디언트 — 가장 차분한 무드.")
-        case .blob:         return String(localized: "컬러 블롭 — 생동감 있는 ambient.")
+        case .ambientMesh:  return String(localized: "저채도 메시 그라디언트 — 라벤더 카드와 페리윙클 강조색.")
+        case .blob:         return String(localized: "컬러 블롭 — 생동감 있는 배경에 보라 강조색.")
         }
     }
 
@@ -47,28 +47,6 @@ enum MacBackgroundTheme: String, CaseIterable, Identifiable {
         case .system:       return .regularMaterial
         case .ambientMesh:  return .regularMaterial
         case .blob:         return .regularMaterial
-        }
-    }
-
-    /// 머티리얼 위에 얹는 옅은 색조. 배경과 일관된 라벤더/핑크 계열로 카드를
-    /// 살짝 물들여 단조로움을 줄인다. system 은 native 머티리얼 그대로 유지.
-    var cardTint: Color {
-        switch self {
-        case .system:
-            return .clear
-        case .ambientMesh:
-            return (Color(hex: "#7C8AE0") ?? .clear).opacity(0.05)
-        case .blob:
-            return (Color(hex: "#A78BFA") ?? .clear).opacity(0.06)
-        }
-    }
-
-    /// 카드 외곽 stroke. 배경에 카드가 묻히지 않도록 적당히 분리.
-    var cardStroke: Color {
-        switch self {
-        case .system:       return Color.primary.opacity(0.05)
-        case .ambientMesh:  return Color.primary.opacity(0.07)
-        case .blob:         return Color.primary.opacity(0.07)
         }
     }
 
@@ -120,6 +98,8 @@ private struct ThemedCardSurfaceModifier: ViewModifier {
 
     @AppStorage("macBackgroundTheme")
     private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
+    /// 채움 · 테두리 · 그림자 색은 팔레트(#107). 머티리얼 · 틴트는 테마 enum 값 그대로.
+    @Environment(\.macTheme) private var palette
 
     private var theme: MacBackgroundTheme {
         MacBackgroundTheme(rawValue: backgroundThemeRaw) ?? .defaultTheme
@@ -128,9 +108,19 @@ private struct ThemedCardSurfaceModifier: ViewModifier {
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius)
         content
-            .background(theme.cardMaterial, in: shape)
-            .background(theme.cardTint, in: shape)
-            .overlay(shape.strokeBorder(theme.cardStroke, lineWidth: 1))
+            .background {
+                // 그림자는 카드 도형에만 — content 에 걸면 텍스트까지 번진다.
+                // 기본 테마: 네이티브 머티리얼. 테마 모드: 머티리얼 없이 팔레트 채움색 (배경 흐림에 묻히지 않게).
+                Group {
+                    if palette.isSystem {
+                        shape.fill(theme.cardMaterial)
+                    } else {
+                        shape.fill(palette.cardFill)
+                    }
+                }
+                .shadow(color: palette.cardShadow, radius: 16, x: 0, y: 6)
+            }
+            .overlay(shape.strokeBorder(palette.cardStroke, lineWidth: 1))
     }
 }
 

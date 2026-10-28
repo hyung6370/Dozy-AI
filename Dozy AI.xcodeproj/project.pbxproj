@@ -204,6 +204,7 @@
 		D88C4DCC8D8C116FA59C4C2F /* NotificationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C686A2F84F4E2003464E8 /* NotificationRepository.swift */; };
 		D9B0E271B7B1535650A4F04A /* UserCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9A5B52F89560300C1572C /* UserCategory.swift */; };
 		DA4895738EA7E7923B6052D0 /* FetchEventCompletionsForPeriodUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F650683C2F7E611000F9C124 /* FetchEventCompletionsForPeriodUseCase.swift */; };
+		DBA5AF2640125BDA4C512EB7 /* MacThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340A75F702A3844644D6E306 /* MacThemePalette.swift */; };
 		DBFC5E192ECDB68070B57048 /* ReminderServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69032F6ACE69001952F6 /* ReminderServiceProtocol.swift */; };
 		DD44DDD32F72C44100EEE463 /* DozyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD22F72C44100EEE463 /* DozyError.swift */; };
 		DD44DDD52F72C73000EEE463 /* WorkLogRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */; };
@@ -590,6 +591,7 @@
 		2389D509856F42CD9BB2A33D /* SharedCalendarEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarEditView.swift; sourceTree = "<group>"; };
 		30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarServiceProtocol.swift; sourceTree = "<group>"; };
 		3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSharedCalendarStore.swift; sourceTree = "<group>"; };
+		340A75F702A3844644D6E306 /* MacThemePalette.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacThemePalette.swift; sourceTree = "<group>"; };
 		34F961C6AB3DE3A9A44E8549 /* MacEveningCheckSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacEveningCheckSheet.swift; sourceTree = "<group>"; };
 		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarListView.swift; sourceTree = "<group>"; };
@@ -1672,6 +1674,7 @@
 				F67333092FA837C5000A610A /* MacLottieView.swift */,
 				F6A780032FB80001000A610A /* AmbientMeshBackgroundView.swift */,
 				F6A780052FB80002000A610A /* MacBackgroundTheme.swift */,
+				340A75F702A3844644D6E306 /* MacThemePalette.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2657,6 +2660,7 @@
 				0D5BBFD7590124B0F9C8AD2A /* DemoDataSeeder.swift in Sources */,
 				79C2328FDE8D7614E6C0A6AC /* MacAppDelegate.swift in Sources */,
 				8786C17F4B4435191645C92B /* MacEveningCheckSheet.swift in Sources */,
+				DBA5AF2640125BDA4C512EB7 /* MacThemePalette.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,6 +11,7 @@ import AppKit
 
 struct MacMenuBarView: View {
     let container: DependencyContainer
+    @Environment(\.macTheme) private var theme
     @ObservedObject var viewModel: MacMenuBarViewModel
     @Environment(\.openWindow) private var openWindow
     @State private var showQuickAdd = false
@@ -80,7 +81,7 @@ struct MacMenuBarView: View {
                     .fontWeight(.semibold)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(theme.accent, in: Capsule())
                     .foregroundStyle(.white)
             }
             .buttonStyle(.plain)
@@ -106,7 +107,7 @@ struct MacMenuBarView: View {
             if let event = display {
                 HStack(alignment: .top, spacing: 10) {
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                        .fill(Color(hex: event.calendarColorHex) ?? theme.accent)
                         .frame(width: 3, height: 38)
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 6) {
@@ -217,7 +218,7 @@ struct MacMenuBarView: View {
     private func eventRow(event: CalendarEvent, isCompleted: Bool) -> some View {
         HStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(Color(hex: event.calendarColorHex) ?? .blue)
+                .fill(Color(hex: event.calendarColorHex) ?? theme.accent)
                 .frame(width: 3, height: 22)
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 4) {

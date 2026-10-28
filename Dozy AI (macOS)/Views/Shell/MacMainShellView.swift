@@ -139,6 +139,8 @@ struct MacMainShellView: View {
                 }
             }
         }
+        // 테마 팔레트 주입 + tint + 텍스트 색 (#107).
+        .macThemed()
     }
 }
 

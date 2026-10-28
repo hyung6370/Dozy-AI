@@ -165,6 +165,7 @@ struct Dozy_AI__macOS_App: App {
             if let container = coordinator.container,
                let menuBarViewModel = coordinator.menuBarViewModel {
                 MacMenuBarView(container: container, viewModel: menuBarViewModel)
+                    .macThemed()
             } else {
                 VStack(spacing: 8) {
                     Image(symbol: "calendar")
@@ -202,6 +203,7 @@ struct Dozy_AI__macOS_App: App {
            let authViewModel = coordinator.authViewModel,
            let calendarVM = coordinator.calendarViewModel {
             MacCalendarView(viewModel: calendarVM)
+                .macThemed()
                 .environmentObject(container)
                 .environmentObject(authViewModel)
                 .environmentObject(coordinator)
