@@ -75,6 +75,7 @@
 		72AE680B6AAEFE0BCA1B12FF /* DozyEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96A2F7A344900084C61 /* DozyEvent.swift */; };
 		75C9AC6C79B8B44F8CC3CCB0 /* SpeechServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */; };
 		7668E58917E3B1C6A2C18D69 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFF2F7FAA01007B8D9F /* Functions */; };
+		79C2328FDE8D7614E6C0A6AC /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA62A1932AC1B206A3A6017F /* MacAppDelegate.swift */; };
 		79DF6792FC633E4317316B79 /* MirrorExternalEventUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A71BDBFF6B04B4EB55A7CDB /* MirrorExternalEventUseCase.swift */; };
 		7AA956AF8C3141189744783D /* SharedCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9885C44E183149258A057270 /* SharedCalendarViewModel.swift */; };
 		7C64594B0B062758DAB886B5 /* SchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F691C2F6ACF7F001952F6 /* SchemaV1.swift */; };
@@ -88,6 +89,7 @@
 		855C050A758054D1558BE426 /* WorkLogRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD42F72C73000EEE463 /* WorkLogRepositoryProtocol.swift */; };
 		857D0475217A34782DC60979 /* SharedCalendarResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = E96E6A9C368B4064B7176A9A /* SharedCalendarResults.swift */; };
 		86D3ECAFA3730CF636CFFC13 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69132F6ACF33001952F6 /* AIService.swift */; };
+		8786C17F4B4435191645C92B /* MacEveningCheckSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F961C6AB3DE3A9A44E8549 /* MacEveningCheckSheet.swift */; };
 		87BF234CA70E48C7ADC1DFF3 /* WeatherCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2E5C2128D432DB7FA7A8C /* WeatherCardView.swift */; };
 		89C14C98DF2C403E41923200 /* DozyIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C952A327510DE462AB91F82 /* DozyIcons.xcassets */; };
 		8AD7157770B4B2626139375B /* NotificationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C68682F84F481003464E8 /* NotificationRecord.swift */; };
@@ -588,6 +590,7 @@
 		2389D509856F42CD9BB2A33D /* SharedCalendarEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarEditView.swift; sourceTree = "<group>"; };
 		30083713748542788D25614D /* SharedCalendarServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarServiceProtocol.swift; sourceTree = "<group>"; };
 		3114D236D432488CA295F800 /* ActiveSharedCalendarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSharedCalendarStore.swift; sourceTree = "<group>"; };
+		34F961C6AB3DE3A9A44E8549 /* MacEveningCheckSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacEveningCheckSheet.swift; sourceTree = "<group>"; };
 		3C5B05A6ADA642AE906EE98E /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		3DB429569CCC4758B97C2923 /* SharedCalendarListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarListView.swift; sourceTree = "<group>"; };
 		48265506FD81F8102344D97F /* TodayAgendaPlanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayAgendaPlanner.swift; sourceTree = "<group>"; };
@@ -725,6 +728,7 @@
 		E1F2E5C2128D432DB7FA7A8C /* WeatherCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCardView.swift; sourceTree = "<group>"; };
 		E52E9135FC4F4C559A927798 /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
 		E96E6A9C368B4064B7176A9A /* SharedCalendarResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendarResults.swift; sourceTree = "<group>"; };
+		EA62A1932AC1B206A3A6017F /* MacAppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacAppDelegate.swift; sourceTree = "<group>"; };
 		F3EEAFB9FAED68675BE97F33 /* TodayAgendaAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayAgendaAttributes.swift; sourceTree = "<group>"; };
 		F60ADF092F7FB007007B8D9F /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		F60ADF0B2F7FB0B0007B8D9F /* AuthUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUser.swift; sourceTree = "<group>"; };
@@ -1732,6 +1736,7 @@
 			isa = PBXGroup;
 			children = (
 				F6EC8AF22F99959C00CFFF87 /* MacAppRootView.swift */,
+				EA62A1932AC1B206A3A6017F /* MacAppDelegate.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -1790,6 +1795,7 @@
 				F6EC8B022F99A00000CFFF87 /* MacTodayView.swift */,
 				F6EC8B042F99A00000CFFF87 /* MacEventRow.swift */,
 				F67333002FA34508000A610A /* MacWeatherCardView.swift */,
+				34F961C6AB3DE3A9A44E8549 /* MacEveningCheckSheet.swift */,
 			);
 			path = Today;
 			sourceTree = "<group>";
@@ -2649,6 +2655,8 @@
 				D7F9BD5911B63BE91E0A04E2 /* SyncTodayLiveActivityUseCase.swift in Sources */,
 				9078D03417C5BC30A3D2A193 /* DozyIcon.swift in Sources */,
 				0D5BBFD7590124B0F9C8AD2A /* DemoDataSeeder.swift in Sources */,
+				79C2328FDE8D7614E6C0A6AC /* MacAppDelegate.swift in Sources */,
+				8786C17F4B4435191645C92B /* MacEveningCheckSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -21,6 +21,26 @@ struct SummaryReminderScheduleTests {
         cal.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute))!
     }
 
+    // MARK: - preGenerationDate (macOS 포그라운드 미리 생성)
+
+    @Test("알림 10분 전이 아직 안 왔으면 그 시각")
+    func preGenerationBeforeWindow() {
+        let now = date(2026, 3, 5, 10)
+        #expect(SummaryReminderSchedule.preGenerationDate(settings: settings, from: now, calendar: cal) == date(2026, 3, 5, 20, 50))
+    }
+
+    @Test("10분 창 안에 들어와 있으면 지금 바로")
+    func preGenerationInsideWindow() {
+        let now = date(2026, 3, 5, 20, 55)
+        #expect(SummaryReminderSchedule.preGenerationDate(settings: settings, from: now, calendar: cal) == now)
+    }
+
+    @Test("오늘 알림 시각이 지났으면 내일 10분 전")
+    func preGenerationAfterFire() {
+        let now = date(2026, 3, 5, 21, 30)
+        #expect(SummaryReminderSchedule.preGenerationDate(settings: settings, from: now, calendar: cal) == date(2026, 3, 6, 20, 50))
+    }
+
     // MARK: - nextFireDate
 
     @Test("오늘 시각이 아직 안 지났으면 오늘, 지났으면 내일")

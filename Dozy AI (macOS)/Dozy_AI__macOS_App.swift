@@ -23,6 +23,8 @@ extension Locale {
 
 @main
 struct Dozy_AI__macOS_App: App {
+    /// 저녁 요약 알림의 UNUserNotificationCenterDelegate (#101). 알림으로 앱이 실행되는 경우를 받으려면 런치 시점에 등록돼야 한다.
+    @NSApplicationDelegateAdaptor(MacAppDelegate.self) private var appDelegate
     @StateObject private var coordinator = MacAppCoordinator()
 
     var body: some Scene {
@@ -272,6 +274,7 @@ final class MacAppCoordinator: ObservableObject {
 
     private var calendarAccessCancellables = Set<AnyCancellable>()
     private var authStateCancellable: AnyCancellable?
+    private var reminderCancellables = Set<AnyCancellable>()
 
     init() {
         #if !DEBUG
@@ -334,6 +337,29 @@ final class MacAppCoordinator: ObservableObject {
 
         container = c
         isReady = true
+        wireSummaryReminder(c)
+    }
+
+    /// 저녁 요약 알림 (#101): 미리 생성 공급자 연결 → 켜져 있으면 7일치 예약 + 알림 10분 전 타이머.
+    /// 앱이 다시 활성화될 때마다(잠자기 복귀 포함) 예약을 다시 채우고, 알림 탭이 오면 오늘 섹션으로 옮긴다.
+    private func wireSummaryReminder(_ c: DependencyContainer) {
+        SummaryReminderService.backgroundSummaryProvider = { [weak c] in
+            guard let c else { throw CancellationError() }
+            return try await c.generateTodaySummaryInBackground()
+        }
+        Task { @MainActor in c.summaryReminderService.refreshSchedulesIfEnabled() }
+
+        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak c] _ in
+                Task { @MainActor in c?.summaryReminderService.refreshSchedulesIfEnabled() }
+            }
+            .store(in: &reminderCancellables)
+
+        NotificationCenter.default.publisher(for: .dozyOpenDailySummary)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.selectedSection = .today }
+            .store(in: &reminderCancellables)
     }
 }
 

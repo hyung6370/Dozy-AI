@@ -10,6 +10,7 @@ import Foundation
 import Combine
 import SwiftData
 import SwiftUI
+import OSLog
 
 @MainActor
 final class MacHomeViewModel: ObservableObject {
@@ -28,6 +29,11 @@ final class MacHomeViewModel: ObservableObject {
     @Published var showSuccessAnimation = false
     /// 읽지 않은 알림(reminder/shared) 존재 여부 — Today 툴바 종 아이콘 뱃지에 사용.
     @Published var hasUnreadNotification = false
+
+    // 저녁 일정 체크 프롬프트 (EveningCheckPrompt, #101)
+    /// 시트에 보여 줄 대상 일정 스냅샷. 체크 상태는 completionsByEventID 로 실시간 반영.
+    @Published var eveningCheckEvents: [CalendarEvent] = []
+    @Published var showEveningCheck = false
 
     // MARK: - Deps
 
@@ -257,6 +263,37 @@ final class MacHomeViewModel: ObservableObject {
                 }
             )
             .store(in: &cancellables)
+    }
+
+    // MARK: - 저녁 일정 체크
+
+    /// 완료 상태 로드가 끝난 뒤 호출. 18시 이후 · 오늘 미표시 · 끝났는데 체크 안 된 일정 있음 → 오늘 1회 시트를 띄운다.
+    /// 하루 1회 게이팅은 EveningCheckPrompt.Store 가 맡는다 (iOS HomeViewModel 과 같은 규칙).
+    func evaluateEveningCheckIfNeeded(now: Date = Date()) {
+        guard !showEveningCheck else { return }
+        let targets = EveningCheckPrompt.targetEvents(todayEvents, completions: completionsByEventID, now: now)
+        guard EveningCheckPrompt.shouldPrompt(
+            now: now,
+            isEnabled: EveningCheckPrompt.Store.isEnabled(),
+            lastShownDay: EveningCheckPrompt.Store.lastShownDay(),
+            targetCount: targets.count
+        ) else { return }
+        EveningCheckPrompt.Store.markShown(on: now)
+        eveningCheckEvents = targets
+        showEveningCheck = true
+        Logger.app.info("[저녁 체크] 미완료 \(targets.count)건 → 프롬프트 표시")
+    }
+
+    /// 요약 시트 등 다른 흐름이 먼저 열렸을 때 — 오늘은 체크 프롬프트를 띄우지 않는다.
+    func skipEveningCheckForToday() {
+        EveningCheckPrompt.Store.markShown()
+    }
+
+    /// 시트의 "모두 완료" — 아직 체크 안 된 대상 일정을 한 번에 완료 처리.
+    func completeAllEveningCheckEvents() {
+        for event in eveningCheckEvents where completionsByEventID[event.id] != true {
+            toggleCompletion(for: event)
+        }
     }
 
     /// 토글 직후 — Insight VM / 다른 Today/MenuBar/Calendar 인스턴스가 듣는 가벼운 알림.
@@ -506,6 +543,8 @@ final class MacHomeViewModel: ObservableObject {
                     withTransaction(txn) {
                         self.completionsByEventID = simple
                     }
+                    // 완료 상태까지 갖춰진 뒤에만 저녁 체크 조건을 평가한다.
+                    self.evaluateEveningCheckIfNeeded()
                 }
             )
             .store(in: &cancellables)
