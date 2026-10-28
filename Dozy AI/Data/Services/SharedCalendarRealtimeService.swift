@@ -151,7 +151,9 @@ final class SharedCalendarRealtimeService: ObservableObject {
                 Logger.realtime.info("🗑 \(calendarID) 로컬 고아 삭제: \(staleCount)개")
             }
 
-            // (1) 원격 row upsert
+            // (1) 원격 row upsert. row 마다 알림을 보내면 공유 일정 수만큼 화면이 다시 로드되어
+            //     오늘 탭 카드가 깜빡이므로(#110), 변경이 있었는지만 모아 루프 끝에 한 번 post 한다.
+            var changed = staleCount > 0
             for row in rows {
                 let sharedRow = SharedEventRow(
                     id: row.id, userID: row.userID, title: row.title,
@@ -170,8 +172,9 @@ final class SharedCalendarRealtimeService: ObservableObject {
                     externalLastSyncedAt: row.externalLastSyncedAt,
                     externalDeleted: row.externalDeleted
                 )
-                await upsertEvent(row: sharedRow, isUpdate: true)
+                if await upsertEvent(row: sharedRow, isUpdate: true, notify: false) { changed = true }
             }
+            if changed { await postEventListChanged() }
         } catch {
             Logger.realtime.error("⚠️ 초기 fetch 실패 (\(calendarID)): \(error.localizedDescription)")
         }
@@ -267,18 +270,24 @@ final class SharedCalendarRealtimeService: ObservableObject {
 
     // MARK: - Shared upsert logic
 
-    private func upsertEvent(row: SharedEventRow, isUpdate: Bool) async {
+    /// 로컬에 반영하고 실제로 바뀌었는지 돌려준다. 내용이 같은 row 는 저장도 알림도 하지 않는다 (#110).
+    /// - Parameter notify: true 면 변경 시 바로 `.dozyEventListChanged` 를 post (Realtime 단건용).
+    ///   초기 fetch 처럼 여러 row 를 돌 때는 false 로 두고 호출부가 한 번만 post 한다.
+    @discardableResult
+    private func upsertEvent(row: SharedEventRow, isUpdate: Bool, notify: Bool = true) async -> Bool {
         // SwiftData fetch/save 를 ModelActor 로 분리해 main-thread I/O 경고 회피.
         let action = await syncActor.upsert(row: row, isUpdate: isUpdate)
-        if let action {
-            Logger.realtime.info("\(action == "UPDATE" ? "✏️" : "➕") 공유 이벤트 \(action): \(row.title)")
-            // CalendarViewModel 이 SwiftData 직접 변경을 못 봐서 그리드가 stale.
-            // INSERT/UPDATE 모두 .dozyEventListChanged 로 갱신 트리거. object: self 로
-            // 자기-트리거 가드 (이미 ViewModel 들에서 self 비교해 자기 post 는 무시
-            // 하는 패턴) 와 호환.
-            await MainActor.run {
-                NotificationCenter.default.post(name: .dozyEventListChanged, object: self)
-            }
+        guard let action else { return false }
+        Logger.realtime.info("\(action == "UPDATE" ? "✏️" : "➕") 공유 이벤트 \(action): \(row.title)")
+        if notify { await postEventListChanged() }
+        return true
+    }
+
+    /// CalendarViewModel 이 SwiftData 직접 변경을 못 봐서 그리드가 stale → .dozyEventListChanged 로 갱신 트리거.
+    /// object: self 로 자기-트리거 가드(ViewModel 들이 self 비교로 자기 post 를 무시하는 패턴)와 호환.
+    private func postEventListChanged() async {
+        await MainActor.run {
+            NotificationCenter.default.post(name: .dozyEventListChanged, object: self)
         }
     }
 
@@ -549,6 +558,31 @@ private actor SharedCalendarSyncActor {
         return stale.count
     }
 
+    /// upsert 가 덮어쓰는 필드 전부를 비교한다. 하나라도 다르면 false.
+    static func isSameContent(_ event: DozyEvent, _ row: SharedEventRow) -> Bool {
+        event.title == row.title
+            && event.startDate == row.startDate
+            && event.endDate == row.endDate
+            && event.isAllDay == row.isAllDay
+            && event.location == row.location
+            && event.latitude == row.latitude
+            && event.longitude == row.longitude
+            && event.notes == row.notes
+            && event.colorHex == row.colorHex
+            && event.recurrenceRule == row.recurrenceRule
+            && event.recurrenceEndDate == row.recurrenceEndDate
+            && event.notificationMinutesBefore == row.notificationMinutesBefore
+            && event.memos == row.memos
+            && event.isCompleted == row.isCompleted
+            && event.priority == row.priority
+            && event.isPinned == row.isPinned
+            && event.category == row.category
+            && event.externalSource == row.externalSource
+            && event.externalEventID == row.externalEventID
+            && event.externalLastSyncedAt == row.externalLastSyncedAt
+            && event.externalDeleted == row.externalDeleted
+    }
+
     /// 공유 row upsert. 액션 ("UPDATE" | "INSERT") 또는 nil(스킵) 반환.
     func upsert(row: SharedEventRow, isUpdate: Bool) -> String? {
         let rowID = row.id
@@ -557,6 +591,9 @@ private actor SharedCalendarSyncActor {
 
         if let event = existing?.first {
             guard isUpdate, event.ownerID == row.userID else { return nil }
+            // 내용이 같으면 건너뛴다 — 초기 fetch · resync 가 같은 row 를 매번 덮어쓰며
+            // "UPDATE" 알림을 내던 것이 오늘 탭 깜빡임의 원천 (#110).
+            guard !Self.isSameContent(event, row) else { return nil }
             event.title = row.title
             event.startDate = row.startDate
             event.endDate = row.endDate

@@ -109,8 +109,9 @@ final class MacMenuBarViewModel: ObservableObject {
             .store(in: &cancellables)
 
         // 일정 자체가 만들어졌거나 지워졌을 때 — 리스트 통째 재로드.
+        // 공유 캘린더 Realtime 이 row 마다 보내는 알림을 300ms 로 합친다 (#110).
         NotificationCenter.default.publisher(for: .dozyEventListChanged)
-            .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in self?.loadTodayData() }
             .store(in: &cancellables)
     }

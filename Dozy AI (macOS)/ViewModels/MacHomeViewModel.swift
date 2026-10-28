@@ -24,6 +24,8 @@ final class MacHomeViewModel: ObservableObject {
     @Published var todayLog: WorkLog?
     @Published var dailySummary: DailySummary?
     @Published var isLoading = false
+    /// 첫 loadTodayData 가 끝났는지. 뷰는 이 값이 false 일 때만 스피너를 보여 준다 (#110).
+    @Published private(set) var hasLoadedOnce = false
     @Published var isSummarizing = false
     @Published var errorMessage: String?
     @Published var showSuccessAnimation = false
@@ -117,9 +119,11 @@ final class MacHomeViewModel: ObservableObject {
 
         refreshNotificationBadge()
 
+        // 동기화 완료 · 외부 일정 변경은 조용히(스피너 없이) 갱신하고, 연달아 오는 알림은 300ms 로 합친다 —
+        // 공유 캘린더 Realtime 이 row 마다 알림을 보내 오늘 탭이 깜빡이던 문제 (#110).
         NotificationCenter.default.publisher(for: .dozyDataSyncCompleted)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.loadTodayData() }
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadTodayData(showLoading: false) }
             .store(in: &cancellables)
 
         // 다른 화면(Calendar / MenuBar)에서 일정 토글한 변경분만 가볍게 반영.
@@ -137,12 +141,12 @@ final class MacHomeViewModel: ObservableObject {
         // 다른 화면(Calendar / MenuBar)에서 일정을 만들거나 지웠을 때 — 리스트 자체가
         // 바뀌었으므로 todayEvents 통째로 재로드. 자기-트리거는 무시.
         NotificationCenter.default.publisher(for: .dozyEventListChanged)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] note in
-                guard let self else { return }
-                if (note.object as AnyObject?) === self { return }
-                self.loadTodayData()
+            .filter { [weak self] note in
+                guard let self else { return false }
+                return (note.object as AnyObject?) !== self
             }
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in self?.loadTodayData(showLoading: false) }
             .store(in: &cancellables)
 
         // 설정 화면에서 공유 캘린더를 만들거나 나간 직후 picker 가 stale 되지 않도록.
@@ -188,6 +192,7 @@ final class MacHomeViewModel: ObservableObject {
         .sink(
             receiveCompletion: { [weak self] completion in
                 self?.isLoading = false
+                self?.hasLoadedOnce = true
                 if case .failure(let error) = completion {
                     self?.errorMessage = error.errorDescription
                 }
