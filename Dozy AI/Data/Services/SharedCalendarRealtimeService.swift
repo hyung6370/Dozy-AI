@@ -425,7 +425,8 @@ final class SharedCalendarRealtimeService: ObservableObject {
 
 // MARK: - Internal DTO
 
-private struct SharedEventRow: Sendable {
+/// Realtime · 초기 fetch 가 로컬에 반영할 공유 일정 한 줄. 테스트에서 비교 로직을 쓰기 위해 internal (#112).
+struct SharedEventRow: Sendable {
     let id: String
     let userID: String
     let title: String
@@ -539,27 +540,13 @@ private extension Logger {
 // MARK: - SharedCalendarSyncActor
 //
 // SwiftData 의 ModelContext 가 iOS 17.4+ 부터 @MainActor 로 isolated 라
-// background fetch/save 를 위해서는 @ModelActor 매크로로 별도 actor 가 필요.
-// 이 actor 는 자체 ModelContext 를 보유하고 자기 직렬 executor 에서 동작 →
-// main-thread I/O 경고 발생 없이 SwiftData 작업 수행.
-@ModelActor
-private actor SharedCalendarSyncActor {
+// MARK: - 내용 비교 (순수)
 
-    /// 공유 캘린더의 로컬 orphan(원격에서 사라진 row) 정리. 삭제된 row 수 반환.
-    func deleteOrphans(calendarID: String, remoteIDs: Set<String>) -> Int {
-        let calID = calendarID
-        let predicate = #Predicate<DozyEvent> { $0.sharedCalendarID == calID }
-        let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
-        let local = (try? modelContext.fetch(descriptor)) ?? []
-        let stale = local.filter { !remoteIDs.contains($0.id) }
-        guard !stale.isEmpty else { return 0 }
-        for event in stale { modelContext.delete(event) }
-        try? modelContext.save()
-        return stale.count
-    }
-
-    /// upsert 가 덮어쓰는 필드 전부를 비교한다. 하나라도 다르면 false.
-    static func isSameContent(_ event: DozyEvent, _ row: SharedEventRow) -> Bool {
+/// 로컬 DozyEvent 와 원격 row 의 내용이 같은지. 같으면 SyncActor 가 저장 · 알림을 건너뛴다 (#110).
+/// 프레임워크 의존 없는 순수 비교라 단위 테스트 대상 (#112).
+enum SharedEventContentDiff {
+    /// upsert 가 덮어쓰는 필드 전부를 비교한다. 하나라도 다르면 false. ownerID · sharedCalendarID 는 덮어쓰지 않으므로 비교하지 않는다.
+    static func isSame(_ event: DozyEvent, _ row: SharedEventRow) -> Bool {
         event.title == row.title
             && event.startDate == row.startDate
             && event.endDate == row.endDate
@@ -583,6 +570,27 @@ private actor SharedCalendarSyncActor {
             && event.externalDeleted == row.externalDeleted
     }
 
+}
+
+// background fetch/save 를 위해서는 @ModelActor 매크로로 별도 actor 가 필요.
+// 이 actor 는 자체 ModelContext 를 보유하고 자기 직렬 executor 에서 동작 →
+// main-thread I/O 경고 발생 없이 SwiftData 작업 수행.
+@ModelActor
+private actor SharedCalendarSyncActor {
+
+    /// 공유 캘린더의 로컬 orphan(원격에서 사라진 row) 정리. 삭제된 row 수 반환.
+    func deleteOrphans(calendarID: String, remoteIDs: Set<String>) -> Int {
+        let calID = calendarID
+        let predicate = #Predicate<DozyEvent> { $0.sharedCalendarID == calID }
+        let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+        let local = (try? modelContext.fetch(descriptor)) ?? []
+        let stale = local.filter { !remoteIDs.contains($0.id) }
+        guard !stale.isEmpty else { return 0 }
+        for event in stale { modelContext.delete(event) }
+        try? modelContext.save()
+        return stale.count
+    }
+
     /// 공유 row upsert. 액션 ("UPDATE" | "INSERT") 또는 nil(스킵) 반환.
     func upsert(row: SharedEventRow, isUpdate: Bool) -> String? {
         let rowID = row.id
@@ -593,7 +601,7 @@ private actor SharedCalendarSyncActor {
             guard isUpdate, event.ownerID == row.userID else { return nil }
             // 내용이 같으면 건너뛴다 — 초기 fetch · resync 가 같은 row 를 매번 덮어쓰며
             // "UPDATE" 알림을 내던 것이 오늘 탭 깜빡임의 원천 (#110).
-            guard !Self.isSameContent(event, row) else { return nil }
+            guard !SharedEventContentDiff.isSame(event, row) else { return nil }
             event.title = row.title
             event.startDate = row.startDate
             event.endDate = row.endDate

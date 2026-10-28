@@ -114,8 +114,7 @@ final class SummaryReminderService {
     static func runPreGeneration(_ settings: SummaryReminderSettings, now: Date = Date()) async {
         guard settings.isEnabled else { return }
         await topUpUpcoming(settings, now: now)
-        guard let fire = settings.nextFireDate(after: now),
-              SummaryReminderSchedule.dayKey(for: fire) == SummaryReminderSchedule.dayKey(for: now) else {
+        guard SummaryReminderSchedule.shouldPreGenerate(settings: settings, now: now) else {
             Logger.reminder.info("[요약 알림] 오늘 알림 시각이 지나 미리 생성 생략")
             return
         }
