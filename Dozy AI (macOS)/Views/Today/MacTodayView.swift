@@ -148,6 +148,7 @@ struct MacTodayView: View {
                 eventToEdit: nil,
                 selectedDate: Date(),
                 sharedCalendars: viewModel.mySharedCalendars,
+                parseUseCase: container.parseNaturalLanguageEventUseCase,
                 onSave: { saved in
                     viewModel.saveDozyEvent(saved)
                 }

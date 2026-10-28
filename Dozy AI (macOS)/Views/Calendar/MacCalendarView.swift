@@ -15,6 +15,7 @@ struct MacCalendarView: View {
     @ObservedObject var viewModel: MacCalendarViewModel
     @StateObject private var swipeState = MonthSwipeState()
     @EnvironmentObject private var authViewModel: MacAuthViewModel
+    @EnvironmentObject private var container: DependencyContainer
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedEvent: CalendarEvent? = nil
     @State private var showNewEventSheet = false
@@ -217,6 +218,7 @@ struct MacCalendarView: View {
                 selectedDate: newEventTimeHint ?? viewModel.selectedDate,
                 sharedCalendars: viewModel.mySharedCalendars,
                 useTimeHint: newEventTimeHint != nil,
+                parseUseCase: container.parseNaturalLanguageEventUseCase,
                 onSave: { saved in
                     viewModel.saveDozyEvent(saved)
                 }
