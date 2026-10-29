@@ -34,6 +34,31 @@ final class NotificationRepository {
         }
     }
     
+    /// 공유 일정 알림 카드 저장 — 같은 일정 카드가 이미 있으면 건너뛴다 (#95).
+    /// Realtime INSERT · 푸시 수신 · 푸시 탭 · 앱 활성화 때 전달된 알림 수거가 같은 일정을 여러 번 넘길 수 있다.
+    /// - Returns: 새로 만들었으면 true
+    @MainActor
+    @discardableResult
+    func saveSharedIfNeeded(_ push: SharedEventPush, deliveredAt: Date = Date()) -> Bool {
+        let context = modelContainer.mainContext
+        let eventID = push.eventID
+        let descriptor = FetchDescriptor<NotificationRecord>(
+            predicate: #Predicate<NotificationRecord> { $0.eventID == eventID && $0.kind == "shared" }
+        )
+        if let count = try? context.fetchCount(descriptor), count > 0 { return false }
+        context.insert(NotificationRecord(
+            eventID: push.eventID,
+            eventTitle: push.title,
+            body: push.cardBody,
+            deliveryDate: deliveredAt,
+            eventStartDate: push.startDate ?? deliveredAt,
+            kind: "shared",
+            senderName: push.senderName
+        ))
+        try? context.save()
+        return true
+    }
+
     // 전체 알림 기록 조회 (예정 포함)
     func fetchDelivered() -> AnyPublisher<[NotificationRecord], Never> {
         Future { [modelContainer, weak self] promise in

@@ -7543,6 +7543,56 @@
           }
         }
       }
+    },
+    "%@님이 '%@' 일정을 공유했습니다" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ shared '%2$@'"
+          }
+        }
+      }
+    },
+    "파트너님이 '%@' 일정을 공유했습니다" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner shared '%@'"
+          }
+        }
+      }
+    },
+    "공유 캘린더 알림" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shared Calendar Notifications"
+          }
+        }
+      }
+    },
+    "새 공유 일정 알림" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Shared Events"
+          }
+        }
+      }
+    },
+    "파트너가 공유 캘린더에 일정을 추가하면 앱이 꺼져 있어도 알려드려요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get notified when your partner adds an event to a shared calendar, even when the app is closed."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

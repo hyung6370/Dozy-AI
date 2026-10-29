@@ -236,6 +236,27 @@ final class MockQueryParsingService: QueryParsingServiceProtocol {
     }
 }
 
+// MARK: - MockPushTokenService (#95)
+
+final class MockPushTokenService: PushTokenServiceProtocol {
+    var signedIn = true
+    var stubbedError: Error? = nil
+    private(set) var registered: [(token: String, environment: String, sharedEnabled: Bool)] = []
+    private(set) var unregistered: [String] = []
+
+    func isSignedIn() async -> Bool { signedIn }
+
+    func register(token: String, platform: String, environment: String, sharedNotificationsEnabled: Bool) async throws {
+        if let stubbedError { throw stubbedError }
+        registered.append((token, environment, sharedNotificationsEnabled))
+    }
+
+    func unregister(token: String) async throws {
+        if let stubbedError { throw stubbedError }
+        unregistered.append(token)
+    }
+}
+
 // MARK: - MockAnalyticsService (#90)
 
 final class MockAnalyticsService: AnalyticsServiceProtocol {
