@@ -235,6 +235,13 @@ struct MainTabView: View {
                 showCreateEvent = true
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestNewEvent)) { _ in
+            // 캘린더 날짜 길게 누르기 → 생성. 탭은 그대로 두고 같은 생성 시트를 연다 (기본 날짜 = 캘린더 selectedDate).
+            guard !showCreateEvent else { return }
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
+                showCreateEvent = true
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .dozyWidgetOpenCalendar)) { _ in
             // systemLarge 위젯의 미니 캘린더 / 하단 일정 리스트 탭 → 캘린더 탭으로 이동.
             selection = .calendar

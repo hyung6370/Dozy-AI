@@ -29,6 +29,8 @@ struct EventEditView: View {
     @State private var parseError: String?
     @State private var parsedSourceLabel: String?
     @FocusState private var quickFieldFocused: Bool
+    /// 새 일정이면 열리자마자 제목에 포커스 — 키보드가 바로 올라온다.
+    @FocusState private var titleFocused: Bool
     /// 음성으로 한 줄 입력. nil 이면 마이크 버튼을 그리지 않는다.
     private let speechService: SpeechServiceProtocol?
     @State private var showVoiceInput = false
@@ -86,6 +88,12 @@ struct EventEditView: View {
             .navigationTitle(viewModel.isEditing ? "일정 수정" : "새 일정")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { syncColor(with: viewModel.category) }
+            .task {
+                // 시트가 올라오는 애니메이션 중에 포커스를 주면 무시되는 경우가 있어 살짝 기다린다.
+                guard !viewModel.isEditing else { return }
+                try? await Task.sleep(for: .milliseconds(450))
+                titleFocused = true
+            }
             .onChange(of: viewModel.category) { _, newName in syncColor(with: newName) }
             .sheet(isPresented: $showAddCategory) {
                 CategoryEditSheet()
@@ -216,6 +224,7 @@ struct EventEditView: View {
                 TextField("제목", text: $viewModel.title)
                     .font(.title3.weight(.semibold))
                     .submitLabel(.done)
+                    .focused($titleFocused)
             }
 
             ScrollView(.horizontal, showsIndicators: false) {

@@ -1141,11 +1141,6 @@ final class CalendarViewModel: ObservableObject {
     
     // MARK: - CRUD
     
-    func startCreatingEvent() {
-        eventToEdit = nil
-        showEventEdit = true
-    }
-    
     func startEditingEvent(_ event: DozyEvent) {
         eventToEdit = event
         showEventEdit = true
