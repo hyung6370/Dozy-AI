@@ -2,8 +2,9 @@
 //  SearchViewModel.swift
 //  Dozy AI
 //
-//  검색 화면 ViewModel (#72 선행 리팩터링). SearchView 가 직접 하던 외부 일정 조회 · 저장 · 메모 삭제 ·
-//  표시 설정 저장을 UseCase 로 옮겼다. 매칭 자체는 순수 계산 `SearchMatcher`.
+//  검색 화면 ViewModel (#72). 키워드 검색(SearchMatcher) 위에 자연어 질의(기간 · 집계)를 얹는다.
+//  - 입력 중에는 키워드 결과를 바로 보여 주고, 0.8초 멈추거나 return 키를 누르면 한 번만 해석한다 (키 입력마다 모델 호출 금지)
+//  - 해석에 기간이 있으면 기간 검색 결과 + 집계 카드, 없으면 기존 키워드 검색 그대로 (해석 실패 폴백이 자동)
 //
 //  Dozy 일정 · 일지 · 카테고리는 View 의 `@Query` 를 그대로 받는다 — 상세 · 편집 시트에서 고친 내용이
 //  저장 즉시 결과에 반영되는 기존 동작을 유지하기 위해서다.
@@ -27,7 +28,23 @@ final class SearchViewModel: ObservableObject {
     @Published var calendarEventToEdit: CalendarEvent?
     @Published var pendingMemoDelete: PendingMemoDelete?
 
+    /// 기간이 있는 해석 결과. nil 이면 키워드 검색.
+    @Published private(set) var interpretation: SearchInterpretation?
+    /// 해석 대기 · 진행 중 (빈 결과 대신 진행 표시를 보여 주기 위해)
+    @Published private(set) var isInterpreting = false
+    /// 기간 칩을 지웠을 때 — 원문 대신 해석된 키워드로 키워드 검색
+    @Published private(set) var keywordOverride: String?
+
+    /// 사용자 카테고리 이름 (View 의 @Query 가 넘겨준다). 해석기가 카테고리 힌트를 고를 때 쓴다.
+    var categoryNames: [String] = []
+
     var hasQuery: Bool { !SearchMatcher.normalize(query).isEmpty }
+
+    /// 메모 스니펫 · 키워드 결과에 쓸 검색어
+    var effectiveKeyword: String {
+        if let interpretation { return interpretation.intent.keyword ?? "" }
+        return keywordOverride ?? query
+    }
 
     // MARK: - 의존성
 
@@ -36,10 +53,16 @@ final class SearchViewModel: ObservableObject {
     private let updateCalendarEventUseCase: UpdateCalendarEventUseCase
     private let saveEventDisplaySettingsUseCase: SaveEventDisplaySettingsUseCase
     private let saveWorkLogUseCase: SaveWorkLogUseCase
+    private let parseSearchQueryUseCase: ParseSearchQueryUseCase
+    private let searchEventsUseCase: SearchEventsUseCase
     private let now: () -> Date
 
     private var hasLoadedExternal = false
     private var cancellables = Set<AnyCancellable>()
+    private var interpretTask: Task<Void, Never>?
+    private var searchCancellable: AnyCancellable?
+    /// return 키와 디바운스가 같은 문장을 두 번 해석하지 않게
+    private var lastInterpretedText: String?
 
     init(
         fetchCalendarEventsForPeriodUseCase: FetchCalendarEventsForPeriodUseCase,
@@ -47,6 +70,9 @@ final class SearchViewModel: ObservableObject {
         updateCalendarEventUseCase: UpdateCalendarEventUseCase,
         saveEventDisplaySettingsUseCase: SaveEventDisplaySettingsUseCase,
         saveWorkLogUseCase: SaveWorkLogUseCase,
+        parseSearchQueryUseCase: ParseSearchQueryUseCase,
+        searchEventsUseCase: SearchEventsUseCase,
+        debounce: DispatchQueue.SchedulerTimeType.Stride = .milliseconds(800),
         now: @escaping () -> Date = Date.init
     ) {
         self.fetchCalendarEventsForPeriodUseCase = fetchCalendarEventsForPeriodUseCase
@@ -54,6 +80,8 @@ final class SearchViewModel: ObservableObject {
         self.updateCalendarEventUseCase = updateCalendarEventUseCase
         self.saveEventDisplaySettingsUseCase = saveEventDisplaySettingsUseCase
         self.saveWorkLogUseCase = saveWorkLogUseCase
+        self.parseSearchQueryUseCase = parseSearchQueryUseCase
+        self.searchEventsUseCase = searchEventsUseCase
         self.now = now
 
         // 외부 일정은 화면을 열 때가 아니라 첫 검색어가 들어올 때 한 번 불러온다
@@ -61,6 +89,21 @@ final class SearchViewModel: ObservableObject {
             .filter { !SearchMatcher.normalize($0).isEmpty }
             .first()
             .sink { [weak self] _ in self?.loadExternalEventsIfNeeded() }
+            .store(in: &cancellables)
+
+        // 입력이 바뀌면 이전 해석은 버리고 키워드 결과로 돌아간다
+        $query
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] text in self?.resetInterpretation(for: text) }
+            .store(in: &cancellables)
+
+        // 입력이 멈추면 한 번 해석
+        $query
+            .dropFirst()
+            .removeDuplicates()
+            .debounce(for: debounce, scheduler: DispatchQueue.main)
+            .sink { [weak self] text in self?.interpret(text) }
             .store(in: &cancellables)
     }
 
@@ -70,15 +113,21 @@ final class SearchViewModel: ObservableObject {
             updateDozyEventUseCase: container.updateDozyEventUseCase,
             updateCalendarEventUseCase: container.updateCalendarEventUseCase,
             saveEventDisplaySettingsUseCase: container.saveEventDisplaySettingsUseCase,
-            saveWorkLogUseCase: container.saveWorkLogUseCase
+            saveWorkLogUseCase: container.saveWorkLogUseCase,
+            parseSearchQueryUseCase: container.parseSearchQueryUseCase,
+            searchEventsUseCase: container.searchEventsUseCase
         )
     }
 
     // MARK: - 결과
 
+    /// 기간 해석이 있으면 기간 검색 결과(일정만), 없으면 키워드 검색.
     func results(dozyEvents: [DozyEvent], workLogs: [WorkLog], categories: [UserCategory]) -> SearchResults {
-        SearchMatcher.match(
-            query: query,
+        if let interpretation {
+            return SearchResults(events: interpretation.result?.events ?? [])
+        }
+        return SearchMatcher.match(
+            query: keywordOverride ?? query,
             dozyEvents: dozyEvents,
             externalEvents: externalEvents,
             workLogs: workLogs,
@@ -87,11 +136,101 @@ final class SearchViewModel: ObservableObject {
     }
 
     func matchedMemo(for event: CalendarEvent, dozyEvent: DozyEvent?) -> String? {
-        SearchMatcher.matchedMemo(for: event, dozyEvent: dozyEvent, query: query)
+        SearchMatcher.matchedMemo(for: event, dozyEvent: dozyEvent, query: effectiveKeyword)
     }
 
     func matchedMemos(in log: WorkLog) -> [String] {
-        SearchMatcher.matchedMemos(in: log, query: query)
+        SearchMatcher.matchedMemos(in: log, query: effectiveKeyword)
+    }
+
+    // MARK: - 자연어 질의
+
+    /// return 키 — 디바운스를 기다리지 않고 바로 해석
+    func submitNow() {
+        interpret(query)
+    }
+
+    /// 기간 칩 지우기 → 해석된 키워드로 키워드 검색 (집계도 함께 사라진다)
+    func removePeriod() {
+        guard let intent = interpretation?.intent else { return }
+        cancelInterpretation()
+        keywordOverride = intent.keyword ?? ""
+    }
+
+    /// 카테고리 칩 지우기 → 제목 · 장소 · 메모 매칭만으로 다시 검색
+    func removeCategory() {
+        guard var intent = interpretation?.intent, intent.categoryHint != nil else { return }
+        intent.categoryHint = nil
+        runPeriodSearch(intent)
+    }
+
+    private func resetInterpretation(for text: String) {
+        cancelInterpretation()
+        keywordOverride = nil
+        lastInterpretedText = nil
+        // 여러 단어면 곧 해석이 붙을 수 있으니 "결과 없음" 대신 진행 표시
+        isInterpreting = QueryRuleParser.isMultiWord(text)
+            || QueryRuleParser.findPeriod(in: text.lowercased(), referenceDate: now(), calendar: .mondayFirst()) != nil
+    }
+
+    private func cancelInterpretation() {
+        interpretTask?.cancel()
+        interpretTask = nil
+        searchCancellable = nil
+        interpretation = nil
+        isInterpreting = false
+    }
+
+    private func interpret(_ text: String) {
+        guard !SearchMatcher.normalize(text).isEmpty else {
+            cancelInterpretation()
+            return
+        }
+        guard text != lastInterpretedText else { return }
+        lastInterpretedText = text
+        interpretTask?.cancel()
+        isInterpreting = true
+        let categories = categoryNames
+        let reference = now()
+        interpretTask = Task { [weak self] in
+            guard let self else { return }
+            let intent = await self.parseSearchQueryUseCase.execute(text: text, referenceDate: reference, categories: categories)
+            guard !Task.isCancelled, self.query == text else { return }
+            guard intent.period != nil else {
+                // 기간이 없으면 기존 키워드 검색 — 원문 그대로 (회귀 없음)
+                self.interpretation = nil
+                self.isInterpreting = false
+                return
+            }
+            self.runPeriodSearch(intent)
+        }
+    }
+
+    private func runPeriodSearch(_ intent: SearchQueryIntent) {
+        isInterpreting = true
+        interpretation = SearchInterpretation(intent: intent, result: interpretation?.result)
+        searchCancellable = searchEventsUseCase.execute(intent)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    guard let self else { return }
+                    if case .failure = completion {
+                        self.interpretation?.result = SearchPeriodResult(events: [], aggregate: nil)
+                    }
+                    self.isInterpreting = false
+                },
+                receiveValue: { [weak self] result in
+                    guard let self, self.interpretation?.intent == intent else { return }
+                    self.interpretation?.result = result
+                    self.isInterpreting = false
+                }
+            )
+    }
+
+    /// 편집 · 삭제 뒤 기간 검색 결과를 다시 계산 — 기간 결과는 @Query 가 아니라 조회 스냅샷이다.
+    private func refreshInterpretation() {
+        guard let intent = interpretation?.intent else { return }
+        runPeriodSearch(intent)
     }
 
     // MARK: - 외부 일정
@@ -135,6 +274,7 @@ final class SearchViewModel: ObservableObject {
                 if self.selectedEvent?.id == dozy.id {
                     self.selectedEvent = dozy.toCalendarEvent()
                 }
+                self.refreshInterpretation()
                 self.notifyEventChanged()
             })
             .store(in: &cancellables)
@@ -150,6 +290,7 @@ final class SearchViewModel: ObservableObject {
                     guard let self, self.selectedEvent?.id == event.id else { return }
                     self.selectedEvent = Self.refreshed(event, in: self.externalEvents) ?? self.selectedEvent
                 }
+                self.refreshInterpretation()
                 self.notifyEventChanged()
             })
             .store(in: &cancellables)
@@ -229,6 +370,12 @@ final class SearchViewModel: ObservableObject {
         calendarEventToEdit = nil
         pendingMemoDelete = nil
     }
+}
+
+/// 기간이 있는 해석과 그 검색 결과. result 가 nil 이면 조회 중.
+struct SearchInterpretation: Equatable {
+    var intent: SearchQueryIntent
+    var result: SearchPeriodResult?
 }
 
 /// 삭제 확인용 — 이벤트 메모 or 일지 메모

@@ -25,6 +25,7 @@ final class AnalyticsEventTests: XCTestCase {
         .externalEventMirrored(provider: .google),
         .calendarSourceConnected(provider: .apple),
         .insightsOpened(periodDays: 30),
+        .searchQuery(kind: .aggregate, engine: .onDevice),
     ]
 
     /// Firebase: 글자로 시작, 영문 소문자 · 숫자 · 밑줄, 40자 이하.

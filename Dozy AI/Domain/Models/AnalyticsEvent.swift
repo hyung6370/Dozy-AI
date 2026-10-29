@@ -28,6 +28,8 @@ enum AnalyticsEvent: Equatable {
     case calendarSourceConnected(provider: CalendarSource)
     /// 인사이트 화면 진입 · 기간 변경.
     case insightsOpened(periodDays: Int)
+    /// 검색 질의 확정 (#72). 어떤 종류로 해석됐고 누가 해석했는지 — 질의 문장은 보내지 않는다.
+    case searchQuery(kind: SearchQueryKind, engine: SearchQueryIntent.Source)
 
     var name: String {
         switch self {
@@ -40,6 +42,7 @@ enum AnalyticsEvent: Equatable {
         case .externalEventMirrored:    return "external_event_mirrored"
         case .calendarSourceConnected:  return "calendar_source_connected"
         case .insightsOpened:           return "insights_opened"
+        case .searchQuery:              return "search_query"
         }
     }
 
@@ -59,6 +62,8 @@ enum AnalyticsEvent: Equatable {
             return ["provider": .string(provider.rawValue)]
         case .insightsOpened(let days):
             return ["period_days": .int(days)]
+        case .searchQuery(let kind, let engine):
+            return ["kind": .string(kind.rawValue), "engine": .string(engine.rawValue)]
         }
     }
 
