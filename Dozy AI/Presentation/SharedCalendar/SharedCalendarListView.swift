@@ -26,13 +26,17 @@ struct SharedCalendarListView: View {
         ))
     }
 
+    @State private var editMode: EditMode = .inactive
+
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.calendars.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             } else if viewModel.calendars.isEmpty {
                 emptyState
+                    .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             } else {
                 calendarList
             }
@@ -42,7 +46,18 @@ struct SharedCalendarListView: View {
         .toolbar {
             if viewModel.calendars.count > 1 {
                 ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
+                    // 편집 아이콘 ↔ 편집 중엔 "완료" (카테고리 관리와 같은 패턴)
+                    Button {
+                        withAnimation { editMode = editMode == .active ? .inactive : .active }
+                    } label: {
+                        if editMode == .active {
+                            Text("완료").fontWeight(.semibold)
+                        } else {
+                            Image(symbol: "square.and.pencil")
+                        }
+                    }
+                    .foregroundStyle(DozyColor.Text.primary)
+                    .accessibilityLabel(editMode == .active ? "편집 완료" : "순서 편집")
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -50,7 +65,7 @@ struct SharedCalendarListView: View {
                     Button {
                         showCreateSheet = true
                     } label: {
-                        Label("새 공유 캘린더 만들기", symbol: "plus.circle")
+                        Label("새 공유 캘린더 만들기", symbol: "calendar.badge.plus")
                     }
                     Button {
                         showJoinSheet = true
@@ -61,9 +76,10 @@ struct SharedCalendarListView: View {
                     Image(symbol: "plus")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 24, height: 24)
+                        .frame(width: 22, height: 22)
                         .foregroundStyle(DozyColor.Text.primary)
                 }
+                .accessibilityLabel("공유 캘린더 추가")
             }
         }
         .dozyBackButton()   // 시스템 뒤로가기 → btn_navi_back 에셋 (스와이프 백 유지 — 자체 toolbar(편집) 뒤에 둬야 가장 왼쪽)
@@ -94,107 +110,105 @@ struct SharedCalendarListView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: DozySpacing.xl) {
             Spacer()
-            Image(symbol: "calendar.badge.plus")
-                .font(.system(size: 56))
-                .foregroundStyle(.secondary)
-            VStack(spacing: 8) {
-                Text("공유 캘린더가 없어요")
-                    .font(.headline)
-                Text("최대 4명까지 일정을 함께 관리해보세요")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            SharedCalendarHeaderIcon(symbol: "person.2.fill", size: 88)
+            VStack(spacing: DozySpacing.xs) {
+                Text("함께 쓰는 캘린더를 만들어 보세요")
+                    .font(DozyFont.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(DozyColor.Text.primary)
+                Text("가족 · 연인 · 친구와 최대 4명까지\n일정을 함께 보고 관리할 수 있어요")
+                    .font(DozyFont.subheadline)
+                    .foregroundStyle(DozyColor.Text.secondary)
                     .multilineTextAlignment(.center)
             }
-            VStack(spacing: 12) {
+            VStack(spacing: DozySpacing.sm) {
                 Button {
                     showCreateSheet = true
                 } label: {
-                    Text("새 공유 캘린더 만들기")
-                        .font(.subheadline).fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 12))
-                        .foregroundStyle(.white)
+                    Label("새 공유 캘린더 만들기", symbol: "calendar.badge.plus")
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(SharedCalendarPrimaryButtonStyle())
 
                 Button {
                     showJoinSheet = true
                 } label: {
-                    Text("초대 코드로 참여하기")
-                        .font(.subheadline).fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
-                        .foregroundStyle(.primary)
+                    Label("초대 코드로 참여하기", symbol: "person.badge.plus")
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(SharedCalendarSecondaryButtonStyle())
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, DozySpacing.xxl)
+            Spacer()
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Calendar List
 
     private var calendarList: some View {
         List {
-            ForEach(viewModel.calendars) { calendar in
-                NavigationLink {
-                    SharedCalendarDetailView(
-                        calendar: calendar,
-                        viewModel: viewModel
-                    )
-                } label: {
-                    calendarRow(calendar)
+            Section {
+                ForEach(viewModel.calendars) { calendar in
+                    NavigationLink {
+                        SharedCalendarDetailView(
+                            calendar: calendar,
+                            viewModel: viewModel
+                        )
+                    } label: {
+                        calendarRow(calendar)
+                    }
+                    .listRowBackground(DozyColor.Background.groupedRow)
                 }
-            }
-            .onMove { source, destination in
-                viewModel.moveCalendar(from: source, to: destination)
+                .onMove { source, destination in
+                    viewModel.moveCalendar(from: source, to: destination)
+                }
+            } footer: {
+                Text("별표가 붙은 기본 캘린더의 일정이 캘린더 탭에 표시돼요.")
+                    .font(DozyFont.caption)
+                    .foregroundStyle(DozyColor.Text.tertiary)
             }
         }
+        // List 유지 (onMove 보존). themed shell bg 가 비치도록 투명 — 카테고리 관리와 같은 패턴.
+        .environment(\.editMode, $editMode)
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
     }
 
     private func calendarRow(_ calendar: SharedCalendar) -> some View {
         let members = viewModel.membersMap[calendar.id] ?? []
-        let memberCount = members.count
-        return HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.accentColor.opacity(0.15))
-                    .frame(width: 44, height: 44)
-                if let url = calendar.publicImageURL {
-                    KFImage(url)
-                        .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 88, height: 88)))
-                        .cacheOriginalImage()
-                        .fade(duration: 0.15)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 44, height: 44)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                } else {
-                    Image(symbol: "person.2.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.accentColor)
-                }
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
+        let currentUserID = authViewModel.currentUser?.id ?? ""
+        let isActive = activeStore.isActive(calendar.id)
+        return HStack(spacing: DozySpacing.sm) {
+            SharedCalendarCover(imageURL: calendar.publicImageURL, size: 52)
+            VStack(alignment: .leading, spacing: DozySpacing.xxs) {
+                HStack(spacing: DozySpacing.xxs) {
                     Text(calendar.name)
-                        .font(.subheadline).fontWeight(.medium)
-                    if activeStore.isActive(calendar.id) {
+                        .font(DozyFont.bodyEmphasized)
+                        .foregroundStyle(DozyColor.Text.primary)
+                        .lineLimit(1)
+                    if isActive {
                         Image(symbol: "star.fill")
-                            .font(.caption2)
-                            .foregroundStyle(.yellow)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(DozyColor.Brand.primary)
+                            .accessibilityLabel("기본 캘린더")
                     }
                 }
-                Text("\(memberCount)명 참여 중")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: DozySpacing.xs) {
+                    if !members.isEmpty {
+                        SharedMemberAvatarStack(
+                            items: members.map { .init(id: $0.userID, name: $0.displayName(currentUserID: currentUserID)) },
+                            size: 22
+                        )
+                    }
+                    Text("\(members.count)명 참여 중")
+                        .font(DozyFont.caption)
+                        .foregroundStyle(DozyColor.Text.secondary)
+                }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DozySpacing.xxs)
     }
 }

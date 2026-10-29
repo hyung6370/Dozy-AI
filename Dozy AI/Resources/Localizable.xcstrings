@@ -1,16 +1,6 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "빠른 입력" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quick entry"
-          }
-        }
-      }
-    },
     "" : {
 
     },
@@ -40,6 +30,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completed %1$@ and %2$lld more"
+          }
+        }
+      }
+    },
+    "'%@' 캘린더가 만들어졌어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "'%@' is ready"
           }
         }
       }
@@ -97,6 +97,16 @@
     "%@" : {
 
     },
+    "%@ · 기본" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · default"
+          }
+        }
+      }
+    },
     "%@ %@" : {
       "localizations" : {
         "en" : {
@@ -137,6 +147,16 @@
         }
       }
     },
+    "%@ 참여" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joined %@"
+          }
+        }
+      }
+    },
     "%@까지 %lld분 남았습니다" : {
       "localizations" : {
         "en" : {
@@ -163,6 +183,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%2$lld days until %1$@"
+          }
+        }
+      }
+    },
+    "%@님이 '%@' 일정을 공유했습니다" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ shared '%2$@'"
           }
         }
       }
@@ -267,6 +297,16 @@
         }
       }
     },
+    "%lld개 중 %lld개 완료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$lld of %1$lld completed"
+          }
+        }
+      }
+    },
     "%lld개 카테고리에 걸쳐 다양하게 활동했어요" : {
       "localizations" : {
         "en" : {
@@ -346,6 +386,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld members joined"
+          }
+        }
+      }
+    },
+    "%lld번" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld times"
           }
         }
       }
@@ -703,6 +753,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "15 min before"
+          }
+        }
+      }
+    },
+    "18시 이후 앱을 열면 끝났는데 체크하지 않은 일정을 하루 한 번 물어봐요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After 6 PM, Dozy asks once a day about finished events you haven't checked off."
           }
         }
       }
@@ -1486,6 +1546,16 @@
         }
       }
     },
+    "가족 · 연인 · 친구와 최대 4명까지\n일정을 함께 보고 관리할 수 있어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See and manage events together\nwith family, a partner, or friends (up to 4 people)"
+          }
+        }
+      }
+    },
     "각 플랫폼의 일정은 아래 색상 바로 구분됩니다." : {
       "localizations" : {
         "en" : {
@@ -1522,6 +1592,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search"
+          }
+        }
+      }
+    },
+    "검색 결과가 없습니다" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results"
           }
         }
       }
@@ -1656,6 +1736,16 @@
         }
       }
     },
+    "공유 캘린더 알림" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shared Calendar Notifications"
+          }
+        }
+      }
+    },
     "공유 캘린더 이벤트는 파트너도 같이 볼 수 있어요." : {
       "localizations" : {
         "en" : {
@@ -1682,6 +1772,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Join shared calendar"
+          }
+        }
+      }
+    },
+    "공유 캘린더 추가" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Shared Calendar"
           }
         }
       }
@@ -1767,6 +1867,7 @@
       }
     },
     "공유 캘린더에서 표시될 내 이름을 설정하세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1846,6 +1947,16 @@
         }
       }
     },
+    "기간 조건 지우기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove period"
+          }
+        }
+      }
+    },
     "기본" : {
       "localizations" : {
         "en" : {
@@ -1896,6 +2007,16 @@
         }
       }
     },
+    "기본 캘린더" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default Calendar"
+          }
+        }
+      }
+    },
     "기본 캘린더로 설정" : {
       "localizations" : {
         "en" : {
@@ -1907,11 +2028,22 @@
       }
     },
     "기본으로 지정한 공유 캘린더의 일정만 캘린더 탭에 표시됩니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only events from the calendar marked as default appear in the Calendar tab."
+          }
+        }
+      }
+    },
+    "기본으로 지정한 공유 캘린더의 일정이 캘린더 탭에 표시돼요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events from your default shared calendar appear in the Calendar tab."
           }
         }
       }
@@ -1962,6 +2094,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leave"
+          }
+        }
+      }
+    },
+    "나가도 이미 공유된 일정은 다른 멤버에게 남아 있어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you leave, events already shared stay with the other members."
           }
         }
       }
@@ -2250,6 +2392,7 @@
       }
     },
     "닉네임 (최대 20자)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2260,6 +2403,7 @@
       }
     },
     "닉네임 설정" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2280,11 +2424,22 @@
       }
     },
     "닉네임은 공유 캘린더 안에서만 표시되는 이름입니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nicknames are only shown within the shared calendar."
+          }
+        }
+      }
+    },
+    "닉네임은 이 공유 캘린더 안에서만 보이는 이름이에요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your nickname is only shown inside this shared calendar."
           }
         }
       }
@@ -2319,12 +2474,32 @@
         }
       }
     },
+    "다음 달" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next month"
+          }
+        }
+      }
+    },
     "다음 일정" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Up next"
+          }
+        }
+      }
+    },
+    "다음 주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next week"
           }
         }
       }
@@ -2355,6 +2530,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        }
+      }
+    },
+    "대표 사진은 소유자만 바꿀 수 있어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only the owner can change the cover photo"
           }
         }
       }
@@ -2630,12 +2815,32 @@
         }
       }
     },
+    "만들고 나면 초대 코드로 최대 4명까지 함께할 수 있어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once it's created, up to 4 people can join with an invite code."
+          }
+        }
+      }
+    },
     "만들기" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create"
+          }
+        }
+      }
+    },
+    "만료 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expires %@"
           }
         }
       }
@@ -3071,6 +3276,16 @@
         }
       }
     },
+    "별표가 붙은 기본 캘린더의 일정이 캘린더 탭에 표시돼요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events from the starred default calendar appear in the Calendar tab."
+          }
+        }
+      }
+    },
     "보기" : {
       "localizations" : {
         "en" : {
@@ -3288,6 +3503,26 @@
         }
       }
     },
+    "빠른 입력" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick entry"
+          }
+        }
+      }
+    },
+    "사용 통계 전송" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Usage Statistics"
+          }
+        }
+      }
+    },
     "사용 팁" : {
       "localizations" : {
         "en" : {
@@ -3318,8 +3553,28 @@
         }
       }
     },
+    "사진 변경" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Photo"
+          }
+        }
+      }
+    },
     "사진 앨범 권한 필요" : {
 
+    },
+    "사진 추가" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Photo"
+          }
+        }
+      }
     },
     "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요." : {
       "localizations" : {
@@ -3347,6 +3602,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete failed"
+          }
+        }
+      }
+    },
+    "삭제하면 캘린더와 모든 공유 일정이 멤버 모두에게서 사라져요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting removes the calendar and all shared events for every member."
           }
         }
       }
@@ -3397,6 +3662,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View details"
+          }
+        }
+      }
+    },
+    "새 공유 일정 알림" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Shared Events"
           }
         }
       }
@@ -3782,6 +4057,7 @@
       }
     },
     "소유자만 수정 가능" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3812,7 +4088,14 @@
       }
     },
     "순서 편집" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Order"
+          }
+        }
+      }
     },
     "숫자 포함" : {
       "localizations" : {
@@ -3935,6 +4218,26 @@
         }
       }
     },
+    "시스템 설정 > 알림에서 Dozy의 알림을 허용한 뒤 다시 켜 주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow notifications for Dozy in System Settings > Notifications, then turn it on again."
+          }
+        }
+      }
+    },
+    "시스템 설정 열기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open System Settings"
+          }
+        }
+      }
+    },
     "시스템 설정에서 위치 접근을 허용해주세요" : {
       "localizations" : {
         "en" : {
@@ -3967,11 +4270,22 @@
       }
     },
     "아래 초대 코드를 함께할 사람에게 공유하세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share the invite code below with your partner."
+          }
+        }
+      }
+    },
+    "아래 초대 코드를 함께할 사람에게 보내 주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send the invite code below to the people you want to share with."
           }
         }
       }
@@ -4076,6 +4390,16 @@
         }
       }
     },
+    "앱 개선을 위해 기능 사용 횟수 같은 익명 통계를 보내요. 일정 내용은 보내지 않아요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sends anonymous statistics such as feature usage counts to help improve the app. Your event content is never sent."
+          }
+        }
+      }
+    },
     "앱 내 직접 생성한 일정" : {
       "localizations" : {
         "en" : {
@@ -4112,6 +4436,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sign in by opening the app to see today's events in the menu bar."
+          }
+        }
+      }
+    },
+    "앱이 켜져 있으면 알림 10분 전에 오늘 요약을 미리 만들어 둬요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If Dozy is running, today's summary is prepared 10 minutes before the notification."
+          }
+        }
+      }
+    },
+    "어제" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
           }
         }
       }
@@ -4585,6 +4929,16 @@
         }
       }
     },
+    "올해" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This year"
+          }
+        }
+      }
+    },
     "완료" : {
       "localizations" : {
         "en" : {
@@ -4934,12 +5288,12 @@
         }
       }
     },
-    "이름" : {
+    "이동" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Name"
+            "value" : "Go"
           }
         }
       }
@@ -4954,12 +5308,12 @@
         }
       }
     },
-    "이동" : {
+    "이름" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Go"
+            "value" : "Name"
           }
         }
       }
@@ -5090,6 +5444,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Image upload failed"
+          }
+        }
+      }
+    },
+    "이번 달" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This month"
+          }
+        }
+      }
+    },
+    "이번 주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This week"
           }
         }
       }
@@ -5240,6 +5614,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Events · Refresh"
+          }
+        }
+      }
+    },
+    "일정 %lld개" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld events"
           }
         }
       }
@@ -5398,6 +5782,16 @@
         }
       }
     },
+    "일정 횟수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event count"
+          }
+        }
+      }
+    },
     "일정·할 일·메모를 기반으로 생산성을 측정해요" : {
       "localizations" : {
         "en" : {
@@ -5511,6 +5905,16 @@
         }
       }
     },
+    "작년" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last year"
+          }
+        }
+      }
+    },
     "잘못된 초대 코드입니다." : {
       "localizations" : {
         "en" : {
@@ -5607,16 +6011,6 @@
         }
       }
     },
-    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Low-saturation mesh gradient — the calmest mood."
-          }
-        }
-      }
-    },
     "전체" : {
       "localizations" : {
         "en" : {
@@ -5633,6 +6027,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "pts"
+          }
+        }
+      }
+    },
+    "저채도 메시 그라디언트 — 가장 차분한 무드." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-saturation mesh gradient — the calmest mood."
+          }
+        }
+      }
+    },
+    "저채도 메시 그라디언트 — 라벤더 카드와 페리윙클 강조색." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soft mesh gradient — lavender cards with a periwinkle accent."
           }
         }
       }
@@ -5717,6 +6131,16 @@
         }
       }
     },
+    "제목 · 위치 · 메모 · 일지 · 카테고리를 검색해보세요\n'지난주 회의 몇 시간'처럼 물어볼 수도 있어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search titles, locations, memos, journals, and categories\nYou can also ask things like 'meeting hours last week'"
+          }
+        }
+      }
+    },
     "종료" : {
       "localizations" : {
         "en" : {
@@ -5743,6 +6167,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All-day"
+          }
+        }
+      }
+    },
+    "종일 일정 %lld개 제외" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excludes %lld all-day events"
           }
         }
       }
@@ -5980,6 +6414,26 @@
         }
       }
     },
+    "지난달" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last month"
+          }
+        }
+      }
+    },
+    "지난주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last week"
+          }
+        }
+      }
+    },
     "직접 선택" : {
       "localizations" : {
         "en" : {
@@ -6080,6 +6534,26 @@
         }
       }
     },
+    "초대 코드 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite code %@"
+          }
+        }
+      }
+    },
+    "초대 코드 6자리" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6-character invite code"
+          }
+        }
+      }
+    },
     "초대 코드 생성에 실패했습니다. 잠시 후 다시 시도해주세요." : {
       "localizations" : {
         "en" : {
@@ -6091,6 +6565,7 @@
       }
     },
     "초대 코드 입력" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6170,6 +6645,26 @@
         }
       }
     },
+    "초대 코드를 입력해 주세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter an invite code"
+          }
+        }
+      }
+    },
+    "초대하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite"
+          }
+        }
+      }
+    },
     "총 %lld개 카테고리" : {
       "localizations" : {
         "en" : {
@@ -6190,6 +6685,16 @@
         }
       }
     },
+    "총 시간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total time"
+          }
+        }
+      }
+    },
     "총 일정" : {
       "localizations" : {
         "en" : {
@@ -6200,7 +6705,38 @@
         }
       }
     },
+    "최근 %lld개월" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last %lld months"
+          }
+        }
+      }
+    },
+    "최근 %lld일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last %lld days"
+          }
+        }
+      }
+    },
+    "최근 %lld주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last %lld weeks"
+          }
+        }
+      }
+    },
     "최대 4명까지 일정을 함께 관리해보세요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6381,6 +6917,16 @@
         }
       }
     },
+    "카테고리 조건 지우기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove category"
+          }
+        }
+      }
+    },
     "카테고리 추가" : {
       "localizations" : {
         "en" : {
@@ -6538,6 +7084,16 @@
         }
       }
     },
+    "캘린더 이름은 소유자만 바꿀 수 있어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only the owner can rename the calendar."
+          }
+        }
+      }
+    },
     "캘린더 이름을 입력해주세요." : {
       "localizations" : {
         "en" : {
@@ -6549,6 +7105,7 @@
       }
     },
     "캘린더 이미지" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6619,6 +7176,7 @@
       }
     },
     "캘린더가 만들어졌어요!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6668,6 +7226,16 @@
         }
       }
     },
+    "컬러 블롭 — 생동감 있는 배경에 보라 강조색." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color blobs — a vivid background with a violet accent."
+          }
+        }
+      }
+    },
     "코드 다시 받기" : {
       "localizations" : {
         "en" : {
@@ -6689,6 +7257,7 @@
       }
     },
     "코드 복사" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6699,6 +7268,7 @@
       }
     },
     "코드 유효 기간: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6724,6 +7294,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Code expired"
+          }
+        }
+      }
+    },
+    "코드를 받은 사람이 '초대 코드로 참여하기'에 입력하면 함께 쓸 수 있어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When someone enters this code in 'Join with Invite Code', they can use this calendar with you."
           }
         }
       }
@@ -6859,12 +7439,32 @@
         }
       }
     },
+    "파트너가 공유 캘린더에 일정을 추가하면 앱이 꺼져 있어도 알려드려요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get notified when your partner adds an event to a shared calendar, even when the app is closed."
+          }
+        }
+      }
+    },
     "파트너가 만든 일정은 수정 · 삭제할 수 없습니다." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Events created by your partner cannot be edited or deleted."
+          }
+        }
+      }
+    },
+    "파트너님이 '%@' 일정을 공유했습니다" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner shared '%@'"
           }
         }
       }
@@ -6880,6 +7480,7 @@
       }
     },
     "파트너에게 받은 6자리 코드를 입력하세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6950,7 +7551,14 @@
       }
     },
     "편집 완료" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done Editing"
+          }
+        }
+      }
     },
     "평균" : {
       "localizations" : {
@@ -7064,11 +7672,42 @@
       }
     },
     "함께 사용할 캘린더 이름을 입력하세요. 최대 4명까지 참여 가능합니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter a calendar name. Up to 4 members can join."
+          }
+        }
+      }
+    },
+    "함께 쓰는 캘린더를 만들어 보세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a calendar to share"
+          }
+        }
+      }
+    },
+    "함께 쓸 캘린더 이름을 정해 주세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name your shared calendar"
+          }
+        }
+      }
+    },
+    "함께할 사람에게 받은 6자리 코드를 입력하면 바로 참여해요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the 6-character code you received to join right away."
           }
         }
       }
@@ -7079,6 +7718,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Always on"
+          }
+        }
+      }
+    },
+    "해석 중…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interpreting…"
+          }
+        }
+      }
+    },
+    "해석: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interpreted by %@"
           }
         }
       }
@@ -7210,386 +7869,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncommon and different from your email"
-          }
-        }
-      }
-    },
-    "앱이 켜져 있으면 알림 10분 전에 오늘 요약을 미리 만들어 둬요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If Dozy is running, today's summary is prepared 10 minutes before the notification."
-          }
-        }
-      }
-    },
-    "18시 이후 앱을 열면 끝났는데 체크하지 않은 일정을 하루 한 번 물어봐요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "After 6 PM, Dozy asks once a day about finished events you haven't checked off."
-          }
-        }
-      }
-    },
-    "시스템 설정 열기" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open System Settings"
-          }
-        }
-      }
-    },
-    "시스템 설정 > 알림에서 Dozy의 알림을 허용한 뒤 다시 켜 주세요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allow notifications for Dozy in System Settings > Notifications, then turn it on again."
-          }
-        }
-      }
-    },
-    "저채도 메시 그라디언트 — 라벤더 카드와 페리윙클 강조색." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Soft mesh gradient — lavender cards with a periwinkle accent."
-          }
-        }
-      }
-    },
-    "컬러 블롭 — 생동감 있는 배경에 보라 강조색." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Color blobs — a vivid background with a violet accent."
-          }
-        }
-      }
-    },
-    "사용 통계 전송" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share Usage Statistics"
-          }
-        }
-      }
-    },
-    "앱 개선을 위해 기능 사용 횟수 같은 익명 통계를 보내요. 일정 내용은 보내지 않아요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sends anonymous statistics such as feature usage counts to help improve the app. Your event content is never sent."
-          }
-        }
-      }
-    },
-    "어제" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yesterday"
-          }
-        }
-      }
-    },
-    "이번 주" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This week"
-          }
-        }
-      }
-    },
-    "지난주" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last week"
-          }
-        }
-      }
-    },
-    "다음 주" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next week"
-          }
-        }
-      }
-    },
-    "이번 달" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This month"
-          }
-        }
-      }
-    },
-    "지난달" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last month"
-          }
-        }
-      }
-    },
-    "다음 달" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next month"
-          }
-        }
-      }
-    },
-    "올해" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This year"
-          }
-        }
-      }
-    },
-    "작년" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last year"
-          }
-        }
-      }
-    },
-    "최근 %lld일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last %lld days"
-          }
-        }
-      }
-    },
-    "최근 %lld주" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last %lld weeks"
-          }
-        }
-      }
-    },
-    "최근 %lld개월" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last %lld months"
-          }
-        }
-      }
-    },
-    "%lld번" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld times"
-          }
-        }
-      }
-    },
-    "%lld개 중 %lld개 완료" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%2$lld of %1$lld completed"
-          }
-        }
-      }
-    },
-    "종일 일정 %lld개 제외" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Excludes %lld all-day events"
-          }
-        }
-      }
-    },
-    "일정 %lld개" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld events"
-          }
-        }
-      }
-    },
-    "일정 횟수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Event count"
-          }
-        }
-      }
-    },
-    "총 시간" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total time"
-          }
-        }
-      }
-    },
-    "%@ · 기본" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · default"
-          }
-        }
-      }
-    },
-    "해석 중…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Interpreting…"
-          }
-        }
-      }
-    },
-    "해석: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Interpreted by %@"
-          }
-        }
-      }
-    },
-    "기간 조건 지우기" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove period"
-          }
-        }
-      }
-    },
-    "카테고리 조건 지우기" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove category"
-          }
-        }
-      }
-    },
-    "제목 · 위치 · 메모 · 일지 · 카테고리를 검색해보세요\n'지난주 회의 몇 시간'처럼 물어볼 수도 있어요" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search titles, locations, memos, journals, and categories\nYou can also ask things like 'meeting hours last week'"
-          }
-        }
-      }
-    },
-    "검색 결과가 없습니다" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No results"
-          }
-        }
-      }
-    },
-    "%@님이 '%@' 일정을 공유했습니다" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ shared '%2$@'"
-          }
-        }
-      }
-    },
-    "파트너님이 '%@' 일정을 공유했습니다" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your partner shared '%@'"
-          }
-        }
-      }
-    },
-    "공유 캘린더 알림" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shared Calendar Notifications"
-          }
-        }
-      }
-    },
-    "새 공유 일정 알림" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Shared Events"
-          }
-        }
-      }
-    },
-    "파트너가 공유 캘린더에 일정을 추가하면 앱이 꺼져 있어도 알려드려요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Get notified when your partner adds an event to a shared calendar, even when the app is closed."
           }
         }
       }

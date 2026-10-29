@@ -15,10 +15,7 @@ struct SharedCalendarDetailView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var showLeaveAlert = false
-    @State private var showNicknameAlert = false
     @State private var showEditSheet = false
-    @State private var nicknameText = ""
-    @State private var copied = false
     @State private var currentCode: String
 
     init(calendar: SharedCalendar, viewModel: SharedCalendarViewModel) {
@@ -30,24 +27,28 @@ struct SharedCalendarDetailView: View {
     private var currentUserID: String { authViewModel.currentUser?.id ?? "" }
     private var members: [SharedCalendarMember] { viewModel.membersMap[calendar.id] ?? [] }
     private var isOwner: Bool { members.first(where: { $0.userID == currentUserID })?.role == .owner }
-    private var isCodeExpired: Bool {
-        guard let exp = calendar.inviteCodeExpiresAt else { return false }
-        return exp < Date()
+
+    private var currentCalendar: SharedCalendar {
+        viewModel.calendars.first(where: { $0.id == calendar.id }) ?? calendar
     }
 
     var body: some View {
-        List {
-            defaultCalendarSection
-            membersSection
-            if !currentCode.isEmpty {
-                inviteCodeSection
+        ScrollView {
+            VStack(spacing: DozySpacing.xl) {
+                heroCard
+                if !currentCode.isEmpty {
+                    inviteSection
+                }
+                membersSection
+                leaveSection
             }
-            leaveSection
+            .padding(.vertical, DozySpacing.lg)
         }
         .refreshable {
             viewModel.loadMembers(calendarID: calendar.id)
         }
-        .navigationTitle(calendar.name)
+        .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
+        .navigationTitle(currentCalendar.name)
         .navigationBarTitleDisplayMode(.inline)
         .dozyBackButton()   // 시스템 뒤로가기 → btn_navi_back 에셋 (스와이프 백 유지)
         .toolbar {
@@ -55,19 +56,20 @@ struct SharedCalendarDetailView: View {
                 Button {
                     showEditSheet = true
                 } label: {
-                    Image(symbol: "person.2")
+                    Image(symbol: "pencil")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 24, height: 24)
+                        .frame(width: 22, height: 22)
                         .foregroundStyle(DozyColor.Text.primary)
                 }
+                .accessibilityLabel("캘린더 설정")
             }
         }
         .sheet(isPresented: $showEditSheet, onDismiss: {
             viewModel.loadMembers(calendarID: calendar.id)
         }) {
             SharedCalendarEditView(
-                calendar: calendar,
+                calendar: currentCalendar,
                 isOwner: isOwner,
                 currentUserID: currentUserID,
                 viewModel: viewModel
@@ -88,26 +90,10 @@ struct SharedCalendarDetailView: View {
                  ? "캘린더와 모든 공유 일정이 파트너에게도 삭제됩니다."
                  : "공유 일정은 유지되지만 더 이상 함께 관리할 수 없어요.")
         }
-        .alert("닉네임 설정", isPresented: $showNicknameAlert) {
-            TextField("닉네임 (최대 20자)", text: $nicknameText)
-            Button("저장") {
-                let trimmed = nicknameText.trimmingCharacters(in: .whitespaces)
-                guard !trimmed.isEmpty else { return }
-                viewModel.updateNickname(
-                    calendarID: calendar.id,
-                    nickname: String(trimmed.prefix(20)),
-                    currentUserID: currentUserID
-                ) { }
-            }
-            Button("취소", role: .cancel) { }
-        } message: {
-            Text("공유 캘린더에서 표시될 내 이름을 설정하세요.")
-        }
         .onAppear { viewModel.loadMembers(calendarID: calendar.id) }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .inactive || newPhase == .background {
                 showLeaveAlert = false
-                showNicknameAlert = false
                 showEditSheet = false
             }
         }
@@ -119,209 +105,176 @@ struct SharedCalendarDetailView: View {
         }
     }
 
-    // MARK: - Default Calendar Toggle
+    // MARK: - Hero
 
-    private var defaultCalendarSection: some View {
-        Section {
-            Toggle(isOn: Binding(
-                get: { activeStore.isActive(calendar.id) },
-                set: { newVal in
-                    activeStore.setActive(newVal ? calendar.id : nil)
-                }
-            )) {
-                Label {
-                    Text("기본 캘린더로 설정")
-                } icon: {
-                    Image(symbol: activeStore.isActive(calendar.id) ? "star.fill" : "star")
-                        .foregroundStyle(.yellow)
+    /// 대표 이미지 · 이름 · 멤버 묶음 · 기본 캘린더 토글
+    private var heroCard: some View {
+        let isActive = activeStore.isActive(calendar.id)
+        return VStack(spacing: DozySpacing.md) {
+            SharedCalendarCover(imageURL: currentCalendar.publicImageURL, size: 88, cornerRadius: DozyRadius.xl)
+                .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
+
+            VStack(spacing: DozySpacing.xs) {
+                Text(currentCalendar.name)
+                    .font(DozyFont.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(DozyColor.Text.primary)
+                    .multilineTextAlignment(.center)
+                HStack(spacing: DozySpacing.xs) {
+                    if !members.isEmpty {
+                        SharedMemberAvatarStack(
+                            items: members.map { .init(id: $0.userID, name: $0.displayName(currentUserID: currentUserID)) },
+                            size: 26
+                        )
+                    }
+                    Text("\(members.count)명 참여 중")
+                        .font(DozyFont.subheadline)
+                        .foregroundStyle(DozyColor.Text.secondary)
                 }
             }
-        } footer: {
-            Text("기본으로 지정한 공유 캘린더의 일정만 캘린더 탭에 표시됩니다.")
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    activeStore.setActive(isActive ? nil : calendar.id)
+                }
+            } label: {
+                Label(isActive ? "기본 캘린더" : "기본 캘린더로 설정", symbol: isActive ? "star.fill" : "star")
+                    .font(DozyFont.subheadlineEmphasized)
+                    .padding(.horizontal, DozySpacing.md)
+                    .padding(.vertical, DozySpacing.xs)
+                    .foregroundStyle(isActive ? .white : DozyColor.Brand.primary)
+                    .background(
+                        isActive ? AnyShapeStyle(DozyColor.Brand.primary) : AnyShapeStyle(DozyColor.Brand.primary.opacity(0.12)),
+                        in: Capsule()
+                    )
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("기본으로 지정한 공유 캘린더의 일정이 캘린더 탭에 표시돼요.")
+
+            Text("기본으로 지정한 공유 캘린더의 일정이 캘린더 탭에 표시돼요.")
+                .font(DozyFont.caption)
+                .foregroundStyle(DozyColor.Text.tertiary)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DozySpacing.xl)
+        .padding(.horizontal, DozySpacing.md)
+        .dozyThemedCardSurface(cornerRadius: DozyRadius.xl)
+        .padding(.horizontal, DozySpacing.md)
     }
 
-    // MARK: - Members Section
+    // MARK: - Invite
+
+    private var inviteSection: some View {
+        VStack(alignment: .leading, spacing: DozySpacing.sm) {
+            sectionHeader("초대하기")
+            SharedInviteCodeCard(
+                code: currentCode,
+                expiresAt: currentCalendar.inviteCodeExpiresAt,
+                onRegenerate: isOwner ? {
+                    viewModel.regenerateCode(calendarID: calendar.id) { newCode in
+                        currentCode = newCode
+                    }
+                } : nil
+            )
+            Text("코드를 받은 사람이 '초대 코드로 참여하기'에 입력하면 함께 쓸 수 있어요.")
+                .font(DozyFont.caption)
+                .foregroundStyle(DozyColor.Text.tertiary)
+                .padding(.horizontal, DozySpacing.md)
+        }
+        .padding(.horizontal, DozySpacing.md)
+    }
+
+    // MARK: - Members
 
     private var membersSection: some View {
-        Section("멤버") {
-            ForEach(members, id: \.userID) { member in
-                memberRow(member)
-            }
+        DozyListSection(header: "멤버") {
             if members.isEmpty {
-                Text("멤버 정보를 불러오는 중...")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: DozySpacing.sm) {
+                    ProgressView()
+                    Text("멤버 정보를 불러오는 중...")
+                        .font(DozyFont.subheadline)
+                        .foregroundStyle(DozyColor.Text.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(DozySpacing.md)
+            } else {
+                ForEach(members, id: \.userID) { member in
+                    memberRow(member)
+                }
             }
         }
     }
 
     private func memberRow(_ member: SharedCalendarMember) -> some View {
         let isMe = member.userID == currentUserID
-        let displayName = member.nickname ?? (isMe ? "나" : "파트너")
-        let roleLabel = member.role == .owner ? "소유자" : "멤버"
-
-        return HStack(spacing: 12) {
-            if member.role == .owner {
-                Image(symbol: "crown.fill")
-                    .foregroundStyle(.yellow)
-                    .frame(width: 24)
-            } else {
-                Image(symbol: "person")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22, height: 22)
-                    .foregroundStyle(DozyColor.Text.primary)
-            }
+        let name = member.displayName(currentUserID: currentUserID)
+        return HStack(spacing: DozySpacing.sm) {
+            SharedMemberAvatar(name: name, seed: member.userID, size: 40, isOwner: member.isOwner)
             VStack(alignment: .leading, spacing: 2) {
-                Text(displayName).font(.subheadline)
-                if member.nickname != nil {
-                    Text(isMe ? "나" : "파트너")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                HStack(spacing: DozySpacing.xxs) {
+                    Text(name)
+                        .font(DozyFont.bodyEmphasized)
+                        .foregroundStyle(DozyColor.Text.primary)
+                    if isMe, member.nickname?.isEmpty == false {
+                        Text("나")
+                            .font(DozyFont.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(DozyColor.Brand.primary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(DozyColor.Brand.primary.opacity(0.12), in: Capsule())
+                    }
                 }
+                Text("\(member.joinedAt.formatted(.dateTime.year().month().day())) 참여")
+                    .font(DozyFont.caption)
+                    .foregroundStyle(DozyColor.Text.tertiary)
             }
-            Spacer()
-            Text(roleLabel)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(Color(UIColor.systemGray6), in: Capsule())
+            Spacer(minLength: DozySpacing.xs)
+            Text(member.isOwner ? "소유자" : "멤버")
+                .font(DozyFont.captionEmphasized)
+                .foregroundStyle(member.isOwner ? DozyColor.Brand.primary : DozyColor.Text.secondary)
+                .padding(.horizontal, DozySpacing.xs)
+                .padding(.vertical, DozySpacing.xxs)
+                .background(
+                    member.isOwner ? DozyColor.Brand.primary.opacity(0.12) : DozyColor.Background.grouped,
+                    in: Capsule()
+                )
         }
-        .padding(.vertical, 2)
+        .padding(.horizontal, DozySpacing.md)
+        .padding(.vertical, DozySpacing.sm)
+        .accessibilityElement(children: .combine)
     }
 
-    // MARK: - Invite Code Section
-
-    private var inviteCodeSection: some View {
-        Section {
-            VStack(spacing: 16) {
-                HStack {
-                    Spacer()
-                    Text(currentCode)
-                        .font(.system(size: 32, weight: .bold, design: .monospaced))
-                        .tracking(6)
-                        .foregroundStyle(isCodeExpired ? Color(.systemGray3) : Color.accentColor)
-                    Spacer()
-                }
-
-                if isCodeExpired {
-                    Label("코드가 만료됐어요", symbol: "clock.badge.exclamationmark")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
-
-                HStack(spacing: 16) {
-                    Button {
-                        UIPasteboard.general.string = currentCode
-                        copied = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { copied = false }
-                    } label: {
-                        Label {
-                            Text(copied ? "복사됨" : "복사")
-                        } icon: {
-                            if copied {
-                                Image(symbol: "checkmark")
-                            } else {
-                                Image(symbol: "doc.on.doc")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 18, height: 18)
-                                    .foregroundStyle(DozyColor.Text.primary)
-                            }
-                        }
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
-                        .foregroundStyle(copied ? .green : .primary)
-                    }
-                    .buttonStyle(.plain)
-                    .animation(.easeInOut(duration: 0.2), value: copied)
-
-                    ShareLink(
-                        item: shareText,
-                        subject: Text("Dozy AI 공유 캘린더 초대")
-                    ) {
-                        Label {
-                            Text("공유")
-                        } icon: {
-                            Image(symbol: "square.and.arrow.up")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 18, height: 18)
-                                .foregroundStyle(DozyColor.Text.primary)
-                        }
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-                        .foregroundStyle(Color.accentColor)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.vertical, 8)
-
-            if isOwner {
-                Button {
-                    viewModel.regenerateCode(calendarID: calendar.id) { newCode in
-                        currentCode = newCode
-                    }
-                } label: {
-                    Label {
-                        Text("새 코드 발급")
-                    } icon: {
-                        Image(symbol: "arrow.clockwise")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 20, height: 20)
-                            .foregroundStyle(DozyColor.Text.primary)
-                    }
-                    .foregroundStyle(.primary)
-                }
-            }
-        } header: {
-            Text("초대 코드")
-        } footer: {
-            if let exp = calendar.inviteCodeExpiresAt {
-                Text("만료: \(exp.formatted(.dateTime.month().day().hour().minute()))")
-            }
-        }
-    }
-
-    // MARK: - Leave Section
+    // MARK: - Leave
 
     private var leaveSection: some View {
-        Section {
-            Button(role: .destructive) {
+        DozyListSection(footer: isOwner
+                        ? "삭제하면 캘린더와 모든 공유 일정이 멤버 모두에게서 사라져요."
+                        : "나가도 이미 공유된 일정은 다른 멤버에게 남아 있어요.") {
+            Button {
                 showLeaveAlert = true
             } label: {
-                Label {
-                    Text(isOwner ? "공유 캘린더 삭제" : "공유 캘린더 나가기")
-                } icon: {
-                    if isOwner {
-                        Image(symbol: "trash")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 22, height: 22)
-                            .foregroundStyle(DozyColor.Text.primary)
-                    } else {
-                        Image(symbol: "rectangle.portrait.and.arrow.right")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 22, height: 22)
-                            .foregroundStyle(DozyColor.Text.primary)
+                DozyListRow(
+                    title: isOwner ? "공유 캘린더 삭제" : "공유 캘린더 나가기",
+                    titleColor: DozyColor.State.danger,
+                    icon: {
+                        DozyTintedIcon(
+                            systemName: isOwner ? "trash" : "rectangle.portrait.and.arrow.right",
+                            tint: DozyColor.State.danger
+                        )
                     }
-                }
+                )
             }
+            .buttonStyle(.plain)
         }
     }
 
-    // MARK: - Share Text
-
-    private var shareText: String {
-        String(localized: "Dozy AI 공유 캘린더에 초대됐어요! 📅\n코드: \(currentCode)\n\n앱에서 '초대 코드로 참여하기'를 눌러 입력하세요.")
+    private func sectionHeader(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .font(DozyFont.title3)
+            .fontWeight(.bold)
+            .foregroundStyle(DozyColor.Text.secondary)
+            .padding(.horizontal, DozySpacing.md)
     }
 }

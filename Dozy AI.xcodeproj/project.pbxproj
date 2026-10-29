@@ -157,6 +157,7 @@
 		AA1100020000000000000004 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000004 /* TestHelpers.swift */; };
 		AA1100020000000000000005 /* ViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100010000000000000005 /* ViewModelTests.swift */; };
 		AB28BF823121CA6AE8E5D851 /* SharedCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */; };
+		AB5C062BD7EE67CED7106303 /* SharedCalendarComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15E1B1342F5242814BC5D83 /* SharedCalendarComponents.swift */; };
 		ABF24F81257EC3FBB1E27F57 /* DozyEventRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9782F7A378F00084C61 /* DozyEventRepository.swift */; };
 		ACCF2D28491B43E9A58E424B /* ExternalMirrorSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */; };
 		AFEECEAA9D38344BFA06A40B /* LeaveSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */; };
@@ -713,6 +714,7 @@
 		BB277C398032B0575953B0C4 /* SaveEventDisplaySettingsUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaveEventDisplaySettingsUseCase.swift; sourceTree = "<group>"; };
 		BC9CA5FDB899212527C0C838 /* SearchEventsUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchEventsUseCase.swift; sourceTree = "<group>"; };
 		BD132F854A2C43229A07EE9B /* ExternalMirrorSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalMirrorSyncService.swift; sourceTree = "<group>"; };
+		C15E1B1342F5242814BC5D83 /* SharedCalendarComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedCalendarComponents.swift; sourceTree = "<group>"; };
 		C693465AD6A74CE3B35E2111 /* SharedCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalendar.swift; sourceTree = "<group>"; };
 		CA521D6C3CEB5632542BBCDC /* CrashReportingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CrashReportingTests.swift; sourceTree = "<group>"; };
 		D02AACCESS000000000000B01 /* TodayEventsAccessoryCircularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayEventsAccessoryCircularView.swift; sourceTree = "<group>"; };
@@ -1127,6 +1129,7 @@
 				FBB96261F75C40EBB4DE1364 /* SharedCalendarJoinView.swift */,
 				F65A47EEF4244DE4A3975F41 /* SharedCalendarDetailView.swift */,
 				2389D509856F42CD9BB2A33D /* SharedCalendarEditView.swift */,
+				C15E1B1342F5242814BC5D83 /* SharedCalendarComponents.swift */,
 			);
 			path = SharedCalendar;
 			sourceTree = "<group>";
@@ -2662,6 +2665,7 @@
 				8D188D78602F96B00E3EE6D4 /* PushRegistrationUseCase.swift in Sources */,
 				4E9E5A5D86E8D6CBD0A94730 /* SupabasePushTokenService.swift in Sources */,
 				800033F37301D3742F895303 /* SharedPushHandler.swift in Sources */,
+				AB5C062BD7EE67CED7106303 /* SharedCalendarComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
