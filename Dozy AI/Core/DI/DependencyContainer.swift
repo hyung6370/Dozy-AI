@@ -152,6 +152,7 @@ final class DependencyContainer: ObservableObject {
     lazy var updateCalendarEventUseCase = UpdateCalendarEventUseCase(service: calendarService)
     lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
     lazy var fetchCalendarEventsForPeriodUseCase = FetchCalendarEventsForPeriodUseCase(calendarService: calendarService)
+    lazy var saveEventDisplaySettingsUseCase = SaveEventDisplaySettingsUseCase(repository: eventDisplaySettingsRepository)
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()

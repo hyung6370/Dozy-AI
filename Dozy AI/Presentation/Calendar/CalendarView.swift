@@ -119,7 +119,7 @@ struct CalendarView: View {
                 )
                 .presentationDetents([.medium, .large])
             }
-            .fullScreenCover(isPresented: $showSearch) {
+            .fullScreenCover(isPresented: $showSearch, onDismiss: { viewModel.reloadVisibleEvents() }) {
                 SearchView(container: container)
             }
             .sheet(isPresented: $showMonthPicker) {
