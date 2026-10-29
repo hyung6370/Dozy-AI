@@ -685,6 +685,9 @@ struct CalendarView: View {
 
     // MARK: - Calendar Capture
 
+    /// 상단 툴바 아이콘 크기 — 홈 상단바(HomeTopBarView.iconSize)와 같은 22pt. 탭 영역은 툴바가 확보한다.
+    private static let toolbarIconSize: CGFloat = 22
+
     /// 메인 body 의 toolbar 를 별도 빌더로 추출 — body 의 type-check 시간 단축.
     @ToolbarContentBuilder
     private var calendarToolbar: some ToolbarContent {
@@ -693,7 +696,7 @@ struct CalendarView: View {
                 Image(symbol: "magnifyingglass")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.toolbarIconSize, height: Self.toolbarIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
             }
             .accessibilityLabel("검색")
@@ -704,7 +707,7 @@ struct CalendarView: View {
                 Image(symbol: "line.3.horizontal.decrease")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.toolbarIconSize, height: Self.toolbarIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
                     .overlay(alignment: .topTrailing) {
                         if viewModel.visibilityFilter.isFilterActive {
@@ -724,7 +727,7 @@ struct CalendarView: View {
                 Image(symbol: "crop")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.toolbarIconSize, height: Self.toolbarIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
             }
             .accessibilityLabel("캘린더 스크린샷")
@@ -735,7 +738,7 @@ struct CalendarView: View {
                 Image(symbol: "questionmark.circle")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.toolbarIconSize, height: Self.toolbarIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
             }
         }
