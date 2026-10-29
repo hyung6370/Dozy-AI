@@ -10,7 +10,7 @@ import SwiftData
 import Combine
 import Supabase
 
-final class EventDisplaySettingsRepository {
+final class EventDisplaySettingsRepository: EventDisplaySettingsRepositoryProtocol {
     private let modelContainer: ModelContainer
     
     init(modelContainer: ModelContainer) {

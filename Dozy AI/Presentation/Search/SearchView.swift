@@ -2,41 +2,32 @@
 //  SearchView.swift
 //  Dozy AI
 //
+//  검색 화면. 매칭은 SearchMatcher, 조회 · 저장은 SearchViewModel (#72).
+//  Dozy 일정 · 일지 · 카테고리는 @Query 로 받아 편집 즉시 결과에 반영한다.
+//
 
 import SwiftUI
 import SwiftData
-import Combine
 
 struct SearchView: View {
 
-    let container: DependencyContainer
+    @StateObject private var viewModel: SearchViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @FocusState private var isSearchFocused: Bool
-
-    @State private var query: String = ""
-    @State private var externalEvents: [CalendarEvent] = []
-    @State private var isLoadingExternal = false
-    @State private var externalCancellable: AnyCancellable?
-    @State private var updateCancellable: AnyCancellable?
 
     @Query private var allDozyEvents: [DozyEvent]
     @Query private var allWorkLogs: [WorkLog]
     @Query(sort: \UserCategory.order) private var allCategories: [UserCategory]
 
-    // 메모리 상에서 상세로 넘어가기 위한 상태
-    @State private var selectedEvent: CalendarEvent?
-    @State private var dozyEventToEdit: DozyEvent?
-    @State private var calendarEventToEdit: CalendarEvent?
-    @State private var pendingMemoDelete: PendingMemoDelete?
-
-    private var trimmed: String {
-        query.trimmingCharacters(in: .whitespaces).lowercased()
+    init(container: DependencyContainer) {
+        _viewModel = StateObject(wrappedValue: SearchViewModel(container: container))
     }
 
-    private var hasQuery: Bool { trimmed.count >= 1 }
-
     var body: some View {
+        let results = viewModel.results(
+            dozyEvents: allDozyEvents, workLogs: allWorkLogs, categories: allCategories
+        )
         NavigationStack {
             VStack(spacing: 0) {
                 searchBar
@@ -44,12 +35,12 @@ struct SearchView: View {
                     .padding(.top, 12)
                     .padding(.bottom, 8)
 
-                if !hasQuery {
+                if !viewModel.hasQuery {
                     emptyState(message: "제목 · 위치 · 메모 · 일지 · 카테고리를 검색해보세요")
-                } else if resultIsEmpty {
+                } else if results.isEmpty {
                     emptyState(message: "검색 결과가 없습니다")
                 } else {
-                    resultList
+                    resultList(results)
                 }
             }
             .navigationTitle("검색")
@@ -59,74 +50,55 @@ struct SearchView: View {
                     Button("닫기") { dismiss() }
                 }
             }
-            .onAppear {
-                isSearchFocused = true
-                loadExternalEvents()
-            }
+            .onAppear { isSearchFocused = true }
             .onChange(of: scenePhase) { _, newPhase in
-                // 이전엔 .inactive 에서도 모달 상태를 지웠는데, iOS 가 sheet
-                // 프레젠테이션 / 키보드 dismiss 시 scenePhase 를 일시적으로
-                // .inactive 로 떨어뜨리는 경우가 있어 검색 결과 탭 → 상세
-                // sheet 가 떴다가 즉시 dismiss 되는 버그를 만들었음. 진짜
-                // 백그라운드 (.background) 로 갈 때만 정리하도록 좁힘 — privacy
-                // 오버레이는 PrivacyScreenManager 가 .inactive 에 별도 처리.
-                if newPhase == .background {
-                    selectedEvent = nil
-                    dozyEventToEdit = nil
-                    calendarEventToEdit = nil
-                    pendingMemoDelete = nil
-                }
+                if newPhase == .background { viewModel.clearModalState() }
             }
-            .sheet(item: $selectedEvent) { ev in
+            .sheet(item: $viewModel.selectedEvent) { ev in
                 EventDetailView(
                     event: ev,
-                    dozyEvent: allDozyEvents.first(where: { $0.id == ev.id }),
-                    onEdit: { dozy in dozyEventToEdit = dozy },
+                    dozyEvent: dozyEvent(for: ev),
+                    onEdit: { dozy in viewModel.dozyEventToEdit = dozy },
                     onDelete: nil,
                     onDeleteThisOnly: nil, onDeleteFutureEvents: nil,
-                    onEditCalendar: { calendarEventToEdit = $0 },
+                    onEditCalendar: { viewModel.calendarEventToEdit = $0 },
                     onDeleteCalendar: nil,
-                    onSaveMemos: { dozy in
-                        updateCancellable = container.updateDozyEventUseCase.execute(dozy)
-                            .receive(on: DispatchQueue.main)
-                            .sink(receiveCompletion: { _ in }, receiveValue: { })
-                    },
+                    onSaveMemos: { dozy in viewModel.save(dozy) },
                     onUpdateDisplaySettings: { event, priority, isPinned, category in
-                        applyDisplaySettings(event: event, priority: priority,
-                                             isPinned: isPinned, category: category)
+                        viewModel.applyDisplaySettings(
+                            event: event, priority: priority, isPinned: isPinned, category: category,
+                            dozyEvents: allDozyEvents, categories: allCategories
+                        )
                     }
                 )
             }
-            .sheet(item: $dozyEventToEdit) { dozy in
+            .sheet(item: $viewModel.dozyEventToEdit) { dozy in
                 EventEditView(
                     eventToEdit: dozy,
                     selectedDate: dozy.startDate
                 ) { saved in
-                    updateCancellable = container.updateDozyEventUseCase.execute(saved)
-                        .receive(on: DispatchQueue.main)
-                        .sink(receiveCompletion: { _ in }, receiveValue: { })
+                    viewModel.save(saved)
                 }
             }
-            .sheet(item: $calendarEventToEdit) { ev in
+            .sheet(item: $viewModel.calendarEventToEdit) { ev in
                 CalendarEventEditView(event: ev) { edit in
-                    updateCancellable = container.updateCalendarEventUseCase.execute(ev, with: edit)
-                        .receive(on: DispatchQueue.main)
-                        .sink(receiveCompletion: { _ in }, receiveValue: { })
+                    viewModel.saveCalendarEdit(ev, with: edit)
                 }
             }
             .alert("메모 삭제", isPresented: Binding(
-                get: { pendingMemoDelete != nil },
-                set: { if !$0 { pendingMemoDelete = nil } }
+                get: { viewModel.pendingMemoDelete != nil },
+                set: { if !$0 { viewModel.pendingMemoDelete = nil } }
             )) {
-                Button("삭제", role: .destructive) {
-                    if let pending = pendingMemoDelete { deletePendingMemo(pending) }
-                    pendingMemoDelete = nil
-                }
-                Button("취소", role: .cancel) { pendingMemoDelete = nil }
+                Button("삭제", role: .destructive) { viewModel.confirmMemoDelete() }
+                Button("취소", role: .cancel) { viewModel.pendingMemoDelete = nil }
             } message: {
-                Text("'\(pendingMemoDelete?.memo ?? "")'\n메모를 삭제하시겠습니까?")
+                Text("'\(viewModel.pendingMemoDelete?.memo ?? "")'\n메모를 삭제하시겠습니까?")
             }
         }
+    }
+
+    private func dozyEvent(for event: CalendarEvent) -> DozyEvent? {
+        allDozyEvents.first(where: { $0.id == event.id })
     }
 
     // MARK: - Search bar
@@ -135,12 +107,12 @@ struct SearchView: View {
         HStack(spacing: 8) {
             Image(symbol: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField("검색", text: $query)
+            TextField("검색", text: $viewModel.query)
                 .focused($isSearchFocused)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
-            if !query.isEmpty {
-                Button { query = "" } label: {
+            if !viewModel.query.isEmpty {
+                Button { viewModel.query = "" } label: {
                     Image(symbol: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                 }
@@ -169,17 +141,18 @@ struct SearchView: View {
 
     // MARK: - Result list
 
-    private var resultList: some View {
+    private func resultList(_ results: SearchResults) -> some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 20) {
-                if !matchedCategories.isEmpty {
-                    categorySection
+                if !results.categories.isEmpty {
+                    categorySection(results.categories)
                 }
-                if !matchedWorkLogs.isEmpty {
-                    workLogSection
+                if !results.workLogs.isEmpty {
+                    workLogSection(results.workLogs)
                 }
-                if !eventsByDate.isEmpty {
-                    eventSection
+                let groups = results.eventsByDate
+                if !groups.isEmpty {
+                    eventSection(groups)
                 }
             }
             .padding(.horizontal)
@@ -187,13 +160,13 @@ struct SearchView: View {
         }
     }
 
-    private var categorySection: some View {
+    private func categorySection(_ categories: [UserCategory]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("카테고리")
                 .font(.caption).fontWeight(.semibold)
                 .foregroundStyle(.secondary)
             FlowHStack {
-                ForEach(matchedCategories) { cat in
+                ForEach(categories) { cat in
                     HStack(spacing: 4) {
                         Text(cat.emoji)
                         Text(cat.name).font(.subheadline)
@@ -206,10 +179,10 @@ struct SearchView: View {
         }
     }
 
-    private var workLogSection: some View {
+    private func workLogSection(_ logs: [WorkLog]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("일지").font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
-            ForEach(matchedWorkLogs) { log in
+            ForEach(logs) { log in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(log.date.formatted(.dateTime.year().month().day().locale(.current)))
                         .font(.caption).foregroundStyle(.secondary)
@@ -221,12 +194,9 @@ struct SearchView: View {
                             Text("• \(h)").font(.caption)
                         }
                     }
-                    let matchedMemos = log.memos.filter { $0.lowercased().contains(trimmed) }
-                    ForEach(matchedMemos, id: \.self) { memo in
+                    ForEach(viewModel.matchedMemos(in: log), id: \.self) { memo in
                         memoSnippet(memo) {
-                            pendingMemoDelete = PendingMemoDelete(
-                                parent: .workLog(log), memo: memo
-                            )
+                            viewModel.requestMemoDelete(memo, from: .workLog(log))
                         }
                     }
                 }
@@ -237,10 +207,10 @@ struct SearchView: View {
         }
     }
 
-    private var eventSection: some View {
+    private func eventSection(_ groups: [(date: Date, events: [CalendarEvent])]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("일정").font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
-            ForEach(eventsByDate, id: \.date) { group in
+            ForEach(groups, id: \.date) { group in
                 VStack(alignment: .leading, spacing: 8) {
                     Text(group.date.formatted(.dateTime.year().month().day().weekday().locale(.current)))
                         .font(.caption).foregroundStyle(.secondary)
@@ -248,22 +218,26 @@ struct SearchView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             EventRow(event: ev)
                                 .contentShape(Rectangle())
-                                .onTapGesture { selectedEvent = ev }
-                            if let memo = matchedMemo(for: ev),
-                               ev.source == .dozy,
-                               let dozy = allDozyEvents.first(where: { $0.id == ev.id }),
-                               dozy.memos.contains(memo) {
-                                memoSnippet(memo) {
-                                    pendingMemoDelete = PendingMemoDelete(
-                                        parent: .dozyEvent(dozy), memo: memo
-                                    )
-                                }
-                            } else if let memo = matchedMemo(for: ev) {
-                                memoSnippet(memo, onDelete: nil)
-                            }
+                                .onTapGesture { viewModel.selectedEvent = ev }
+                            eventMemo(for: ev)
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /// 매칭된 메모 스니펫. 내 Dozy 메모면 롱프레스로 삭제, notes 는 표시만.
+    @ViewBuilder
+    private func eventMemo(for ev: CalendarEvent) -> some View {
+        let dozy = ev.source == .dozy ? dozyEvent(for: ev) : nil
+        if let memo = viewModel.matchedMemo(for: ev, dozyEvent: dozy) {
+            if let dozy, dozy.memos.contains(memo) {
+                memoSnippet(memo) {
+                    viewModel.requestMemoDelete(memo, from: .dozyEvent(dozy))
+                }
+            } else {
+                memoSnippet(memo, onDelete: nil)
             }
         }
     }
@@ -281,145 +255,6 @@ struct SearchView: View {
         .contentShape(Rectangle())
         .modifier(LongPressDeleteModifier(action: onDelete))
     }
-
-    /// 매칭된 메모 또는 notes 스니펫 반환
-    private func matchedMemo(for ev: CalendarEvent) -> String? {
-        guard hasQuery else { return nil }
-        if ev.source == .dozy,
-           let dozy = allDozyEvents.first(where: { $0.id == ev.id }),
-           let memo = dozy.memos.first(where: { $0.lowercased().contains(trimmed) }) {
-            return memo
-        }
-        if let notes = ev.notes, notes.lowercased().contains(trimmed) {
-            return notes
-        }
-        return nil
-    }
-
-    // MARK: - Filtering
-
-    private var matchedCategories: [UserCategory] {
-        guard hasQuery else { return [] }
-        return allCategories.filter { $0.name.lowercased().contains(trimmed) }
-    }
-
-    private var matchedWorkLogs: [WorkLog] {
-        guard hasQuery else { return [] }
-        return allWorkLogs
-            .filter { log in
-                log.aiSummary.lowercased().contains(trimmed)
-                    || log.highlights.contains(where: { $0.lowercased().contains(trimmed) })
-                    || log.nextActions.contains(where: { $0.lowercased().contains(trimmed) })
-                    || log.memos.contains(where: { $0.lowercased().contains(trimmed) })
-            }
-            .sorted(by: { $0.date > $1.date })
-    }
-
-    /// 모든 소스(Dozy · Apple · Google) 통합 결과 (최신순)
-    private var matchedEvents: [CalendarEvent] {
-        guard hasQuery else { return [] }
-
-        let dozyEvents: [CalendarEvent] = allDozyEvents
-            .filter { e in
-                e.title.lowercased().contains(trimmed)
-                    || (e.location ?? "").lowercased().contains(trimmed)
-                    || (e.notes ?? "").lowercased().contains(trimmed)
-                    || e.memos.contains(where: { $0.lowercased().contains(trimmed) })
-                    || e.category.lowercased().contains(trimmed)
-            }
-            .map { $0.toCalendarEvent() }
-
-        let externalMatched = externalEvents.filter { e in
-            e.title.lowercased().contains(trimmed)
-                || (e.location ?? "").lowercased().contains(trimmed)
-                || (e.notes ?? "").lowercased().contains(trimmed)
-        }
-
-        // Dozy가 Apple/Google 쪽에 중복으로 들어올 수 있으므로 id로 중복 제거하되,
-        // 반복 이벤트의 여러 occurrence(동일 eventIdentifier, 상이한 startDate)는 보존하기 위해
-        // id + startDate 조합을 키로 사용.
-        var seen = Set<String>()
-        let combined = (dozyEvents + externalMatched).filter {
-            seen.insert("\($0.id)_\($0.startDate.timeIntervalSince1970)").inserted
-        }
-        return combined.sorted(by: { $0.startDate > $1.startDate })
-    }
-
-    private var eventsByDate: [(date: Date, events: [CalendarEvent])] {
-        let cal = Calendar.current
-        let grouped = Dictionary(grouping: matchedEvents) { cal.startOfDay(for: $0.startDate) }
-        return grouped.keys.sorted(by: >).map { ($0, grouped[$0] ?? []) }
-    }
-
-    private var resultIsEmpty: Bool {
-        matchedCategories.isEmpty && matchedWorkLogs.isEmpty && matchedEvents.isEmpty
-    }
-
-    // MARK: - Apply display settings (from EventDetail save button)
-
-    private func applyDisplaySettings(event: CalendarEvent, priority: Int, isPinned: Bool, category: String?) {
-        if event.source == .dozy {
-            guard let dozy = allDozyEvents.first(where: { $0.id == event.id }) else { return }
-            dozy.priority = priority
-            dozy.isPinned = isPinned
-            if let category {
-                dozy.category = category
-                if let cat = allCategories.first(where: { $0.name == category }) {
-                    dozy.colorHex = cat.colorHex
-                }
-            }
-            updateCancellable = container.updateDozyEventUseCase.execute(dozy)
-                .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { })
-        } else {
-            let finalCategory = category ?? event.category
-            updateCancellable = container.eventDisplaySettingsRepository
-                .save(eventID: event.id, priority: priority, isPinned: isPinned, category: finalCategory)
-                .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
-        }
-    }
-
-    // MARK: - Memo deletion
-
-    private func deletePendingMemo(_ pending: PendingMemoDelete) {
-        switch pending.parent {
-        case .dozyEvent(let dozy):
-            dozy.memos.removeAll { $0 == pending.memo }
-            dozy.updatedAt = Date()
-            updateCancellable = container.updateDozyEventUseCase.execute(dozy)
-                .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { })
-        case .workLog(let log):
-            guard let idx = log.memos.firstIndex(of: pending.memo) else { return }
-            updateCancellable = container.saveWorkLogUseCase
-                .deleteMemo(at: idx, in: log)
-                .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { })
-        }
-    }
-
-    // MARK: - External fetch
-
-    private func loadExternalEvents() {
-        guard externalEvents.isEmpty, !isLoadingExternal else { return }
-        isLoadingExternal = true
-        let cal = Calendar.current
-        // 오래된 기록 검색 지원 — 과거 10년 / 미래 2년 범위까지 확장
-        let end = cal.date(byAdding: .year, value: 2, to: Date()) ?? Date()
-        let start = cal.date(byAdding: .year, value: -10, to: Date()) ?? Date()
-        externalCancellable = container.fetchCalendarEventsForPeriodUseCase
-            .execute(from: start, to: end)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { _ in self.isLoadingExternal = false },
-                receiveValue: { events in
-                    // Dozy source는 @Query로 따로 처리하므로 제외
-                    self.externalEvents = events.filter { $0.source != .dozy }
-                    self.isLoadingExternal = false
-                }
-            )
-    }
 }
 
 // MARK: - Helpers
@@ -431,16 +266,6 @@ private struct FlowHStack<Content: View>: View {
         HStack(spacing: 6) { content() }
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-}
-
-/// 삭제 확인용 — 이벤트 메모 or 일지 메모
-struct PendingMemoDelete {
-    enum Parent {
-        case dozyEvent(DozyEvent)
-        case workLog(WorkLog)
-    }
-    let parent: Parent
-    let memo: String
 }
 
 /// action이 주어지면 롱프레스로 실행
