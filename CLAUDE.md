@@ -74,6 +74,7 @@ xcodebuild -project "Dozy AI.xcodeproj" -scheme "Dozy AI (macOS)" -destination '
 - 테스트 로그는 `Test case '...' passed` (소문자 case). 집계는 `grep -ciE "test case .* passed"`.
 - 시뮬레이터에는 오늘 일정 데이터가 없다. 화면 확인이 필요한 항목은 PR "확인" 섹션에 실기기 항목으로 남긴다.
 - `Secrets.xcconfig` 가 없으면 빌드가 안 된다. README 의 환경 설정을 따른다.
+- 푸시(#95): APNs 키 `4YB8D3627Y`(Team `7DVWGZFH6N`, Team scoped). Edge Function `send-push` 시크릿 `APNS_KEY_ID` · `APNS_TEAM_ID` · `APNS_BUNDLE_ID` · `APNS_PRIVATE_KEY` · `PUSH_WEBHOOK_SECRET`, DB Vault `push_function_url` · `push_webhook_secret`(Function 시크릿과 같은 값). Dev · Prod 비밀값은 서로 다르다. 시크릿 · Vault 등록과 SQL Editor 실행은 사용자가 직접(키 내용을 대화에 넣지 않는다). Debug 빌드는 sandbox 토큰.
 - Firebase(#90 Analytics · #117 Crashlytics): `GoogleService-Info.plist` 를 `Dozy AI/` · `Dozy AI (macOS)/` 에 둔다(공개 저장소라 .gitignore, 콘솔 프로젝트 `dozy-7fa39`). 없어도 빌드는 되고 Firebase 만 꺼진다. DEBUG 는 `-FIRAnalyticsDebugEnabled` 인자일 때만 수집. dSYM 은 Release 빌드 단계 "Upload dSYM to Crashlytics" 가 올린다. 테스트 크래시는 `-DozyCrashlyticsTestCrash`(스킴 Run › Info › Debug executable 해제 필수 — 디버거가 붙으면 기록 안 됨. 크래시 후 인자 빼고 재실행해야 전송). 비치명 오류는 `CrashReporting.record(error, context:)` — 메시지는 버리고 분류만 보낸다.
 
 ## 이슈 · PR 템플릿
@@ -86,4 +87,5 @@ PR: `Closes #N` → `## 요약` → `## 변경 사항`(**굵은 항목명** + �
 
 - v2.0.3: 완료 (2026-10-27, 마일스톤 닫힘). 마지막 항목 #71 Live Activity 는 PR #96, 앱 아이콘 Iconsax 교체는 PR #97 로 머지.
 - macOS v2.0.3: 완료 (2026-10-28 심사 제출, 마일스톤 #11 닫힘, 태그 `macos-v2.0.3`). #100 자연어 입력(음성 제외) · #101 저녁 요약 알림 + 저녁 체크 · #107 테마 팔레트 · #102 AI 엔진 행 · 버전 2.0.3 (15) · #103 · #110 수정 · #112 테스트. Google 캘린더는 OAuth 검증 대기로 macOS 비활성.
-- v2.0.4 수익화: #90 Firebase Analytics(완료, PR #116) → #117 Crashlytics → #91 RevenueCat → #72 자연어 질의 → #92 Pro 게이팅 → #93 페이월 → #95 APNs 푸시 → #94 글로벌 출시. iOS 강제 업데이트 `min_ios_version` = 2.0.3 (2026-10-28, Prod `app_config`).
+- v2.0.4 측정 + 기능 강화: #90 Firebase Analytics(완료, PR #116) → #117 Crashlytics(완료, PR #118) → #72 자연어 질의(완료, PR #121 · #123) → #95 APNs 푸시(공유 캘린더 파트너 알림, PR #127, Dev · Prod Supabase 반영 2026-10-29, TestFlight 확인 남음). Live Activity 푸시는 #126(v2.0.5)으로 분리 — ContentState 개수는 Apple · Google 합산이라 서버가 정확히 못 만든다. iOS 강제 업데이트 `min_ios_version` = 2.0.3 (2026-10-28, Prod `app_config`).
+- v2.0.5 수익화 (2026-10-29 v2.0.4 에서 이동): #91 RevenueCat → #92 Pro 게이팅 → #93 페이월 → #119 광고(iOS 무료 사용자 한정 · 비맞춤 · ATT 없음, 핵심 화면 제외, Pro 는 광고 제거) → #94 글로벌 출시 · #126 Live Activity 푸시.
