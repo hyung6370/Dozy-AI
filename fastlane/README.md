@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 TestFlight에 베타 빌드 배포
 
+### ios upload_dsyms
+
+```sh
+[bundle exec] fastlane ios upload_dsyms
+```
+
+Xcode 아카이브의 dSYM 을 Crashlytics 에 업로드
+
 ### ios release
 
 ```sh
