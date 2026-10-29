@@ -10,6 +10,35 @@ def api_key
   )
 end
 
+# ── Crashlytics dSYM 업로드 (#135) ──────────────────────────────────────────
+# 빌드 단계 스크립트(Upload dSYM to Crashlytics)는 샌드박스 안에서 백그라운드로 올려 성공 여부가 남지 않고
+# 실제로 누락됐다. fastlane 에서 빌드 직후 포그라운드로 한 번 더 올린다. 실패해도 배포는 막지 않는다.
+def project_root
+  File.expand_path("..", FastlaneCore::FastlaneFolder.path)
+end
+
+def crashlytics_upload_symbols_binary
+  Dir.glob(File.expand_path("~/Library/Developer/Xcode/DerivedData/Dozy_AI-*/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols"))
+     .max_by { |f| File.mtime(f) }
+end
+
+def upload_dsyms_to_crashlytics(gsp_path:, dsym_path:, platform:)
+  binary = crashlytics_upload_symbols_binary
+  dsym_path = File.expand_path(dsym_path, project_root) if dsym_path   # gym 은 상대 경로를 넘길 수 있다
+  unless File.exist?(gsp_path) && binary && dsym_path && File.exist?(dsym_path)
+    UI.important("Crashlytics dSYM 업로드 건너뜀 — plist: #{File.exist?(gsp_path)}, upload-symbols: #{!binary.nil?}, dSYM: #{dsym_path.inspect}")
+    return
+  end
+  upload_symbols_to_crashlytics(
+    dsym_path: dsym_path,
+    gsp_path: gsp_path,
+    binary_path: binary,
+    platform: platform
+  )
+rescue => e
+  UI.important("Crashlytics dSYM 업로드 실패 (배포는 계속): #{e.message}")
+end
+
 platform :ios do
 
   # ── Beta: TestFlight 배포 ───────────────────────────────────────────────────
@@ -42,9 +71,37 @@ platform :ios do
       xcargs: "-allowProvisioningUpdates",
       export_xcargs: "-allowProvisioningUpdates"
     )
+    upload_dsyms_to_crashlytics(
+      gsp_path: File.join(project_root, "Dozy AI/GoogleService-Info.plist"),
+      dsym_path: lane_context[SharedValues::DSYM_OUTPUT_PATH],
+      platform: "ios"
+    )
     upload_to_testflight(
       api_key: api_key,
       skip_waiting_for_build_processing: true
+    )
+  end
+
+  # ── dSYM 수동 업로드 ───────────────────────────────────────────────────────
+  # 이미 올린 빌드의 dSYM 을 Crashlytics 에 올린다. build 를 주면 그 빌드 번호의 최신 아카이브, 없으면 가장 최근 아카이브.
+  #   fastlane ios upload_dsyms build:163
+  desc "Xcode 아카이브의 dSYM 을 Crashlytics 에 업로드"
+  lane :upload_dsyms do |options|
+    archives = Dir.glob(File.expand_path("~/Library/Developer/Xcode/Archives/*/Dozy AI *.xcarchive"))
+    if options[:build]
+      archives = archives.select do |a|
+        sh(%Q(/usr/libexec/PlistBuddy -c "Print :ApplicationProperties:CFBundleVersion" "#{a}/Info.plist"), log: false).strip == options[:build].to_s
+      end
+    end
+    archive = archives.max_by { |a| File.mtime(a) }
+    UI.user_error!("아카이브를 찾지 못함 (build: #{options[:build].inspect})") unless archive
+    UI.message("아카이브: #{archive}")
+    zip = File.join(project_root, "build/dsyms-#{File.basename(archive, ".xcarchive").gsub(" ", "_")}.zip")
+    sh(%Q(mkdir -p "#{File.dirname(zip)}" && cd "#{archive}" && /usr/bin/ditto -c -k --keepParent dSYMs "#{zip}"))
+    upload_dsyms_to_crashlytics(
+      gsp_path: File.join(project_root, "Dozy AI/GoogleService-Info.plist"),
+      dsym_path: zip,
+      platform: "ios"
     )
   end
 
@@ -69,6 +126,11 @@ platform :ios do
       export_method: "app-store",
       xcargs: "-allowProvisioningUpdates",
       export_xcargs: "-allowProvisioningUpdates"
+    )
+    upload_dsyms_to_crashlytics(
+      gsp_path: File.join(project_root, "Dozy AI/GoogleService-Info.plist"),
+      dsym_path: lane_context[SharedValues::DSYM_OUTPUT_PATH],
+      platform: "ios"
     )
     upload_to_app_store(
       api_key: api_key,
@@ -108,6 +170,11 @@ platform :mac do
       export_method: "app-store",
       output_directory: "build/mac",
       clean: true
+    )
+    upload_dsyms_to_crashlytics(
+      gsp_path: File.join(project_root, "Dozy AI (macOS)/GoogleService-Info.plist"),
+      dsym_path: lane_context[SharedValues::DSYM_OUTPUT_PATH],
+      platform: "mac"
     )
     upload_to_testflight(
       api_key: api_key,
