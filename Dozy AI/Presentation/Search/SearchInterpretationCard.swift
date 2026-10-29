@@ -21,17 +21,26 @@ struct SearchInterpretationCard: View {
         VStack(alignment: .leading, spacing: 10) {
             chips
 
-            if intent.aggregation != .none {
-                aggregateBody
-            } else if let events = interpretation.result?.events {
-                Text("일정 \(events.count)개")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+            VStack(alignment: .leading, spacing: 2) {
+                // 요약 줄 — 왼쪽은 집계 제목 또는 일정 수, 오른쪽 끝은 누가 해석했는지 배지
+                HStack(alignment: .center, spacing: 8) {
+                    if intent.aggregation != .none {
+                        Text(aggregateTitle)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else if let events = interpretation.result?.events {
+                        Text("일정 \(events.count)개")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    engineBadge
+                }
 
-            Text("해석: \(intent.source.label)")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+                if intent.aggregation != .none {
+                    aggregateBody
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
@@ -79,14 +88,32 @@ struct SearchInterpretationCard: View {
         .background(Color.accentColor.opacity(0.12), in: Capsule())
     }
 
+    // MARK: - 해석 엔진 배지
+
+    /// Apple Intelligence 는 강조색, 규칙 해석(날짜 인식)은 중립색 — 어떤 경로로 해석됐는지 한눈에.
+    private var engineBadge: some View {
+        let isOnDevice = intent.source == .onDevice
+        let tint: Color = isOnDevice ? .accentColor : .secondary
+        return HStack(spacing: 4) {
+            Image(symbol: isOnDevice ? "sparkles" : "calendar")
+                .font(.caption2.weight(.semibold))
+            Text(verbatim: intent.source.label)
+                .font(.caption.weight(.semibold))
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(tint.opacity(0.14), in: Capsule())
+        .fixedSize()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("해석: \(intent.source.label)"))
+    }
+
     // MARK: - 집계
 
     @ViewBuilder
     private var aggregateBody: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(aggregateTitle)
-                .font(.caption)
-                .foregroundStyle(.secondary)
             if let aggregate = interpretation.result?.aggregate {
                 Text(value(of: aggregate))
                     .font(.system(.title, design: .rounded))
