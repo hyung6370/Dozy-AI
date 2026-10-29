@@ -2027,7 +2027,14 @@
       }
     },
     "날짜 인식" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date detection"
+          }
+        }
+      }
     },
     "날짜·시간·장소가 들어간 문장을 적으면 아래 항목을 채워 드려요." : {
       "localizations" : {
@@ -7283,6 +7290,256 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sends anonymous statistics such as feature usage counts to help improve the app. Your event content is never sent."
+          }
+        }
+      }
+    },
+    "어제" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
+          }
+        }
+      }
+    },
+    "이번 주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This week"
+          }
+        }
+      }
+    },
+    "지난주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last week"
+          }
+        }
+      }
+    },
+    "다음 주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next week"
+          }
+        }
+      }
+    },
+    "이번 달" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This month"
+          }
+        }
+      }
+    },
+    "지난달" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last month"
+          }
+        }
+      }
+    },
+    "다음 달" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next month"
+          }
+        }
+      }
+    },
+    "올해" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This year"
+          }
+        }
+      }
+    },
+    "작년" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last year"
+          }
+        }
+      }
+    },
+    "최근 %lld일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last %lld days"
+          }
+        }
+      }
+    },
+    "최근 %lld주" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last %lld weeks"
+          }
+        }
+      }
+    },
+    "최근 %lld개월" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last %lld months"
+          }
+        }
+      }
+    },
+    "%lld번" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld times"
+          }
+        }
+      }
+    },
+    "%lld개 중 %lld개 완료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$lld of %1$lld completed"
+          }
+        }
+      }
+    },
+    "종일 일정 %lld개 제외" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excludes %lld all-day events"
+          }
+        }
+      }
+    },
+    "일정 %lld개" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld events"
+          }
+        }
+      }
+    },
+    "일정 횟수" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event count"
+          }
+        }
+      }
+    },
+    "총 시간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total time"
+          }
+        }
+      }
+    },
+    "%@ · 기본" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · default"
+          }
+        }
+      }
+    },
+    "해석 중…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interpreting…"
+          }
+        }
+      }
+    },
+    "해석: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interpreted by %@"
+          }
+        }
+      }
+    },
+    "기간 조건 지우기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove period"
+          }
+        }
+      }
+    },
+    "카테고리 조건 지우기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove category"
+          }
+        }
+      }
+    },
+    "제목 · 위치 · 메모 · 일지 · 카테고리를 검색해보세요\n'지난주 회의 몇 시간'처럼 물어볼 수도 있어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search titles, locations, memos, journals, and categories\nYou can also ask things like 'meeting hours last week'"
+          }
+        }
+      }
+    },
+    "검색 결과가 없습니다" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results"
           }
         }
       }

@@ -2,8 +2,9 @@
 //  SearchView.swift
 //  Dozy AI
 //
-//  검색 화면. 매칭은 SearchMatcher, 조회 · 저장은 SearchViewModel (#72).
+//  검색 화면. 매칭은 SearchMatcher, 조회 · 저장 · 자연어 해석은 SearchViewModel (#72).
 //  Dozy 일정 · 일지 · 카테고리는 @Query 로 받아 편집 즉시 결과에 반영한다.
+//  "지난주 회의 몇 시간"처럼 기간이 있는 질의는 해석 카드(조건 칩 + 집계) 아래에 기간 검색 결과를 보여 준다.
 //
 
 import SwiftUI
@@ -35,8 +36,22 @@ struct SearchView: View {
                     .padding(.top, 12)
                     .padding(.bottom, 8)
 
+                if let interpretation = viewModel.interpretation {
+                    SearchInterpretationCard(
+                        interpretation: interpretation,
+                        isLoading: viewModel.isInterpreting,
+                        onRemovePeriod: { viewModel.removePeriod() },
+                        onRemoveCategory: { viewModel.removeCategory() }
+                    )
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+                    .transition(.opacity)
+                }
+
                 if !viewModel.hasQuery {
-                    emptyState(message: "제목 · 위치 · 메모 · 일지 · 카테고리를 검색해보세요")
+                    emptyState(message: "제목 · 위치 · 메모 · 일지 · 카테고리를 검색해보세요\n'지난주 회의 몇 시간'처럼 물어볼 수도 있어요")
+                } else if results.isEmpty && viewModel.isInterpreting {
+                    interpretingState
                 } else if results.isEmpty {
                     emptyState(message: "검색 결과가 없습니다")
                 } else {
@@ -50,7 +65,11 @@ struct SearchView: View {
                     Button("닫기") { dismiss() }
                 }
             }
+            .animation(.easeInOut(duration: 0.2), value: viewModel.interpretation)
             .onAppear { isSearchFocused = true }
+            .onChange(of: allCategories.map(\.name), initial: true) { _, names in
+                viewModel.categoryNames = names
+            }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .background { viewModel.clearModalState() }
             }
@@ -109,6 +128,8 @@ struct SearchView: View {
                 .foregroundStyle(.secondary)
             TextField("검색", text: $viewModel.query)
                 .focused($isSearchFocused)
+                .submitLabel(.search)
+                .onSubmit { viewModel.submitNow() }
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
             if !viewModel.query.isEmpty {
@@ -125,7 +146,19 @@ struct SearchView: View {
 
     // MARK: - Empty state
 
-    private func emptyState(message: String) -> some View {
+    private var interpretingState: some View {
+        VStack(spacing: 8) {
+            Spacer()
+            ProgressView()
+            Text("해석 중…")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func emptyState(message: LocalizedStringKey) -> some View {
         VStack(spacing: 8) {
             Spacer()
             Image(symbol: "magnifyingglass")
@@ -134,6 +167,7 @@ struct SearchView: View {
             Text(message)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

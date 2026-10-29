@@ -140,6 +140,8 @@ final class DependencyContainer: ObservableObject {
     lazy var regenerateSharedCalendarInviteCodeUseCase = RegenerateSharedCalendarInviteCodeUseCase(service: sharedCalendarService)
     lazy var updateSharedCalendarNicknameUseCase = UpdateSharedCalendarNicknameUseCase(service: sharedCalendarService)
     lazy var parseNaturalLanguageEventUseCase = ParseNaturalLanguageEventUseCase(service: eventParsingService)
+    lazy var queryParsingService: QueryParsingServiceProtocol = NaturalLanguageQueryParser()
+    lazy var parseSearchQueryUseCase = ParseSearchQueryUseCase(parser: queryParsingService, analytics: analyticsService)
 
     #if os(iOS)
     // FetchTodayDataUseCase 는 iOS 의 Today 화면 전용 — reminderService 까지 묶어 쓰는데
@@ -153,6 +155,11 @@ final class DependencyContainer: ObservableObject {
     lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
     lazy var fetchCalendarEventsForPeriodUseCase = FetchCalendarEventsForPeriodUseCase(calendarService: calendarService)
     lazy var saveEventDisplaySettingsUseCase = SaveEventDisplaySettingsUseCase(repository: eventDisplaySettingsRepository)
+    lazy var searchEventsUseCase = SearchEventsUseCase(
+        fetchEvents: fetchCalendarEventsForPeriodUseCase,
+        fetchDozyEvents: fetchDozyEventsForPeriodUseCase,
+        fetchCompletions: fetchEventCompletionsForPeriodUseCase
+    )
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()
