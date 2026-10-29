@@ -173,6 +173,11 @@ struct HomeView: View {
                 // Siri "Dozy 음성 메모" (OpenVoiceInputIntent) → MainTabView 가 홈 탭으로 옮긴 뒤 시트 오픈.
                 showVoiceInput = true
             }
+            .onReceive(NotificationCenter.default.publisher(for: .dozyOpenNotifications)) { _ in
+                // 공유 캘린더 푸시 탭 (#95) — 알림 목록을 연다. 카드는 SharedPushHandler 가 이미 만들었다.
+                viewModel.hasNotification = false
+                showNotificationSheet = true
+            }
             .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
                 // 저녁 요약 알림 탭. 백그라운드에서 미리 만들어 둔 요약이 있으면 즉시, 없으면 시트가 생성한다.
                 // 저녁 체크 시트가 떠 있으면 체크를 먼저 마치고(닫히면) 요약을 연다.

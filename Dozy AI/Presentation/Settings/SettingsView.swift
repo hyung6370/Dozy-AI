@@ -44,6 +44,8 @@ struct SettingsView: View {
     }
 
     private let container: DependencyContainer
+    /// 설정 "새 공유 일정 알림" (#95) — 기기 값이 기준, 서버 플래그는 토글 때 맞춘다.
+    @State private var sharedPushEnabled = PushSettings.isSharedNotificationsEnabled()
 
     private var privacyPolicyURL: URL? {
         guard
@@ -95,6 +97,9 @@ struct SettingsView: View {
                     appearanceSection
                     #if os(iOS)
                     summaryReminderSection
+                    if authViewModel.isLoggedIn {
+                        sharedPushSection
+                    }
                     lockScreenSection
                     #endif
                     calendarSection
@@ -278,6 +283,31 @@ struct SettingsView: View {
             .buttonStyle(.plain)
         }
     }
+
+    // MARK: - 공유 캘린더 알림 섹션 (#95)
+
+    #if os(iOS)
+    private var sharedPushSection: some View {
+        DozyListSection(
+            header: "공유 캘린더 알림",
+            footer: "파트너가 공유 캘린더에 일정을 추가하면 앱이 꺼져 있어도 알려드려요."
+        ) {
+            DozyListRow(title: "새 공유 일정 알림") {
+                settingIcon("person.2.fill")
+            } trailing: {
+                Toggle("새 공유 일정 알림", isOn: Binding(
+                    get: { sharedPushEnabled },
+                    set: { enabled in
+                        sharedPushEnabled = enabled
+                        Task { await container.pushRegistrationUseCase.setSharedNotificationsEnabled(enabled) }
+                    }
+                ))
+                .labelsHidden()
+                .tint(DozyColor.Brand.primary)
+            }
+        }
+    }
+    #endif
 
     // MARK: - AI 요약 알림 섹션
 

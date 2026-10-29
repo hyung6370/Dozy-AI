@@ -75,6 +75,7 @@ struct Dozy_AIApp: App {
                 consumePendingCreateEventFlag()
                 consumePendingVoiceInputFlag()
                 consumePendingOpenSummaryFlag()
+                consumePendingOpenNotificationsFlag()
             }
             .onChange(of: scenePhase) { _, phase in
                 // 위젯의 CreateQuickEventIntent 가 perform 에서 App Group 플래그를 set 함.
@@ -83,6 +84,12 @@ struct Dozy_AIApp: App {
                     consumePendingCreateEventFlag()
                     consumePendingVoiceInputFlag()
                     consumePendingOpenSummaryFlag()
+                    consumePendingOpenNotificationsFlag()
+                    // 푸시 (#95): 토큰 최신화 + 앱이 꺼진 동안 받은 공유 푸시를 알림 카드로
+                    Task { @MainActor in
+                        await container.pushRegistrationUseCase.registerIfPossible()
+                        await container.sharedPushHandler.collectDelivered()
+                    }
                     // 포그라운드 복귀 — 캐시가 그대로여도 "지금" 기준으로 잠금화면 아젠다를 다시 계산한다
                     // (일정 간 전환 따라잡기, 8시간 제한으로 내려간 액티비티 재시작).
                     Task { @MainActor in _ = await container.syncTodayLiveActivityUseCase.execute() }
@@ -115,6 +122,14 @@ struct Dozy_AIApp: App {
         guard defaults.bool(forKey: AppDelegate.pendingOpenSummaryKey) else { return }
         defaults.set(false, forKey: AppDelegate.pendingOpenSummaryKey)
         NotificationCenter.default.post(name: .dozyOpenDailySummary, object: nil)
+    }
+
+    /// 공유 푸시 탭(AppDelegate)이 켠 플래그를 소비 → `.dozyOpenNotifications` post → 홈 탭 + 알림 목록 (#95).
+    private func consumePendingOpenNotificationsFlag() {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: AppDelegate.pendingOpenNotificationsKey) else { return }
+        defaults.set(false, forKey: AppDelegate.pendingOpenNotificationsKey)
+        NotificationCenter.default.post(name: .dozyOpenNotifications, object: nil)
     }
 
     /// 위젯의 widgetURL/Link 탭으로 들어온 deep link 처리.
@@ -173,6 +188,9 @@ extension Notification.Name {
 
     /// 저녁 요약 알림 탭 → 홈 탭 + 요약 시트 오픈. `AppDelegate.didReceive` / `consumePendingOpenSummaryFlag` 가 post.
     static let dozyOpenDailySummary = Notification.Name("dozyOpenDailySummary")
+
+    /// 공유 캘린더 푸시 탭 → 홈 탭 + 알림 목록 (#95). `AppDelegate.didReceive` / `consumePendingOpenNotificationsFlag` 가 post.
+    static let dozyOpenNotifications = Notification.Name("dozyOpenNotifications")
 }
 
 // MARK: - AppCoordinator
@@ -184,6 +202,7 @@ final class AppCoordinator: ObservableObject {
     @Published private(set) var isReady = false
     private(set) var container: DependencyContainer?
     private(set) var authViewModel: AuthViewModel?
+    fileprivate var pushCancellables = Set<AnyCancellable>()
 
     init() {
         #if !DEBUG
@@ -229,7 +248,35 @@ final class AppCoordinator: ObservableObject {
         SummaryReminderService.backgroundLiveActivityRefresh = { [weak c] in
             _ = await c?.syncTodayLiveActivityUseCase.execute()
         }
+        connectPush(container: c)
         isReady = true
+    }
+}
+
+extension AppCoordinator {
+    /// 푸시 (#95): AppDelegate 훅 연결 + 로그인되면 토큰 등록 + 로그아웃 직전 토큰 해제.
+    @MainActor
+    fileprivate func connectPush(container c: DependencyContainer) {
+        PushHooks.tokenReceived = { [weak c] in
+            guard let c else { return }
+            Task { await c.pushRegistrationUseCase.registerIfPossible() }
+        }
+        PushHooks.sharedPushReceived = { [weak c] userInfo in
+            c?.sharedPushHandler.handle(userInfo: userInfo)
+        }
+        // 로그인(세션 복원 포함) 순간에 토큰을 올린다 — 같은 기기에서 계정을 바꾼 경우 서버가 소유자를 옮긴다
+        authViewModel?.$currentUser
+            .map { $0?.id }
+            .removeDuplicates()
+            .compactMap { $0 }
+            .sink { [weak c] _ in
+                guard let c else { return }
+                Task { await c.pushRegistrationUseCase.registerIfPossible() }
+            }
+            .store(in: &pushCancellables)
+        authViewModel?.beforeSignOut = { [weak c] in
+            await c?.pushRegistrationUseCase.unregister()
+        }
     }
 }
 

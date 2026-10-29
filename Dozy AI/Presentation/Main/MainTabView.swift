@@ -254,6 +254,10 @@ struct MainTabView: View {
             // Siri 음성 메모 → 홈 탭으로 먼저 이동. 시트 띄우기는 HomeView 가 처리.
             selection = .home
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyOpenNotifications)) { _ in
+            // 공유 캘린더 푸시 탭 (#95) → 홈 탭으로. 알림 목록은 HomeView 가 연다.
+            selection = .home
+        }
         .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
             // 저녁 요약 알림 탭 → 홈 탭으로 먼저 이동. 요약 시트는 HomeView 가 연다.
             selection = .home

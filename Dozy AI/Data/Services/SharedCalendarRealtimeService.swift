@@ -220,19 +220,15 @@ final class SharedCalendarRealtimeService: ObservableObject {
             let calID = row.sharedCalendarID
             let partner = calID.flatMap {
                 ActiveSharedCalendarStore.shared.partnerDisplayName(for: $0)
-            } ?? "파트너"
-
-            let body = "\(partner)님이 '\(row.title)' 일정을 공유했습니다"
-            let record = NotificationRecord(
-                eventID: row.id,
-                eventTitle: row.title,
-                body: body,
-                deliveryDate: Date(),
-                eventStartDate: row.startDate,
-                kind: "shared",
-                senderName: partner
+            }
+            // 푸시(#95)와 같은 일정 카드가 두 번 생기지 않게 중복 확인 저장
+            let push = SharedEventPush(
+                eventID: row.id, calendarID: calID, title: row.title,
+                senderName: partner, startDate: row.startDate
             )
-            notificationRepository.save(record)
+            let body = push.cardBody
+            let created = await MainActor.run { notificationRepository.saveSharedIfNeeded(push) }
+            guard created else { return }
             NotificationCenter.default.post(name: .dozyNotificationsChanged, object: nil)
             Logger.realtime.info("🔔 공유 알림 카드 생성: \(body)")
         } catch {

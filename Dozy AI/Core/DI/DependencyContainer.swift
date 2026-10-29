@@ -112,6 +112,18 @@ final class DependencyContainer: ObservableObject {
     lazy var dozyEventRepository: DozyEventRepositoryProtocol = DozyEventRepository(modelContainer: modelContainer)
     lazy var eventCompletionRepository: EventCompletionRepositoryProtocol = EventCompletionRepository(modelContainer: modelContainer)
     lazy var notificationRepository = NotificationRepository(modelContainer: modelContainer)
+
+    // MARK: - Push (#95) — iOS 만 실제 등록, macOS 는 Noop
+    #if os(iOS)
+    lazy var pushTokenService: PushTokenServiceProtocol = SupabasePushTokenService()
+    @MainActor lazy var sharedPushHandler = SharedPushHandler(
+        notificationRepository: notificationRepository,
+        realtimeService: sharedCalendarRealtimeService
+    )
+    #else
+    lazy var pushTokenService: PushTokenServiceProtocol = NoopPushTokenService()
+    #endif
+    lazy var pushRegistrationUseCase = PushRegistrationUseCase(service: pushTokenService)
     lazy var eventDisplaySettingsRepository = EventDisplaySettingsRepository(modelContainer: modelContainer)
 
     // MARK: - UseCases (Domain Layer)

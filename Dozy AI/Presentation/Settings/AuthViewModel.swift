@@ -20,6 +20,8 @@ final class AuthViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     @Published var showCongratulationAnimation = false
     @Published var pendingInviteCode: String? = nil
+    /// 로그아웃 직전 정리 (#95 푸시 토큰 해제). 세션이 사라지면 RLS 로 본인 행을 지울 수 없어 signOut 전에 기다린다.
+    var beforeSignOut: (() async -> Void)?
 
     /// 회원가입 OTP 흐름 진행 상태. View 가 단계별 UI 분기에 사용.
     @Published var emailOTPStep: EmailOTPStep = .idle
@@ -597,6 +599,13 @@ final class AuthViewModel: ObservableObject {
     // MARK: - 로그아웃
 
     func signOut() {
+        Task { @MainActor [weak self] in
+            await self?.beforeSignOut?()
+            self?.performSignOut()
+        }
+    }
+
+    private func performSignOut() {
         authService.signOut()
             .receive(on: DispatchQueue.main)
             .sink(
