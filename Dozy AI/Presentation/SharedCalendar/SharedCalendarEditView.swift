@@ -33,9 +33,6 @@ struct SharedCalendarEditView: View {
     private var members: [SharedCalendarMember] {
         viewModel.membersMap[calendar.id] ?? []
     }
-    private var partner: SharedCalendarMember? {
-        members.first(where: { $0.userID != currentUserID })
-    }
 
     private var hasChanges: Bool {
         let nameChanged = isOwner && calendarName.trimmingCharacters(in: .whitespaces) != calendar.name
@@ -63,16 +60,22 @@ struct SharedCalendarEditView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                imageSection
-                calendarNameSection
-                nicknameSection
+            ScrollView {
+                VStack(spacing: DozySpacing.xl) {
+                    imageSection
+                    calendarNameSection
+                    nicknameSection
+                }
+                .padding(.vertical, DozySpacing.lg)
             }
+            .scrollDismissesKeyboard(.interactively)
+            .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("캘린더 설정")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("취소") { dismiss() }
+                        .foregroundStyle(DozyColor.Text.primary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("저장") { save() }
@@ -97,119 +100,104 @@ struct SharedCalendarEditView: View {
     // MARK: - 캘린더 이미지
 
     private var imageSection: some View {
-        Section {
-            HStack(spacing: 16) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.accentColor.opacity(0.15))
-                        .frame(width: 72, height: 72)
-                    if let url = currentCalendar.publicImageURL {
-                        KFImage(url)
-                            .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 144, height: 144)))
-                            .cacheOriginalImage()
-                            .fade(duration: 0.15)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 72, height: 72)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    } else {
-                        Image(symbol: "person.2.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    if isUploadingImage {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.35))
-                            .frame(width: 72, height: 72)
-                        ProgressView().tint(.white)
-                    }
+        VStack(spacing: DozySpacing.sm) {
+            ZStack {
+                SharedCalendarCover(imageURL: currentCalendar.publicImageURL, size: 96, cornerRadius: DozyRadius.xl)
+                if isUploadingImage {
+                    RoundedRectangle(cornerRadius: DozyRadius.xl, style: .continuous)
+                        .fill(Color.black.opacity(0.35))
+                        .frame(width: 96, height: 96)
+                    ProgressView().tint(.white)
                 }
+            }
+            .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
 
-                Spacer()
+            if isOwner {
+                HStack(spacing: DozySpacing.md) {
+                    PhotosPicker(selection: $photoItem, matching: .images) {
+                        Text(currentCalendar.imagePath == nil ? "사진 추가" : "사진 변경")
+                            .font(DozyFont.subheadlineEmphasized)
+                            .foregroundStyle(DozyColor.Brand.primary)
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(isUploadingImage)
 
-                if isOwner {
-                    HStack(spacing: 16) {
-                        PhotosPicker(selection: $photoItem, matching: .images) {
-                            Text(currentCalendar.imagePath == nil ? "추가" : "변경")
-                                .font(.subheadline).fontWeight(.medium)
+                    if currentCalendar.imagePath != nil {
+                        Button(role: .destructive) { removeImage() } label: {
+                            Text("삭제")
+                                .font(DozyFont.subheadlineEmphasized)
+                                .foregroundStyle(DozyColor.State.danger)
                         }
                         .buttonStyle(.borderless)
                         .disabled(isUploadingImage)
-
-                        if currentCalendar.imagePath != nil {
-                            Button(role: .destructive) { removeImage() } label: {
-                                Text("삭제")
-                                    .font(.subheadline).fontWeight(.medium)
-                            }
-                            .buttonStyle(.borderless)
-                            .disabled(isUploadingImage)
-                        }
                     }
-                } else {
-                    Text("소유자만 수정 가능")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
                 }
+            } else {
+                Text("대표 사진은 소유자만 바꿀 수 있어요")
+                    .font(DozyFont.caption)
+                    .foregroundStyle(DozyColor.Text.tertiary)
             }
-            .padding(.vertical, 4)
-        } header: {
-            Text("캘린더 이미지")
         }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - 캘린더 이름
 
     private var calendarNameSection: some View {
-        Section {
+        DozyListSection(header: "캘린더 이름", footer: isOwner ? nil : "캘린더 이름은 소유자만 바꿀 수 있어요.") {
             if isOwner {
                 TextField("캘린더 이름", text: $calendarName)
+                    .font(DozyFont.bodyEmphasized)
+                    .padding(.horizontal, DozySpacing.md)
+                    .frame(minHeight: 56)
             } else {
-                HStack {
-                    Text(calendar.name)
-                    Spacer()
-                    Text("소유자만 수정 가능")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
+                Text(calendar.name)
+                    .font(DozyFont.bodyEmphasized)
+                    .foregroundStyle(DozyColor.Text.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, DozySpacing.md)
+                    .frame(minHeight: 56)
             }
-        } header: {
-            Text("캘린더 이름")
         }
     }
 
     // MARK: - 닉네임
 
     private var nicknameSection: some View {
-        Section {
+        DozyListSection(header: "닉네임", footer: "닉네임은 이 공유 캘린더 안에서만 보이는 이름이에요.") {
             // 나 — 항상 편집 가능
-            HStack {
+            HStack(spacing: DozySpacing.sm) {
+                SharedMemberAvatar(
+                    name: myNickname.isEmpty ? String(localized: "나") : myNickname,
+                    seed: currentUserID, size: 36
+                )
                 Text("나")
-                    .font(.subheadline)
+                    .font(DozyFont.bodyEmphasized)
+                    .foregroundStyle(DozyColor.Text.primary)
                 Spacer()
                 TextField("닉네임 입력", text: $myNickname)
+                    .font(DozyFont.body)
                     .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 150)
+                    .frame(maxWidth: 160)
             }
+            .padding(.horizontal, DozySpacing.md)
+            .frame(minHeight: 60)
 
-            // 파트너 — 항상 읽기 전용
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    let partnerDisplayName = partner?.nickname.flatMap { $0.isEmpty ? nil : $0 } ?? "파트너"
-                    Text(partnerDisplayName)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    if partner?.nickname?.isEmpty == false {
-                        Text("파트너")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
+            // 다른 멤버 — 읽기 전용
+            ForEach(members.filter { $0.userID != currentUserID }, id: \.userID) { member in
+                HStack(spacing: DozySpacing.sm) {
+                    SharedMemberAvatar(name: member.displayName(currentUserID: currentUserID), seed: member.userID, size: 36)
+                    Text(member.displayName(currentUserID: currentUserID))
+                        .font(DozyFont.bodyEmphasized)
+                        .foregroundStyle(DozyColor.Text.secondary)
+                    Spacer()
+                    Text(member.isOwner ? "소유자" : "멤버")
+                        .font(DozyFont.caption)
+                        .foregroundStyle(DozyColor.Text.tertiary)
                 }
-                Spacer()
+                .padding(.horizontal, DozySpacing.md)
+                .frame(minHeight: 60)
             }
-        } header: {
-            Text("닉네임")
-        } footer: {
-            Text("닉네임은 공유 캘린더 안에서만 표시되는 이름입니다.")
         }
     }
 
