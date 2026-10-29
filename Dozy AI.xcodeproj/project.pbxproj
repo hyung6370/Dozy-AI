@@ -372,7 +372,6 @@
 		F619D94B2F75113C00084C61 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = F619D94A2F75113C00084C61 /* GoogleSignIn */; };
 		F619D94D2F75113C00084C61 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F619D94C2F75113C00084C61 /* GoogleSignInSwift */; };
 		F619D94F2F75122300084C61 /* CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D94E2F75122300084C61 /* CalendarSource.swift */; };
-		F619D9512F75192800084C61 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = F619D9502F75192800084C61 /* .gitignore */; };
 		F619D9542F751CB100084C61 /* GoogleCalendarDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9532F751CB100084C61 /* GoogleCalendarDTO.swift */; };
 		F619D9562F751F7D00084C61 /* GoogleSignInService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9552F751F7D00084C61 /* GoogleSignInService.swift */; };
 		F619D9582F75219200084C61 /* GoogleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9572F75219200084C61 /* GoogleCalendarService.swift */; };
@@ -381,8 +380,6 @@
 		F619D95F2F7528C600084C61 /* CalendarSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D95E2F7528C600084C61 /* CalendarSettingsViewModel.swift */; };
 		F619D9612F752B4D00084C61 /* CalendarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9602F752B4D00084C61 /* CalendarSettingsView.swift */; };
 		F619D9632F79F60400084C61 /* UIApplication+TopVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9622F79F60400084C61 /* UIApplication+TopVC.swift */; };
-		F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */ = {isa = PBXBuildFile; fileRef = F619D9652F7A0CF400084C61 /* Secrets.xcconfig.template */; };
-		F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F619D9642F7A0CF400084C61 /* Secrets.xcconfig */; };
 		F619D9692F7A170E00084C61 /* FilterTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9682F7A170E00084C61 /* FilterTab.swift */; };
 		F619D96B2F7A344900084C61 /* DozyEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96A2F7A344900084C61 /* DozyEvent.swift */; };
 		F619D96D2F7A355C00084C61 /* DozyEventRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96C2F7A355C00084C61 /* DozyEventRepositoryProtocol.swift */; };
@@ -2247,15 +2244,12 @@
 			files = (
 				DD808EB42F694B2A00F4956A /* Assets.xcassets in Resources */,
 				F63A13742FB190C3006C580D /* new-schedule.json in Resources */,
-				F619D9512F75192800084C61 /* .gitignore in Resources */,
 				F63C687A2F85E54A003464E8 /* loading.json in Resources */,
 				F63A137E2FB30FD3006C580D /* Localizable.xcstrings in Resources */,
 				F63A13812FB30FE7006C580D /* InfoPlist.xcstrings in Resources */,
 				F699C1482F9F5822001FBF8F /* holidays.json in Resources */,
 				F63C68822F85EA71003464E8 /* success.json in Resources */,
 				F63C68882F85EBFE003464E8 /* congratulation.json in Resources */,
-				F619D9662F7A0CF400084C61 /* Secrets.xcconfig.template in Resources */,
-				F619D9672F7A0CF400084C61 /* Secrets.xcconfig in Resources */,
 				4176F8FD8030E25911CA6A17 /* DozyIcons.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3156,7 +3150,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AI.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 161;
+				CURRENT_PROJECT_VERSION = 163;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3200,7 +3194,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Dozy AI/Dozy AIRelease.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 161;
+				CURRENT_PROJECT_VERSION = 163;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3327,7 +3321,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = DozyWidgetsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 161;
+				CURRENT_PROJECT_VERSION = 163;
 				DEVELOPMENT_LANGUAGE = ko;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3361,7 +3355,7 @@
 				CODE_SIGN_ENTITLEMENTS = DozyWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 161;
+				CURRENT_PROJECT_VERSION = 163;
 				DEVELOPMENT_LANGUAGE = ko;
 				DEVELOPMENT_TEAM = 7DVWGZFH6N;
 				GENERATE_INFOPLIST_FILE = YES;
