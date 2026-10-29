@@ -31,13 +31,28 @@ final class DependencyContainer: ObservableObject {
     lazy var notificationService: NotificationServiceProtocol = NotificationService()
     lazy var cancelNotificationUseCase = CancelNotificationUseCase(service: notificationService)
     lazy var aiService: AIServiceProtocol = AIService()
+    /// Firebase Analytics (#90). GoogleService-Info.plist 가 없으면 내부에서 아무것도 보내지 않는다.
+    lazy var analyticsService: AnalyticsServiceProtocol = FirebaseAnalyticsService()
+    /// Firebase Crashlytics (#117). 생성 시 `CrashReporting.current` 로도 등록돼 Data 서비스의 비치명 오류를 받는다.
+    lazy var crashReportingService: CrashReportingServiceProtocol = {
+        let service = FirebaseCrashReportingService()
+        CrashReporting.current = service
+        return service
+    }()
+
+    /// 설정 "사용 통계 전송" 토글 — Analytics 와 Crashlytics 를 함께 켜고 끈다 (#117).
+    func setUsageDataCollectionEnabled(_ enabled: Bool) {
+        AnalyticsSettings.setEnabled(enabled)
+        analyticsService.setCollectionEnabled(enabled)
+        crashReportingService.setCollectionEnabled(enabled)
+    }
     lazy var sharedCalendarService: SharedCalendarServiceProtocol = SharedCalendarService()
     lazy var authService = AuthService()
     lazy var sharedCalendarRealtimeService = SharedCalendarRealtimeService(
         modelContext: modelContainer.mainContext,
         notificationRepository: notificationRepository
     )
-    lazy var calendarSourceManager = CalendarSourceManager()
+    lazy var calendarSourceManager = CalendarSourceManager(analytics: analyticsService)
     lazy var calendarVisibilityFilter = CalendarVisibilityFilter()
     lazy var patternAnalysisService = PatternAnalysisService()
     lazy var speechService: SpeechServiceProtocol = SpeechService()
@@ -97,19 +112,31 @@ final class DependencyContainer: ObservableObject {
     lazy var dozyEventRepository: DozyEventRepositoryProtocol = DozyEventRepository(modelContainer: modelContainer)
     lazy var eventCompletionRepository: EventCompletionRepositoryProtocol = EventCompletionRepository(modelContainer: modelContainer)
     lazy var notificationRepository = NotificationRepository(modelContainer: modelContainer)
+
+    // MARK: - Push (#95) — iOS 만 실제 등록, macOS 는 Noop
+    #if os(iOS)
+    lazy var pushTokenService: PushTokenServiceProtocol = SupabasePushTokenService()
+    @MainActor lazy var sharedPushHandler = SharedPushHandler(
+        notificationRepository: notificationRepository,
+        realtimeService: sharedCalendarRealtimeService
+    )
+    #else
+    lazy var pushTokenService: PushTokenServiceProtocol = NoopPushTokenService()
+    #endif
+    lazy var pushRegistrationUseCase = PushRegistrationUseCase(service: pushTokenService)
     lazy var eventDisplaySettingsRepository = EventDisplaySettingsRepository(modelContainer: modelContainer)
 
     // MARK: - UseCases (Domain Layer)
 
     lazy var saveWorkLogUseCase = SaveWorkLogUseCase(repository: workLogRepository)
-    lazy var generateDailySummaryUseCase = GenerateDailySummaryUseCase(aiService: aiService, repository: workLogRepository)
+    lazy var generateDailySummaryUseCase = GenerateDailySummaryUseCase(aiService: aiService, repository: workLogRepository, analytics: analyticsService)
     lazy var fetchRecentLogsUseCase = FetchRecentLogsUseCase(repository: workLogRepository)
     lazy var fetchDozyEventsUseCase = FetchDozyEventsUseCase(repository: dozyEventRepository)
-    lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository)
+    lazy var createDozyEventUseCase = CreateDozyEventUseCase(repository: dozyEventRepository, analytics: analyticsService)
     lazy var updateDozyEventUseCase = UpdateDozyEventUseCase(repository: dozyEventRepository)
     lazy var deleteDozyEventUseCase = DeleteDozyEventUseCase(repository: dozyEventRepository)
     lazy var toggleDozyEventCompletionUseCase = ToggleDozyEventCompletionUseCase(repository: dozyEventRepository)
-    lazy var mirrorExternalEventUseCase = MirrorExternalEventUseCase(repository: dozyEventRepository)
+    lazy var mirrorExternalEventUseCase = MirrorExternalEventUseCase(repository: dozyEventRepository, analytics: analyticsService)
     lazy var toggleCalendarEventCompletionUseCase = ToggleCalendarEventCompletionUseCase(repository: eventCompletionRepository)
     lazy var fetchEventCompletionsUseCase = FetchEventCompletionsUseCase(repository: eventCompletionRepository)
     /// 홈·캘린더가 공유하는 완료 토글 (source/반복 여부로 저장소 선택).
@@ -119,12 +146,14 @@ final class DependencyContainer: ObservableObject {
     )
     lazy var fetchDozyEventsForPeriodUseCase = FetchDozyEventsForPeriodUseCase(repository: dozyEventRepository)
     lazy var fetchEventCompletionsForPeriodUseCase = FetchEventCompletionsForPeriodUseCase(repository: eventCompletionRepository)
-    lazy var createSharedCalendarUseCase = CreateSharedCalendarUseCase(service: sharedCalendarService)
-    lazy var joinSharedCalendarUseCase = JoinSharedCalendarUseCase(service: sharedCalendarService)
+    lazy var createSharedCalendarUseCase = CreateSharedCalendarUseCase(service: sharedCalendarService, analytics: analyticsService)
+    lazy var joinSharedCalendarUseCase = JoinSharedCalendarUseCase(service: sharedCalendarService, analytics: analyticsService)
     lazy var leaveSharedCalendarUseCase = LeaveSharedCalendarUseCase(service: sharedCalendarService)
     lazy var regenerateSharedCalendarInviteCodeUseCase = RegenerateSharedCalendarInviteCodeUseCase(service: sharedCalendarService)
     lazy var updateSharedCalendarNicknameUseCase = UpdateSharedCalendarNicknameUseCase(service: sharedCalendarService)
     lazy var parseNaturalLanguageEventUseCase = ParseNaturalLanguageEventUseCase(service: eventParsingService)
+    lazy var queryParsingService: QueryParsingServiceProtocol = NaturalLanguageQueryParser()
+    lazy var parseSearchQueryUseCase = ParseSearchQueryUseCase(parser: queryParsingService, analytics: analyticsService)
 
     #if os(iOS)
     // FetchTodayDataUseCase 는 iOS 의 Today 화면 전용 — reminderService 까지 묶어 쓰는데
@@ -137,6 +166,12 @@ final class DependencyContainer: ObservableObject {
     lazy var updateCalendarEventUseCase = UpdateCalendarEventUseCase(service: calendarService)
     lazy var deleteCalendarEventUseCase = DeleteCalendarEventUseCase(service: calendarService)
     lazy var fetchCalendarEventsForPeriodUseCase = FetchCalendarEventsForPeriodUseCase(calendarService: calendarService)
+    lazy var saveEventDisplaySettingsUseCase = SaveEventDisplaySettingsUseCase(repository: eventDisplaySettingsRepository)
+    lazy var searchEventsUseCase = SearchEventsUseCase(
+        fetchEvents: fetchCalendarEventsForPeriodUseCase,
+        fetchDozyEvents: fetchDozyEventsForPeriodUseCase,
+        fetchCompletions: fetchEventCompletionsForPeriodUseCase
+    )
 
     // MARK: - Cancellables
     var notificationCancellables = Set<AnyCancellable>()
@@ -312,7 +347,8 @@ extension DependencyContainer {
             completedTasks: today.completedTasks,
             pendingTasks: today.pendingTasks,
             memos: log.memos,
-            completedEventCount: completedEventCount
+            completedEventCount: completedEventCount,
+            tracksEvent: false
         ).firstValue()
         return BackgroundSummaryResult(summary: summary, completedEventCount: completedEventCount)
     }
@@ -330,7 +366,8 @@ extension DependencyContainer {
             completedTasks: [],
             pendingTasks: [],
             memos: log.memos,
-            completedEventCount: completedEventCount
+            completedEventCount: completedEventCount,
+            tracksEvent: false
         ).firstValue()
         return BackgroundSummaryResult(summary: summary, completedEventCount: completedEventCount)
     }

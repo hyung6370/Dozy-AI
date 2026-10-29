@@ -15,10 +15,13 @@ final class GenerateDailySummaryUseCase {
 
     private let aiService: AIServiceProtocol
     private let repository: WorkLogRepositoryProtocol
+    private let analytics: AnalyticsServiceProtocol
 
-    init(aiService: AIServiceProtocol, repository: WorkLogRepositoryProtocol) {
+    init(aiService: AIServiceProtocol, repository: WorkLogRepositoryProtocol,
+         analytics: AnalyticsServiceProtocol = NoopAnalyticsService()) {
         self.aiService = aiService
         self.repository = repository
+        self.analytics = analytics
     }
 
     /// AI 요약을 생성하고, 오늘 WorkLog에 저장한 뒤 DailySummary를 반환합니다
@@ -27,7 +30,8 @@ final class GenerateDailySummaryUseCase {
         completedTasks: [TaskItem],
         pendingTasks: [TaskItem],
         memos: [String],
-        completedEventCount: Int = 0
+        completedEventCount: Int = 0,
+        tracksEvent: Bool = true   // 저녁 알림 미리 생성 같은 백그라운드 생성은 사용 지표에서 뺀다 (#90)
     ) -> AnyPublisher<DailySummary, DozyError> {
 
         aiService.generateDailySummary(
@@ -53,6 +57,10 @@ final class GenerateDailySummaryUseCase {
                 }
                 .eraseToAnyPublisher()
         }
+        .handleEvents(receiveOutput: { [aiService, analytics] _ in
+            // 생성 직후의 엔진 상태 — 온디바이스 시도가 실패해 폴백했다면 .onDeviceFailed 로 잡힌다.
+            if tracksEvent { analytics.track(.summaryGenerated(engine: aiService.engineStatus)) }
+        })
         .eraseToAnyPublisher()
     }
 }

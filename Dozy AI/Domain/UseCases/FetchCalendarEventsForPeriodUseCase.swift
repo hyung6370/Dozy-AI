@@ -11,9 +11,9 @@ import Combine
 
 final class FetchCalendarEventsForPeriodUseCase {
 
-    private let calendarService: CompositeCalendarSerivce
+    private let calendarService: CalendarServiceProtocol
 
-    init(calendarService: CompositeCalendarSerivce) {
+    init(calendarService: CalendarServiceProtocol) {
         self.calendarService = calendarService
     }
 

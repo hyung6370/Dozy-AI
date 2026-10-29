@@ -57,6 +57,7 @@ final class AIService: AIServiceProtocol {
                     // 컨텍스트 초과·가드레일·언어 미지원·모델 자산 없음 등 → 로컬 분석으로 조용히 폴백
                     lastOnDeviceGenerationFailed = true
                     Logger.ai.error("[요약] 온디바이스 모델 실패, 로컬 분석 폴백: \(error.localizedDescription, privacy: .public)")
+                    CrashReporting.record(error, context: "ai.summary.on_device_fallback")   // #117 비치명 오류
                 }
             }
         }
@@ -86,6 +87,7 @@ final class AIService: AIServiceProtocol {
                 } catch {
                     lastOnDeviceGenerationFailed = true
                     Logger.ai.error("[한줄 요약] 온디바이스 모델 실패, 로컬 폴백: \(error.localizedDescription, privacy: .public)")
+                    CrashReporting.record(error, context: "ai.quick_summary.on_device_fallback")   // #117 비치명 오류
                 }
             }
         }

@@ -38,6 +38,11 @@ struct HomeTopBarView: View {
     }
 
 
+    /// 우측 아이콘 크기. 시스템 내비게이션 바 아이콘(22~24pt)에 맞춰 로고(26pt)보다 작게.
+    private static let iconSize: CGFloat = 22
+    /// 아이콘 탭 영역 — 아이콘이 작아져도 누르기 쉽게 아이콘보다 넓게 둔다.
+    private static let iconHitSize: CGFloat = 32
+
     /// 내부 요소가 축소될 수 있는 최소 비율. 값이 클수록 축소 폭이 작아진다.
     /// 0.85 → 최대 15% 축소, 절제된 미세 인터랙션.
     private static let minContentScale: CGFloat = 0.85
@@ -87,14 +92,16 @@ struct HomeTopBarView: View {
 
             Spacer()
 
-            HStack(spacing: 16) {
+            HStack(spacing: 8) {
                 if isLoggedIn {
                     Button { onSharedCalendarTap() } label: {
                         Image(symbol: "person.2")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 28, height: 28)
+                            .frame(width: Self.iconSize, height: Self.iconSize)
                             .foregroundStyle(DozyColor.Text.primary)
+                            .frame(width: Self.iconHitSize, height: Self.iconHitSize)
+                            .contentShape(Rectangle())
                     }
                 }
 
@@ -102,16 +109,20 @@ struct HomeTopBarView: View {
                     Image(symbol: hasNotification ? "bell.badge" : "bell")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 28, height: 28)
+                        .frame(width: Self.iconSize, height: Self.iconSize)
                         .foregroundStyle(DozyColor.Text.primary)
+                        .frame(width: Self.iconHitSize, height: Self.iconHitSize)
+                        .contentShape(Rectangle())
                 }
 
                 Button { onProfileTap() } label: {
                     Image(symbol: "person")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 28, height: 28)
+                        .frame(width: Self.iconSize, height: Self.iconSize)
                         .foregroundStyle(DozyColor.Text.primary)
+                        .frame(width: Self.iconHitSize, height: Self.iconHitSize)
+                        .contentShape(Rectangle())
                 }
             }
         }

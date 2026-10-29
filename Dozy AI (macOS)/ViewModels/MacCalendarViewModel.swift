@@ -640,10 +640,10 @@ final class MacCalendarViewModel: ObservableObject {
 
     // MARK: - CRUD
 
-    func saveDozyEvent(_ event: DozyEvent) {
+    func saveDozyEvent(_ event: DozyEvent, method: EventInputMethod = .manual) {
         let isNew = dozyEventsByID[event.id] == nil
         let publisher = isNew
-            ? createDozyEventUseCase.execute(event)
+            ? createDozyEventUseCase.execute(event, method: method)
             : updateDozyEventUseCase.execute(event)
         publisher
             .receive(on: DispatchQueue.main)

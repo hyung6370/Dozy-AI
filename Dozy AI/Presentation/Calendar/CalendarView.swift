@@ -119,7 +119,7 @@ struct CalendarView: View {
                 )
                 .presentationDetents([.medium, .large])
             }
-            .fullScreenCover(isPresented: $showSearch) {
+            .fullScreenCover(isPresented: $showSearch, onDismiss: { viewModel.reloadVisibleEvents() }) {
                 SearchView(container: container)
             }
             .sheet(isPresented: $showMonthPicker) {
@@ -152,10 +152,11 @@ struct CalendarView: View {
                 EventEditView(
                     eventToEdit: viewModel.eventToEdit,
                     selectedDate: viewModel.selectedDate,
-                    sharedCalendars: viewModel.sharedCalendarsForEditing()
-                ) { event in
-                    viewModel.saveEvent(event)
-                }
+                    sharedCalendars: viewModel.sharedCalendarsForEditing(),
+                    onSaveWithMethod: { event, method in
+                        viewModel.saveEvent(event, method: method)
+                    }
+                )
             }
             .sheet(isPresented: $viewModel.showEventDetail) {
                 eventDetailSheet
@@ -650,7 +651,9 @@ struct CalendarView: View {
         Button("생성") {
             if let date = longPressDate {
                 viewModel.selectDate(date)
-                viewModel.startCreatingEvent()
+                // 탭바 + 버튼과 같은 일정 생성 시트(자연어 · 음성 입력 포함)를 연다 — MainTabView 가 받는다.
+                // 캘린더 탭에서는 그 시트가 selectedDate 를 기본 날짜로 쓴다.
+                NotificationCenter.default.post(name: .dozyRequestNewEvent, object: nil)
             }
             longPressDate = nil
         }
@@ -684,15 +687,23 @@ struct CalendarView: View {
 
     // MARK: - Calendar Capture
 
+    /// 상단 툴바 아이콘 크기 — 홈 상단바(HomeTopBarView.iconSize)와 같은 22pt. 탭 영역은 툴바가 확보한다.
+    private static let toolbarIconSize: CGFloat = 22
+    /// AI 검색 아이콘은 PNG 안쪽 여백이 Iconsax 보다 커서 같은 크기면 작아 보인다 — 2pt 키운다.
+    private static let aiSearchIconSize: CGFloat = toolbarIconSize + 4
+
     /// 메인 body 의 toolbar 를 별도 빌더로 추출 — body 의 type-check 시간 단축.
     @ToolbarContentBuilder
     private var calendarToolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button { showSearch = true } label: {
-                Image(symbol: "magnifyingglass")
+                // 키워드 검색 + 자연어 질의(#72)를 함께 받는 진입점이라 AI 검색 아이콘. 래스터 에셋(템플릿 렌더링)이라
+                // Image(symbol:) 대신 직접 쓴다 — 테마 글자색은 foregroundStyle 로 그대로 따른다.
+                Image("aiSearch")
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.aiSearchIconSize, height: Self.aiSearchIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
             }
             .accessibilityLabel("검색")
@@ -703,7 +714,7 @@ struct CalendarView: View {
                 Image(symbol: "line.3.horizontal.decrease")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.toolbarIconSize, height: Self.toolbarIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
                     .overlay(alignment: .topTrailing) {
                         if viewModel.visibilityFilter.isFilterActive {
@@ -723,7 +734,7 @@ struct CalendarView: View {
                 Image(symbol: "crop")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.toolbarIconSize, height: Self.toolbarIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
             }
             .accessibilityLabel("캘린더 스크린샷")
@@ -734,7 +745,7 @@ struct CalendarView: View {
                 Image(symbol: "questionmark.circle")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: Self.toolbarIconSize, height: Self.toolbarIconSize)
                     .foregroundStyle(DozyColor.Text.primary)
             }
         }

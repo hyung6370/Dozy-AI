@@ -338,7 +338,7 @@ private struct DozyTabBarActionItem: View {
 // MARK: - 인디케이터 필
 
 /// 선택 필 — 시스템 탭바 인디케이터처럼: 캡슐 유리. iOS 26 은 `glassEffect(.regular.interactive())` 진짜 Liquid Glass,
-/// 17/18 은 `.ultraThinMaterial` + 얇은 보더 폴백.
+/// 17/18 은 `.ultraThinMaterial` + 얇은 보더 폴백. 라이트 · 다크 같은 모양 — 다크는 유리 틴트만 살짝 밝힌다.
 ///  • 이동(`travelTrigger`): 출발하며 세로 1.22·가로 1.06 으로 들렸다가 도착하며 바운스로 가라앉는다.
 ///  • 드래그(`lift`): 손가락이 누르는 동안 1.15×1.3 으로 부풀어 물방울처럼 바 밖으로 살짝 나온다.
 private struct DozyIndicatorPill: View {
@@ -374,14 +374,17 @@ private struct DozyIndicatorPill: View {
             .accessibilityHidden(true)
     }
 
+    /// 라이트 · 다크 같은 모양(테두리 없는 유리 필). 다크는 바도 필도 어두운 유리라 필이 묻히므로
+    /// 유리 자체에 옅은 흰 틴트만 더한다 — 칠한 바탕 · 테두리는 넣지 않는다.
     @ViewBuilder
     private var glass: some View {
         if #available(iOS 26.0, *) {
             Capsule().fill(.clear)
-                .glassEffect(.regular.interactive(), in: Capsule())
+                .glassEffect(colorScheme == .dark ? .regular.tint(.white.opacity(0.12)).interactive() : .regular.interactive(),
+                             in: Capsule())
         } else {
             Capsule().fill(.ultraThinMaterial)
-                .overlay(Capsule().strokeBorder(.white.opacity(colorScheme == .dark ? 0.25 : 0.45), lineWidth: 0.5))
+                .overlay(Capsule().strokeBorder(.white.opacity(0.45), lineWidth: 0.5))
         }
     }
 }

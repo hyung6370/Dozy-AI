@@ -119,6 +119,7 @@ final class SyncService {
                     promise(.success(()))
                 } catch {
                     Logger.sync.error("❌ DozyEvents 업로드 실패: \(error.localizedDescription)")
+                    CrashReporting.record(error, context: "sync.upload.dozy_events")   // #117 비치명 오류
                     promise(.failure(.unknown(underlying: error)))
                 }
             }
@@ -244,6 +245,7 @@ final class SyncService {
                     promise(.success(()))
                 } catch {
                     Logger.sync.error("❌ UserCategories 업로드 실패: \(error.localizedDescription)")
+                    CrashReporting.record(error, context: "sync.upload.user_categories")   // #117 비치명 오류
                     promise(.failure(.unknown(underlying: error)))
                 }
             }
@@ -307,6 +309,7 @@ final class SyncService {
                     promise(.success(()))
                 } catch {
                     Logger.sync.error("❌ DozyEvents 다운로드 실패: \(error.localizedDescription)")
+                    CrashReporting.record(error, context: "sync.download.dozy_events")   // #117 비치명 오류
                     promise(.failure(.unknown(underlying: error)))
                 }
             }
@@ -485,6 +488,7 @@ final class SyncService {
                     promise(.success(()))
                 } catch {
                     Logger.sync.error("❌ UserCategories 다운로드 실패: \(error.localizedDescription)")
+                    CrashReporting.record(error, context: "sync.download.user_categories")   // #117 비치명 오류
                     promise(.failure(.unknown(underlying: error)))
                 }
             }

@@ -325,6 +325,7 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             try await supabase.from("dozy_events").upsert(row).execute()
         } catch {
             Logger.sync.error("❌ DozyEvent upsert 실패 (id: \(event.id)): \(error.localizedDescription)")
+            CrashReporting.record(error, context: "repository.dozy_event.upsert")   // #117 비치명 오류
         }
     }
 

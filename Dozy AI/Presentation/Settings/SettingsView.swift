@@ -32,6 +32,7 @@ struct SettingsView: View {
     @State private var showReminderDeniedAlert = false
     /// 저녁 일정 체크 프롬프트 (18시 이후 앱을 열면 미완료 일정을 1회 물어봄). 기본 켜짐.
     @AppStorage(EveningCheckPrompt.enabledKey) private var eveningCheckEnabled = true
+    @AppStorage(AnalyticsSettings.enabledKey) private var analyticsEnabled = true
     /// 잠금화면 · 다이나믹 아일랜드 "오늘 아젠다" Live Activity. 기본 켜짐 (UserDefaults 와 동기화).
     @State private var liveActivityEnabled = LiveActivitySettings.isEnabled()
     #endif
@@ -43,6 +44,8 @@ struct SettingsView: View {
     }
 
     private let container: DependencyContainer
+    /// 설정 "새 공유 일정 알림" (#95) — 기기 값이 기준, 서버 플래그는 토글 때 맞춘다.
+    @State private var sharedPushEnabled = PushSettings.isSharedNotificationsEnabled()
 
     private var privacyPolicyURL: URL? {
         guard
@@ -94,6 +97,9 @@ struct SettingsView: View {
                     appearanceSection
                     #if os(iOS)
                     summaryReminderSection
+                    if authViewModel.isLoggedIn {
+                        sharedPushSection
+                    }
                     lockScreenSection
                     #endif
                     calendarSection
@@ -278,6 +284,31 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - 공유 캘린더 알림 섹션 (#95)
+
+    #if os(iOS)
+    private var sharedPushSection: some View {
+        DozyListSection(
+            header: "공유 캘린더 알림",
+            footer: "파트너가 공유 캘린더에 일정을 추가하면 앱이 꺼져 있어도 알려드려요."
+        ) {
+            DozyListRow(title: "새 공유 일정 알림") {
+                settingIcon("person.2.fill")
+            } trailing: {
+                Toggle("새 공유 일정 알림", isOn: Binding(
+                    get: { sharedPushEnabled },
+                    set: { enabled in
+                        sharedPushEnabled = enabled
+                        Task { await container.pushRegistrationUseCase.setSharedNotificationsEnabled(enabled) }
+                    }
+                ))
+                .labelsHidden()
+                .tint(DozyColor.Brand.primary)
+            }
+        }
+    }
+    #endif
+
     // MARK: - AI 요약 알림 섹션
 
     #if os(iOS)
@@ -418,6 +449,18 @@ struct SettingsView: View {
             } trailing: {
                 // 온디바이스 모델(Apple Intelligence) 사용 가능 여부 / 불가 사유
                 DozyTrailingValue(text: container.aiService.engineStatus.displayName)
+            }
+
+            DozyListRow(title: "사용 통계 전송") {
+                settingIcon("chart.bar.xaxis")
+            } trailing: {
+                // 익명 사용 통계 (#90). 끄면 Firebase Analytics 수집을 즉시 멈춘다.
+                Toggle("사용 통계 전송", isOn: $analyticsEnabled)
+                    .labelsHidden()
+                    .tint(DozyColor.Brand.primary)
+            }
+            .onChange(of: analyticsEnabled) { _, enabled in
+                container.setUsageDataCollectionEnabled(enabled)
             }
 
             DozyListRow(title: "버전") {

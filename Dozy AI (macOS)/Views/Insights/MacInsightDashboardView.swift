@@ -12,6 +12,7 @@ import Charts
 
 struct MacInsightDashboardView: View {
     @Environment(\.macTheme) private var theme
+    @EnvironmentObject private var container: DependencyContainer
     @StateObject private var viewModel: MacInsightViewModel
     @State private var showCategoryAnalysis = false
 
@@ -55,8 +56,14 @@ struct MacInsightDashboardView: View {
                 .frame(width: 200)
             }
         }
-        .onAppear { viewModel.loadData() }
-        .onChange(of: viewModel.selectedPeriod) { _, _ in viewModel.loadData() }
+        .onAppear {
+            viewModel.loadData()
+            container.analyticsService.track(.insightsOpened(periodDays: viewModel.selectedPeriod.rawValue))
+        }
+        .onChange(of: viewModel.selectedPeriod) { _, period in
+            viewModel.loadData()
+            container.analyticsService.track(.insightsOpened(periodDays: period.rawValue))
+        }
         .refreshable { viewModel.loadData() }
         .onReceive(NotificationCenter.default.publisher(for: .dozyRequestRefresh)) { _ in
             viewModel.loadData()

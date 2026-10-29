@@ -177,6 +177,7 @@ final class SharedCalendarRealtimeService: ObservableObject {
             if changed { await postEventListChanged() }
         } catch {
             Logger.realtime.error("⚠️ 초기 fetch 실패 (\(calendarID)): \(error.localizedDescription)")
+            CrashReporting.record(error, context: "realtime.initial_fetch")   // #117 비치명 오류
         }
     }
 
@@ -219,19 +220,15 @@ final class SharedCalendarRealtimeService: ObservableObject {
             let calID = row.sharedCalendarID
             let partner = calID.flatMap {
                 ActiveSharedCalendarStore.shared.partnerDisplayName(for: $0)
-            } ?? "파트너"
-
-            let body = "\(partner)님이 '\(row.title)' 일정을 공유했습니다"
-            let record = NotificationRecord(
-                eventID: row.id,
-                eventTitle: row.title,
-                body: body,
-                deliveryDate: Date(),
-                eventStartDate: row.startDate,
-                kind: "shared",
-                senderName: partner
+            }
+            // 푸시(#95)와 같은 일정 카드가 두 번 생기지 않게 중복 확인 저장
+            let push = SharedEventPush(
+                eventID: row.id, calendarID: calID, title: row.title,
+                senderName: partner, startDate: row.startDate
             )
-            notificationRepository.save(record)
+            let body = push.cardBody
+            let created = await MainActor.run { notificationRepository.saveSharedIfNeeded(push) }
+            guard created else { return }
             NotificationCenter.default.post(name: .dozyNotificationsChanged, object: nil)
             Logger.realtime.info("🔔 공유 알림 카드 생성: \(body)")
         } catch {
@@ -546,7 +543,7 @@ private extension Logger {
 /// 프레임워크 의존 없는 순수 비교라 단위 테스트 대상 (#112).
 enum SharedEventContentDiff {
     /// upsert 가 덮어쓰는 필드 전부를 비교한다. 하나라도 다르면 false. ownerID · sharedCalendarID 는 덮어쓰지 않으므로 비교하지 않는다.
-    static func isSame(_ event: DozyEvent, _ row: SharedEventRow) -> Bool {
+    nonisolated static func isSame(_ event: DozyEvent, _ row: SharedEventRow) -> Bool {
         event.title == row.title
             && event.startDate == row.startDate
             && event.endDate == row.endDate

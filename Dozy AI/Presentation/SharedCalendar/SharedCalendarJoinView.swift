@@ -32,55 +32,47 @@ struct SharedCalendarJoinView: View {
 
     private var joinForm: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 32) {
-                VStack(spacing: 8) {
-                    Image(symbol: "person.badge.plus")
-                        .font(.system(size: 48))
-                        .foregroundStyle(Color.accentColor)
-                    Text("초대 코드 입력")
-                        .font(.title3).fontWeight(.bold)
-                    Text("파트너에게 받은 6자리 코드를 입력하세요.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+            ScrollView {
+                VStack(spacing: DozySpacing.xl) {
+                    VStack(spacing: DozySpacing.sm) {
+                        SharedCalendarHeaderIcon(symbol: "person.badge.plus")
+                        Text("초대 코드를 입력해 주세요")
+                            .font(DozyFont.title3)
+                            .fontWeight(.bold)
+                            .foregroundStyle(DozyColor.Text.primary)
+                        Text("함께할 사람에게 받은 6자리 코드를 입력하면 바로 참여해요.")
+                            .font(DozyFont.subheadline)
+                            .foregroundStyle(DozyColor.Text.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, DozySpacing.xl)
+
+                    codeInputField
                 }
-                .padding(.top, 40)
-
-                codeInputField
+                .padding(.horizontal, DozySpacing.lg)
             }
-            .padding(.horizontal, 24)
-
-            Spacer()
 
             Button {
                 submit()
             } label: {
-                Group {
-                    if viewModel.isLoading {
-                        ProgressView().tint(.white)
-                    } else {
-                        Text("참여하기")
-                            .font(.subheadline).fontWeight(.semibold)
-                    }
+                if viewModel.isLoading {
+                    ProgressView().tint(.white)
+                } else {
+                    Text("참여하기")
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
-                .background(
-                    isCodeValid && !viewModel.isLoading ? Color.accentColor : Color(.systemGray4),
-                    in: RoundedRectangle(cornerRadius: 12)
-                )
-                .foregroundStyle(.white)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(SharedCalendarPrimaryButtonStyle())
             .disabled(!isCodeValid || viewModel.isLoading)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 32)
+            .padding(.horizontal, DozySpacing.lg)
+            .padding(.bottom, DozySpacing.lg)
         }
+        .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
         .navigationTitle("공유 캘린더 참여")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("취소") { dismiss() }
+                    .foregroundStyle(DozyColor.Text.primary)
             }
         }
         .alert("오류", isPresented: Binding(
@@ -98,25 +90,31 @@ struct SharedCalendarJoinView: View {
     }
 
     private var codeInputField: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: DozySpacing.xs) {
             ForEach(0..<6, id: \.self) { index in
                 let char: String = index < code.count
                     ? String(code[code.index(code.startIndex, offsetBy: index)])
                     : ""
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color(.secondarySystemGroupedBackground))
-                        .frame(width: 48, height: 56)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(index < code.count ? Color.accentColor : Color(.systemGray4), lineWidth: 1.5)
-                        )
-                    Text(char)
-                        .font(.system(size: 24, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.accentColor)
-                }
+                let isCurrent = isFocused && index == min(code.count, 5)
+                Text(char)
+                    .font(.system(size: 26, weight: .bold, design: .monospaced))
+                    .foregroundStyle(DozyColor.Brand.primary)
+                    .frame(maxWidth: 52)
+                    .frame(height: 60)
+                    .frame(maxWidth: .infinity)
+                    .dozyThemedCardSurface(cornerRadius: DozyRadius.md)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DozyRadius.md, style: .continuous)
+                            .strokeBorder(
+                                index < code.count || isCurrent ? DozyColor.Brand.primary : .clear,
+                                lineWidth: isCurrent ? 2 : 1.5
+                            )
+                    )
+                    .animation(.easeOut(duration: 0.12), value: code)
             }
         }
+        .contentShape(Rectangle())
+        .onTapGesture { isFocused = true }
         .overlay {
             TextField("", text: $code)
                 .focused($isFocused)
@@ -128,36 +126,34 @@ struct SharedCalendarJoinView: View {
                         .filter { $0.isLetter || $0.isNumber }
                 }
                 .opacity(0.01)
+                .accessibilityLabel("초대 코드 6자리")
         }
     }
 
     // MARK: - Success
 
     private var successView: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: DozySpacing.xl) {
             Spacer()
-            Image(symbol: "checkmark.circle.fill")
-                .font(.system(size: 72))
-                .foregroundStyle(.green)
-            VStack(spacing: 8) {
+            SharedCalendarHeaderIcon(symbol: "checkmark", size: 88)
+            VStack(spacing: DozySpacing.xs) {
                 Text("참여 완료!")
-                    .font(.title2).fontWeight(.bold)
+                    .font(DozyFont.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(DozyColor.Text.primary)
                 Text("공유 캘린더에 참여했어요.\n이제 구성원의 일정을 함께 볼 수 있어요.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(DozyFont.subheadline)
+                    .foregroundStyle(DozyColor.Text.secondary)
                     .multilineTextAlignment(.center)
             }
             Spacer()
             Button("확인") { dismiss() }
-                .font(.subheadline).fontWeight(.semibold)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
-                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 12))
-                .foregroundStyle(.white)
-                .buttonStyle(.plain)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 32)
+                .buttonStyle(SharedCalendarPrimaryButtonStyle())
+                .padding(.horizontal, DozySpacing.lg)
+                .padding(.bottom, DozySpacing.lg)
         }
+        .frame(maxWidth: .infinity)
+        .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
         .navigationTitle("참여 완료")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -165,7 +161,8 @@ struct SharedCalendarJoinView: View {
     // MARK: - Submit
 
     private func submit() {
-        viewModel.join(code: code) {
+        // 초대 링크(dozyapp.kr/shared-calendar/join)로 열리면 initialCode 가 채워져 있다 (#90).
+        viewModel.join(code: code, via: initialCode.isEmpty ? .code : .link) {
             withAnimation { joined = true }
         }
     }

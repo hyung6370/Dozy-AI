@@ -33,8 +33,8 @@ final class DozyEventCreator: ObservableObject {
         self.createUseCase = createUseCase
     }
 
-    func save(_ event: DozyEvent) {
-        createUseCase.execute(event)
+    func save(_ event: DozyEvent, method: EventInputMethod = .manual) {
+        createUseCase.execute(event, method: method)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 self?.onSaved?()
@@ -55,6 +55,8 @@ struct MainTabView: View {
     @StateObject private var homeViewModel: HomeViewModel
     @State private var selection: MainTab = .home
     @State private var showCreateEvent = false
+    /// 생성 시트를 위젯 "+ 새 일정"이 열었는지 — 수동 입력이면 `event_created(method: widget)` 로 구분 (#90).
+    @State private var createEventFromWidget = false
     /// 하단 탭바 축소 상태 + 재터치 '맨 위로' 틱. 탭 루트 스크롤뷰(drivesTabBarChrome)가 구동한다.
     @State private var chrome = DozyTabBarChrome()
     /// 키보드가 올라와 있는 동안 true — 탭바를 내려 둔다(키보드 위에 바가 겹쳐 뜨지 않게).
@@ -149,9 +151,10 @@ struct MainTabView: View {
                     sharedCalendars: calendarViewModel.sharedCalendarsForEditing(),
                     parseUseCase: container.parseNaturalLanguageEventUseCase,   // 자연어 한 줄 → 폼 채우기
                     speechService: container.speechService,                       // 빠른 입력 카드의 마이크
-                    onSave: { saved in
+                    onSaveWithMethod: { saved, method in
                         // 데이터 저장만. dismiss 는 EventEditView 의 performDismiss → onCancel 이 단일 경로로 처리.
-                        eventCreator.save(saved)
+                        eventCreator.save(saved, method: method == .manual && createEventFromWidget ? .widget : method)
+                        createEventFromWidget = false
                     },
                     onCancel: {
                         dismissCreateEventSheet()
@@ -227,6 +230,14 @@ struct MainTabView: View {
             // 잠금화면 위젯 accessoryCircular 의 widgetURL 탭으로 들어옴 →
             // 홈 탭으로 이동 후 일정 생성 바텀시트 오픈.
             selection = .home
+            createEventFromWidget = true
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
+                showCreateEvent = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyRequestNewEvent)) { _ in
+            // 캘린더 날짜 길게 누르기 → 생성. 탭은 그대로 두고 같은 생성 시트를 연다 (기본 날짜 = 캘린더 selectedDate).
+            guard !showCreateEvent else { return }
             withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
                 showCreateEvent = true
             }
@@ -241,6 +252,10 @@ struct MainTabView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .dozyOpenVoiceInput)) { _ in
             // Siri 음성 메모 → 홈 탭으로 먼저 이동. 시트 띄우기는 HomeView 가 처리.
+            selection = .home
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .dozyOpenNotifications)) { _ in
+            // 공유 캘린더 푸시 탭 (#95) → 홈 탭으로. 알림 목록은 HomeView 가 연다.
             selection = .home
         }
         .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
@@ -286,6 +301,7 @@ struct MainTabView: View {
             #selector(UIResponder.resignFirstResponder),
             to: nil, from: nil, for: nil
         )
+        createEventFromWidget = false
         withAnimation(.spring(response: 0.5, dampingFraction: 0.88)) {
             showCreateEvent = false
         }

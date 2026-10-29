@@ -484,6 +484,7 @@ final class MacAuthViewModel: ObservableObject {
     // MARK: - Session
     
     func restoreSession() async {
+        var lastError: Error?
         // 네트워크 일시 장애로 토큰 refresh 가 실패하면 supabase.auth.session 이
         // throw 하는데, 이전엔 catch 즉시 .signedOut 으로 떨어뜨려 사용자가
         // 자주 로그아웃되던 게 macOS 세션 짧아 보이는 주요 원인이었음.
@@ -526,10 +527,13 @@ final class MacAuthViewModel: ObservableObject {
                 return
             } catch {
                 Logger.auth.warning("⚠️ restoreSession 시도 \(attempt + 1) 실패: \(error.localizedDescription)")
+                lastError = error
                 let delaySeconds = UInt64(pow(2.0, Double(attempt))) // 1, 2, 4
                 try? await Task.sleep(nanoseconds: delaySeconds * 1_000_000_000)
             }
         }
+        // 3 회 재시도 후에도 실패 — 일시 오류가 아니었으니 비치명 오류로 남긴다 (#117).
+        if let lastError { CrashReporting.record(lastError, context: "auth.restore_session") }
         // 3 회 재시도 후에도 실패 — 그제서야 sign out. authStateChanges 가 이후에
         // 살아나면 .signedIn 이벤트로 돌아와 자동 복귀.
         state = .signedOut

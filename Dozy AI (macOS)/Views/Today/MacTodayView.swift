@@ -18,6 +18,8 @@ struct MacTodayView: View {
     @Environment(\.macTheme) private var theme
     @State private var showNewEventSheet = false
     @State private var showSummarySheet = false
+    /// 요약 시트를 연 경로 — 알림 탭이면 .notification, 그 외 .home. 시트가 열릴 때 `summary_sheet_opened` 로 보낸다 (#90).
+    @State private var summaryOpenSource: SummarySheetSource = .home
     @State private var showNotificationSheet = false
     /// 저녁 체크 시트가 떠 있는 동안 요약 요청이 오면 체크 시트를 닫은 뒤 요약을 연다 (시트 충돌 방지).
     @State private var pendingSummaryAfterCheck = false
@@ -130,6 +132,8 @@ struct MacTodayView: View {
             if isPresented {
                 container.summaryReminderService.markSummaryViewed()
                 viewModel.skipEveningCheckForToday()
+                container.analyticsService.track(.summarySheetOpened(source: summaryOpenSource))
+                summaryOpenSource = .home
             }
         }
         // 저녁 일정 체크 (#101). 18시 이후 완료 로드가 끝나면 MacHomeViewModel 이 하루 1회 켠다.
@@ -177,8 +181,8 @@ struct MacTodayView: View {
                 selectedDate: Date(),
                 sharedCalendars: viewModel.mySharedCalendars,
                 parseUseCase: container.parseNaturalLanguageEventUseCase,
-                onSave: { saved in
-                    viewModel.saveDozyEvent(saved)
+                onSaveWithMethod: { saved, method in
+                    viewModel.saveDozyEvent(saved, method: method)
                 }
             )
         }
@@ -639,6 +643,7 @@ struct MacTodayView: View {
         let defaults = UserDefaults.standard
         guard defaults.bool(forKey: MacAppDelegate.pendingOpenSummaryKey) else { return }
         defaults.set(false, forKey: MacAppDelegate.pendingOpenSummaryKey)
+        summaryOpenSource = .notification
         requestSummarySheet()
     }
 

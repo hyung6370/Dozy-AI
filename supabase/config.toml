@@ -401,3 +401,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# #95 공유 캘린더 푸시 — DB 트리거(pg_net)가 x-dozy-push-secret 헤더로 호출한다 (JWT 대신 공유 비밀값)
+[functions.send-push]
+verify_jwt = false

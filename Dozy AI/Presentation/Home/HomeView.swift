@@ -19,6 +19,8 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @State private var memoText = ""
     @State private var showSummarySheet = false
+    /// 요약 시트를 연 경로 — 알림 탭이면 .notification, 그 외 .home. 시트가 열릴 때 `summary_sheet_opened` 로 보낸다 (#90).
+    @State private var summaryOpenSource: SummarySheetSource = .home
     @State private var editingMemoIndex: Int? = nil
     @State private var editingMemoText = ""
     @State private var showEditMemoAlert = false
@@ -171,10 +173,16 @@ struct HomeView: View {
                 // Siri "Dozy 음성 메모" (OpenVoiceInputIntent) → MainTabView 가 홈 탭으로 옮긴 뒤 시트 오픈.
                 showVoiceInput = true
             }
+            .onReceive(NotificationCenter.default.publisher(for: .dozyOpenNotifications)) { _ in
+                // 공유 캘린더 푸시 탭 (#95) — 알림 목록을 연다. 카드는 SharedPushHandler 가 이미 만들었다.
+                viewModel.hasNotification = false
+                showNotificationSheet = true
+            }
             .onReceive(NotificationCenter.default.publisher(for: .dozyOpenDailySummary)) { _ in
                 // 저녁 요약 알림 탭. 백그라운드에서 미리 만들어 둔 요약이 있으면 즉시, 없으면 시트가 생성한다.
                 // 저녁 체크 시트가 떠 있으면 체크를 먼저 마치고(닫히면) 요약을 연다.
                 viewModel.loadTodayData()
+                summaryOpenSource = .notification
                 if viewModel.showEveningCheck {
                     pendingSummaryAfterCheck = true
                 } else {
@@ -242,6 +250,8 @@ struct HomeView: View {
             if isPresented {
                 container.summaryReminderService.markSummaryViewed()
                 viewModel.skipEveningCheckForToday()
+                container.analyticsService.track(.summarySheetOpened(source: summaryOpenSource))
+                summaryOpenSource = .home
             }
         }
         .sheet(isPresented: $viewModel.showEveningCheck, onDismiss: {
@@ -311,9 +321,10 @@ struct HomeView: View {
         .sheet(isPresented: $showNewEventSheet) {
             EventEditView(eventToEdit: nil, selectedDate: Date(),
                           parseUseCase: container.parseNaturalLanguageEventUseCase,
-                          speechService: container.speechService) { saved in
-                viewModel.saveDozyEvent(saved)
-            }
+                          speechService: container.speechService,
+                          onSaveWithMethod: { saved, method in
+                viewModel.saveDozyEvent(saved, method: method)
+            })
         }
         }
     }

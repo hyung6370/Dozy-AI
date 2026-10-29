@@ -786,6 +786,13 @@ final class CalendarViewModel: ObservableObject {
         )
     }
 
+    /// 다른 화면(검색 #72)에서 일정을 고친 뒤 돌아왔을 때 — 로컬 수정은 .dozyEventChanged 로만 알려
+    /// 이 ViewModel 의 캐시가 stale 하게 남으므로 보이는 날짜 · 월을 다시 불러온다.
+    func reloadVisibleEvents() {
+        fetchEventsForDate(selectedDate, showLoading: false)
+        fetchEventsForMonth(force: true)
+    }
+
     // MARK: - Display Settings
 
     func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String? = nil) {
@@ -1134,18 +1141,13 @@ final class CalendarViewModel: ObservableObject {
     
     // MARK: - CRUD
     
-    func startCreatingEvent() {
-        eventToEdit = nil
-        showEventEdit = true
-    }
-    
     func startEditingEvent(_ event: DozyEvent) {
         eventToEdit = event
         showEventEdit = true
     }
     
-    func saveEvent(_ event: DozyEvent) {
-        let useCase = eventToEdit != nil ? updateEventUseCase.execute(event) : createEventUseCase.execute(event)
+    func saveEvent(_ event: DozyEvent, method: EventInputMethod = .manual) {
+        let useCase = eventToEdit != nil ? updateEventUseCase.execute(event) : createEventUseCase.execute(event, method: method)
         useCase
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in

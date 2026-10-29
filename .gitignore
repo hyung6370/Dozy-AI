@@ -50,3 +50,7 @@ fastlane/test_output/
 **/Config/Secrets.xcconfig
 **/Config/Production.xcconfig
 fastlane/api_key.p8
+
+# 🔥 Firebase 설정 — 공개 저장소라 커밋하지 않음 (#90). Firebase 콘솔 › 프로젝트 설정에서 앱별로 내려받아 둔다.
+Dozy AI/GoogleService-Info.plist
+Dozy AI (macOS)/GoogleService-Info.plist

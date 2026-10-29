@@ -62,6 +62,35 @@ struct EventDraftResponse {
     var location: String?
 }
 
+/// 검색 질의 → 해석 (#72). 숫자는 세지 않고 기간 · 키워드 · 집계 종류만 뽑는다.
+@available(iOS 26.0, macOS 26.0, *)
+@Generable(description: "검색 질의에서 집계 종류")
+enum QueryAggregationKind {
+    case none
+    case count
+    case totalHours
+    case completionRate
+}
+
+@available(iOS 26.0, macOS 26.0, *)
+@Generable(description: "일정 검색 질의의 해석")
+struct QueryIntentResponse {
+    @Guide(description: "기간 시작일, YYYY-MM-DD 형식. '지난주'·'이번 달' 같은 상대 표현은 지시문의 기준 날짜로 계산. 기간 언급이 없으면 null")
+    var startDate: String?
+
+    @Guide(description: "기간 마지막 날(포함), YYYY-MM-DD 형식. 하루면 startDate 와 같게. 기간 언급이 없으면 null")
+    var endDate: String?
+
+    @Guide(description: "일정 제목에서 찾을 핵심 단어. 질의 문장에 있는 단어 그대로, 기간·집계·조사·동사 표현은 빼고. 없으면 null")
+    var keyword: String?
+
+    @Guide(description: "지시문의 카테고리 목록 중 질의와 같은 것 하나. 없으면 null")
+    var category: String?
+
+    @Guide(description: "몇 번(횟수)이면 count, 몇 시간이면 totalHours, 완료율이면 completionRate, 집계를 묻지 않으면 none")
+    var aggregation: QueryAggregationKind
+}
+
 // MARK: - Engine
 
 @available(iOS 26.0, macOS 26.0, *)
@@ -155,6 +184,30 @@ final class FoundationModelsEngine {
         return response.content
     }
     
+    /// 검색 질의 해석 - guided generation (#72). 주는 월요일 시작으로 계산하게 한다.
+    func queryIntent(from text: String, referenceDate: Date, categories: [String]) async throws -> QueryIntentResponse {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "yyyy-MM-dd (EEEE)"
+        let today = formatter.string(from: referenceDate)
+        let categoryList = categories.isEmpty ? "(none)" : categories.joined(separator: ", ")
+
+        let instructions = """
+            You interpret a calendar search query. Do not answer it and do not count anything.
+            Today is \(today). Weeks start on Monday. Resolve relative periods
+            (this week, last week, this month, last month, recent N days) against today.
+            User categories: \(categoryList).
+            Keep the keyword in the query's own words. Never invent words that are not in the query.
+            """
+        let session = LanguageModelSession(model: model, instructions: instructions)
+        let response = try await session.respond(
+            to: text,
+            generating: QueryIntentResponse.self,
+            options: GenerationOptions(temperature: 0.1)   // 추출 작업 — 가장 결정적으로
+        )
+        return response.content
+    }
+
     /// 첫 호출 지연을 줄이려면 홈 진입 시 한 번 불러 둔다
     func prewarm() {
         guard status == .onDevice else { return }

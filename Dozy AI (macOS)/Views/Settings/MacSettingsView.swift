@@ -26,6 +26,7 @@ struct MacSettingsView: View {
     @State private var reminderSettings = SummaryReminderSettings.load()
     @State private var showReminderDeniedAlert = false
     @AppStorage(EveningCheckPrompt.enabledKey) private var eveningCheckEnabled = true
+    @AppStorage(AnalyticsSettings.enabledKey) private var analyticsEnabled = true
     @AppStorage("macBackgroundTheme")
     private var backgroundThemeRaw: String = MacBackgroundTheme.defaultTheme.rawValue
 
@@ -385,6 +386,21 @@ struct MacSettingsView: View {
                 Text(container.aiService.engineStatus.displayName)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.trailing)
+            }
+
+            // 익명 사용 통계 (#90). 끄면 Firebase Analytics 수집을 즉시 멈춘다.
+            Toggle(isOn: $analyticsEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("사용 통계 전송", symbol: "chart.bar.xaxis")
+                    Text("앱 개선을 위해 기능 사용 횟수 같은 익명 통계를 보내요. 일정 내용은 보내지 않아요.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)   // 스위치를 카드 오른쪽 끝으로
+            }
+            .toggleStyle(.switch)
+            .onChange(of: analyticsEnabled) { _, enabled in
+                container.setUsageDataCollectionEnabled(enabled)
             }
 
             HStack(spacing: 10) {
