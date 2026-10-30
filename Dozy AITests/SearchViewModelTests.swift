@@ -218,6 +218,24 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertEqual(vm.toast?.message, DozyToast.displaySettingsSaved.message)
     }
 
+    func test_memoSaveFailure_showsMemoFailureToast() {
+        dozyRepo.stubbedError = .saveFailed(underlying: NSError(domain: "test", code: 1))
+        let dozy = DozyEvent(title: "운동", startDate: now, endDate: now)
+        vm.save(dozy, successToast: nil, failureToast: .memoSaveFailed)
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.memoSaveFailed.message)
+    }
+
+    func test_confirmMemoDelete_workLogFailure_showsMemoDeleteFailedToast() {
+        workLogRepo.stubbedSaveError = .saveFailed(underlying: NSError(domain: "test", code: 1))
+        let log = WorkLog(date: now)
+        log.memos = ["회의 메모"]
+        vm.requestMemoDelete("회의 메모", from: .workLog(log))
+        vm.confirmMemoDelete()
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.memoDeleteFailed.message)
+    }
+
     // MARK: - 편집 후 상세 갱신
 
     func test_saveDozy_refreshesOpenDetailSnapshot() {

@@ -80,6 +80,8 @@ final class DozyToastTests: XCTestCase {
         XCTAssertEqual(DozyToast.displaySettingsSaved.style, .success)
         XCTAssertEqual(DozyToast.eventUpdateFailed.style, .failure)
         XCTAssertEqual(DozyToast.eventDeleteFailed.style, .failure)
+        XCTAssertEqual(DozyToast.memoSaveFailed.style, .failure)
+        XCTAssertEqual(DozyToast.memoDeleteFailed.style, .failure)
     }
 
     func test_sameMessage_getsNewIdentity() {
@@ -244,6 +246,23 @@ final class CalendarViewModelToastTests: XCTestCase {
         XCTAssertEqual(crash.recorded.map(\.context), ["calendar.event.delete_external"])
     }
 
+    // 메모 (#144)
+
+    func test_saveMemos_failure_showsMemoFailureToast() {
+        dozyRepo.stubbedError = ToastTestSupport.failure
+        vm.saveMemos(for: makeDozy())
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.memoSaveFailed.message)
+        XCTAssertEqual(crash.recorded.map(\.context), ["calendar.event.memo"])
+    }
+
+    func test_saveMemos_success_showsNoToast() {
+        vm.saveMemos(for: makeDozy())
+        waitUntil { dozyRepo.updateCallCount == 1 }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        XCTAssertNil(vm.toast)
+    }
+
     // 표시 설정
 
     func test_updateDisplaySettings_dozyAndExternal_showSavedToast() {
@@ -267,6 +286,7 @@ final class CalendarViewModelToastTests: XCTestCase {
 final class HomeViewModelToastTests: XCTestCase {
 
     private var vm: HomeViewModel!
+    private var workLogRepo: MockWorkLogRepository!
     private var dozyRepo: MockDozyEventRepository!
     private var writeService: StubCalendarWriteService!
     private var crash: MockCrashReportingService!
@@ -284,7 +304,7 @@ final class HomeViewModelToastTests: XCTestCase {
 
         let calendarService = MockCalendarService()
         let completions = MockEventCompletionRepository()
-        let workLogRepo = MockWorkLogRepository()
+        workLogRepo = MockWorkLogRepository()
         vm = HomeViewModel(
             fetchTodayDataUseCase: FetchTodayDataUseCase(calendarService: calendarService, reminderService: MockReminderService()),
             saveWorkLogUseCase: SaveWorkLogUseCase(repository: workLogRepo),
@@ -314,6 +334,7 @@ final class HomeViewModelToastTests: XCTestCase {
     override func tearDownWithError() throws {
         CrashReporting.current = previousCrash
         vm = nil
+        workLogRepo = nil
         dozyRepo = nil
         writeService = nil
         crash = nil
@@ -401,6 +422,40 @@ final class HomeViewModelToastTests: XCTestCase {
         waitUntil { vm.toast != nil }
         XCTAssertEqual(vm.toast?.message, DozyToast.eventDeleteFailed.message)
         XCTAssertEqual(crash.recorded.map(\.context), ["home.event.delete_external"])
+    }
+
+    // 메모 (#144)
+
+    func test_updateMemo_failure_showsMemoSaveFailedToast() {
+        let log = WorkLog(date: Date())
+        log.addMemo("회의 정리")
+        vm.todayLog = log
+        workLogRepo.stubbedSaveError = ToastTestSupport.failure
+        vm.updateMemo(at: 0, text: "회의 정리 끝")
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.memoSaveFailed.message)
+        XCTAssertEqual(crash.recorded.map(\.context), ["home.memo.update"])
+    }
+
+    func test_deleteMemo_failure_showsMemoDeleteFailedToast() {
+        let log = WorkLog(date: Date())
+        log.addMemo("회의 정리")
+        vm.todayLog = log
+        workLogRepo.stubbedSaveError = ToastTestSupport.failure
+        vm.deleteMemo(at: 0)
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.memoDeleteFailed.message)
+        XCTAssertEqual(crash.recorded.map(\.context), ["home.memo.delete"])
+    }
+
+    func test_deleteMemo_success_showsNoToast() {
+        let log = WorkLog(date: Date())
+        log.addMemo("회의 정리")
+        vm.todayLog = log
+        vm.deleteMemo(at: 0)
+        waitUntil { workLogRepo.saveCallCount > 0 }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        XCTAssertNil(vm.toast)
     }
 
     // 표시 설정
