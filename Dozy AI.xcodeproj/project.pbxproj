@@ -102,6 +102,7 @@
 		70DEBED621B88568F4DA190B /* ParseSearchQueryUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B626DDB28AFA5F25EE786775 /* ParseSearchQueryUseCase.swift */; };
 		729A5E7A764927CC0DBB213A /* GoogleCalendarDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D9532F751CB100084C61 /* GoogleCalendarDTO.swift */; };
 		72AE680B6AAEFE0BCA1B12FF /* DozyEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F619D96A2F7A344900084C61 /* DozyEvent.swift */; };
+		75C312B4741692C3A1BB55E6 /* DozyToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F577B4EE80C7D41533F4C8 /* DozyToast.swift */; };
 		75C9AC6C79B8B44F8CC3CCB0 /* SpeechServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F69072F6ACE7E001952F6 /* SpeechServiceProtocol.swift */; };
 		7668E58917E3B1C6A2C18D69 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = F60ADEFF2F7FAA01007B8D9F /* Functions */; };
 		79C2328FDE8D7614E6C0A6AC /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA62A1932AC1B206A3A6017F /* MacAppDelegate.swift */; };
@@ -163,6 +164,7 @@
 		AFEECEAA9D38344BFA06A40B /* LeaveSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */; };
 		B15FEAA4777940E0899DD3CE /* SharedCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */; };
 		B212ED66A0238DA3E5DEBEDF /* MacSectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A372C9FDDD50DBEAB3401BEF /* MacSectionTests.swift */; };
+		B23A0CB04740E044F29FAEF0 /* EventToastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00610086BD09063029D15702 /* EventToastTests.swift */; };
 		B23B5751430FEECFE019B586 /* DozyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD22F72C44100EEE463 /* DozyError.swift */; };
 		B252A21A86A34F3FB41F871A /* Publisher+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */; };
 		B3A3661D1C458B648DC2BC28 /* QueryRuleParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9045348BD307B5C867C2A35E /* QueryRuleParser.swift */; };
@@ -646,6 +648,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		00610086BD09063029D15702 /* EventToastTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EventToastTests.swift; sourceTree = "<group>"; };
 		0C061E47E864ECCA8BFD3E59 /* FirebaseBootstrap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirebaseBootstrap.swift; sourceTree = "<group>"; };
 		0C952A327510DE462AB91F82 /* DozyIcons.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = DozyIcons.xcassets; sourceTree = "<group>"; };
 		138EDD04FB7644938FBB1BBD /* AppVersionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionService.swift; sourceTree = "<group>"; };
@@ -674,6 +677,7 @@
 		501B310DB8A4B97BDE747343 /* DozyIcon.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DozyIcon.swift; sourceTree = "<group>"; };
 		504251B9A27F3731F6550FEE /* SupabasePushTokenService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabasePushTokenService.swift; sourceTree = "<group>"; };
 		50D3974F44814EBCA970B11B /* ForceUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateView.swift; sourceTree = "<group>"; };
+		50F577B4EE80C7D41533F4C8 /* DozyToast.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DozyToast.swift; sourceTree = "<group>"; };
 		55114826826D07351133C659 /* PushTokenServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushTokenServiceProtocol.swift; sourceTree = "<group>"; };
 		57FBC57DF2FB5482862225B0 /* SyncTodayLiveActivityUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncTodayLiveActivityUseCase.swift; sourceTree = "<group>"; };
 		59805AD8FBFB5C7DB49CDB20 /* SearchInterpretationCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchInterpretationCard.swift; sourceTree = "<group>"; };
@@ -1251,6 +1255,7 @@
 				AACA84CC36FC96D28F0F7C0F /* QueryRuleParserTests.swift */,
 				735E2E1777244367B66D2FA9 /* SearchAggregatorTests.swift */,
 				E5E3F6256864BEF1500A2DD0 /* PushTests.swift */,
+				00610086BD09063029D15702 /* EventToastTests.swift */,
 			);
 			path = "Dozy AITests";
 			sourceTree = "<group>";
@@ -1422,6 +1427,7 @@
 				D02AFFFF000000000000F205 /* DozyBottomSheet.swift */,
 				D02AFFFF000000000000F206 /* DozyListSection.swift */,
 				D02AFFFF000000000000F209 /* AmbientMeshBackgroundView.swift */,
+				50F577B4EE80C7D41533F4C8 /* DozyToast.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2660,6 +2666,7 @@
 				4E9E5A5D86E8D6CBD0A94730 /* SupabasePushTokenService.swift in Sources */,
 				800033F37301D3742F895303 /* SharedPushHandler.swift in Sources */,
 				AB5C062BD7EE67CED7106303 /* SharedCalendarComponents.swift in Sources */,
+				75C312B4741692C3A1BB55E6 /* DozyToast.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2694,6 +2701,7 @@
 				6BBA081856C90547C571F85F /* QueryRuleParserTests.swift in Sources */,
 				2ACFE27CAA9239FBB44B64EB /* SearchAggregatorTests.swift in Sources */,
 				696E62B5AE09484096A3B24D /* PushTests.swift in Sources */,
+				B23A0CB04740E044F29FAEF0 /* EventToastTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

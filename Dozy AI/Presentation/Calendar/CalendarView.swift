@@ -160,6 +160,7 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $viewModel.showEventDetail) {
                 eventDetailSheet
+                    .dozyToast($viewModel.toast.visible(when: viewModel.showEventDetail))   // 표시 설정 저장은 시트가 열린 채로 끝난다
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
@@ -210,19 +211,8 @@ struct CalendarView: View {
                      ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
                      : "정말로 삭제하시겠습니까?")
             }
-            .alert("일정 삭제 완료", isPresented: $viewModel.showDeleteSuccess) {
-                Button("확인", role: .cancel) { }
-            } message: {
-                Text("일정이 성공적으로 삭제되었습니다.")
-            }
-            .alert("삭제 실패", isPresented: Binding(
-                get: { viewModel.deleteErrorMessage != nil },
-                set: { if !$0 { viewModel.deleteErrorMessage = nil } }
-            )) {
-                Button("확인", role: .cancel) { viewModel.deleteErrorMessage = nil }
-            } message: {
-                Text(viewModel.deleteErrorMessage ?? "")
-            }
+            // 수정 · 삭제 결과 토스트 (#143) — 탭바 위. 상세 시트가 떠 있는 동안은 시트 쪽이 띄운다(가려져 안 보이므로).
+            .dozyToast($viewModel.toast, bottomInset: DozyTabBarMetrics.scrollClearance, deferredWhile: viewModel.showEventDetail)
             .alert("일정 생성", isPresented: $showLongPressAlert, actions: longPressAlertActions, message: longPressAlertMessage)
             .modifier(ShareExternalEventOverlay(viewModel: viewModel))
             .onChange(of: scenePhase) { _, newPhase in
@@ -235,8 +225,6 @@ struct CalendarView: View {
                     viewModel.showEventEdit = false
                     viewModel.showCalendarEventEdit = false
                     viewModel.showDeleteAlert = false
-                    viewModel.showDeleteSuccess = false
-                    viewModel.deleteErrorMessage = nil
                 } else {
                     // 앱 복귀 시 외부 원본과 미러 스냅샷을 재동기화
                     viewModel.reconcileExternalMirrors()

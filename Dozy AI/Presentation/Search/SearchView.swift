@@ -73,6 +73,8 @@ struct SearchView: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .background { viewModel.clearModalState() }
             }
+            // 수정 · 표시 설정 결과 토스트 (#143) — 상세 시트가 떠 있으면 시트 안에 띄운다
+            .dozyToast($viewModel.toast, deferredWhile: viewModel.selectedEvent != nil)
             .sheet(item: $viewModel.selectedEvent) { ev in
                 EventDetailView(
                     event: ev,
@@ -82,7 +84,7 @@ struct SearchView: View {
                     onDeleteThisOnly: nil, onDeleteFutureEvents: nil,
                     onEditCalendar: { viewModel.calendarEventToEdit = $0 },
                     onDeleteCalendar: nil,
-                    onSaveMemos: { dozy in viewModel.save(dozy) },
+                    onSaveMemos: { dozy in viewModel.save(dozy, successToast: nil) },
                     onUpdateDisplaySettings: { event, priority, isPinned, category in
                         viewModel.applyDisplaySettings(
                             event: event, priority: priority, isPinned: isPinned, category: category,
@@ -90,6 +92,7 @@ struct SearchView: View {
                         )
                     }
                 )
+                .dozyToast($viewModel.toast.visible(when: viewModel.selectedEvent != nil))
             }
             .sheet(item: $viewModel.dozyEventToEdit) { dozy in
                 EventEditView(

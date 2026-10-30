@@ -2464,6 +2464,16 @@
         }
       }
     },
+    "다시 시도" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        }
+      }
+    },
     "다음 기간" : {
       "localizations" : {
         "en" : {
@@ -3006,6 +3016,16 @@
     },
     "메모를 남겼어요: %@" : {
 
+    },
+    "메모를 저장하지 못했어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save your memo."
+          }
+        }
+      }
     },
     "멤버" : {
       "localizations" : {
@@ -3597,6 +3617,7 @@
       }
     },
     "삭제 실패" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5268,6 +5289,16 @@
         }
       }
     },
+    "이 일정만 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted this event only"
+          }
+        }
+      }
+    },
     "이 일정의 공유만 해제됩니다. 원본 Apple · Google 일정은 그대로 유지됩니다." : {
       "localizations" : {
         "en" : {
@@ -5294,16 +5325,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Go"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
           }
         }
       }
@@ -5538,6 +5559,16 @@
         }
       }
     },
+    "이후 일정을 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted this and future events"
+          }
+        }
+      }
+    },
     "인사이트" : {
       "localizations" : {
         "en" : {
@@ -5564,6 +5595,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
           }
         }
       }
@@ -5689,6 +5730,7 @@
       }
     },
     "일정 삭제 완료" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5822,6 +5864,36 @@
         }
       }
     },
+    "일정을 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't delete the event"
+          }
+        }
+      }
+    },
+    "일정을 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event deleted"
+          }
+        }
+      }
+    },
+    "일정을 수정했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event updated"
+          }
+        }
+      }
+    },
     "일정을 완료하면\n완료율 추이를 볼 수 있어요" : {
       "localizations" : {
         "en" : {
@@ -5832,7 +5904,18 @@
         }
       }
     },
+    "일정을 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the event"
+          }
+        }
+      }
+    },
     "일정이 성공적으로 삭제되었습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5991,26 +6074,6 @@
     "저장 완료" : {
 
     },
-    "저장에 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save failed."
-          }
-        }
-      }
-    },
-    "저장하거나 다시 녹음할 수 있어요" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can save or record again"
-          }
-        }
-      }
-    },
     "전체" : {
       "localizations" : {
         "en" : {
@@ -6027,6 +6090,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "pts"
+          }
+        }
+      }
+    },
+    "저장에 실패했습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save failed."
+          }
+        }
+      }
+    },
+    "저장하거나 다시 녹음할 수 있어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can save or record again"
           }
         }
       }
@@ -7580,6 +7663,16 @@
         }
       }
     },
+    "표시 설정을 저장했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display settings saved"
+          }
+        }
+      }
+    },
     "표시할 소스 / 공유 캘린더 선택" : {
       "localizations" : {
         "en" : {
@@ -7869,26 +7962,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncommon and different from your email"
-          }
-        }
-      }
-    },
-    "다시 시도" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try again"
-          }
-        }
-      }
-    },
-    "메모를 저장하지 못했어요." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't save your memo."
           }
         }
       }
