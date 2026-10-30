@@ -19,6 +19,8 @@ struct CalendarView: View {
     @State private var showFilter = false
     @State private var longPressDate: Date? = nil
     @State private var showLongPressAlert = false
+    /// 상세 시트 안에서 띄운 토스트 — 시트를 닫을 때 캘린더 화면에서 다시 뜨지 않게 지운다 (#143)
+    @State private var detailToastID: UUID?
     @State private var pageIndex = 1
     @State private var isForward = true
     @State private var showMonthPicker = false
@@ -160,6 +162,7 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $viewModel.showEventDetail) {
                 eventDetailSheet
+                    .dozyToast(toastBinding(whileDetailOpen: true))   // 표시 설정 저장은 시트가 열린 채로 끝난다
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
@@ -210,18 +213,15 @@ struct CalendarView: View {
                      ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
                      : "정말로 삭제하시겠습니까?")
             }
-            .alert("일정 삭제 완료", isPresented: $viewModel.showDeleteSuccess) {
-                Button("확인", role: .cancel) { }
-            } message: {
-                Text("일정이 성공적으로 삭제되었습니다.")
+            // 수정 · 삭제 결과 토스트 (#143) — 탭바 위. 상세 시트가 떠 있는 동안은 시트 쪽이 띄운다(가려져 안 보이므로).
+            .dozyToast(toastBinding(whileDetailOpen: false), bottomInset: DozyTabBarMetrics.scrollClearance)
+            .onChange(of: viewModel.toast?.id) { _, id in
+                if viewModel.showEventDetail { detailToastID = id }
             }
-            .alert("삭제 실패", isPresented: Binding(
-                get: { viewModel.deleteErrorMessage != nil },
-                set: { if !$0 { viewModel.deleteErrorMessage = nil } }
-            )) {
-                Button("확인", role: .cancel) { viewModel.deleteErrorMessage = nil }
-            } message: {
-                Text(viewModel.deleteErrorMessage ?? "")
+            .onChange(of: viewModel.showEventDetail) { _, isOpen in
+                guard !isOpen else { return }
+                if let id = detailToastID, viewModel.toast?.id == id { viewModel.toast = nil }
+                detailToastID = nil
             }
             .alert("일정 생성", isPresented: $showLongPressAlert, actions: longPressAlertActions, message: longPressAlertMessage)
             .modifier(ShareExternalEventOverlay(viewModel: viewModel))
@@ -235,8 +235,6 @@ struct CalendarView: View {
                     viewModel.showEventEdit = false
                     viewModel.showCalendarEventEdit = false
                     viewModel.showDeleteAlert = false
-                    viewModel.showDeleteSuccess = false
-                    viewModel.deleteErrorMessage = nil
                 } else {
                     // 앱 복귀 시 외부 원본과 미러 스냅샷을 재동기화
                     viewModel.reconcileExternalMirrors()
@@ -250,6 +248,15 @@ struct CalendarView: View {
     }
 
     // MARK: - Sheets
+
+    /// 토스트를 띄울 곳을 하나로 정한다 — 상세 시트가 열려 있으면 시트 안, 아니면 캘린더 화면.
+    /// 둘 다 같은 값을 보면 햅틱 · 안내가 두 번 나고, 캘린더 쪽은 시트에 가려 보이지 않는다.
+    private func toastBinding(whileDetailOpen: Bool) -> Binding<DozyToast?> {
+        Binding(
+            get: { viewModel.showEventDetail == whileDetailOpen ? viewModel.toast : nil },
+            set: { viewModel.toast = $0 }
+        )
+    }
 
     @ViewBuilder
     private var eventDetailSheet: some View {
