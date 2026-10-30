@@ -165,9 +165,10 @@ final class EventEditViewModelTests: XCTestCase {
         XCTAssertNil(savedEvent?.recurrenceEndDate)
     }
 
-    func test_save_newEvent_withRecurrenceRule_recurrenceEndDateIsSet() {
+    func test_save_newEvent_withRecurrenceRuleAndEndDateOn_recurrenceEndDateIsSet() {
+        // #147: 새 반복은 기본 "계속"(종료일 nil). 종료일은 "날짜 지정"을 켰을 때만 저장된다.
         vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
-        vm.title = "이벤트"; vm.recurrenceRule = "weekly"
+        vm.title = "이벤트"; vm.recurrenceRule = "weekly"; vm.recurrenceHasEndDate = true
         vm.save()
         XCTAssertNotNil(savedEvent?.recurrenceEndDate)
     }
@@ -202,6 +203,79 @@ final class EventEditViewModelTests: XCTestCase {
         vm = EventEditViewModel(eventToEdit: event, selectedDate: selectedDate) { [weak self] in self?.savedEvent = $0 }
         vm.title = "수정"; vm.save()
         XCTAssertTrue(savedEvent === event)
+    }
+
+    // MARK: 반복 (#147)
+
+    func test_newEvent_recurrenceDefaultsToNoEnd() {
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        XCTAssertFalse(vm.recurrenceHasEndDate)
+        // "날짜 지정"을 켰을 때의 기본값은 1년 뒤 — 이전엔 일정 당일이라 반복이 한 번만 생겼다
+        XCTAssertEqual(vm.recurrenceEndDate, Calendar.current.date(byAdding: .year, value: 1, to: vm.startDate))
+    }
+
+    func test_save_dailyWithoutEndDate_savesNilEnd() {
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { [weak self] in self?.savedEvent = $0 })
+        vm.title = "운동"
+        vm.recurrenceRule = "daily"
+        vm.save()
+        XCTAssertEqual(savedEvent?.recurrenceRule, "daily")
+        XCTAssertNil(savedEvent?.recurrenceEndDate)
+        // 계속 반복 — 1년 반 뒤에도 생긴다
+        let later = Calendar.current.date(byAdding: .month, value: 18, to: selectedDate)!
+        XCTAssertTrue(savedEvent?.occursOn(later) ?? false)
+    }
+
+    func test_save_withEndDate_savesEnd() {
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { [weak self] in self?.savedEvent = $0 })
+        vm.title = "운동"
+        vm.recurrenceRule = "weekly"
+        vm.recurrenceHasEndDate = true
+        let end = Calendar.current.date(byAdding: .month, value: 2, to: selectedDate)!
+        vm.recurrenceEndDate = end
+        vm.save()
+        XCTAssertEqual(savedEvent?.recurrenceEndDate, end)
+    }
+
+    func test_save_noneRule_ignoresEndDate() {
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { [weak self] in self?.savedEvent = $0 })
+        vm.title = "운동"
+        vm.recurrenceHasEndDate = true
+        vm.save()
+        XCTAssertNil(savedEvent?.recurrenceEndDate)
+    }
+
+    func test_startDateMovedPastRecurrenceEnd_pullsEndToStart() {
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        vm.recurrenceRule = "daily"
+        vm.recurrenceHasEndDate = true
+        vm.recurrenceEndDate = Calendar.current.date(byAdding: .day, value: 3, to: selectedDate)!
+        let newStart = Calendar.current.date(byAdding: .day, value: 10, to: vm.startDate)!
+        vm.startDate = newStart
+        XCTAssertEqual(vm.recurrenceEndDate, newStart)
+    }
+
+    func test_existingEvent_keepsSavedRecurrenceEnd() {
+        let end = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate)!
+        let withEnd = makeDozyEvent()
+        withEnd.recurrenceRule = "weekly"
+        withEnd.recurrenceEndDate = end
+        vm = EventEditViewModel(eventToEdit: withEnd, selectedDate: selectedDate, onSave: { _ in })
+        XCTAssertTrue(vm.recurrenceHasEndDate)
+        XCTAssertEqual(vm.recurrenceEndDate, end)
+    }
+
+    func test_existingEvent_withoutEnd_isNoEnd() {
+        let forever = makeDozyEvent()
+        forever.recurrenceRule = "monthly"
+        vm = EventEditViewModel(eventToEdit: forever, selectedDate: selectedDate, onSave: { _ in })
+        XCTAssertFalse(vm.recurrenceHasEndDate)
+        XCTAssertNotNil(vm.recurrenceSummary)
+    }
+
+    func test_recurrenceSummary_nilWhenNone() {
+        vm = EventEditViewModel(eventToEdit: nil, selectedDate: selectedDate, onSave: { _ in })
+        XCTAssertNil(vm.recurrenceSummary)
     }
 }
 
