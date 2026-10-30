@@ -84,7 +84,7 @@ struct SearchView: View {
                     onDeleteThisOnly: nil, onDeleteFutureEvents: nil,
                     onEditCalendar: { viewModel.calendarEventToEdit = $0 },
                     onDeleteCalendar: nil,
-                    onSaveMemos: { dozy in viewModel.save(dozy, successToast: nil) },
+                    onSaveMemos: { dozy in viewModel.save(dozy, successToast: nil, failureToast: .memoSaveFailed) },
                     onUpdateDisplaySettings: { event, priority, isPinned, category in
                         viewModel.applyDisplaySettings(
                             event: event, priority: priority, isPinned: isPinned, category: category,

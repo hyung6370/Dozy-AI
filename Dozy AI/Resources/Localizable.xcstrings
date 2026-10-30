@@ -2554,6 +2554,26 @@
         }
       }
     },
+    "대표 사진을 바꿨어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cover photo updated"
+          }
+        }
+      }
+    },
+    "대표 사진을 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cover photo removed"
+          }
+        }
+      }
+    },
     "데이터 새로고침" : {
       "localizations" : {
         "en" : {
@@ -3016,6 +3036,26 @@
     },
     "메모를 남겼어요: %@" : {
 
+    },
+    "메모를 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't delete the memo"
+          }
+        }
+      }
+    },
+    "메모를 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the memo"
+          }
+        }
+      }
     },
     "메모를 저장하지 못했어요." : {
       "localizations" : {
@@ -3513,6 +3553,16 @@
         }
       }
     },
+    "비밀번호를 변경했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password changed"
+          }
+        }
+      }
+    },
     "비밀번호를 잊으셨나요?" : {
       "localizations" : {
         "en" : {
@@ -3564,6 +3614,7 @@
       }
     },
     "사진 로딩 실패: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3596,12 +3647,52 @@
         }
       }
     },
+    "사진에 저장했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved to Photos"
+          }
+        }
+      }
+    },
     "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Can't load that photo. Please choose another."
+          }
+        }
+      }
+    },
+    "사진을 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't remove the photo"
+          }
+        }
+      }
+    },
+    "사진을 올리지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't upload the photo"
+          }
+        }
+      }
+    },
+    "사진을 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save to Photos"
           }
         }
       }
@@ -3987,6 +4078,16 @@
         }
       }
     },
+    "설정을 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save settings"
+          }
+        }
+      }
+    },
     "세션 만료" : {
       "localizations" : {
         "en" : {
@@ -4150,6 +4251,7 @@
       }
     },
     "스크린샷이 앨범에 저장되었습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4531,16 +4633,6 @@
         }
       }
     },
-    "연결되지 않음" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not connected"
-          }
-        }
-      }
-    },
     "연결된 캘린더" : {
       "localizations" : {
         "en" : {
@@ -4557,6 +4649,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connected"
+          }
+        }
+      }
+    },
+    "연결되지 않음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not connected"
           }
         }
       }
@@ -5460,6 +5562,7 @@
       }
     },
     "이미지 업로드 실패" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6071,29 +6174,6 @@
         }
       }
     },
-    "저장 완료" : {
-
-    },
-    "전체" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
-          }
-        }
-      }
-    },
     "저장에 실패했습니다." : {
       "localizations" : {
         "en" : {
@@ -6130,6 +6210,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Soft mesh gradient — lavender cards with a periwinkle accent."
+          }
+        }
+      }
+    },
+    "전체" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
           }
         }
       }
@@ -7131,6 +7231,16 @@
         }
       }
     },
+    "캘린더 설정을 저장했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar settings saved"
+          }
+        }
+      }
+    },
     "캘린더 셀 더블클릭" : {
       "localizations" : {
         "en" : {
@@ -7269,6 +7379,16 @@
         }
       }
     },
+    "캘린더를 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't delete the calendar"
+          }
+        }
+      }
+    },
     "캘린더를 삭제할까요?" : {
       "localizations" : {
         "en" : {
@@ -7285,6 +7405,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connect your calendars"
+          }
+        }
+      }
+    },
+    "캘린더에서 나가지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't leave the calendar"
           }
         }
       }

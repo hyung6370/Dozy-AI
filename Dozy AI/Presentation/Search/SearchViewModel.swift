@@ -269,13 +269,14 @@ final class SearchViewModel: ObservableObject {
     // MARK: - 저장
 
     /// Dozy 일정 저장. 목록은 @Query 가 갱신하지만 상세 시트는 열 때 받은 값 스냅샷이라 직접 바꿔 준다.
-    /// - successToast: 성공 토스트 (#143). 메모 저장 · 삭제처럼 따로 알릴 필요 없는 저장은 nil. 실패는 항상 알린다.
-    func save(_ dozy: DozyEvent, successToast: DozyToast? = .eventUpdated) {
+    /// - successToast: 성공 토스트 (#143). 메모 저장 · 삭제처럼 따로 알릴 필요 없는 저장은 nil.
+    /// - failureToast: 실패 토스트 — 실패는 항상 알린다. 메모 저장은 `.memoSaveFailed` (#144).
+    func save(_ dozy: DozyEvent, successToast: DozyToast? = .eventUpdated, failureToast: DozyToast = .eventUpdateFailed) {
         updateDozyEventUseCase.execute(dozy)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 if case .failure(let error) = completion {
-                    self?.reportFailure(error, context: "search.event.update")
+                    self?.reportFailure(error, context: "search.event.update", toast: failureToast)
                 }
             }, receiveValue: { [weak self] in
                 guard let self else { return }
@@ -295,7 +296,7 @@ final class SearchViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 if case .failure(let error) = completion {
-                    self?.reportFailure(error, context: "search.event.update_external")
+                    self?.reportFailure(error, context: "search.event.update_external", toast: .eventUpdateFailed)
                 }
             }, receiveValue: { [weak self] in
                 guard let self else { return }
@@ -318,10 +319,10 @@ final class SearchViewModel: ObservableObject {
     }
 
     /// 수정 실패 — 토스트 + 로그 + Crashlytics 비치명 기록 (#143)
-    private func reportFailure(_ error: DozyError, context: String) {
+    private func reportFailure(_ error: DozyError, context: String, toast failureToast: DozyToast) {
         Logger.search.error("\(context, privacy: .public) 실패: \(error.localizedDescription, privacy: .public)")
         CrashReporting.record(error, context: context)
-        toast = .eventUpdateFailed
+        toast = failureToast
     }
 
     /// 홈(오늘 캐시) · 위젯 갱신 — 캘린더 화면 저장 경로와 같은 신호.
@@ -371,12 +372,16 @@ final class SearchViewModel: ObservableObject {
         case .dozyEvent(let dozy):
             dozy.memos.removeAll { $0 == pending.memo }
             dozy.updatedAt = now()
-            save(dozy, successToast: nil)
+            save(dozy, successToast: nil, failureToast: .memoDeleteFailed)
         case .workLog(let log):
             guard let idx = log.memos.firstIndex(of: pending.memo) else { return }
             saveWorkLogUseCase.deleteMemo(at: idx, in: log)
                 .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { })
+                .sink(receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.reportFailure(error, context: "search.memo.delete", toast: .memoDeleteFailed)
+                    }
+                }, receiveValue: { })
                 .store(in: &cancellables)
         }
     }

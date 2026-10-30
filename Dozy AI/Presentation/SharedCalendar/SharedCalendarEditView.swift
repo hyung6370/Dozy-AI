@@ -16,6 +16,8 @@ struct SharedCalendarEditView: View {
     let isOwner: Bool           // DetailView에서 확정된 값 전달 (로딩 상태 무관)
     let currentUserID: String
     @ObservedObject var viewModel: SharedCalendarViewModel
+    /// 이름 · 닉네임 저장이 모두 성공해 시트를 닫을 때 (#144) — 상세 화면이 닫힌 뒤 토스트를 띄운다
+    var onSaved: () -> Void = {}
     @Environment(\.dismiss) private var dismiss
 
     @State private var calendarName: String
@@ -23,7 +25,9 @@ struct SharedCalendarEditView: View {
     @State private var originalNickname: String
     @State private var photoItem: PhotosPickerItem?
     @State private var isUploadingImage = false
-    @State private var imageErrorMessage: String?
+    @State private var isSaving = false
+    /// 사진 변경 · 저장 실패 결과 (#144) — 이전 "이미지 업로드 실패" 알림창 대신
+    @State private var toast: DozyToast?
     @State private var imageChanged = false
 
     private var currentCalendar: SharedCalendar {
@@ -44,12 +48,14 @@ struct SharedCalendarEditView: View {
         calendar: SharedCalendar,
         isOwner: Bool,
         currentUserID: String,
-        viewModel: SharedCalendarViewModel
+        viewModel: SharedCalendarViewModel,
+        onSaved: @escaping () -> Void = {}
     ) {
         self.calendar = calendar
         self.isOwner = isOwner
         self.currentUserID = currentUserID
         self.viewModel = viewModel
+        self.onSaved = onSaved
 
         let nick = (viewModel.membersMap[calendar.id] ?? [])
             .first(where: { $0.userID == currentUserID })?.nickname ?? ""
@@ -80,20 +86,13 @@ struct SharedCalendarEditView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("저장") { save() }
                         .fontWeight(.semibold)
-                        .disabled(!hasChanges)
+                        .disabled(!hasChanges || isSaving)
                 }
             }
             .onChange(of: photoItem) { _, newItem in
                 onPhotoPicked(newItem)
             }
-            .alert("이미지 업로드 실패", isPresented: Binding(
-                get: { imageErrorMessage != nil },
-                set: { if !$0 { imageErrorMessage = nil } }
-            )) {
-                Button("확인", role: .cancel) { imageErrorMessage = nil }
-            } message: {
-                Text(imageErrorMessage ?? "")
-            }
+            .dozyToast($toast)
         }
     }
 
@@ -203,26 +202,42 @@ struct SharedCalendarEditView: View {
 
     // MARK: - 저장
 
+    /// 이름 · 닉네임을 저장한다. 모두 성공하면 닫고(상세 화면이 토스트), 하나라도 실패하면 시트에 남아 실패 토스트 (#144).
     private func save() {
         let group = DispatchGroup()
+        var allSucceeded = true
+        isSaving = true
 
         if isOwner {
             let name = calendarName.trimmingCharacters(in: .whitespaces)
             if !name.isEmpty && name != calendar.name {
                 group.enter()
-                viewModel.updateCalendarName(calendarID: calendar.id, name: name) { group.leave() }
+                viewModel.updateCalendarName(calendarID: calendar.id, name: name) { success in
+                    if !success { allSucceeded = false }
+                    group.leave()
+                }
             }
         }
 
         let nick = myNickname.trimmingCharacters(in: .whitespaces)
         if nick != originalNickname {
             group.enter()
-            viewModel.updateNickname(calendarID: calendar.id, nickname: nick, currentUserID: currentUserID) {
+            viewModel.updateNickname(calendarID: calendar.id, nickname: nick, currentUserID: currentUserID) { success in
+                if success { originalNickname = nick } else { allSucceeded = false }
                 group.leave()
             }
         }
 
-        group.notify(queue: .main) { dismiss() }
+        group.notify(queue: .main) {
+            isSaving = false
+            if allSucceeded {
+                onSaved()
+                dismiss()
+            } else {
+                viewModel.errorMessage = nil   // 목록 화면 "오류" 알림창으로 다시 뜨지 않게 — 여기서 토스트로 알린다
+                toast = .failure(String(localized: "설정을 저장하지 못했어요"))
+            }
+        }
     }
 
     // MARK: - 이미지 업로드 / 삭제
@@ -238,20 +253,20 @@ struct SharedCalendarEditView: View {
             do {
                 guard let loaded = try await item.loadTransferable(type: Data.self) else {
                     editLogger.error("loadTransferable returned nil")
-                    imageErrorMessage = String(localized: "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요.")
+                    toast = .failure(String(localized: "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요."))
                     return
                 }
                 data = loaded
                 editLogger.debug("loaded \(data.count) bytes")
             } catch {
                 editLogger.error("loadTransferable error: \(error)")
-                imageErrorMessage = String(localized: "사진 로딩 실패: \(error.localizedDescription)")
+                toast = .failure(String(localized: "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요."))
                 return
             }
 
             guard let jpegData = Self.resizedJPEGData(from: data) else {
                 editLogger.error("resize/JPEG encoding failed")
-                imageErrorMessage = String(localized: "이 사진은 처리할 수 없습니다. (포맷 문제)")
+                toast = .failure(String(localized: "이 사진은 처리할 수 없습니다. (포맷 문제)"))
                 return
             }
             editLogger.debug("resized JPEG \(jpegData.count) bytes, uploading…")
@@ -261,12 +276,14 @@ struct SharedCalendarEditView: View {
                 viewModel.updateCalendarImage(calendarID: calendar.id, jpegData: jpegData) { success in
                     editLogger.debug("upload completion success=\(success)")
                     if !success {
-                        imageErrorMessage = viewModel.errorMessage ?? "업로드에 실패했습니다."
+                        viewModel.errorMessage = nil   // 목록 "오류" 알림창 대신 토스트
+                        toast = .failure(String(localized: "사진을 올리지 못했어요"))
                     } else {
                         if let oldURL {
                             KingfisherManager.shared.cache.removeImage(forKey: oldURL.absoluteString)
                         }
                         imageChanged = true
+                        toast = .success(String(localized: "대표 사진을 바꿨어요"))
                     }
                     continuation.resume()
                 }
@@ -284,6 +301,10 @@ struct SharedCalendarEditView: View {
                     KingfisherManager.shared.cache.removeImage(forKey: oldURL.absoluteString)
                 }
                 imageChanged = true
+                toast = .success(String(localized: "대표 사진을 삭제했어요"))
+            } else {
+                viewModel.errorMessage = nil
+                toast = .failure(String(localized: "사진을 삭제하지 못했어요"))
             }
         }
     }

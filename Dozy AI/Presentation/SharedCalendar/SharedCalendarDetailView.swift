@@ -16,6 +16,10 @@ struct SharedCalendarDetailView: View {
 
     @State private var showLeaveAlert = false
     @State private var showEditSheet = false
+    /// 설정 저장 · 나가기 실패 결과 (#144)
+    @State private var toast: DozyToast?
+    /// 설정 시트가 저장하고 닫혔는지 — 시트가 다 닫힌 뒤(onDismiss) 이 화면에 토스트를 띄운다
+    @State private var settingsSaved = false
     @State private var currentCode: String
 
     init(calendar: SharedCalendar, viewModel: SharedCalendarViewModel) {
@@ -67,21 +71,35 @@ struct SharedCalendarDetailView: View {
         }
         .sheet(isPresented: $showEditSheet, onDismiss: {
             viewModel.loadMembers(calendarID: calendar.id)
+            if settingsSaved {
+                settingsSaved = false
+                toast = .success(String(localized: "캘린더 설정을 저장했어요"))
+            }
         }) {
             SharedCalendarEditView(
                 calendar: currentCalendar,
                 isOwner: isOwner,
                 currentUserID: currentUserID,
-                viewModel: viewModel
+                viewModel: viewModel,
+                onSaved: { settingsSaved = true }
             )
         }
+        .dozyToast($toast)
         .alert(
             isOwner ? "캘린더를 삭제할까요?" : "공유 캘린더에서 나갈까요?",
             isPresented: $showLeaveAlert
         ) {
             Button(isOwner ? "삭제" : "나가기", role: .destructive) {
-                viewModel.leave(calendar: calendar, currentUserID: currentUserID) {
-                    dismiss()
+                // 성공하면 목록으로 돌아가고 목록에서 캘린더가 사라지는 것으로 충분 — 실패만 토스트 (#144)
+                viewModel.leave(calendar: calendar, currentUserID: currentUserID) { success in
+                    if success {
+                        dismiss()
+                    } else {
+                        viewModel.errorMessage = nil   // 목록 "오류" 알림창 대신 토스트
+                        toast = .failure(isOwner
+                            ? String(localized: "캘린더를 삭제하지 못했어요")
+                            : String(localized: "캘린더에서 나가지 못했어요"))
+                    }
                 }
             }
             Button("취소", role: .cancel) { }
