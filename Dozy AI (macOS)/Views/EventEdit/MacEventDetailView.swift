@@ -288,12 +288,11 @@ struct MacEventDetailView: View {
 
             divider
             EditRow(icon: "repeat", label: "반복") {
+                // 시작일 기준으로 무엇이 반복되는지 붙인다 — "매주 (목요일)" (#147)
                 Picker("", selection: $editVM.recurrenceRule) {
-                    Text("없음").tag("none")
-                    Text("매일").tag("daily")
-                    Text("매주").tag("weekly")
-                    Text("매월").tag("monthly")
-                    Text("매년").tag("yearly")
+                    ForEach(RecurrenceSummary.rules, id: \.self) { rule in
+                        Text(RecurrenceSummary.ruleTitle(rule, start: editVM.startDate)).tag(rule)
+                    }
                 }
                 .pickerStyle(.menu)
                 .labelsHidden()
@@ -302,10 +301,33 @@ struct MacEventDetailView: View {
 
             if editVM.recurrenceRule != "none" {
                 divider
-                EditRow(icon: "calendar.badge.clock", label: "종료일") {
-                    DatePicker("", selection: $editVM.recurrenceEndDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .environment(\.locale, .koreanForce24h)
+                EditRow(icon: "calendar.badge.clock", label: "반복 종료") {
+                    Picker("", selection: $editVM.recurrenceHasEndDate) {
+                        Text("안 함").tag(false)
+                        Text("날짜 지정").tag(true)
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(maxWidth: 180, alignment: .leading)
+                }
+
+                if editVM.recurrenceHasEndDate {
+                    divider
+                    EditRow(icon: "calendar", label: "종료일") {
+                        DatePicker("", selection: $editVM.recurrenceEndDate,
+                                   in: Calendar.current.startOfDay(for: editVM.startDate)...,
+                                   displayedComponents: .date)
+                            .labelsHidden()
+                            .environment(\.locale, .koreanForce24h)
+                    }
+                }
+
+                if let summary = editVM.recurrenceSummary {
+                    Text(summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, 36)
+                        .padding(.vertical, 4)
                 }
             }
 

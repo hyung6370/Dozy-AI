@@ -365,25 +365,56 @@ struct EventEditView: View {
                 DozyTintedIcon(systemName: "repeat", tint: DozyColor.State.success)
             } trailing: {
                 Menu {
+                    // 항목마다 시작일 기준으로 무엇이 반복되는지 붙인다 — "매주 (목요일)" (#147)
                     Picker("반복", selection: $viewModel.recurrenceRule) {
-                        Text("없음").tag("none")
-                        Text("매일").tag("daily")
-                        Text("매주").tag("weekly")
-                        Text("매월").tag("monthly")
-                        Text("매년").tag("yearly")
+                        ForEach(RecurrenceSummary.rules, id: \.self) { rule in
+                            Text(RecurrenceSummary.ruleTitle(rule, start: viewModel.startDate)).tag(rule)
+                        }
                     }
                 } label: {
                     menuValueLabel(recurrenceTitle)
                 }
+                .accessibilityIdentifier("menu_recurrence")   // UI 테스트 (#147)
             }
 
             if viewModel.recurrenceRule != "none" {
-                DozyListRow(title: "반복 종료일", titleFont: rowFont) {
+                DozyListRow(title: "반복 종료", titleFont: rowFont) {
                     DozyTintedIcon(systemName: "calendar.badge.checkmark", tint: DozyColor.State.success)
                 } trailing: {
-                    DatePicker("반복 종료일", selection: $viewModel.recurrenceEndDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .environment(\.locale, .current)
+                    Menu {
+                        Picker("반복 종료", selection: $viewModel.recurrenceHasEndDate) {
+                            Text("안 함").tag(false)
+                            Text("날짜 지정").tag(true)
+                        }
+                    } label: {
+                        menuValueLabel(viewModel.recurrenceHasEndDate ? String(localized: "날짜 지정") : String(localized: "안 함"))
+                    }
+                    .accessibilityIdentifier("menu_recurrence_end")
+                }
+
+                if viewModel.recurrenceHasEndDate {
+                    DozyListRow(title: "종료일", titleFont: rowFont) {
+                        DozyTintedIcon(systemName: "calendar", tint: DozyColor.State.success)
+                    } trailing: {
+                        // 시작일 이전은 고를 수 없다 — 고르면 반복이 하나도 생기지 않는다
+                        DatePicker("종료일", selection: $viewModel.recurrenceEndDate,
+                                   in: Calendar.current.startOfDay(for: viewModel.startDate)...,
+                                   displayedComponents: .date)
+                            .labelsHidden()
+                            .environment(\.locale, .current)
+                            .accessibilityIdentifier("picker_recurrence_end_date")
+                    }
+                }
+
+                if let summary = viewModel.recurrenceSummary {
+                    Text(summary)
+                        .font(DozyFont.caption)
+                        .foregroundStyle(DozyColor.Text.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, DozySpacing.md)
+                        .padding(.vertical, DozySpacing.xs)
+                        .accessibilityLabel(Text("반복 요약 \(summary)"))
+                        .accessibilityIdentifier("text_recurrence_summary")
                 }
             }
 
@@ -406,6 +437,7 @@ struct EventEditView: View {
             }
         }
         .animation(.snappy(duration: 0.25), value: viewModel.recurrenceRule)
+        .animation(.snappy(duration: 0.25), value: viewModel.recurrenceHasEndDate)
     }
 
     // MARK: - 5) 공유 캘린더
@@ -449,13 +481,7 @@ struct EventEditView: View {
     }
 
     private var recurrenceTitle: String {
-        switch viewModel.recurrenceRule {
-        case "daily":   return String(localized: "매일")
-        case "weekly":  return String(localized: "매주")
-        case "monthly": return String(localized: "매월")
-        case "yearly":  return String(localized: "매년")
-        default:        return String(localized: "없음")
-        }
+        RecurrenceSummary.ruleTitle(viewModel.recurrenceRule, start: viewModel.startDate)
     }
 
     private var notificationTitle: String {
