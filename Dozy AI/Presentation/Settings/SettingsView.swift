@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Lottie
 import SafariServices
 
 struct SettingsView: View {
@@ -81,7 +80,7 @@ struct SettingsView: View {
             }
         }
         .hidesTabBar(showLoginSheet)   // 커스텀 로그인 시트가 떠 있는 동안 탭바 숨김
-        // 로그인 성공 → 시트 닫기. 축하 Lottie 는 settingsContent 의 overlay 에서 재생.
+        // 로그인 성공 → 시트 닫기. 축하 Lottie 는 MainTabView 루트 overlay 에서 재생 (#139).
         .onChange(of: authViewModel.isLoggedIn) { _, loggedIn in
             if loggedIn {
                 withAnimation(.spring()) { showLoginSheet = false }
@@ -118,15 +117,6 @@ struct SettingsView: View {
             .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
-            .overlay {
-                if authViewModel.showCongratulationAnimation {
-                    LottieView(name: "congratulation", loopMode: .playOnce) {
-                        authViewModel.showCongratulationAnimation = false
-                    }
-                    .scaleEffect(0.3)
-                    .allowsHitTesting(false)
-                }
-            }
             .alert("로그아웃", isPresented: $showSignOutAlert) {
                 Button("로그아웃", role: .destructive) { authViewModel.signOut() }
                 Button("취소", role: .cancel) { }
