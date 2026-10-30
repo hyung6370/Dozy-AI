@@ -1293,7 +1293,11 @@ final class CalendarViewModel: ObservableObject {
     func saveMemos(for event: DozyEvent) {
         updateEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "calendar.event.memo", toast: .memoSaveFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 }

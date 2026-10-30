@@ -23,6 +23,9 @@ struct SettingsView: View {
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showPasswordChange = false
+    /// 비밀번호 변경 결과 토스트 (#144)
+    @State private var toast: DozyToast?
+    @State private var passwordChanged = false
     /// DragGesture 기반 커스텀 로그인 시트 (AuthSheetView) 표시 여부.
     @State private var showLoginSheet = false
     #if os(iOS)
@@ -139,10 +142,17 @@ struct SettingsView: View {
             } message: {
                 Text("모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.")
             }
-            .sheet(isPresented: $showPasswordChange) {
-                PasswordChangeSheet()
+            .sheet(isPresented: $showPasswordChange, onDismiss: {
+                // 시트가 다 닫힌 뒤에 띄워야 시트에 가려지지 않는다
+                if passwordChanged {
+                    passwordChanged = false
+                    toast = .success(String(localized: "비밀번호를 변경했어요"))
+                }
+            }) {
+                PasswordChangeSheet(onChanged: { passwordChanged = true })
                     .environmentObject(authViewModel)
             }
+            .dozyToast($toast, bottomInset: DozyTabBarMetrics.scrollClearance)
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .inactive || newPhase == .background {
                     showSignOutAlert = false

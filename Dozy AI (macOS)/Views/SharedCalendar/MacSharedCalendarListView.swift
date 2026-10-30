@@ -98,7 +98,7 @@ struct MacSharedCalendarListView: View {
                 Button("나가기", role: .destructive) {
                     if let cal = deletingCalendar,
                        let userID = authViewModel.currentUser?.id {
-                        viewModel.leave(calendar: cal, currentUserID: userID) { }
+                        viewModel.leave(calendar: cal, currentUserID: userID) { _ in }
                     }
                     deletingCalendar = nil
                 }

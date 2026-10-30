@@ -482,7 +482,11 @@ final class HomeViewModel: ObservableObject {
         guard let log = todayLog else { return }
         saveWorkLogUseCase.updateMemo(at: index, text: text, in: log)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.memo.update", toast: .memoSaveFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 
@@ -490,7 +494,11 @@ final class HomeViewModel: ObservableObject {
         guard let log = todayLog else { return }
         saveWorkLogUseCase.deleteMemo(at: index, in: log)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.memo.delete", toast: .memoDeleteFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 
@@ -739,7 +747,11 @@ final class HomeViewModel: ObservableObject {
     func saveMemos(for dozyEvent: DozyEvent) {
         updateDozyEventUseCase.execute(dozyEvent)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.memo", toast: .memoSaveFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 

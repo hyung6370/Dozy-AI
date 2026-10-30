@@ -15,7 +15,9 @@ struct PasswordChangeSheet: View {
     @State private var otpCode = ""
     @State private var newPassword = ""
     @State private var newPasswordConfirm = ""
-    @State private var showSuccessAlert = false
+
+    /// 변경 성공 — 시트를 닫고 설정 화면이 토스트를 띄운다 (#144). 이전엔 확인을 눌러야 닫히는 알림창.
+    var onChanged: () -> Void = {}
 
     private var email: String {
         authViewModel.currentUser?.email ?? ""
@@ -74,14 +76,12 @@ struct PasswordChangeSheet: View {
         .onChange(of: authViewModel.changePasswordSucceeded) { _, succeeded in
             if succeeded {
                 authViewModel.resetChangePasswordState()
-                showSuccessAlert = true
+                onChanged()
+                dismiss()
             }
         }
         .onDisappear {
             authViewModel.resetChangePasswordState()
-        }
-        .alert("비밀번호가 변경되었어요", isPresented: $showSuccessAlert) {
-            Button("확인") { dismiss() }
         }
     }
 

@@ -38,6 +38,8 @@ nonisolated extension DozyToast {
     static var occurrenceDeleted: DozyToast { .success(String(localized: "이 일정만 삭제했어요")) }
     static var futureOccurrencesDeleted: DozyToast { .success(String(localized: "이후 일정을 삭제했어요")) }
     static var displaySettingsSaved: DozyToast { .success(String(localized: "표시 설정을 저장했어요")) }
+    static var memoSaveFailed: DozyToast { .failure(String(localized: "메모를 저장하지 못했어요")) }
+    static var memoDeleteFailed: DozyToast { .failure(String(localized: "메모를 삭제하지 못했어요")) }
 }
 
 // MARK: - View
