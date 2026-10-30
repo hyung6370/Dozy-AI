@@ -186,6 +186,20 @@ final class MockWorkLogRepository: WorkLogRepositoryProtocol {
         return Just(stubbedRecentLogs).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
 
+    /// 오늘 WorkLog 가 없으면 새로 만들어 `stubbedLog` 로 기억한다 — 실제 저장소처럼 두 번째 호출은 같은 객체.
+    private(set) var fetchOrCreateCallCount = 0
+    private(set) var createdLogCount = 0
+
+    func fetchOrCreateLog(for date: Date) -> AnyPublisher<WorkLog, DozyError> {
+        fetchOrCreateCallCount += 1
+        if let error = stubbedFetchError { return Fail(error: error).eraseToAnyPublisher() }
+        if let stubbedLog { return Just(stubbedLog).setFailureType(to: DozyError.self).eraseToAnyPublisher() }
+        let log = WorkLog(date: date)
+        stubbedLog = log
+        createdLogCount += 1
+        return Just(log).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    }
+
     func save(_ log: WorkLog) -> AnyPublisher<Void, DozyError> {
         saveCallCount += 1
         if let error = stubbedSaveError { return Fail(error: error).eraseToAnyPublisher() }

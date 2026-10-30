@@ -191,7 +191,7 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showVoiceInput) {
                 VoiceInputView(speechService: container.speechService) { text in
-                    viewModel.addMemo(text)
+                    submitMemo(text)
                 }
             }
             .onChange(of: viewModel.todayEvents.count) { _, _ in
@@ -655,6 +655,10 @@ struct HomeView: View {
             }
 
             memoComposer
+
+            if viewModel.memoSaveFailed {
+                memoSaveFailedNotice
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -722,7 +726,6 @@ struct HomeView: View {
                         .frame(width: 28, height: 28)
                 }
                 .buttonStyle(.plain)
-                .disabled(viewModel.todayLog == nil)   // addMemo 가 todayLog nil 이면 조용히 버리므로 막는다
                 .accessibilityLabel("음성으로 메모")
             }
             .padding(.leading, 14)
@@ -730,7 +733,7 @@ struct HomeView: View {
             .padding(.vertical, 6)
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-            Button { submitMemo() } label: {
+            Button { submitMemo(memoText) } label: {
                 Image(symbol: "arrow.up")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
@@ -745,15 +748,42 @@ struct HomeView: View {
         }
     }
 
-    private var canSubmitMemo: Bool {
-        !memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.todayLog != nil
+    /// 메모 저장 실패 안내 (#137) — 글은 입력창에 남아 있으니 "다시 시도"로 바로 다시 보낸다.
+    private var memoSaveFailedNotice: some View {
+        HStack(spacing: 6) {
+            Image(symbol: "exclamationmark.circle")
+                .font(.caption)
+            Text("메모를 저장하지 못했어요.")
+                .font(.caption)
+            Spacer(minLength: 4)
+            Button("다시 시도") { submitMemo(memoText) }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(DozyColor.Brand.primary)
+                .buttonStyle(.plain)
+                .disabled(!canSubmitMemo)
+        }
+        .foregroundStyle(DozyColor.State.danger)
+        .padding(.top, 8)
+        .padding(.horizontal, 4)
+        .transition(.opacity)
     }
 
-    private func submitMemo() {
-        let trimmed = memoText.trimmingCharacters(in: .whitespacesAndNewlines)
+    /// 글만 있으면 켠다 (#137). 오늘 WorkLog 는 addMemo 가 없으면 만든다.
+    private var canSubmitMemo: Bool {
+        !memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// 입력창 · 음성 입력 공용. 저장에 성공하면 입력창을 비우고, 실패하면 글을 입력창에 남겨 다시 보낼 수 있게 한다.
+    private func submitMemo(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        viewModel.addMemo(trimmed)
-        memoText = ""
+        viewModel.addMemo(trimmed) { saved in
+            if saved {
+                if memoText.trimmingCharacters(in: .whitespacesAndNewlines) == trimmed { memoText = "" }
+            } else if memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                memoText = trimmed   // 음성으로 보낸 글도 입력창으로 옮겨 다시 보낼 수 있게
+            }
+        }
     }
 
     // MARK: - Pull to Refresh

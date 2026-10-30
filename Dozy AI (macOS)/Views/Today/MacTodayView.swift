@@ -625,6 +625,21 @@ struct MacTodayView: View {
                 .buttonStyle(.plain)
                 .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
+
+            if viewModel.memoSaveFailed {
+                HStack(spacing: 6) {
+                    Image(symbol: "exclamationmark.circle")
+                    Text("메모를 저장하지 못했어요.")
+                    Spacer(minLength: 4)
+                    Button("다시 시도") { submitMemo() }
+                        .foregroundStyle(theme.accent)
+                        .buttonStyle(.plain)
+                        .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+                .font(.callout)
+                .foregroundStyle(DozyColor.State.danger)
+                .padding(.horizontal, 2)
+            }
         }
     }
 
@@ -647,11 +662,13 @@ struct MacTodayView: View {
         requestSummarySheet()
     }
 
+    /// 저장에 성공했을 때만 입력창을 비운다 (#137) — 실패하면 글이 남아 "다시 시도"로 다시 보낸다.
     private func submitMemo() {
         let trimmed = memoText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        viewModel.addMemo(trimmed)
-        memoText = ""
+        viewModel.addMemo(trimmed) { saved in
+            if saved, memoText.trimmingCharacters(in: .whitespacesAndNewlines) == trimmed { memoText = "" }
+        }
     }
 
     // MARK: - AI Generate Button

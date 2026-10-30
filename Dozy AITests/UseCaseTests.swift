@@ -384,3 +384,86 @@ final class ToggleEventCompletionUseCaseTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 }
+
+// MARK: - SaveWorkLogUseCase Tests (#137)
+
+/// 홈 메모가 일정 로딩 결과(todayLog)에 묶이지 않는지 — 오늘 WorkLog 가 없어도 메모가 저장되고,
+/// 저장 실패 시 붙였던 메모가 되돌려지는지 고정한다.
+final class SaveWorkLogUseCaseTests: XCTestCase {
+
+    private var repository: MockWorkLogRepository!
+    private var useCase: SaveWorkLogUseCase!
+
+    override func setUp() {
+        super.setUp()
+        repository = MockWorkLogRepository()
+        useCase = SaveWorkLogUseCase(repository: repository)
+    }
+
+    func test_addMemo_withoutTodayLog_createsLogAndSaves() throws {
+        let log = try awaitPublisher(useCase.addMemo("회의 정리"))
+
+        XCTAssertEqual(log.memos, ["회의 정리"])
+        XCTAssertEqual(repository.createdLogCount, 1)
+        XCTAssertEqual(repository.saveCallCount, 1)
+    }
+
+    func test_addMemo_withExistingLog_appendsToSameLog() throws {
+        let existing = WorkLog(date: Date())
+        existing.addMemo("첫 메모")
+        repository.stubbedLog = existing
+
+        let log = try awaitPublisher(useCase.addMemo("두 번째"))
+
+        XCTAssertTrue(log === existing)
+        XCTAssertEqual(log.memos, ["첫 메모", "두 번째"])
+        XCTAssertEqual(repository.createdLogCount, 0)
+    }
+
+    func test_addMemo_whenSaveFails_rollsBackMemoAndFails() {
+        let existing = WorkLog(date: Date())
+        existing.addMemo("첫 메모")
+        repository.stubbedLog = existing
+        repository.stubbedSaveError = .saveFailed(underlying: NSError(domain: "test", code: 1))
+
+        XCTAssertThrowsError(try awaitPublisher(useCase.addMemo("저장 안 될 메모")))
+        XCTAssertEqual(existing.memos, ["첫 메모"])
+    }
+
+    func test_addMemo_retryAfterFailure_addsOnce() throws {
+        let existing = WorkLog(date: Date())
+        repository.stubbedLog = existing
+        repository.stubbedSaveError = .saveFailed(underlying: NSError(domain: "test", code: 1))
+        XCTAssertThrowsError(try awaitPublisher(useCase.addMemo("다시 보낼 메모")))
+
+        repository.stubbedSaveError = nil
+        let log = try awaitPublisher(useCase.addMemo("다시 보낼 메모"))
+
+        XCTAssertEqual(log.memos, ["다시 보낼 메모"])
+    }
+
+    func test_addMemo_whenFetchFails_propagatesError() {
+        repository.stubbedFetchError = .saveFailed(underlying: NSError(domain: "test", code: 2))
+
+        XCTAssertThrowsError(try awaitPublisher(useCase.addMemo("메모")))
+        XCTAssertEqual(repository.saveCallCount, 0)
+    }
+
+    func test_todayLog_withoutLog_createsOnce() throws {
+        let first = try awaitPublisher(useCase.todayLog())
+        let second = try awaitPublisher(useCase.todayLog())
+
+        XCTAssertTrue(first === second)
+        XCTAssertEqual(repository.createdLogCount, 1)
+    }
+
+    func test_execute_withMemoAddedFirst_keepsMemoInSameLog() throws {
+        // 일정 로딩보다 메모가 먼저 저장된 경우 — 이후 일정 로딩이 새 WorkLog 를 만들어 메모를 가리면 안 된다.
+        _ = try awaitPublisher(useCase.addMemo("먼저 쓴 메모"))
+
+        let log = try awaitPublisher(useCase.execute(events: [makeTestEvent(title: "팀 미팅")], tasks: []))
+
+        XCTAssertEqual(log.memos, ["먼저 쓴 메모"])
+        XCTAssertEqual(repository.createdLogCount, 1)
+    }
+}
