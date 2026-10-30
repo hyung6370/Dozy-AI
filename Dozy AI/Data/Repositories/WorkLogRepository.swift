@@ -76,6 +76,37 @@ final class WorkLogRepository: WorkLogRepositoryProtocol {
 
     // MARK: - WorkLog 저장 (삽입 또는 업데이트)
 
+    func fetchOrCreateLog(for date: Date) -> AnyPublisher<WorkLog, DozyError> {
+        Future { [modelContainer] promise in
+            // 조회 → 생성 → 저장을 한 메인 액터 Task 안에서 끝낸다. fetchLog · save 를 따로 부르면
+            // 그 사이에 다른 호출(일정 로딩 · 메모 추가)이 끼어들어 같은 날 WorkLog 가 둘 생길 수 있다.
+            Task { @MainActor in
+                let context = modelContainer.mainContext
+                let targetDate = date.startOfDay
+                let nextDay = date.startOfNextDay
+                let descriptor = FetchDescriptor<WorkLog>(
+                    predicate: #Predicate<WorkLog> { log in
+                        log.date >= targetDate && log.date < nextDay
+                    }
+                )
+
+                do {
+                    if let existing = try context.fetch(descriptor).first {
+                        promise(.success(existing))
+                        return
+                    }
+                    let log = WorkLog(date: date)
+                    context.insert(log)
+                    try context.save()
+                    promise(.success(log))
+                } catch {
+                    promise(.failure(.saveFailed(underlying: error)))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     func save(_ log: WorkLog) -> AnyPublisher<Void, DozyError> {
         Future { [modelContainer] promise in
             Task { @MainActor in

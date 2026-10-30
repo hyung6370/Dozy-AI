@@ -49,7 +49,7 @@ Presentation (View / ViewModel) → Domain (UseCase / Model / Protocol) → Data
 
 - Apple · Google 일정은 SwiftData 에 없다. `HomeViewModel.loadTodayData` 가 머지본을 `TodayEventCache` 로 미러링하고 위젯 · Live Activity · Siri 인텐트는 이 캐시를 읽는다. 캐시 쓰기는 `TodayEventCacheWriter` 한 곳.
 - 완료 상태: Dozy 비반복 → `DozyEvent.isCompleted`, 그 외(Apple · Google · 반복 Dozy) → `EventCompletion(eventID, eventDate)`. 토글은 `ToggleEventCompletionUseCase` 로 통일.
-- 공유 캘린더는 Supabase Realtime(포그라운드 한정) + 포그라운드 복귀 시 resync. 푸시 인프라 없음(#95 예정).
+- 공유 캘린더는 Supabase Realtime(포그라운드 한정) + 포그라운드 복귀 시 resync. 파트너가 일정을 공유하면 APNs 푸시(#95, `send-push` Edge Function · `notify_shared_event_push` 트리거).
 - AI 요약은 iOS 26 Foundation Models(온디바이스) → 실패 시 NaturalLanguage 로컬 폴백. 외부 LLM API 호출 없음.
 
 ## 문자열 · 로그
@@ -83,9 +83,10 @@ xcodebuild -project "Dozy AI.xcodeproj" -scheme "Dozy AI (macOS)" -destination '
 PR: `Closes #N` → `## 요약` → `## 변경 사항`(**굵은 항목명** + 설명) → `## 확인`(빌드·테스트는 체크, 실기기는 미체크로 남김) → `## 참고`(알려진 동작 · 범위 밖).
 구현을 마치면 이슈 본문 체크박스를 갱신하고 `## 구현 메모` 를 덧붙인다.
 
-## 현재 로드맵 (2026-10 기준)
+## 현재 로드맵 (2026-10-30 기준)
 
 - v2.0.3: 완료 (2026-10-27, 마일스톤 닫힘). 마지막 항목 #71 Live Activity 는 PR #96, 앱 아이콘 Iconsax 교체는 PR #97 로 머지.
 - macOS v2.0.3: 완료 (2026-10-28 심사 제출, 마일스톤 #11 닫힘, 태그 `macos-v2.0.3`). #100 자연어 입력(음성 제외) · #101 저녁 요약 알림 + 저녁 체크 · #107 테마 팔레트 · #102 AI 엔진 행 · 버전 2.0.3 (15) · #103 · #110 수정 · #112 테스트. Google 캘린더는 OAuth 검증 대기로 macOS 비활성.
-- v2.0.4 측정 + 기능 강화: #90 Firebase Analytics(완료, PR #116) → #117 Crashlytics(완료, PR #118) → #72 자연어 질의(완료, PR #121 · #123) → #95 APNs 푸시(공유 캘린더 파트너 알림, PR #127, Dev · Prod Supabase 반영 2026-10-29, TestFlight 확인 남음). Live Activity 푸시는 #126(v2.0.5)으로 분리 — ContentState 개수는 Apple · Google 합산이라 서버가 정확히 못 만든다. iOS 강제 업데이트 `min_ios_version` = 2.0.3 (2026-10-28, Prod `app_config`).
-- v2.0.5 수익화 (2026-10-29 v2.0.4 에서 이동): #91 RevenueCat → #92 Pro 게이팅 → #93 페이월 → #119 광고(iOS 무료 사용자 한정 · 비맞춤 · ATT 없음, 핵심 화면 제외, Pro 는 광고 제거) → #94 글로벌 출시 · #126 Live Activity 푸시.
+- v2.0.4 측정 + 기능 강화: 완료 (2026-10-29 심사 제출, 태그 `v2.0.4`, 빌드 163). #90 Firebase Analytics(PR #116) → #117 Crashlytics(PR #118) → #72 자연어 질의(PR #121 · #123) → #95 APNs 푸시(공유 캘린더 파트너 알림, PR #127, Dev · Prod Supabase 반영 2026-10-29) · #129 공유 캘린더 리디자인 · #130 다크 탭바 필 · #135 dSYM 자동 업로드. Live Activity 푸시는 #126 으로 분리 — ContentState 개수는 Apple · Google 합산이라 서버가 정확히 못 만든다. iOS 강제 업데이트 `min_ios_version` = 2.0.3 (2026-10-28, Prod `app_config`).
+- v2.0.5 ~ v2.0.9: **앱 유지보수 전용** (2026-10-30 결정). 버그 수정 · 안정화만 넣고 신규 기능 · 수익화는 넣지 않는다. 첫 항목 #137 스토어 버전 홈 메모 전송 버튼 비활성.
+- v2.1.0 수익화 (2026-10-30 v2.0.5 에서 이동): #91 RevenueCat → #92 Pro 게이팅 → #93 페이월 → #119 광고(iOS 무료 사용자 한정 · 비맞춤 · ATT 없음, 핵심 화면 제외, Pro 는 광고 제거) → #94 글로벌 출시 · #126 Live Activity 푸시. #91 Grandfather 기준은 v2.1.0 이전 설치.

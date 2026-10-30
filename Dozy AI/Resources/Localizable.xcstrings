@@ -7872,6 +7872,26 @@
           }
         }
       }
+    },
+    "다시 시도" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        }
+      }
+    },
+    "메모를 저장하지 못했어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save your memo."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

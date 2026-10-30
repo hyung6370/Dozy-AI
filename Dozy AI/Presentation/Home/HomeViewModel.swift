@@ -24,6 +24,9 @@ final class HomeViewModel: ObservableObject {
     @Published var completedTasks: [TaskItem] = []
     @Published var pendingTasks: [TaskItem] = []
     @Published var todayLog: WorkLog?
+    /// 마지막 메모 저장이 실패했는지 — 입력창 아래 안내 (#137)
+    @Published private(set) var memoSaveFailed = false
+    private var isSavingMemo = false
     @Published var recentLogs: [WorkLog] = []
 
     @Published var dailySummary: DailySummary?
@@ -278,6 +281,7 @@ final class HomeViewModel: ObservableObject {
     private func performLoadTodayData() {
         isLoading = true
         errorMessage = nil
+        loadTodayLogIfNeeded()
 
         // 단일 cancellable 사용 → 이전 fetch가 느릴 때 새 fetch가 시작되면 이전 구독을 자동 취소
         // (Set<AnyCancellable>에 쌓이면 느린 Google API 응답이 최신 완료 상태를 덮어쓰는 race condition 발생)
@@ -424,11 +428,51 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - 메모
 
-    func addMemo(_ text: String) {
-        guard let log = todayLog else { return }
-        saveWorkLogUseCase.addMemo(text, to: log)
+    /// 오늘 WorkLog 를 일정 로딩과 따로 확보한다 (#137). 일정 · 미리 알림 조회가 실패해도
+    /// 기존 메모가 보이고 새 메모를 쓸 수 있게. 날짜가 바뀌었으면 오늘 것으로 바꾼다.
+    private func loadTodayLogIfNeeded() {
+        if let log = todayLog, log.isToday { return }
+        saveWorkLogUseCase.todayLog()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Logger.memo.error("오늘 WorkLog 확보 실패: \(error.localizedDescription, privacy: .public)")
+                        CrashReporting.record(error, context: "home.memo.today_log")
+                    }
+                },
+                receiveValue: { [weak self] log in
+                    guard let self, self.todayLog?.isToday != true else { return }
+                    self.todayLog = log
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 메모 추가. 오늘 WorkLog 가 없으면 만든다 (#137).
+    /// - completion: 저장 성공 여부. 화면은 성공했을 때만 입력창을 비우고, 실패하면 글을 남겨 다시 보낼 수 있게 한다.
+    func addMemo(_ text: String, completion: @escaping (Bool) -> Void = { _ in }) {
+        guard !isSavingMemo else { return }   // 저장 끝나기 전 연타 → 같은 메모 두 번 방지
+        isSavingMemo = true
+        memoSaveFailed = false
+        saveWorkLogUseCase.addMemo(text)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] result in
+                    guard let self else { return }
+                    self.isSavingMemo = false
+                    if case .failure(let error) = result {
+                        Logger.memo.error("메모 저장 실패: \(error.localizedDescription, privacy: .public)")
+                        CrashReporting.record(error, context: "home.memo.add")
+                        self.memoSaveFailed = true
+                        completion(false)
+                    }
+                },
+                receiveValue: { [weak self] log in
+                    self?.todayLog = log
+                    completion(true)
+                }
+            )
             .store(in: &cancellables)
     }
 
