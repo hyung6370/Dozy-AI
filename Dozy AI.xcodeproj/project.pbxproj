@@ -164,6 +164,7 @@
 		AFEECEAA9D38344BFA06A40B /* LeaveSharedCalendarUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8AB13E5BD468AB82A74FF /* LeaveSharedCalendarUseCase.swift */; };
 		B15FEAA4777940E0899DD3CE /* SharedCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96DB7C2CA16A40ABBE1F2AD3 /* SharedCalendarService.swift */; };
 		B212ED66A0238DA3E5DEBEDF /* MacSectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A372C9FDDD50DBEAB3401BEF /* MacSectionTests.swift */; };
+		B23A0CB04740E044F29FAEF0 /* EventToastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00610086BD09063029D15702 /* EventToastTests.swift */; };
 		B23B5751430FEECFE019B586 /* DozyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44DDD22F72C44100EEE463 /* DozyError.swift */; };
 		B252A21A86A34F3FB41F871A /* Publisher+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9F68E72F6ACD20001952F6 /* Publisher+Extensions.swift */; };
 		B3A3661D1C458B648DC2BC28 /* QueryRuleParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9045348BD307B5C867C2A35E /* QueryRuleParser.swift */; };
@@ -647,6 +648,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		00610086BD09063029D15702 /* EventToastTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EventToastTests.swift; sourceTree = "<group>"; };
 		0C061E47E864ECCA8BFD3E59 /* FirebaseBootstrap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirebaseBootstrap.swift; sourceTree = "<group>"; };
 		0C952A327510DE462AB91F82 /* DozyIcons.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = DozyIcons.xcassets; sourceTree = "<group>"; };
 		138EDD04FB7644938FBB1BBD /* AppVersionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionService.swift; sourceTree = "<group>"; };
@@ -1253,6 +1255,7 @@
 				AACA84CC36FC96D28F0F7C0F /* QueryRuleParserTests.swift */,
 				735E2E1777244367B66D2FA9 /* SearchAggregatorTests.swift */,
 				E5E3F6256864BEF1500A2DD0 /* PushTests.swift */,
+				00610086BD09063029D15702 /* EventToastTests.swift */,
 			);
 			path = "Dozy AITests";
 			sourceTree = "<group>";
@@ -2698,6 +2701,7 @@
 				6BBA081856C90547C571F85F /* QueryRuleParserTests.swift in Sources */,
 				2ACFE27CAA9239FBB44B64EB /* SearchAggregatorTests.swift in Sources */,
 				696E62B5AE09484096A3B24D /* PushTests.swift in Sources */,
+				B23A0CB04740E044F29FAEF0 /* EventToastTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -104,8 +104,14 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
         return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
 
+    /// delete 실패 시나리오용 (#143 — 삭제 실패 토스트)
+    var stubbedDeleteError: DozyError? = nil
+    private(set) var deleteCallCount = 0
+
     func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
-        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        deleteCallCount += 1
+        if let error = stubbedDeleteError { return Fail(error: error).eraseToAnyPublisher() }
+        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
 
     func mirrorExternalEvent(
