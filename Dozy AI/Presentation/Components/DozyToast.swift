@@ -10,7 +10,8 @@
 
 import SwiftUI
 
-struct DozyToast: Identifiable, Equatable {
+// 모델은 ViewModel(일부는 메인 액터 밖) 기본 인자에서도 쓰므로 메인 액터에 묶지 않는다.
+nonisolated struct DozyToast: Identifiable, Equatable {
     enum Style: Equatable {
         case success
         case failure
@@ -29,7 +30,7 @@ struct DozyToast: Identifiable, Equatable {
 
 // MARK: - 일정 결과 문구
 
-extension DozyToast {
+nonisolated extension DozyToast {
     static var eventUpdated: DozyToast { .success(String(localized: "일정을 수정했어요")) }
     static var eventUpdateFailed: DozyToast { .failure(String(localized: "일정을 저장하지 못했어요")) }
     static var eventDeleted: DozyToast { .success(String(localized: "일정을 삭제했어요")) }
@@ -69,6 +70,42 @@ extension View {
     /// - bottomInset: 화면 아래에서 띄울 거리. 탭 화면은 `DozyTabBarMetrics.scrollClearance` (탭바 위).
     func dozyToast(_ toast: Binding<DozyToast?>, bottomInset: CGFloat = DozySpacing.lg) -> some View {
         modifier(DozyToastModifier(toast: toast, bottomInset: bottomInset))
+    }
+
+    /// 상세 시트가 있는 화면용. 시트가 열려 있는 동안은 이 화면에 띄우지 않고(시트에 가려 안 보인다),
+    /// 시트 안에서 띄운 토스트는 시트가 닫힐 때 지워 이 화면에서 다시 뜨지 않게 한다.
+    /// 시트 쪽에는 `.dozyToast(toast.visible(when: isSheetOpen))` 를 붙인다.
+    func dozyToast(_ toast: Binding<DozyToast?>, bottomInset: CGFloat = DozySpacing.lg, deferredWhile isSheetOpen: Bool) -> some View {
+        modifier(DozyToastHostModifier(toast: toast, bottomInset: bottomInset, isSheetOpen: isSheetOpen))
+    }
+}
+
+extension Binding where Value == DozyToast? {
+    /// `condition` 이 참일 때만 값을 보이는 바인딩 — 시트 안팎 중 한 곳에만 띄워 햅틱 · 안내가 두 번 나지 않게.
+    func visible(when condition: Bool) -> Binding<DozyToast?> {
+        Binding(get: { condition ? wrappedValue : nil }, set: { wrappedValue = $0 })
+    }
+}
+
+private struct DozyToastHostModifier: ViewModifier {
+    @Binding var toast: DozyToast?
+    let bottomInset: CGFloat
+    let isSheetOpen: Bool
+
+    /// 시트 안에서 띄운 토스트
+    @State private var sheetToastID: UUID?
+
+    func body(content: Content) -> some View {
+        content
+            .dozyToast($toast.visible(when: !isSheetOpen), bottomInset: bottomInset)
+            .onChange(of: toast?.id) { _, id in
+                if isSheetOpen { sheetToastID = id }
+            }
+            .onChange(of: isSheetOpen) { _, isOpen in
+                guard !isOpen else { return }
+                if let id = sheetToastID, toast?.id == id { toast = nil }
+                sheetToastID = nil
+            }
     }
 }
 

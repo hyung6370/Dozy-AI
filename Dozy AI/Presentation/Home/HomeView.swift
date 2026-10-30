@@ -277,6 +277,8 @@ struct HomeView: View {
                 }
             )
         }
+        // 일정 수정 · 삭제 · 표시 설정 결과 토스트 (#143) — 탭바 위, 상세 시트가 떠 있으면 시트 안에
+        .dozyToast($viewModel.toast, bottomInset: DozyTabBarMetrics.scrollClearance, deferredWhile: selectedEvent != nil)
         .sheet(item: $selectedEvent, onDismiss: {
             if let pending = pendingDozyEdit {
                 dozyEventToEdit = pending
@@ -300,6 +302,7 @@ struct HomeView: View {
                     viewModel.updateDisplaySettings(for: ev, priority: priority, isPinned: isPinned, category: category)
                 }
             )
+            .dozyToast($viewModel.toast.visible(when: selectedEvent != nil))
         }
         .sheet(item: $dozyEventToEdit) { dozy in
             EventEditView(
