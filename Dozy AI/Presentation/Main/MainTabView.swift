@@ -195,6 +195,17 @@ struct MainTabView: View {
                 .allowsHitTesting(false)
             }
         }
+        // 로그인 축하 Lottie (#139) — 설정 탭 안에 두면 탭을 옮길 때 뷰가 윈도우에서 떨어져
+        // LottieView 의 .pauseAndRestore 로 멈췄다가 돌아오면 이어서 재생됐다. 루트에 두면 끝까지 재생된다.
+        .overlay {
+            if authViewModel.showCongratulationAnimation {
+                LottieView(name: "congratulation", loopMode: .playOnce) {
+                    authViewModel.showCongratulationAnimation = false
+                }
+                .scaleEffect(0.3)
+                .allowsHitTesting(false)
+            }
+        }
         .onAppear {
             Logger.nav.info("[앱] 🧭 MainTabView 진입 (현재 탭: \(selection.title))")
             // DozyEventCreator 의 onSaved 를 init 이 아니라 여기서 wire — init 에서 cross-VM 캡처를

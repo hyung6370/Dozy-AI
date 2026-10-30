@@ -121,7 +121,8 @@ final class SharedCalendarViewModel: ObservableObject {
 
     // MARK: - Leave / Delete
 
-    func leave(calendar: SharedCalendar, currentUserID: String, completion: @escaping () -> Void) {
+    /// - completion: 성공 여부 (#144). 실패 때도 불러 iOS 화면이 토스트를 띄운다 — errorMessage 도 함께 채운다(macOS 알림창).
+    func leave(calendar: SharedCalendar, currentUserID: String, completion: @escaping (Bool) -> Void) {
         let isOwner = membersMap[calendar.id]?.first(where: { $0.userID == currentUserID })?.role == .owner
         isLoading = true
         leaveUseCase.execute(calendarID: calendar.id, isOwner: isOwner)
@@ -129,14 +130,17 @@ final class SharedCalendarViewModel: ObservableObject {
             .sink(
                 receiveCompletion: { [weak self] in
                     self?.isLoading = false
-                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                    if case .failure(let error) = $0 {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    }
                 },
                 receiveValue: { [weak self] in
                     self?.calendars.removeAll { $0.id == calendar.id }
                     self?.membersMap.removeValue(forKey: calendar.id)
                     ActiveSharedCalendarStore.shared.clearIfMatches(calendar.id)
                     NotificationCenter.default.post(name: .dozySharedCalendarsChanged, object: nil)
-                    completion()
+                    completion(true)
                 }
             )
             .store(in: &cancellables)
@@ -144,12 +148,16 @@ final class SharedCalendarViewModel: ObservableObject {
 
     // MARK: - Update Calendar Name
 
-    func updateCalendarName(calendarID: String, name: String, completion: @escaping () -> Void) {
+    /// - completion: 성공 여부 (#144). 실패 때도 부른다 — 이전엔 성공 때만 불러 설정 시트의 저장이 끝나지 않았다.
+    func updateCalendarName(calendarID: String, name: String, completion: @escaping (Bool) -> Void) {
         service.updateCalendarName(calendarID: calendarID, name: name)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in
-                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                    if case .failure(let error) = $0 {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    }
                 },
                 receiveValue: { [weak self] in
                     if let idx = self?.calendars.firstIndex(where: { $0.id == calendarID }) {
@@ -162,7 +170,7 @@ final class SharedCalendarViewModel: ObservableObject {
                             imagePath: old.imagePath
                         )
                     }
-                    completion()
+                    completion(true)
                 }
             )
             .store(in: &cancellables)
@@ -170,12 +178,16 @@ final class SharedCalendarViewModel: ObservableObject {
 
     // MARK: - Update Nickname
 
-    func updateNickname(calendarID: String, nickname: String, currentUserID: String, completion: @escaping () -> Void) {
+    /// - completion: 성공 여부 (#144). 실패 때도 부른다.
+    func updateNickname(calendarID: String, nickname: String, currentUserID: String, completion: @escaping (Bool) -> Void) {
         updateNicknameUseCase.execute(calendarID: calendarID, nickname: nickname)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in
-                    if case .failure(let error) = $0 { self?.errorMessage = error.localizedDescription }
+                    if case .failure(let error) = $0 {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    }
                 },
                 receiveValue: { [weak self] in
                     // 로컬 membersMap 즉시 반영
@@ -184,7 +196,7 @@ final class SharedCalendarViewModel: ObservableObject {
                         members[idx].nickname = nickname
                         self?.membersMap[calendarID] = members
                     }
-                    completion()
+                    completion(true)
                 }
             )
             .store(in: &cancellables)

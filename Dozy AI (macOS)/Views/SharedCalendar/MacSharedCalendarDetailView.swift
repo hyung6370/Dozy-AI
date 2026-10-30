@@ -55,8 +55,8 @@ struct MacSharedCalendarDetailView: View {
                 isPresented: $showLeaveAlert
             ) {
                 Button(isOwner ? "삭제" : "나가기", role: .destructive) {
-                    viewModel.leave(calendar: currentCalendar, currentUserID: currentUserID) {
-                        dismiss()
+                    viewModel.leave(calendar: currentCalendar, currentUserID: currentUserID) { success in
+                        if success { dismiss() }
                     }
                 }
                 Button("취소", role: .cancel) { }
@@ -87,7 +87,7 @@ struct MacSharedCalendarDetailView: View {
                         viewModel.updateCalendarName(
                             calendarID: calendar.id,
                             name: editableName.trimmingCharacters(in: .whitespaces)
-                        ) { }
+                        ) { _ in }
                     }
                     .buttonStyle(.bordered)
                 }
@@ -212,7 +212,7 @@ struct MacSharedCalendarDetailView: View {
                             calendarID: calendar.id,
                             nickname: editableNickname.trimmingCharacters(in: .whitespaces),
                             currentUserID: currentUserID
-                        ) { }
+                        ) { _ in }
                     }
                     .buttonStyle(.bordered)
                 }

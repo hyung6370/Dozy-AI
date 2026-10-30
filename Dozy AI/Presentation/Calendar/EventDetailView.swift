@@ -206,7 +206,7 @@ struct EventDetailView: View {
             
             if let dozyEvent, dozyEvent.recurrenceRule != "none" {
                 Divider().padding(.leading, 52)
-                DetailRow(icon: "repeat", label: "반복", value: recurrenceLabel(dozyEvent.recurrenceRule))
+                DetailRow(icon: "repeat", label: "반복", value: recurrenceLabel(dozyEvent))
             }
             
             if let dozyEvent, dozyEvent.notificationMinutesBefore >= 0 {
@@ -640,14 +640,10 @@ struct EventDetailView: View {
         }
     }
     
-    private func recurrenceLabel(_ rule: String) -> String {
-        switch rule {
-        case "daily": return String(localized: "매일")
-        case "weekly": return String(localized: "매주")
-        case "monthly": return String(localized: "매월")
-        case "yearly": return String(localized: "매년")
-        default: return ""
-        }
+    /// "매주 목요일 · 2027년 10월 30일까지" / "· 계속" (#147)
+    private func recurrenceLabel(_ dozyEvent: DozyEvent) -> String {
+        RecurrenceSummary.summary(rule: dozyEvent.recurrenceRule, start: dozyEvent.startDate,
+                                  endDate: dozyEvent.recurrenceEndDate) ?? ""
     }
 
     private func notificationLabel(_ minutes: Int) -> String {

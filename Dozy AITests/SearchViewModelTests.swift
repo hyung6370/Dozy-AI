@@ -174,6 +174,68 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertEqual(workLogRepo.saveCallCount, 0)
     }
 
+    // MARK: - 토스트 (#143)
+
+    func test_saveDozy_success_showsUpdatedToast() {
+        let dozy = DozyEvent(title: "운동", startDate: now, endDate: now)
+        vm.save(dozy)
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.style, .success)
+        XCTAssertEqual(vm.toast?.message, DozyToast.eventUpdated.message)
+    }
+
+    func test_saveDozy_failure_showsFailureToast() {
+        dozyRepo.stubbedError = .saveFailed(underlying: NSError(domain: "test", code: 1))
+        let dozy = DozyEvent(title: "운동", startDate: now, endDate: now)
+        vm.save(dozy)
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.style, .failure)
+        XCTAssertEqual(vm.toast?.message, DozyToast.eventUpdateFailed.message)
+    }
+
+    func test_confirmMemoDelete_dozy_showsNoToast() {
+        let dozy = DozyEvent(title: "운동", startDate: now, endDate: now)
+        dozy.memos = ["회의 메모"]
+        vm.requestMemoDelete("회의 메모", from: .dozyEvent(dozy))
+        vm.confirmMemoDelete()
+        waitUntil { dozyRepo.updateCallCount == 1 }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        XCTAssertNil(vm.toast)
+    }
+
+    func test_applyDisplaySettings_showsDisplaySettingsToast() {
+        let dozy = DozyEvent(title: "운동", startDate: now, endDate: now)
+        vm.applyDisplaySettings(event: dozy.toCalendarEvent(), priority: 1, isPinned: true, category: nil,
+                                dozyEvents: [dozy], categories: [])
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.displaySettingsSaved.message)
+
+        vm.toast = nil
+        let ev = makeTestEvent(title: "외부", source: .google)
+        vm.applyDisplaySettings(event: ev, priority: 1, isPinned: false, category: nil,
+                                dozyEvents: [], categories: [])
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.displaySettingsSaved.message)
+    }
+
+    func test_memoSaveFailure_showsMemoFailureToast() {
+        dozyRepo.stubbedError = .saveFailed(underlying: NSError(domain: "test", code: 1))
+        let dozy = DozyEvent(title: "운동", startDate: now, endDate: now)
+        vm.save(dozy, successToast: nil, failureToast: .memoSaveFailed)
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.memoSaveFailed.message)
+    }
+
+    func test_confirmMemoDelete_workLogFailure_showsMemoDeleteFailedToast() {
+        workLogRepo.stubbedSaveError = .saveFailed(underlying: NSError(domain: "test", code: 1))
+        let log = WorkLog(date: now)
+        log.memos = ["회의 메모"]
+        vm.requestMemoDelete("회의 메모", from: .workLog(log))
+        vm.confirmMemoDelete()
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.memoDeleteFailed.message)
+    }
+
     // MARK: - 편집 후 상세 갱신
 
     func test_saveDozy_refreshesOpenDetailSnapshot() {

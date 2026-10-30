@@ -142,22 +142,35 @@ struct MacEventEditView: View {
                         .lineLimit(3...6)
                 }
 
-                Section("반복") {
+                Section {
+                    // 시작일 기준으로 무엇이 반복되는지 붙인다 — "매주 (목요일)" (#147)
                     Picker("반복", selection: $viewModel.recurrenceRule) {
-                        Text("없음").tag("none")
-                        Text("매일").tag("daily")
-                        Text("매주").tag("weekly")
-                        Text("매월").tag("monthly")
-                        Text("매년").tag("yearly")
+                        ForEach(RecurrenceSummary.rules, id: \.self) { rule in
+                            Text(RecurrenceSummary.ruleTitle(rule, start: viewModel.startDate)).tag(rule)
+                        }
                     }
 
                     if viewModel.recurrenceRule != "none" {
-                        DatePicker(
-                            "반복 종료일",
-                            selection: $viewModel.recurrenceEndDate,
-                            displayedComponents: .date
-                        )
-                        .environment(\.locale, .koreanForce24h)
+                        Picker("반복 종료", selection: $viewModel.recurrenceHasEndDate) {
+                            Text("안 함").tag(false)
+                            Text("날짜 지정").tag(true)
+                        }
+
+                        if viewModel.recurrenceHasEndDate {
+                            DatePicker(
+                                "종료일",
+                                selection: $viewModel.recurrenceEndDate,
+                                in: Calendar.current.startOfDay(for: viewModel.startDate)...,
+                                displayedComponents: .date
+                            )
+                            .environment(\.locale, .koreanForce24h)
+                        }
+                    }
+                } header: {
+                    Text("반복")
+                } footer: {
+                    if let summary = viewModel.recurrenceSummary {
+                        Text(summary)
                     }
                 }
 

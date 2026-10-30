@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Lottie
 import SafariServices
 
 struct SettingsView: View {
@@ -24,6 +23,9 @@ struct SettingsView: View {
     @State private var showSignOutAlert = false
     @State private var showDeleteAccountAlert = false
     @State private var showPasswordChange = false
+    /// 비밀번호 변경 결과 토스트 (#144)
+    @State private var toast: DozyToast?
+    @State private var passwordChanged = false
     /// DragGesture 기반 커스텀 로그인 시트 (AuthSheetView) 표시 여부.
     @State private var showLoginSheet = false
     #if os(iOS)
@@ -81,7 +83,7 @@ struct SettingsView: View {
             }
         }
         .hidesTabBar(showLoginSheet)   // 커스텀 로그인 시트가 떠 있는 동안 탭바 숨김
-        // 로그인 성공 → 시트 닫기. 축하 Lottie 는 settingsContent 의 overlay 에서 재생.
+        // 로그인 성공 → 시트 닫기. 축하 Lottie 는 MainTabView 루트 overlay 에서 재생 (#139).
         .onChange(of: authViewModel.isLoggedIn) { _, loggedIn in
             if loggedIn {
                 withAnimation(.spring()) { showLoginSheet = false }
@@ -118,15 +120,6 @@ struct SettingsView: View {
             .dozyThemedShellBackground(systemBackground: DozyColor.Background.grouped)
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
-            .overlay {
-                if authViewModel.showCongratulationAnimation {
-                    LottieView(name: "congratulation", loopMode: .playOnce) {
-                        authViewModel.showCongratulationAnimation = false
-                    }
-                    .scaleEffect(0.3)
-                    .allowsHitTesting(false)
-                }
-            }
             .alert("로그아웃", isPresented: $showSignOutAlert) {
                 Button("로그아웃", role: .destructive) { authViewModel.signOut() }
                 Button("취소", role: .cancel) { }
@@ -149,10 +142,17 @@ struct SettingsView: View {
             } message: {
                 Text("모든 일정, 기록, 카테고리가 영구적으로 삭제됩니다.")
             }
-            .sheet(isPresented: $showPasswordChange) {
-                PasswordChangeSheet()
+            .sheet(isPresented: $showPasswordChange, onDismiss: {
+                // 시트가 다 닫힌 뒤에 띄워야 시트에 가려지지 않는다
+                if passwordChanged {
+                    passwordChanged = false
+                    toast = .success(String(localized: "비밀번호를 변경했어요"))
+                }
+            }) {
+                PasswordChangeSheet(onChanged: { passwordChanged = true })
                     .environmentObject(authViewModel)
             }
+            .dozyToast($toast, bottomInset: DozyTabBarMetrics.scrollClearance)
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .inactive || newPhase == .background {
                     showSignOutAlert = false

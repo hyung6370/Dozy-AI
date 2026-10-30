@@ -22,6 +22,9 @@ final class EventEditViewModel: ObservableObject {
     @Published var notes: String
     @Published var notificationMinutesBefore: Int
     @Published var recurrenceRule: String
+    /// 반복 종료일을 지정했는지 (#147). false 면 계속 반복 — 저장 시 recurrenceEndDate 를 nil 로.
+    @Published var recurrenceHasEndDate: Bool
+    /// "날짜 지정"일 때의 종료일. 기본은 시작일로부터 1년 뒤.
     @Published var recurrenceEndDate: Date
     @Published var selectedColor: Color
     @Published var priority: Int
@@ -69,7 +72,8 @@ final class EventEditViewModel: ObservableObject {
             notes = e.notes ?? ""
             notificationMinutesBefore = e.notificationMinutesBefore
             recurrenceRule = e.recurrenceRule
-            recurrenceEndDate = e.recurrenceEndDate ?? Calendar.current.date(byAdding: .year, value: 1, to: e.startDate)!
+            recurrenceHasEndDate = e.recurrenceEndDate != nil
+            recurrenceEndDate = e.recurrenceEndDate ?? RecurrenceSummary.defaultEndDate(for: e.startDate)
             selectedColor = Color(hex: e.colorHex) ?? .blue
             priority = e.priority
             isPinned = e.isPinned
@@ -97,7 +101,9 @@ final class EventEditViewModel: ObservableObject {
             notes = ""
             notificationMinutesBefore = -1
             recurrenceRule = "none"
-            recurrenceEndDate = resolvedEnd
+            // 새 반복은 기본 "계속" (#147). 이전엔 종료일이 일정 당일이라 반복이 한 번만 생겼다.
+            recurrenceHasEndDate = false
+            recurrenceEndDate = RecurrenceSummary.defaultEndDate(for: resolvedStart)
             selectedColor = .blue
             priority = 0
             isPinned = false
@@ -117,6 +123,8 @@ final class EventEditViewModel: ObservableObject {
                         self.endDate = Calendar.current.date(byAdding: .hour, value: 1, to: newStart) ?? newStart
                     }
                 }
+                // 반복 종료일이 새 시작일보다 앞이면 당긴다 — 그대로 두면 반복이 하나도 안 생긴다 (#147)
+                self.recurrenceEndDate = RecurrenceSummary.adjustedEndDate(self.recurrenceEndDate, start: newStart)
             }
             .store(in: &cancellables)
     }
@@ -134,6 +142,17 @@ final class EventEditViewModel: ObservableObject {
     }
 
     var isSavable: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    /// 저장할 반복 종료일 — 반복 없음 · 계속 반복이면 nil (#147)
+    var resolvedRecurrenceEndDate: Date? {
+        guard recurrenceRule != "none", recurrenceHasEndDate else { return nil }
+        return RecurrenceSummary.adjustedEndDate(recurrenceEndDate, start: startDate)
+    }
+
+    /// 편집 화면 반복 요약 — "매주 목요일 · 계속" (#147)
+    var recurrenceSummary: String? {
+        RecurrenceSummary.summary(rule: recurrenceRule, start: startDate, endDate: resolvedRecurrenceEndDate)
+    }
     
     /// 자연어 파싱 결과로 폼을 채운다. 반복/알림/카테고리는 건드리지 않는다 - 사용자가 이어서 고른다
     func apply(_ draft: EventDraft, method: EventInputMethod = .naturalLanguage) {
@@ -163,7 +182,7 @@ final class EventEditViewModel: ObservableObject {
             event.notes = notes.isEmpty ? nil : notes
             event.notificationMinutesBefore = notificationMinutesBefore
             event.recurrenceRule = recurrenceRule
-            event.recurrenceEndDate = recurrenceRule == "none" ? nil : recurrenceEndDate
+            event.recurrenceEndDate = resolvedRecurrenceEndDate
             event.colorHex = colorHex
             event.priority = priority
             event.isPinned = isPinned
@@ -182,7 +201,7 @@ final class EventEditViewModel: ObservableObject {
                 notes: notes.isEmpty ? nil : notes,
                 colorHex: colorHex,
                 recurrenceRule: recurrenceRule,
-                recurrenceEndDate: recurrenceRule == "none" ? nil : recurrenceEndDate,
+                recurrenceEndDate: resolvedRecurrenceEndDate,
                 notificationMinutesBefore: notificationMinutesBefore,
                 priority: priority,
                 isPinned: isPinned,

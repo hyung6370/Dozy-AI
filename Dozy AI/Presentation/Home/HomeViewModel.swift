@@ -24,6 +24,9 @@ final class HomeViewModel: ObservableObject {
     @Published var completedTasks: [TaskItem] = []
     @Published var pendingTasks: [TaskItem] = []
     @Published var todayLog: WorkLog?
+    /// 마지막 메모 저장이 실패했는지 — 입력창 아래 안내 (#137)
+    @Published private(set) var memoSaveFailed = false
+    private var isSavingMemo = false
     @Published var recentLogs: [WorkLog] = []
 
     @Published var dailySummary: DailySummary?
@@ -33,6 +36,8 @@ final class HomeViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showPermissionAlert = false
     @Published var showSuccessAnimation = false
+    /// 일정 수정 · 삭제 · 표시 설정 결과 토스트 (#143)
+    @Published var toast: DozyToast?
     @Published var hasNotification = false
     
     @Published var selectedSource: CalendarSource? = nil
@@ -278,6 +283,7 @@ final class HomeViewModel: ObservableObject {
     private func performLoadTodayData() {
         isLoading = true
         errorMessage = nil
+        loadTodayLogIfNeeded()
 
         // 단일 cancellable 사용 → 이전 fetch가 느릴 때 새 fetch가 시작되면 이전 구독을 자동 취소
         // (Set<AnyCancellable>에 쌓이면 느린 Google API 응답이 최신 완료 상태를 덮어쓰는 race condition 발생)
@@ -424,11 +430,51 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - 메모
 
-    func addMemo(_ text: String) {
-        guard let log = todayLog else { return }
-        saveWorkLogUseCase.addMemo(text, to: log)
+    /// 오늘 WorkLog 를 일정 로딩과 따로 확보한다 (#137). 일정 · 미리 알림 조회가 실패해도
+    /// 기존 메모가 보이고 새 메모를 쓸 수 있게. 날짜가 바뀌었으면 오늘 것으로 바꾼다.
+    private func loadTodayLogIfNeeded() {
+        if let log = todayLog, log.isToday { return }
+        saveWorkLogUseCase.todayLog()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Logger.memo.error("오늘 WorkLog 확보 실패: \(error.localizedDescription, privacy: .public)")
+                        CrashReporting.record(error, context: "home.memo.today_log")
+                    }
+                },
+                receiveValue: { [weak self] log in
+                    guard let self, self.todayLog?.isToday != true else { return }
+                    self.todayLog = log
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 메모 추가. 오늘 WorkLog 가 없으면 만든다 (#137).
+    /// - completion: 저장 성공 여부. 화면은 성공했을 때만 입력창을 비우고, 실패하면 글을 남겨 다시 보낼 수 있게 한다.
+    func addMemo(_ text: String, completion: @escaping (Bool) -> Void = { _ in }) {
+        guard !isSavingMemo else { return }   // 저장 끝나기 전 연타 → 같은 메모 두 번 방지
+        isSavingMemo = true
+        memoSaveFailed = false
+        saveWorkLogUseCase.addMemo(text)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] result in
+                    guard let self else { return }
+                    self.isSavingMemo = false
+                    if case .failure(let error) = result {
+                        Logger.memo.error("메모 저장 실패: \(error.localizedDescription, privacy: .public)")
+                        CrashReporting.record(error, context: "home.memo.add")
+                        self.memoSaveFailed = true
+                        completion(false)
+                    }
+                },
+                receiveValue: { [weak self] log in
+                    self?.todayLog = log
+                    completion(true)
+                }
+            )
             .store(in: &cancellables)
     }
 
@@ -436,7 +482,11 @@ final class HomeViewModel: ObservableObject {
         guard let log = todayLog else { return }
         saveWorkLogUseCase.updateMemo(at: index, text: text, in: log)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.memo.update", toast: .memoSaveFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 
@@ -444,7 +494,11 @@ final class HomeViewModel: ObservableObject {
         guard let log = todayLog else { return }
         saveWorkLogUseCase.deleteMemo(at: index, in: log)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.memo.delete", toast: .memoDeleteFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 
@@ -657,8 +711,14 @@ final class HomeViewModel: ObservableObject {
             : updateDozyEventUseCase.execute(event)
         publisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                // 생성은 Lottie 가 피드백을 맡아 실패 토스트도 수정만 (#143)
+                if !isNew, case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.update", toast: .eventUpdateFailed)
+                }
+            }, receiveValue: { [weak self] in
                 guard let self else { return }
+                if !isNew { self.toast = .eventUpdated }
                 // 위젯에 즉시 시각 피드백 — loadTodayData 의 async fetch 체인 (Apple/Google
                 // merge) 을 기다리지 않고 새로 만든 Dozy 일정을 캐시에 곧장 추가.
                 TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
@@ -673,7 +733,12 @@ final class HomeViewModel: ObservableObject {
     func saveCalendarEvent(_ event: CalendarEvent, edit: CalendarEventEditRequest) {
         updateCalendarEventUseCase.execute(event, with: edit)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.update_external", toast: .eventUpdateFailed)
+                }
+            }, receiveValue: { [weak self] in
+                self?.toast = .eventUpdated
                 self?.loadTodayData()
             })
             .store(in: &cancellables)
@@ -682,7 +747,11 @@ final class HomeViewModel: ObservableObject {
     func saveMemos(for dozyEvent: DozyEvent) {
         updateDozyEventUseCase.execute(dozyEvent)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.memo", toast: .memoSaveFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 
@@ -690,8 +759,13 @@ final class HomeViewModel: ObservableObject {
         let id = dozyEvent.id
         deleteDozyEventUseCase.execute(dozyEvent)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.delete", toast: .eventDeleteFailed)
+                }
+            }, receiveValue: { [weak self] in
                 guard let self else { return }
+                self.toast = .eventDeleted
                 // 위젯 캐시에서 해당 id 즉시 제거 — UI 즉시 반영.
                 TodayEventCacheWriter.removeSingleEvent(id: id, container: self.modelContainer)
                 WidgetCenter.shared.reloadAllTimelines()
@@ -706,7 +780,12 @@ final class HomeViewModel: ObservableObject {
         dozyEvent.updatedAt = Date()
         updateDozyEventUseCase.execute(dozyEvent)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.delete_occurrence", toast: .eventDeleteFailed)
+                }
+            }, receiveValue: { [weak self] in
+                self?.toast = .occurrenceDeleted
                 self?.loadTodayData()
             })
             .store(in: &cancellables)
@@ -718,7 +797,12 @@ final class HomeViewModel: ObservableObject {
         dozyEvent.updatedAt = Date()
         updateDozyEventUseCase.execute(dozyEvent)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.delete_future", toast: .eventDeleteFailed)
+                }
+            }, receiveValue: { [weak self] in
+                self?.toast = .futureOccurrencesDeleted
                 self?.loadTodayData()
             })
             .store(in: &cancellables)
@@ -727,7 +811,12 @@ final class HomeViewModel: ObservableObject {
     func deleteCalendarEvent(_ event: CalendarEvent) {
         deleteCalendarEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "home.event.delete_external", toast: .eventDeleteFailed)
+                }
+            }, receiveValue: { [weak self] in
+                self?.toast = .eventDeleted
                 self?.loadTodayData()
             })
             .store(in: &cancellables)
@@ -747,7 +836,12 @@ final class HomeViewModel: ObservableObject {
             }
             updateDozyEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                .sink(receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.reportFailure(error, context: "home.display_settings", toast: .eventUpdateFailed)
+                    }
+                }, receiveValue: { [weak self] in
+                    self?.toast = .displaySettingsSaved
                     self?.loadTodayData()
                 })
                 .store(in: &cancellables)
@@ -756,9 +850,17 @@ final class HomeViewModel: ObservableObject {
             displaySettingsRepo.save(eventID: event.id, priority: priority, isPinned: isPinned, category: finalCategory)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] _ in
+                    self?.toast = .displaySettingsSaved
                     self?.loadTodayData()
                 })
                 .store(in: &cancellables)
         }
+    }
+
+    /// 수정 · 삭제 실패 — 토스트 + 로그 + Crashlytics 비치명 기록 (#143)
+    private func reportFailure(_ error: DozyError, context: String, toast failureToast: DozyToast) {
+        Logger.calendar.error("\(context, privacy: .public) 실패: \(error.localizedDescription, privacy: .public)")
+        CrashReporting.record(error, context: context)
+        toast = failureToast
     }
 }

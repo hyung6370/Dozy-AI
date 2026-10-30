@@ -76,8 +76,8 @@ final class CalendarViewModel: ObservableObject {
     @Published var showCalendarEventEdit = false
     @Published var calendarEventToEdit: CalendarEvent? = nil
     @Published var weekLayouts: [Date: [CalendarEventLayout]] = [:]
-    @Published var deleteErrorMessage: String? = nil
-    @Published var showDeleteSuccess = false
+    /// 수정 · 삭제 · 표시 설정 결과 토스트 (#143). 삭제 완료 · 실패 알림창을 대신한다.
+    @Published var toast: DozyToast?
     @Published var showSuccessAnimation = false
     @Published var displaySettingsByID: [String: EventDisplaySettings] = [:]
     @Published var mySharedCalendars: [SharedCalendar] = []
@@ -462,7 +462,12 @@ final class CalendarViewModel: ObservableObject {
     func saveCalendarEvent(_ event: CalendarEvent, edit: CalendarEventEditRequest) {
         updateCalendarEventUseCase.execute(event, with: edit)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "calendar.event.update_external", toast: .eventUpdateFailed)
+                }
+            }, receiveValue: { [weak self] in
+                self?.toast = .eventUpdated
                 self?.fetchEventsForDate(self?.selectedDate ?? Date())
                 self?.fetchEventsForMonth(force: true)
                 // HomeViewModel 이 .dozyEventChanged 를 구독해 loadTodayData → TodayEventCache 갱신.
@@ -486,13 +491,13 @@ final class CalendarViewModel: ObservableObject {
             .sink(
                 receiveCompletion: { [weak self] completion in
                     if case .failure(let error) = completion {
-                        self?.deleteErrorMessage = error.errorDescription ?? "삭제에 실패했습니다."
+                        self?.reportFailure(error, context: "calendar.event.delete_external", toast: .eventDeleteFailed)
                     }
                 },
                 receiveValue: { [weak self] in
                     guard let self else { return }
                     self.showEventDetail = false
-                    self.showDeleteSuccess = true
+                    self.toast = .eventDeleted
                     // 낙관적 업데이트: EventKit 캐시 반영 전에 즉시 목록/그리드에서 제거
                     withAnimation(.easeInOut(duration: 0.25)) {
                         self.eventsForSelectedDate.removeAll { $0.id == event.id }
@@ -810,7 +815,12 @@ final class CalendarViewModel: ObservableObject {
             }
             updateEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+                .sink(receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.reportFailure(error, context: "calendar.display_settings", toast: .eventUpdateFailed)
+                    }
+                }, receiveValue: { [weak self] in
+                    self?.toast = .displaySettingsSaved
                     self?.fetchEventsForDate(self?.selectedDate ?? Date())
                     self?.fetchEventsForMonth(force: true)
                 })
@@ -865,6 +875,7 @@ final class CalendarViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] settings in
                 guard let self else { return }
+                self.toast = .displaySettingsSaved
                 self.displaySettingsByID.merge(settings) { _, new in new }
                 Logger.calendar.debug("⚙️ displaySettingsByID 동기화 완료: \(settings[eventID]?.category ?? "nil")")
             }
@@ -1147,14 +1158,23 @@ final class CalendarViewModel: ObservableObject {
     }
     
     func saveEvent(_ event: DozyEvent, method: EventInputMethod = .manual) {
-        let useCase = eventToEdit != nil ? updateEventUseCase.execute(event) : createEventUseCase.execute(event, method: method)
+        let isEditing = eventToEdit != nil
+        let useCase = isEditing ? updateEventUseCase.execute(event) : createEventUseCase.execute(event, method: method)
         useCase
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                // 생성 실패는 이번 범위 밖(#143) — 생성 피드백은 Lottie 가 맡는다
+                if isEditing, case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "calendar.event.update", toast: .eventUpdateFailed)
+                }
+            }, receiveValue: { [weak self] in
                 guard let self else { return }
 
+                // 수정은 토스트, 신규 등록은 Lottie 체크 애니메이션
+                if isEditing { self.toast = .eventUpdated }
+
                 // 신규 등록 시: 일정 시작일로 포커스 이동
-                if self.eventToEdit == nil {
+                if !isEditing {
                     let cal = Calendar.current
                     self.selectedDate = event.startDate
                     // 등록된 일정이 현재 표시 월과 다르면 월도 이동
@@ -1193,10 +1213,14 @@ final class CalendarViewModel: ObservableObject {
         cancelNotificationUseCase.execute(identifier: eventID)
         deleteEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "calendar.event.delete", toast: .eventDeleteFailed)
+                }
+            }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.showEventDetail = false
-                self.showDeleteSuccess = true
+                self.toast = .eventDeleted
 
                 // 위젯 즉시 반영 — TodayEventCache 에서 해당 id 제거 후 timeline reload.
                 TodayEventCacheWriter.removeSingleEvent(id: eventID, container: self.modelContainer)
@@ -1214,10 +1238,14 @@ final class CalendarViewModel: ObservableObject {
         event.updatedAt = Date()
         updateEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "calendar.event.delete_occurrence", toast: .eventDeleteFailed)
+                }
+            }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.showEventDetail = false
-                self.showDeleteSuccess = true
+                self.toast = .occurrenceDeleted
 
                 // 위젯 캐시 재미러 + reload — excludedDates 변경이 즉시 반영되도록.
                 TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
@@ -1236,10 +1264,14 @@ final class CalendarViewModel: ObservableObject {
         event.updatedAt = Date()
         updateEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "calendar.event.delete_future", toast: .eventDeleteFailed)
+                }
+            }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.showEventDetail = false
-                self.showDeleteSuccess = true
+                self.toast = .futureOccurrencesDeleted
 
                 // 위젯 캐시 재미러 + reload — 반복 종료일 변경이 즉시 반영되도록.
                 TodayEventCacheWriter.upsertSingleDozyEvent(event, container: self.modelContainer)
@@ -1250,11 +1282,22 @@ final class CalendarViewModel: ObservableObject {
             }).store(in: &cancellables)
     }
 
+    /// 수정 · 삭제 실패 — 토스트 + 로그 + Crashlytics 비치명 기록 (#143)
+    private func reportFailure(_ error: DozyError, context: String, toast failureToast: DozyToast) {
+        Logger.calendar.error("\(context, privacy: .public) 실패: \(error.localizedDescription, privacy: .public)")
+        CrashReporting.record(error, context: context)
+        toast = failureToast
+    }
+
     // MARK: - Memo
     func saveMemos(for event: DozyEvent) {
         updateEventUseCase.execute(event)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.reportFailure(error, context: "calendar.event.memo", toast: .memoSaveFailed)
+                }
+            }, receiveValue: { })
             .store(in: &cancellables)
     }
 }

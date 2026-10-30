@@ -33,7 +33,6 @@ struct CalendarView: View {
     /// 권한 거부 상태에서 캡쳐 시도 시 띄우는 커스텀 권한 안내 alert.
     @State private var showCapturePermissionAlert = false
     /// 사진 앨범 저장 성공 시 띄우는 확인 alert.
-    @State private var showCaptureSavedAlert = false
     /// 캡쳐 후 사용자에게 편집 시트를 띄울 이미지 wrapper. nil 이면 시트 안 띄움.
     @State private var screenshotEditItem: ScreenshotEditItem?
     @Environment(\.scenePhase) private var scenePhase
@@ -102,8 +101,7 @@ struct CalendarView: View {
             }
             .modifier(CaptureOverlayModifier(
                 flashOpacity: captureFlashOpacity,
-                showPermissionAlert: $showCapturePermissionAlert,
-                showSavedAlert: $showCaptureSavedAlert
+                showPermissionAlert: $showCapturePermissionAlert
             ))
             .fullScreenCover(item: $screenshotEditItem) { item in
                 CalendarScreenshotEditView(
@@ -160,6 +158,7 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $viewModel.showEventDetail) {
                 eventDetailSheet
+                    .dozyToast($viewModel.toast.visible(when: viewModel.showEventDetail))   // 표시 설정 저장은 시트가 열린 채로 끝난다
             }
             .sheet(isPresented: $viewModel.showCalendarEventEdit) {
                 if let event = viewModel.calendarEventToEdit {
@@ -210,19 +209,8 @@ struct CalendarView: View {
                      ? "모든 반복 일정이 함께 삭제됩니다. 정말 삭제하시겠습니까?"
                      : "정말로 삭제하시겠습니까?")
             }
-            .alert("일정 삭제 완료", isPresented: $viewModel.showDeleteSuccess) {
-                Button("확인", role: .cancel) { }
-            } message: {
-                Text("일정이 성공적으로 삭제되었습니다.")
-            }
-            .alert("삭제 실패", isPresented: Binding(
-                get: { viewModel.deleteErrorMessage != nil },
-                set: { if !$0 { viewModel.deleteErrorMessage = nil } }
-            )) {
-                Button("확인", role: .cancel) { viewModel.deleteErrorMessage = nil }
-            } message: {
-                Text(viewModel.deleteErrorMessage ?? "")
-            }
+            // 수정 · 삭제 결과 토스트 (#143) — 탭바 위. 상세 시트가 떠 있는 동안은 시트 쪽이 띄운다(가려져 안 보이므로).
+            .dozyToast($viewModel.toast, bottomInset: DozyTabBarMetrics.scrollClearance, deferredWhile: viewModel.showEventDetail)
             .alert("일정 생성", isPresented: $showLongPressAlert, actions: longPressAlertActions, message: longPressAlertMessage)
             .modifier(ShareExternalEventOverlay(viewModel: viewModel))
             .onChange(of: scenePhase) { _, newPhase in
@@ -235,8 +223,6 @@ struct CalendarView: View {
                     viewModel.showEventEdit = false
                     viewModel.showCalendarEventEdit = false
                     viewModel.showDeleteAlert = false
-                    viewModel.showDeleteSuccess = false
-                    viewModel.deleteErrorMessage = nil
                 } else {
                     // 앱 복귀 시 외부 원본과 미러 스냅샷을 재동기화
                     viewModel.reconcileExternalMirrors()
@@ -812,13 +798,15 @@ struct CalendarView: View {
     /// 편집 화면 "저장" 탭 → 합성된 이미지를 사진 앨범에 저장.
     @MainActor
     private func saveComposedImage(_ image: UIImage) {
-        // PHPhotoLibrary 로 저장 — completion 으로 성공 여부 받아 alert 트리거.
+        // PHPhotoLibrary 로 저장 — 결과는 토스트 (#144). 이전엔 확인을 눌러야 닫히는 "저장 완료" 알림창, 실패는 조용했다.
         PHPhotoLibrary.shared().performChanges {
             PHAssetCreationRequest.creationRequestForAsset(from: image)
         } completionHandler: { success, _ in
             DispatchQueue.main.async {
                 self.screenshotEditItem = nil  // 시트 닫기
-                if success { self.showCaptureSavedAlert = true }
+                viewModel.toast = success
+                    ? .success(String(localized: "사진에 저장했어요"))
+                    : .failure(String(localized: "사진을 저장하지 못했어요"))
             }
         }
     }
@@ -884,12 +872,11 @@ private struct ScreenshotEditItem: Identifiable {
     let image: UIImage
 }
 
-/// 캡쳐 시 흰 플래시 + 권한 안내 alert + 저장 완료 alert 를 한 묶음으로 적용.
+/// 캡쳐 시 흰 플래시 + 권한 안내 alert 를 한 묶음으로 적용. 저장 결과는 토스트 (#144).
 /// body 의 modifier chain 이 너무 길어 컴파일러 type-check 가 폭발하는 걸 막기 위해 분리.
 private struct CaptureOverlayModifier: ViewModifier {
     let flashOpacity: Double
     @Binding var showPermissionAlert: Bool
-    @Binding var showSavedAlert: Bool
 
     func body(content: Content) -> some View {
         content
@@ -908,11 +895,6 @@ private struct CaptureOverlayModifier: ViewModifier {
                 Button("취소", role: .cancel) { }
             } message: {
                 Text("캘린더 스크린샷을 사진 앨범에 저장하려면 설정에서 사진 권한을 허용해주세요.")
-            }
-            .alert("저장 완료", isPresented: $showSavedAlert) {
-                Button("확인", role: .cancel) { }
-            } message: {
-                Text("스크린샷이 앨범에 저장되었습니다.")
             }
     }
 }

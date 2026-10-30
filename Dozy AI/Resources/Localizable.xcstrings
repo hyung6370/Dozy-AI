@@ -2464,6 +2464,16 @@
         }
       }
     },
+    "다시 시도" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        }
+      }
+    },
     "다음 기간" : {
       "localizations" : {
         "en" : {
@@ -2540,6 +2550,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only the owner can change the cover photo"
+          }
+        }
+      }
+    },
+    "대표 사진을 바꿨어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cover photo updated"
+          }
+        }
+      }
+    },
+    "대표 사진을 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cover photo removed"
           }
         }
       }
@@ -3006,6 +3036,36 @@
     },
     "메모를 남겼어요: %@" : {
 
+    },
+    "메모를 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't delete the memo"
+          }
+        }
+      }
+    },
+    "메모를 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the memo"
+          }
+        }
+      }
+    },
+    "메모를 저장하지 못했어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save your memo."
+          }
+        }
+      }
     },
     "멤버" : {
       "localizations" : {
@@ -3493,6 +3553,16 @@
         }
       }
     },
+    "비밀번호를 변경했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password changed"
+          }
+        }
+      }
+    },
     "비밀번호를 잊으셨나요?" : {
       "localizations" : {
         "en" : {
@@ -3544,6 +3614,7 @@
       }
     },
     "사진 로딩 실패: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3576,12 +3647,52 @@
         }
       }
     },
+    "사진에 저장했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved to Photos"
+          }
+        }
+      }
+    },
     "사진을 불러올 수 없습니다. 다른 사진을 선택해보세요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Can't load that photo. Please choose another."
+          }
+        }
+      }
+    },
+    "사진을 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't remove the photo"
+          }
+        }
+      }
+    },
+    "사진을 올리지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't upload the photo"
+          }
+        }
+      }
+    },
+    "사진을 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save to Photos"
           }
         }
       }
@@ -3597,6 +3708,7 @@
       }
     },
     "삭제 실패" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3966,6 +4078,16 @@
         }
       }
     },
+    "설정을 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save settings"
+          }
+        }
+      }
+    },
     "세션 만료" : {
       "localizations" : {
         "en" : {
@@ -4129,6 +4251,7 @@
       }
     },
     "스크린샷이 앨범에 저장되었습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4510,16 +4633,6 @@
         }
       }
     },
-    "연결되지 않음" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not connected"
-          }
-        }
-      }
-    },
     "연결된 캘린더" : {
       "localizations" : {
         "en" : {
@@ -4536,6 +4649,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connected"
+          }
+        }
+      }
+    },
+    "연결되지 않음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not connected"
           }
         }
       }
@@ -5268,6 +5391,16 @@
         }
       }
     },
+    "이 일정만 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted this event only"
+          }
+        }
+      }
+    },
     "이 일정의 공유만 해제됩니다. 원본 Apple · Google 일정은 그대로 유지됩니다." : {
       "localizations" : {
         "en" : {
@@ -5294,16 +5427,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Go"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
           }
         }
       }
@@ -5439,6 +5562,7 @@
       }
     },
     "이미지 업로드 실패" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5538,6 +5662,16 @@
         }
       }
     },
+    "이후 일정을 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted this and future events"
+          }
+        }
+      }
+    },
     "인사이트" : {
       "localizations" : {
         "en" : {
@@ -5564,6 +5698,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verification code (6 digits)"
+          }
+        }
+      }
+    },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
           }
         }
       }
@@ -5689,6 +5833,7 @@
       }
     },
     "일정 삭제 완료" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5822,6 +5967,36 @@
         }
       }
     },
+    "일정을 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't delete the event"
+          }
+        }
+      }
+    },
+    "일정을 삭제했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event deleted"
+          }
+        }
+      }
+    },
+    "일정을 수정했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event updated"
+          }
+        }
+      }
+    },
     "일정을 완료하면\n완료율 추이를 볼 수 있어요" : {
       "localizations" : {
         "en" : {
@@ -5832,7 +6007,18 @@
         }
       }
     },
+    "일정을 저장하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the event"
+          }
+        }
+      }
+    },
     "일정이 성공적으로 삭제되었습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5988,9 +6174,6 @@
         }
       }
     },
-    "저장 완료" : {
-
-    },
     "저장에 실패했습니다." : {
       "localizations" : {
         "en" : {
@@ -6011,26 +6194,6 @@
         }
       }
     },
-    "전체" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
-          }
-        }
-      }
-    },
     "저채도 메시 그라디언트 — 가장 차분한 무드." : {
       "localizations" : {
         "en" : {
@@ -6047,6 +6210,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Soft mesh gradient — lavender cards with a periwinkle accent."
+          }
+        }
+      }
+    },
+    "전체" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
           }
         }
       }
@@ -7048,6 +7231,16 @@
         }
       }
     },
+    "캘린더 설정을 저장했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar settings saved"
+          }
+        }
+      }
+    },
     "캘린더 셀 더블클릭" : {
       "localizations" : {
         "en" : {
@@ -7186,6 +7379,16 @@
         }
       }
     },
+    "캘린더를 삭제하지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't delete the calendar"
+          }
+        }
+      }
+    },
     "캘린더를 삭제할까요?" : {
       "localizations" : {
         "en" : {
@@ -7202,6 +7405,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connect your calendars"
+          }
+        }
+      }
+    },
+    "캘린더에서 나가지 못했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't leave the calendar"
           }
         }
       }
@@ -7580,6 +7793,16 @@
         }
       }
     },
+    "표시 설정을 저장했어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display settings saved"
+          }
+        }
+      }
+    },
     "표시할 소스 / 공유 캘린더 선택" : {
       "localizations" : {
         "en" : {
@@ -7869,6 +8092,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncommon and different from your email"
+          }
+        }
+      }
+    },
+    "매주 (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly (%@)"
+          }
+        }
+      }
+    },
+    "매월 (%lld일)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly (day %lld)"
+          }
+        }
+      }
+    },
+    "매년 (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yearly (%@)"
+          }
+        }
+      }
+    },
+    "매주 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly on %@"
+          }
+        }
+      }
+    },
+    "매월 %lld일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly on day %lld"
+          }
+        }
+      }
+    },
+    "매년 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yearly on %@"
+          }
+        }
+      }
+    },
+    "%@까지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "until %@"
+          }
+        }
+      }
+    },
+    "계속" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No end"
+          }
+        }
+      }
+    },
+    "반복 종료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Repeat"
+          }
+        }
+      }
+    },
+    "안 함" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
+          }
+        }
+      }
+    },
+    "날짜 지정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On Date"
+          }
+        }
+      }
+    },
+    "반복 요약 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat summary: %@"
           }
         }
       }

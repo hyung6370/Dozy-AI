@@ -10,6 +10,8 @@
 //    앱이 그 순간 떠 있지 않아도 잠금화면 정보가 틀리지 않는다.
 //  - staleDate 를 넘기면(isStale) 흐리게 + "앱을 열어 갱신" 안내.
 //  - 완료 체크는 LiveActivityIntent(ToggleEventCompletionIntent) — 앱 프로세스에서 토글 후 액티비티까지 갱신.
+//  - 잠금화면 카드는 라이트/다크와 상관없이 항상 다크 디자인 (#141). 배경 tint 는 시스템이 칠해 동적 시스템 색이면
+//    뷰와 다른 라이트/다크 기준으로 풀릴 수 있었다 → 흰 바탕에 흰 글자. 고정 다크 팔레트로 둘을 묶는다.
 //
 
 import ActivityKit
@@ -22,8 +24,6 @@ struct TodayAgendaLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TodayAgendaAttributes.self) { context in
             TodayAgendaLockScreenView(state: context.state, isStale: context.isStale)
-                .activityBackgroundTint(Color(.secondarySystemBackground).opacity(0.85))
-                .activitySystemActionForegroundColor(.primary)
                 .widgetURL(context.state.deepLinkURL)
         } dynamicIsland: { context in
             DynamicIsland {
@@ -89,11 +89,33 @@ struct TodayAgendaLiveActivity: Widget {
 
 // MARK: - 잠금화면
 
+/// 잠금화면 카드 색 (#141) — 라이트/다크와 상관없이 항상 다크. 동적 색(`secondarySystemBackground` · `.primary`)은
+/// 시스템이 칠하는 배경과 뷰가 칠하는 글자가 서로 다른 기준으로 풀려 흰 바탕에 흰 글자가 될 수 있다.
+struct TodayAgendaLockScreenPalette {
+    let background: Color
+    let primary: Color
+    let secondary: Color
+
+    static let dark = TodayAgendaLockScreenPalette(
+        background: Color(red: 0.11, green: 0.11, blue: 0.12).opacity(0.88),   // #1C1C1E
+        primary: .white,
+        secondary: .white.opacity(0.65)
+    )
+}
+
 private struct TodayAgendaLockScreenView: View {
     let state: TodayAgendaAttributes.ContentState
     let isStale: Bool
 
     var body: some View {
+        let palette = TodayAgendaLockScreenPalette.dark
+        content(palette)
+            .environment(\.colorScheme, .dark)   // 진행 바 트랙 등 남은 시스템 색도 다크로
+            .activityBackgroundTint(palette.background)
+            .activitySystemActionForegroundColor(palette.primary)
+    }
+
+    private func content(_ palette: TodayAgendaLockScreenPalette) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image("MenuBarIcon")
@@ -102,28 +124,28 @@ private struct TodayAgendaLockScreenView: View {
                     .frame(width: 14, height: 14)
                 Text("오늘 일정")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondary)
                 Spacer(minLength: 0)
                 Text(verbatim: "\(state.completedCount) / \(state.totalCount)")
                     .font(.caption.weight(.medium).monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondary)
             }
 
             if let current = state.current {
-                TodayAgendaEntryRow(entry: current, label: String(localized: "진행 중"), isCurrent: true, showCheck: true)
+                TodayAgendaEntryRow(entry: current, label: String(localized: "진행 중"), isCurrent: true, showCheck: true, palette: palette)
                 ProgressView(timerInterval: current.start...current.end, countsDown: false, label: { EmptyView() }, currentValueLabel: { EmptyView() })
                     .tint(Color(hex: current.colorHex))
                     .progressViewStyle(.linear)
             }
 
             if let next = state.next {
-                TodayAgendaEntryRow(entry: next, label: String(localized: "다음 일정"), isCurrent: false, showCheck: state.current == nil)
+                TodayAgendaEntryRow(entry: next, label: String(localized: "다음 일정"), isCurrent: false, showCheck: state.current == nil, palette: palette)
             }
 
             if isStale {
                 Text("앱을 열어 최신 일정으로 갱신하세요")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondary)
             }
         }
         .padding(14)
@@ -137,6 +159,7 @@ private struct TodayAgendaEntryRow: View {
     let label: String
     let isCurrent: Bool
     let showCheck: Bool
+    let palette: TodayAgendaLockScreenPalette
 
     var body: some View {
         HStack(spacing: 10) {
@@ -150,17 +173,18 @@ private struct TodayAgendaEntryRow: View {
                     .foregroundStyle(Color(hex: entry.colorHex))
                 Text(entry.title)
                     .font(.body.weight(.semibold))
+                    .foregroundStyle(palette.primary)
                     .lineLimit(1)
                 Text(verbatim: TodayAgendaFormat.timeRange(entry.start, entry.end))
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondary)
             }
 
             Spacer(minLength: 4)
 
             TodayAgendaTimerText(entry: entry, isCurrent: isCurrent)
                 .font(.callout.weight(.semibold).monospacedDigit())
-                .foregroundStyle(isCurrent ? Color(hex: entry.colorHex) : .primary)
+                .foregroundStyle(isCurrent ? Color(hex: entry.colorHex) : palette.primary)
 
             if showCheck {
                 Button(intent: ToggleEventCompletionIntent(eventID: entry.id, eventDate: entry.start)) {

@@ -22,6 +22,9 @@ final class MacHomeViewModel: ObservableObject {
     @Published var completionsByEventID: [String: Bool] = [:]
     @Published var mySharedCalendars: [SharedCalendar] = []
     @Published var todayLog: WorkLog?
+    /// 마지막 메모 저장이 실패했는지 — 입력창 아래 안내 (#137)
+    @Published private(set) var memoSaveFailed = false
+    private var isSavingMemo = false
     @Published var dailySummary: DailySummary?
     @Published var isLoading = false
     /// 첫 loadTodayData 가 끝났는지. 뷰는 이 값이 false 일 때만 스피너를 보여 준다 (#110).
@@ -180,6 +183,7 @@ final class MacHomeViewModel: ObservableObject {
         if showLoading { isLoading = true }
         errorMessage = nil
         let today = Date()
+        loadTodayLogIfNeeded()
 
         loadMySharedCalendars()
 
@@ -416,11 +420,49 @@ final class MacHomeViewModel: ObservableObject {
 
     // MARK: - Memo
 
-    func addMemo(_ text: String) {
-        guard let log = todayLog else { return }
-        saveWorkLogUseCase.addMemo(text, to: log)
+    /// 오늘 WorkLog 를 일정 로딩과 따로 확보한다 (#137). 일정 조회가 실패해도 메모를 쓸 수 있게.
+    private func loadTodayLogIfNeeded() {
+        if let log = todayLog, log.isToday { return }
+        saveWorkLogUseCase.todayLog()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }, receiveValue: { })
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Logger.memo.error("오늘 WorkLog 확보 실패: \(error.localizedDescription, privacy: .public)")
+                        CrashReporting.record(error, context: "home.memo.today_log")
+                    }
+                },
+                receiveValue: { [weak self] log in
+                    guard let self, self.todayLog?.isToday != true else { return }
+                    self.todayLog = log
+                }
+            )
+            .store(in: &cancellables)
+    }
+
+    /// 메모 추가. 오늘 WorkLog 가 없으면 만든다 (#137). completion 은 저장 성공 여부.
+    func addMemo(_ text: String, completion: @escaping (Bool) -> Void = { _ in }) {
+        guard !isSavingMemo else { return }
+        isSavingMemo = true
+        memoSaveFailed = false
+        saveWorkLogUseCase.addMemo(text)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] result in
+                    guard let self else { return }
+                    self.isSavingMemo = false
+                    if case .failure(let error) = result {
+                        Logger.memo.error("메모 저장 실패: \(error.localizedDescription, privacy: .public)")
+                        CrashReporting.record(error, context: "home.memo.add")
+                        self.memoSaveFailed = true
+                        completion(false)
+                    }
+                },
+                receiveValue: { [weak self] log in
+                    self?.todayLog = log
+                    completion(true)
+                }
+            )
             .store(in: &cancellables)
     }
 
