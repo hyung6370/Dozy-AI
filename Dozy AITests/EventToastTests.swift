@@ -70,6 +70,7 @@ private extension XCTestCase {
 
 // MARK: - DozyToast
 
+@MainActor
 final class DozyToastTests: XCTestCase {
 
     func test_eventToasts_haveExpectedStyles() {
@@ -102,9 +103,14 @@ final class CalendarViewModelToastTests: XCTestCase {
     private var crash: MockCrashReportingService!
     private var previousCrash: CrashReportingServiceProtocol!
     private var container: ModelContainer!
+    // 지역 변수로 만들면 MainActor init 에 넘기는 순간 영역이 넘어가 두 번째 사용이 Swift 6 경계 위반이 된다.
+    // 저장 프로퍼티는 테스트 클래스(MainActor) 영역이라 여러 UseCase 에 넘겨도 된다.
+    private var calendarService: MockCalendarService!
+    private var completions: MockEventCompletionRepository!
+    private var notificationService: StubNotificationService!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
         container = try ToastTestSupport.makeContainer()
         dozyRepo = MockDozyEventRepository()
         writeService = StubCalendarWriteService()
@@ -112,9 +118,9 @@ final class CalendarViewModelToastTests: XCTestCase {
         previousCrash = CrashReporting.current
         CrashReporting.current = crash
 
-        let calendarService = MockCalendarService()
-        let completions = MockEventCompletionRepository()
-        let notificationService = StubNotificationService()
+        calendarService = MockCalendarService()
+        completions = MockEventCompletionRepository()
+        notificationService = StubNotificationService()
         vm = CalendarViewModel(
             fetchEventsUseCase: FetchCalendarEventUseCase(calendarService: calendarService),
             fetchDozyEventsUseCase: FetchDozyEventsUseCase(repository: dozyRepo),
@@ -140,14 +146,17 @@ final class CalendarViewModelToastTests: XCTestCase {
         )
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         CrashReporting.current = previousCrash
         vm = nil
         dozyRepo = nil
         writeService = nil
         crash = nil
+        calendarService = nil
+        completions = nil
+        notificationService = nil
         container = nil
-        try super.tearDownWithError()
+        try await super.tearDown()
     }
 
     private func makeDozy(_ title: String = "운동") -> DozyEvent {
@@ -292,9 +301,12 @@ final class HomeViewModelToastTests: XCTestCase {
     private var crash: MockCrashReportingService!
     private var previousCrash: CrashReportingServiceProtocol!
     private var container: ModelContainer!
+    // CalendarViewModelToastTests 와 같은 이유로 저장 프로퍼티.
+    private var calendarService: MockCalendarService!
+    private var completions: MockEventCompletionRepository!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
         container = try ToastTestSupport.makeContainer()
         dozyRepo = MockDozyEventRepository()
         writeService = StubCalendarWriteService()
@@ -302,8 +314,8 @@ final class HomeViewModelToastTests: XCTestCase {
         previousCrash = CrashReporting.current
         CrashReporting.current = crash
 
-        let calendarService = MockCalendarService()
-        let completions = MockEventCompletionRepository()
+        calendarService = MockCalendarService()
+        completions = MockEventCompletionRepository()
         workLogRepo = MockWorkLogRepository()
         vm = HomeViewModel(
             fetchTodayDataUseCase: FetchTodayDataUseCase(calendarService: calendarService, reminderService: MockReminderService()),
@@ -331,15 +343,17 @@ final class HomeViewModelToastTests: XCTestCase {
         )
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         CrashReporting.current = previousCrash
         vm = nil
         workLogRepo = nil
         dozyRepo = nil
         writeService = nil
         crash = nil
+        calendarService = nil
+        completions = nil
         container = nil
-        try super.tearDownWithError()
+        try await super.tearDown()
     }
 
     private func makeDozy(_ title: String = "운동") -> DozyEvent {

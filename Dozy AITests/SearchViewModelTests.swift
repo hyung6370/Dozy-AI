@@ -41,8 +41,8 @@ final class SearchViewModelTests: XCTestCase {
     private var parser: MockQueryParsingService!
     private var analytics: MockAnalyticsService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         calendarService = MockPeriodCalendarService()
         dozyRepo = MockDozyEventRepository()
         workLogRepo = MockWorkLogRepository()
@@ -67,7 +67,7 @@ final class SearchViewModelTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         vm = nil
         calendarService = nil
         dozyRepo = nil
@@ -75,7 +75,7 @@ final class SearchViewModelTests: XCTestCase {
         displayRepo = nil
         parser = nil
         analytics = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     /// receive(on: main) 로 넘어온 값을 기다린다

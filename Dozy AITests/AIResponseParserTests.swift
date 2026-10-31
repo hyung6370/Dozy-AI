@@ -10,6 +10,7 @@ import Testing
 @testable import Dozy_AI
 
 @Suite("AIResponseParser")
+@MainActor
 struct AIResponseParserTests {
     
     private let testDate: Date = {

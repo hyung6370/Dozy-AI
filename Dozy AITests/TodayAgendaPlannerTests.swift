@@ -9,13 +9,14 @@
 import XCTest
 @testable import Dozy_AI
 
+@MainActor
 final class TodayAgendaPlannerTests: XCTestCase {
 
     private let calendar = Calendar.current
     private var now: Date!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         // 오늘 10:00 고정 — 날짜 경계와 무관하게 상대 시각으로 조립한다.
         now = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: Date())
     }

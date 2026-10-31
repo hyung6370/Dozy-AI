@@ -12,6 +12,7 @@ import Combine
 
 // MARK: - AnalyticsEvent 규칙
 
+@MainActor
 final class AnalyticsEventTests: XCTestCase {
 
     /// 모든 case 를 한 번씩 — 새 case 를 추가하면 여기에도 넣어 규칙 검사를 받게 한다.
@@ -98,20 +99,21 @@ final class AnalyticsEventTests: XCTestCase {
 
 // MARK: - 수집 동의 설정
 
+@MainActor
 final class AnalyticsSettingsTests: XCTestCase {
 
     private var defaults: UserDefaults!
     private let suite = "AnalyticsSettingsTests"
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         defaults = UserDefaults(suiteName: suite)
         defaults.removePersistentDomain(forName: suite)
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         defaults.removePersistentDomain(forName: suite)
-        super.tearDown()
+        try await super.tearDown()
     }
 
     func test_defaultsToEnabled() {
@@ -146,13 +148,14 @@ final class AnalyticsSettingsTests: XCTestCase {
 
 // MARK: - UseCase 가 보내는 이벤트
 
+@MainActor
 final class AnalyticsUseCaseTrackingTests: XCTestCase {
 
     private var analytics: MockAnalyticsService!
     private let baseDate = Date(timeIntervalSince1970: 1_775_000_000)
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         analytics = MockAnalyticsService()
     }
 

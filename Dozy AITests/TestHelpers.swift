@@ -15,7 +15,7 @@ extension XCTestCase {
     func awaitPublisher<T, E: Error>(
         _ publisher: AnyPublisher<T, E>,
         timeout: TimeInterval = 2.0,
-        file: StaticString = #file,
+        file: StaticString = #filePath,
         line: UInt = #line
     ) throws -> T {
         var result: Result<T, E>?

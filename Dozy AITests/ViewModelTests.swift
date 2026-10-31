@@ -25,10 +25,10 @@ final class EventEditViewModelTests: XCTestCase {
     private var vm: EventEditViewModel!
     private var savedEvent: DozyEvent?
 
-    override func tearDown() {
+    override func tearDown() async throws {
         vm = nil
         savedEvent = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     private func makeDozyEvent(title: String = "테스트", location: String? = nil) -> DozyEvent {
@@ -289,8 +289,8 @@ final class DailySummaryViewModelTests: XCTestCase {
     private var viewModel: DailySummaryViewModel!
     private var cancellables = Set<AnyCancellable>()
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         aiService   = MockAIService()
         workLogRepo = MockWorkLogRepository()
         viewModel   = DailySummaryViewModel(
@@ -300,7 +300,7 @@ final class DailySummaryViewModelTests: XCTestCase {
         )
     }
 
-    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+    override func tearDown() async throws { cancellables.removeAll(); try await super.tearDown() }
 
     // MARK: hasEnoughData
 

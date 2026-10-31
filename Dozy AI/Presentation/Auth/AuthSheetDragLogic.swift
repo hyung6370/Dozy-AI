@@ -9,13 +9,14 @@ import CoreGraphics
 
 /// AuthSheetView 의 드래그 스냅 규칙 — 뷰/제스처에서 분리한 순수 계산.
 /// 세 offset(start/current/ending) 값만 받아 결정을 돌려주므로 단위 테스트가 가능하다.
-struct AuthSheetDragLogic {
+/// 순수 계산이라 메인 액터에 묶지 않는다 — nonisolated 문맥의 테스트에서도 Equatable 비교가 된다.
+nonisolated struct AuthSheetDragLogic {
 
     /// "이 정도는 끌어야 열리고/닫힌다" 는 임계값.
     let dragThreshold: CGFloat
 
     /// 드래그를 끝냈을 때 시트가 취할 행동.
-    enum DragEndAction: Equatable {
+    nonisolated enum DragEndAction: Equatable {
         /// 완전히 펼침 (endingOffsetY = -startOffsetY)
         case expand
         /// medium 으로 복귀 (endingOffsetY = 0)

@@ -33,6 +33,7 @@ private func event(
 /// 2026-10-19(월) ~ 10-26(월) — "지난주"
 private let lastWeek = SearchQueryIntent.Period(start: date(10, 19), end: date(10, 26), label: "지난주")
 
+@MainActor
 final class SearchAggregatorTests: XCTestCase {
 
     // MARK: - 필터

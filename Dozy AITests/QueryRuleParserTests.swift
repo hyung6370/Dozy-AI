@@ -9,6 +9,7 @@
 import XCTest
 @testable import Dozy_AI
 
+@MainActor
 final class QueryRuleParserTests: XCTestCase {
 
     private let cal = Calendar.current

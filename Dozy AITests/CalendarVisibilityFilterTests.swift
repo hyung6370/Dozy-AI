@@ -8,6 +8,7 @@ import Foundation
 @testable import Dozy_AI
 
 @Suite("CalendarVisibilityFilter")
+@MainActor
 final class CalendarVisibilityFilterTests {
 
     // 테스트마다 고유한 suite → 실제 사용자 설정도, 다른 테스트도 오염시키지 않는다
