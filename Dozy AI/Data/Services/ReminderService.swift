@@ -29,6 +29,8 @@ final class ReminderService: ReminderServiceProtocol {
                 }
             }
         }
+        // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
 
@@ -53,6 +55,8 @@ final class ReminderService: ReminderServiceProtocol {
                         promise(.success(tasks))
                     }
                 }
+                // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
+                .receive(on: DispatchQueue.main)
                 .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
@@ -82,6 +86,8 @@ final class ReminderService: ReminderServiceProtocol {
                         promise(.success(tasks))
                     }
                 }
+                // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
+                .receive(on: DispatchQueue.main)
                 .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
@@ -113,6 +119,8 @@ final class ReminderService: ReminderServiceProtocol {
                 promise(.failure(.reminderAccessDenied))
             }
         }
+        // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
 }
