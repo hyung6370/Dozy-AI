@@ -12,9 +12,9 @@ import SwiftData
 
 struct LogWorkMemoIntent: AppIntent {
 
-    static var title: LocalizedStringResource = "메모 기록"
-    static var description = IntentDescription("오늘의 업무 기록에 메모를 추가합니다.")
-    static var openAppWhenRun: Bool = false
+    static let title: LocalizedStringResource = "메모 기록"
+    static let description = IntentDescription("오늘의 업무 기록에 메모를 추가합니다.")
+    static let openAppWhenRun: Bool = false
 
     /// 구문에 내용이 없으면 Siri 가 requestValueDialog 로 되묻는다.
     /// ("Dozy에 기록해줘" → "무엇을 기록할까요?" → 사용자가 말함 → 저장)

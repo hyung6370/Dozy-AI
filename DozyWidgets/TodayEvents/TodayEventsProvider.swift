@@ -25,6 +25,8 @@ struct TodayEventsProvider: TimelineProvider {
             return
         }
         // 실제 표시 직전엔 진짜 데이터를 한 번 빠르게 fetch.
+        // WidgetKit 의 completion 은 @Sendable 이 아니다 — Task 안에서 정확히 한 번만 부르므로 unsafe 로 넘긴다.
+        nonisolated(unsafe) let completion = completion
         Task {
             let entry = await TodayEventsDataSource.shared.entry(for: Date())
             completion(entry)
@@ -34,6 +36,8 @@ struct TodayEventsProvider: TimelineProvider {
     // MARK: - Timeline (메인 - 미래 entry들 미리 만들어 주기)
     
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEventsEntry>) -> Void) {
+        // getSnapshot 과 같은 이유 — 비-Sendable completion 을 Task 안에서 한 번만 호출.
+        nonisolated(unsafe) let completion = completion
         Task {
             let now = Date()
             let baseEntry = await TodayEventsDataSource.shared.entry(for: now)

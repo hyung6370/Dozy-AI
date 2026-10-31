@@ -52,7 +52,7 @@ struct DozyShortcuts: AppShortcutsProvider {
         )
     }
 
-    static var shortcutTileColor: ShortcutTileColor = .blue
+    static let shortcutTileColor: ShortcutTileColor = .blue
 }
 
 // MARK: - Open Voice Input
@@ -62,9 +62,9 @@ struct DozyShortcuts: AppShortcutsProvider {
 /// Dozy_AIApp 이 active 전환 시 플래그를 소비해 `.dozyOpenVoiceInput` 을 post 한다.
 struct OpenVoiceInputIntent: AppIntent {
 
-    static var title: LocalizedStringResource = "음성 메모"
-    static var description = IntentDescription("Dozy 를 열고 음성으로 메모를 남깁니다.")
-    static var openAppWhenRun: Bool = true
+    static let title: LocalizedStringResource = "음성 메모"
+    static let description = IntentDescription("Dozy 를 열고 음성으로 메모를 남깁니다.")
+    static let openAppWhenRun: Bool = true
 
     static let pendingFlagKey = "pendingVoiceInput"
 
@@ -78,7 +78,8 @@ struct OpenVoiceInputIntent: AppIntent {
 
 enum AppIntentStore {
 
-    static let appGroupID = "group.com.dozy-ai.shared"
+    /// 인텐트 perform(nonisolated)에서 읽으므로 메인 액터에 묶지 않는다.
+    nonisolated static let appGroupID = "group.com.dozy-ai.shared"
 
     /// AppCoordinator.setup() 이 등록하는 살아있는 컨테이너. 앱이 떠 있으면 이걸 써서
     /// HomeViewModel 이 들고 있는 WorkLog 와 같은 mainContext 를 공유한다 (stale 방지).

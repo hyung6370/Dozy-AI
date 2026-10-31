@@ -673,8 +673,9 @@ final class MonthSwipeState: ObservableObject {
     var pendingDeltaX: CGFloat = 0
     var isHovering: Bool = false
     var viewWidth: CGFloat = 0
-    var monitor: Any?
-    var commitWork: DispatchWorkItem?
+    /// deinit(nonisolated)에서 정리해야 하므로 격리 검사에서 뺀다. 메인 스레드(SwiftUI)에서만 쓰고 놓는다.
+    nonisolated(unsafe) var monitor: Any?
+    nonisolated(unsafe) var commitWork: DispatchWorkItem?
 
     deinit {
         if let m = monitor {

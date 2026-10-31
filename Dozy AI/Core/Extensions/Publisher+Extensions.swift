@@ -29,6 +29,9 @@ extension Publisher {
                 receiveValue: { value in
                     guard !resumed else { return }
                     resumed = true
+                    // Output 에 Sendable 제약이 없어 continuation 으로 넘길 때 경계 위반이 된다.
+                    // 값은 여기서 한 번만 전달되므로 unsafe 로 둔다 — #156 에서 이 헬퍼를 제거하면 사라진다.
+                    nonisolated(unsafe) let value = value
                     continuation.resume(returning: value)
                     cancellable?.cancel()
                     cancellable = nil

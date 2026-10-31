@@ -20,7 +20,8 @@ import Supabase
 import Security
 import OSLog
 
-private let logger = Logger(subsystem: "com.dozy-ai.Dozy-AI", category: "SupabaseAuthStorage")
+// AuthLocalStorage 는 SDK 가 임의 스레드에서 부른다 — Logger 는 Sendable 이라 nonisolated 로 둔다.
+nonisolated private let logger = Logger(subsystem: "com.dozy-ai.Dozy-AI", category: "SupabaseAuthStorage")
 
 struct DozyAuthLocalStorage: AuthLocalStorage {
 

@@ -286,7 +286,8 @@ final class DailySummaryViewModel: ObservableObject {
     // UseCase로 분리하는 것을 권장합니다.
 
     func addToReminder(_ action: RecommendedAction) {
-        let store = EKEventStore()
+        // EKEventStore 는 Sendable 표시가 없다. 권한 완료 클로저 안에서만 쓰고 밖에서는 다시 만지지 않는다.
+        nonisolated(unsafe) let store = EKEventStore()
 
         store.requestFullAccessToReminders { [weak self] granted, _ in
             guard granted else { return }

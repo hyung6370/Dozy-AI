@@ -9,15 +9,17 @@
 //  ContentState 는 Codable/Hashable 이어야 하고 4KB 안에 들어와야 하므로 제목·시각·색만 담는다.
 //  카운트다운·진행 바는 start/end 를 timerInterval 뷰에 넘겨 시스템이 그린다 — 앱이 갱신하지 않아도 움직인다.
 //  앱 타깃은 기본 격리가 MainActor 라 Codable/Hashable 값 타입은 nonisolated 로 선언한다 (ActivityKit 이 비동기로 인코딩).
+//  Sendable 도 명시한다 — ContentState 가 Sendable 이 아니면 `activity.update(content)` 에서 content 가 메인 액터 영역에
+//  묶이고, 같이 넘기는 Activity(비-Sendable)까지 메인 액터 영역으로 합쳐져 Swift 6 가 경계 위반으로 본다.
 //
 
 #if os(iOS)
 import ActivityKit
 import Foundation
 
-nonisolated struct TodayAgendaAttributes: ActivityAttributes {
+nonisolated struct TodayAgendaAttributes: ActivityAttributes, Sendable {
 
-    nonisolated struct Entry: Codable, Hashable {
+    nonisolated struct Entry: Codable, Hashable, Sendable {
         let id: String
         let title: String
         let start: Date
@@ -25,7 +27,7 @@ nonisolated struct TodayAgendaAttributes: ActivityAttributes {
         let colorHex: String
     }
 
-    nonisolated struct ContentState: Codable, Hashable {
+    nonisolated struct ContentState: Codable, Hashable, Sendable {
         /// 지금 진행 중인 일정. 없으면 nil.
         let current: Entry?
         /// 다음에 시작할 일정. 없으면 nil (current 가 마지막).
