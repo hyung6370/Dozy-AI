@@ -17,8 +17,8 @@ final class SharedCalendarViewModelTests: XCTestCase {
     private var service: MockSharedCalendarService!
     private var vm: SharedCalendarViewModel!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         service = MockSharedCalendarService()
         vm = SharedCalendarViewModel(
             createUseCase: CreateSharedCalendarUseCase(service: service),
@@ -30,10 +30,10 @@ final class SharedCalendarViewModelTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         vm = nil
         service = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     private func calendar(_ id: String = "cal-1", name: String = "우리 집") -> SharedCalendar {

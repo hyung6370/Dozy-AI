@@ -12,6 +12,7 @@ import SwiftData
 
 // MARK: - Payload
 
+@MainActor
 final class SharedEventPushTests: XCTestCase {
 
     private func userInfo(_ dozy: [String: Any]) -> [AnyHashable: Any] {
@@ -79,24 +80,25 @@ final class SharedEventPushTests: XCTestCase {
 
 // MARK: - 토큰 등록 · 해제
 
+@MainActor
 final class PushRegistrationUseCaseTests: XCTestCase {
 
     private var defaults: UserDefaults!
     private var suiteName: String!
     private var service: MockPushTokenService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         suiteName = "PushRegistrationUseCaseTests-\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
         service = MockPushTokenService()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         defaults.removePersistentDomain(forName: suiteName)
         defaults = nil
         service = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     private func makeUseCase() -> PushRegistrationUseCase {
@@ -160,17 +162,17 @@ final class SharedNotificationCardTests: XCTestCase {
 
     private var container: ModelContainer!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
         container = try ModelContainer(
             for: Schema([NotificationRecord.self]),
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         container = nil
-        try super.tearDownWithError()
+        try await super.tearDown()
     }
 
     private func push(_ id: String) -> SharedEventPush {

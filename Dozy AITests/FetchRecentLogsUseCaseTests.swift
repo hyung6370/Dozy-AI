@@ -9,19 +9,20 @@ import XCTest
 import Combine
 @testable import Dozy_AI
 
+@MainActor
 final class FetchRecentLogsUseCaseTests: XCTestCase {
     
     private var repository: MockWorkLogRepository!
     private var useCase: FetchRecentLogsUseCase!
     private var cancellables = Set<AnyCancellable>()
     
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         repository = MockWorkLogRepository()
         useCase = FetchRecentLogsUseCase(repository: repository)
     }
     
-    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+    override func tearDown() async throws { cancellables.removeAll(); try await super.tearDown() }
     
     // MARK: - 반환값 전달
     func test_execute_returnsLogsFromRepository() throws {
