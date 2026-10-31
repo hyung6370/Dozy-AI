@@ -157,6 +157,16 @@
         }
       }
     },
+    "%@까지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "until %@"
+          }
+        }
+      }
+    },
     "%@까지 %lld분 남았습니다" : {
       "localizations" : {
         "en" : {
@@ -1606,6 +1616,16 @@
         }
       }
     },
+    "계속" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No end"
+          }
+        }
+      }
+    },
     "계정" : {
       "localizations" : {
         "en" : {
@@ -2174,6 +2194,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date detection"
+          }
+        }
+      }
+    },
+    "날짜 지정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On Date"
           }
         }
       }
@@ -2896,6 +2926,7 @@
       }
     },
     "매년" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2905,12 +2936,53 @@
         }
       }
     },
+    "매년 (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yearly (%@)"
+          }
+        }
+      }
+    },
+    "매년 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yearly on %@"
+          }
+        }
+      }
+    },
     "매월" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Monthly"
+          }
+        }
+      }
+    },
+    "매월 (%lld일)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly (day %lld)"
+          }
+        }
+      }
+    },
+    "매월 %lld일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly on day %lld"
           }
         }
       }
@@ -2926,11 +2998,32 @@
       }
     },
     "매주" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly"
+          }
+        }
+      }
+    },
+    "매주 (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly (%@)"
+          }
+        }
+      }
+    },
+    "매주 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly on %@"
           }
         }
       }
@@ -3253,6 +3346,16 @@
         }
       }
     },
+    "반복 요약 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat summary: %@"
+          }
+        }
+      }
+    },
     "반복 일정" : {
       "localizations" : {
         "en" : {
@@ -3293,7 +3396,18 @@
         }
       }
     },
+    "반복 종료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Repeat"
+          }
+        }
+      }
+    },
     "반복 종료일" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4463,6 +4577,16 @@
         }
       }
     },
+    "안 함" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
+          }
+        }
+      }
+    },
     "안녕하세요 🌟" : {
       "localizations" : {
         "en" : {
@@ -5421,6 +5545,16 @@
         }
       }
     },
+    "일" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "이동" : {
       "localizations" : {
         "en" : {
@@ -5698,16 +5832,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verification code (6 digits)"
-          }
-        }
-      }
-    },
-    "일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day"
           }
         }
       }
@@ -6144,6 +6268,26 @@
         }
       }
     },
+    "저장에 실패했습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save failed."
+          }
+        }
+      }
+    },
+    "점" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pts"
+          }
+        }
+      }
+    },
     "저녁 요약 알림" : {
       "localizations" : {
         "en" : {
@@ -6170,16 +6314,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save"
-          }
-        }
-      }
-    },
-    "저장에 실패했습니다." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save failed."
           }
         }
       }
@@ -6220,16 +6354,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
-          }
-        }
-      }
-    },
-    "점" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pts"
           }
         }
       }
@@ -8092,126 +8216,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncommon and different from your email"
-          }
-        }
-      }
-    },
-    "매주 (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weekly (%@)"
-          }
-        }
-      }
-    },
-    "매월 (%lld일)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monthly (day %lld)"
-          }
-        }
-      }
-    },
-    "매년 (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yearly (%@)"
-          }
-        }
-      }
-    },
-    "매주 %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weekly on %@"
-          }
-        }
-      }
-    },
-    "매월 %lld일" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monthly on day %lld"
-          }
-        }
-      }
-    },
-    "매년 %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yearly on %@"
-          }
-        }
-      }
-    },
-    "%@까지" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "until %@"
-          }
-        }
-      }
-    },
-    "계속" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No end"
-          }
-        }
-      }
-    },
-    "반복 종료" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "End Repeat"
-          }
-        }
-      }
-    },
-    "안 함" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Never"
-          }
-        }
-      }
-    },
-    "날짜 지정" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On Date"
-          }
-        }
-      }
-    },
-    "반복 요약 %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Repeat summary: %@"
           }
         }
       }

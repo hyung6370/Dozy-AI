@@ -22,15 +22,9 @@ actor TodayEventsDataSource {
             .appendingPathComponent("default.store")
         else { return nil }
 
-        // 위젯이 필요한 entity 만 schema 에 등록 — 메모리 budget 절약.
-        // TodayEventCache 가 핵심 — 메인 앱이 머지된 (Apple/Google/Dozy/Holiday) 오늘 일정을
-        // 여기에 mirror 한다. DozyEvent / UserCategory 는 향후 다른 위젯이 직접 fetch 할 때 위해 둠.
-        let schema = Schema([
-            TodayEventCache.self,
-            DozyEvent.self,
-            EventCompletion.self,
-            UserCategory.self,
-        ])
+        // 앱과 같은 전체 스키마로 연다. 예전엔 필요한 entity 만 등록했는데, 그러면 SwiftData 가 빠진 모델(WorkLog 등)의
+        // 테이블을 지워 앱의 메모 저장이 실패하고 데이터가 사라졌다 (DozySchema 참고).
+        let schema = DozySchema.schema
         // ⚠️ allowsSave: false 를 명시하면 SwiftData 의 schema auto-migration 이 막혀
         // ("attempt to write a readonly database") store open 실패. 위젯 코드는 명시적으로
         // save() 를 호출하지 않으므로 기본값(쓰기 허용)으로도 실질 read-only.

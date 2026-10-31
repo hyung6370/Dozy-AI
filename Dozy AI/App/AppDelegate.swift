@@ -77,7 +77,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         guard let storeURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: appGroupID)?
             .appendingPathComponent("default.store") else { return nil }
-        let schema = Schema([TodayEventCache.self, DozyEvent.self, EventCompletion.self, UserCategory.self])
+        // 앱과 같은 전체 스키마 — 부분 스키마로 열면 WorkLog 등 테이블이 지워진다 (DozySchema 참고).
+        let schema = DozySchema.schema
         let config = ModelConfiguration(schema: schema, url: storeURL)
         guard let container = try? ModelContainer(for: schema, configurations: [config]) else { return nil }
         return SyncTodayLiveActivityUseCase(

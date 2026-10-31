@@ -179,12 +179,8 @@ final class DependencyContainer: ObservableObject {
     // MARK: - Init
 
     init() {
-        let schema = Schema([
-            WorkLog.self, UserPattern.self, DozyEvent.self,
-            EventCompletion.self, NotificationRecord.self,
-            EventDisplaySettings.self, UserCategory.self,
-            TodayEventCache.self
-        ])
+        // 위젯 · 인텐트 · Live Activity 훅과 같은 단일 스키마 — 부분 스키마로 열면 테이블이 지워진다 (DozySchema 참고).
+        let schema = DozySchema.schema
 
         // 위젯 / 메인 앱이 동일 SwiftData store 를 보도록 App Group container 안에 저장.
         // 기존 사용자가 default 위치 (Application Support) 에 데이터를 가지고 있다면 첫
