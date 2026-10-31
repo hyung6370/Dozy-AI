@@ -63,6 +63,8 @@ final class NaverCalendarService: CalendarServiceProtocol {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         return URLSession.shared.dataTaskPublisher(for: request)
+            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
+            .receive(on: DispatchQueue.main)
             .map(\.data)
             .tryMap { data -> [CalendarEvent] in
 #if DEBUG

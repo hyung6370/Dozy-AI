@@ -177,6 +177,8 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         req.httpBody = body.data(using: .utf8)
 
         return URLSession.shared.dataTaskPublisher(for: req)
+            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
+            .receive(on: DispatchQueue.main)
             .tryMap { [calendars] data, response -> [CalendarEvent] in
                 guard let http = response as? HTTPURLResponse, http.statusCode == 200,
                       let ct = http.allHeaderFields["Content-Type"] as? String else {
@@ -283,6 +285,8 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return URLSession.shared.dataTaskPublisher(for: request)
+            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
+            .receive(on: DispatchQueue.main)
             .map(\.data)
             .tryMap { data -> [CalendarEvent] in
                 let decoded = try JSONDecoder().decode(GoogleEventsResponse.self, from: data)
@@ -351,6 +355,8 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return URLSession.shared.dataTaskPublisher(for: request)
+            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
+            .receive(on: DispatchQueue.main)
             .tryMap { data, response -> [GoogleCalendarItem] in
                 guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
                     throw DozyError.googleCalendarFetchFailed
@@ -391,6 +397,8 @@ final class GoogleCalendarService: CalendarServiceProtocol {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         return URLSession.shared.dataTaskPublisher(for: request)
+            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
+            .receive(on: DispatchQueue.main)
             .map(\.data)
             .tryMap { data -> [CalendarEvent] in
                 let decoded = try JSONDecoder().decode(GoogleEventsResponse.self, from: data)
@@ -472,6 +480,8 @@ extension GoogleCalendarService: CalendarWriteServiceProtocol {
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
         return URLSession.shared.dataTaskPublisher(for: req)
+            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
+            .receive(on: DispatchQueue.main)
             .tryMap { _, response in
                 guard let http = response as? HTTPURLResponse,
                       (200..<300).contains(http.statusCode) else {
@@ -494,6 +504,8 @@ extension GoogleCalendarService: CalendarWriteServiceProtocol {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         return URLSession.shared.dataTaskPublisher(for: req)
+            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
+            .receive(on: DispatchQueue.main)
             .tryMap { _, response in
                 guard let http = response as? HTTPURLResponse else {
                     throw DozyError.googleCalendarFetchFailed

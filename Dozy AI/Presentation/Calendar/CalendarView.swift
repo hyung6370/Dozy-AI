@@ -749,14 +749,14 @@ struct CalendarView: View {
         case .authorized, .limited:
             performScreenshotAndSave()
         case .notDetermined:
-            PHPhotoLibrary.requestAuthorization(for: .addOnly) { newStatus in
-                DispatchQueue.main.async {
-                    if newStatus == .authorized || newStatus == .limited {
-                        self.performScreenshotAndSave()
-                    } else {
-                        // 사용자가 시스템 다이얼로그에서 거부 → 다음 탭부터 커스텀 alert 경로.
-                        self.showCapturePermissionAlert = true
-                    }
+            // Swift 6: 콜백 블록은 임의 큐에서 불려 메인 액터 추론 클로저가 런타임 격리 검사에 걸린다 — async 판으로 기다린다.
+            Task { @MainActor in
+                let newStatus = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+                if newStatus == .authorized || newStatus == .limited {
+                    self.performScreenshotAndSave()
+                } else {
+                    // 사용자가 시스템 다이얼로그에서 거부 → 다음 탭부터 커스텀 alert 경로.
+                    self.showCapturePermissionAlert = true
                 }
             }
         case .denied, .restricted:

@@ -31,7 +31,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: SummaryReminderService.backgroundTaskIdentifier,
             using: nil
-        ) { task in
+        ) { @Sendable task in
+            // 백그라운드 큐에서 불린다 (queue nil). @Sendable 로 메인 액터 추론을 끊어 Swift 6 런타임 격리 검사를 피한다.
+            // 안에서 부르는 handleBackgroundRefresh 는 nonisolated 이고 필요한 일은 스스로 메인 액터로 넘긴다.
             guard let refresh = task as? BGAppRefreshTask else {
                 task.setTaskCompleted(success: false)
                 return
