@@ -723,6 +723,9 @@ final class CalendarViewModel: ObservableObject {
         Logger.calendar.info("[데이터] 🟣 refreshData ← \(source) (\(filename):\(line))")
         calendarService?.invalidateGoogleCache()
         loadedMonthKeys.removeAll()
+        // 명시적 새로고침은 5초 재실행 방지를 건너뛴다. 콜드 스타트에서 Google 로그인 복원(googleSignInRestored)이
+        // 첫 로드 직후 끝나면 새로고침이 "0.3s 경과" 로 스킵돼, 다른 달로 갔다 와야 Google 일정이 보였다.
+        lastPerformLoadAt = .distantPast
         loadInitialData(source: "refreshData<-\(source)", file: file, line: line)
     }
     

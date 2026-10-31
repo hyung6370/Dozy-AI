@@ -100,14 +100,14 @@ enum AppIntentStore {
     }
 
     /// 앱 컨테이너가 없을 때(백그라운드 Siri 호출) 위젯과 동일하게 App Group store 를 직접 연다.
-    /// 위젯이 이미 부분 스키마로 같은 store 를 여는 선례가 있어 필요한 모델만 나열한다.
+    /// 앱과 같은 전체 스키마로 연다 — 부분 스키마로 열면 빠진 모델의 테이블이 지워진다 (DozySchema 참고).
     private static func openSharedStore() throws -> ModelContainer {
         guard let storeURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: appGroupID)?
             .appendingPathComponent("default.store") else {
             throw DozyError.dataNotFound
         }
-        let schema = Schema([WorkLog.self, TodayEventCache.self])
+        let schema = DozySchema.schema
         let config = ModelConfiguration(schema: schema, url: storeURL)
         return try ModelContainer(for: schema, configurations: [config])
     }

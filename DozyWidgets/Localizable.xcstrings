@@ -4,6 +4,16 @@
     "(장소: %@)" : {
 
     },
+    "[우선순위: %@]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[Priority: %@]"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
         "ko" : {
@@ -67,6 +77,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No upcoming events"
+          }
+        }
+      }
+    },
+    "낮음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low"
+          }
+        }
+      }
+    },
+    "높음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High"
           }
         }
       }
@@ -151,6 +181,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open the app to refresh"
+          }
+        }
+      }
+    },
+    "없음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
           }
         }
       }
@@ -265,6 +305,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All-day"
+          }
+        }
+      }
+    },
+    "중간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
           }
         }
       }

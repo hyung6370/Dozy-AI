@@ -799,15 +799,22 @@ struct CalendarView: View {
     @MainActor
     private func saveComposedImage(_ image: UIImage) {
         // PHPhotoLibrary 로 저장 — 결과는 토스트 (#144). 이전엔 확인을 눌러야 닫히는 "저장 완료" 알림창, 실패는 조용했다.
-        PHPhotoLibrary.shared().performChanges {
-            PHAssetCreationRequest.creationRequestForAsset(from: image)
-        } completionHandler: { success, _ in
-            DispatchQueue.main.async {
-                self.screenshotEditItem = nil  // 시트 닫기
-                viewModel.toast = success
-                    ? .success(String(localized: "사진에 저장했어요"))
-                    : .failure(String(localized: "사진을 저장하지 못했어요"))
+        // Swift 6: 변경 블록과 완료 콜백은 사진 라이브러리 변경 큐에서 불린다. 메인 액터로 추론되면 런타임 격리 검사로
+        // 앱이 죽는다 — 변경 블록은 @Sendable 로 격리를 끊고, 결과는 async 판으로 기다려 메인 액터에서 처리한다.
+        Task { @MainActor in
+            let success: Bool
+            do {
+                try await PHPhotoLibrary.shared().performChanges { @Sendable in
+                    PHAssetCreationRequest.creationRequestForAsset(from: image)
+                }
+                success = true
+            } catch {
+                success = false
             }
+            self.screenshotEditItem = nil  // 시트 닫기
+            viewModel.toast = success
+                ? .success(String(localized: "사진에 저장했어요"))
+                : .failure(String(localized: "사진을 저장하지 못했어요"))
         }
     }
 
