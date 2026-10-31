@@ -28,6 +28,8 @@ final class GoogleSignInService: ObservableObject {
     
     func restorePreviousSignIn() {
         GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, _ in
+            // GIDGoogleUser 는 Sendable 표시가 없다. 메인 큐에서 프로필만 읽고 이 클로저에서는 다시 만지지 않는다.
+            nonisolated(unsafe) let user = user
             DispatchQueue.main.async {
                 self?.updateState(user: user)
             }
@@ -46,6 +48,8 @@ final class GoogleSignInService: ObservableObject {
                     promise(.failure(.googleSignInFailed(underlying: error)))
                     return
                 }
+                // GIDSignInResult 는 Sendable 표시가 없다 — restorePreviousSignIn 과 같은 이유.
+                nonisolated(unsafe) let result = result
                 DispatchQueue.main.async {
                     self.updateState(user: result?.user)
                 }

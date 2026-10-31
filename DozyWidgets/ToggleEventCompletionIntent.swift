@@ -17,9 +17,9 @@ import WidgetKit
 
 struct ToggleEventCompletionIntent: LiveActivityIntent {
 
-    static var title: LocalizedStringResource = "일정 완료 토글"
-    static var description = IntentDescription("위젯과 잠금화면에서 오늘 일정의 완료 상태를 토글합니다.")
-    static var isDiscoverable: Bool = false
+    static let title: LocalizedStringResource = "일정 완료 토글"
+    static let description = IntentDescription("위젯과 잠금화면에서 오늘 일정의 완료 상태를 토글합니다.")
+    static let isDiscoverable: Bool = false
 
     /// 위젯이 보여주는 CalendarEvent 의 stable id.
     /// (Dozy 비반복: DozyEvent.id, Apple/Google/반복: source id 또는 occurrence id)

@@ -9,7 +9,8 @@
 
 import Foundation
 
-struct SummaryReminderSettings: Equatable {
+// 순수 값 타입 — BGTask 핸들러(nonisolated)에서 load · nextFireDate 를 부른다.
+nonisolated struct SummaryReminderSettings: Equatable {
     var isEnabled: Bool
     var hour: Int
     var minute: Int

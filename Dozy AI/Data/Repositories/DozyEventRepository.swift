@@ -250,13 +250,8 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
                     try context.save()
                     // 외부 미러 영구 삭제 — sync 경로. 위젯에 reload 힌트.
                     WidgetCenter.shared.reloadAllTimelines()
-                    Task {
-                        // Supabase 배치 delete — Realtime DELETE가 파트너 기기로 전파됨.
-                        try? await supabase.from("dozy_events")
-                            .delete()
-                            .in("id", values: deletedIDs)
-                            .execute()
-                    }
+                    // Supabase 배치 delete — Realtime DELETE가 파트너 기기로 전파됨.
+                    Task { await Self.deleteFromSupabase(ids: deletedIDs) }
                     promise(.success(()))
                 } catch {
                     promise(.failure(.saveFailed(underlying: error)))
@@ -264,6 +259,15 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
             }
         }
         .eraseToAnyPublisher()
+    }
+
+    /// Supabase 배치 삭제. `PostgrestResponse` 는 Sendable 이 아니라 메인 액터 Task 안에서 await 하면
+    /// Swift 6 에서 경계 위반이 된다 — nonisolated 헬퍼에서 결과를 바로 버린다.
+    nonisolated private static func deleteFromSupabase(ids: [String]) async {
+        _ = try? await supabase.from("dozy_events")
+            .delete()
+            .in("id", values: ids)
+            .execute()
     }
 
     func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
