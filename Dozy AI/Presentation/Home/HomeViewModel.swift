@@ -218,7 +218,9 @@ final class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
+        // 이 ViewModel 이 보낸 알림(object: self)은 이미 스스로 갱신했으므로 거른다 (#165).
         NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .filter { [weak self] in ($0.object as AnyObject?) !== self }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.loadTodayData() }
             .store(in: &cancellables)
@@ -825,6 +827,7 @@ final class HomeViewModel: ObservableObject {
     func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String?) {
         if event.source == .dozy {
             guard let dozy = dozyEventsByID[event.id] else { return }
+            let previous = (priority: dozy.priority, isPinned: dozy.isPinned, category: dozy.category, colorHex: dozy.colorHex)
             dozy.priority = priority
             dozy.isPinned = isPinned
             if let category {
@@ -834,15 +837,30 @@ final class HomeViewModel: ObservableObject {
                     dozy.colorHex = cat.colorHex
                 }
             }
+            // 저장(Supabase 업로드)을 기다리지 않고 오늘 목록에 바로 반영한다 (#165).
+            replaceTodaySnapshot(id: event.id) {
+                $0.withDisplay(priority: dozy.priority, isPinned: dozy.isPinned, category: dozy.category, colorHex: dozy.colorHex)
+            }
             updateDozyEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { [weak self] completion in
-                    if case .failure(let error) = completion {
-                        self?.reportFailure(error, context: "home.display_settings", toast: .eventUpdateFailed)
+                    guard let self, case .failure(let error) = completion else { return }
+                    // 실패 — 바로 반영한 값을 되돌린다
+                    dozy.priority = previous.priority
+                    dozy.isPinned = previous.isPinned
+                    dozy.category = previous.category
+                    dozy.colorHex = previous.colorHex
+                    self.replaceTodaySnapshot(id: event.id) {
+                        $0.withDisplay(priority: previous.priority, isPinned: previous.isPinned,
+                                       category: previous.category, colorHex: previous.colorHex)
                     }
+                    self.reportFailure(error, context: "home.display_settings", toast: .eventUpdateFailed)
                 }, receiveValue: { [weak self] in
-                    self?.toast = .displaySettingsSaved
-                    self?.loadTodayData()
+                    guard let self else { return }
+                    self.toast = .displaySettingsSaved
+                    self.loadTodayData()
+                    // 캘린더 탭도 다시 맞춘다
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: self)
                 })
                 .store(in: &cancellables)
         } else {
@@ -855,6 +873,12 @@ final class HomeViewModel: ObservableObject {
                 })
                 .store(in: &cancellables)
         }
+    }
+
+    /// 오늘 목록에서 한 일정의 스냅샷만 바꾼다 (표시 설정 즉시 반영, #165).
+    private func replaceTodaySnapshot(id: String, _ transform: (CalendarEvent) -> CalendarEvent) {
+        guard let idx = todayEvents.firstIndex(where: { $0.id == id }) else { return }
+        todayEvents[idx] = transform(todayEvents[idx])
     }
 
     /// 수정 · 삭제 실패 — 토스트 + 로그 + Crashlytics 비치명 기록 (#143)

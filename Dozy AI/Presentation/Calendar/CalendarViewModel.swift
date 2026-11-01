@@ -76,6 +76,8 @@ final class CalendarViewModel: ObservableObject {
     @Published var showCalendarEventEdit = false
     @Published var calendarEventToEdit: CalendarEvent? = nil
     @Published var weekLayouts: [Date: [CalendarEventLayout]] = [:]
+    /// 월별 마지막 조회 결과 — 표시 설정을 바꿨을 때 네트워크 없이 그리드를 다시 배치한다 (#165).
+    private var monthResultsCache: [Date: [(Date, [CalendarEvent])]] = [:]
     /// 수정 · 삭제 · 표시 설정 결과 토스트 (#143). 삭제 완료 · 실패 알림창을 대신한다.
     @Published var toast: DozyToast?
     @Published var showSuccessAnimation = false
@@ -274,6 +276,8 @@ final class CalendarViewModel: ObservableObject {
         // SharedCalendarRealtimeService 가 object: 로 자기 인스턴스를 넘기는
         // 패턴은 아니지만, 로컬 CRUD 가 .dozyEventChanged 로 분리되어 있어 충돌
         // 없음 — 여기선 외부 in-bound realtime 만 통과한다.
+        observeLocalEventChanges()
+
         NotificationCenter.default.publisher(for: .dozyEventListChanged)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -406,7 +410,7 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] in
                 guard let self else { return }
                 self.dozyEventsByID[event.id] = event
-                NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                NotificationCenter.default.post(name: .dozyEventChanged, object: self)
             })
             .store(in: &cancellables)
     }
@@ -446,7 +450,7 @@ final class CalendarViewModel: ObservableObject {
                 guard let self, case .completion(let eventID, let eventDate) = target else { return }
                 self.completionsByID[EventCompletionRepository.completionKey(eventID: eventID, date: eventDate)] = newValue
                 if event.source != .dozy {
-                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: self)
                 }
             })
             .store(in: &cancellables)
@@ -472,7 +476,7 @@ final class CalendarViewModel: ObservableObject {
                 self?.fetchEventsForMonth(force: true)
                 // HomeViewModel 이 .dozyEventChanged 를 구독해 loadTodayData → TodayEventCache 갱신.
                 // 위젯은 그 직후 reload 에서 새 데이터를 본다.
-                NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                NotificationCenter.default.post(name: .dozyEventChanged, object: self)
                 WidgetCenter.shared.reloadAllTimelines()
             })
             .store(in: &cancellables)
@@ -515,7 +519,7 @@ final class CalendarViewModel: ObservableObject {
                     }
                     // HomeViewModel 이 .dozyEventChanged → loadTodayData 로 TodayEventCache 를 갱신.
                     // 위젯은 그 직후 reload 에서 새 상태 반영.
-                    NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: self)
                     WidgetCenter.shared.reloadAllTimelines()
                 }
             )
@@ -778,20 +782,26 @@ final class CalendarViewModel: ObservableObject {
                             Logger.calendar.debug("[데이터] 🔄 applied: id=\(e.id.prefix(12)) title=\(e.title) category=\(e.category)")
                         }
                         withAnimation(.easeInOut(duration: 0.25)) {
-                            self.eventsForSelectedDate = applied.sorted { a, b in
-                                if a.isPinned != b.isPinned { return a.isPinned }
-                                if a.priority != b.priority {
-                                    let pa = a.priority == 0 ? Int.max : a.priority
-                                    let pb = b.priority == 0 ? Int.max : b.priority
-                                    return pa < pb
-                                }
-                                return a.startDate < b.startDate
-                            }
+                            self.eventsForSelectedDate = Self.sortedForList(applied)
                         }
                         self.isLoading = false
                     }
             }
         )
+    }
+
+    /// 다른 화면(홈 · 검색 · 저녁 체크)에서 로컬 일정을 고치면 보이는 날짜 · 월을 다시 불러온다 (#165).
+    /// 이 ViewModel 이 보낸 알림(object: self)은 이미 스스로 갱신했으므로 거른다.
+    /// `init(container:)` 가 부른다 — 테스트는 기본 init 을 쓰므로 직접 붙인다.
+    func observeLocalEventChanges() {
+        NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .filter { [weak self] in ($0.object as AnyObject?) !== self }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Logger.calendar.info("[알림] 🔔 dozyEventChanged(외부) → 보이는 날짜 · 월 재fetch")
+                self?.reloadVisibleEvents()
+            }
+            .store(in: &cancellables)
     }
 
     /// 다른 화면(검색 #72)에서 일정을 고친 뒤 돌아왔을 때 — 로컬 수정은 .dozyEventChanged 로만 알려
@@ -803,9 +813,50 @@ final class CalendarViewModel: ObservableObject {
 
     // MARK: - Display Settings
 
+    /// 선택 날짜 목록 정렬 — 고정 → 우선순위(0 은 맨 뒤) → 시작 시각.
+    static func sortedForList(_ events: [CalendarEvent]) -> [CalendarEvent] {
+        events.sorted { a, b in
+            if a.isPinned != b.isPinned { return a.isPinned }
+            if a.priority != b.priority {
+                let pa = a.priority == 0 ? Int.max : a.priority
+                let pb = b.priority == 0 ? Int.max : b.priority
+                return pa < pb
+            }
+            return a.startDate < b.startDate
+        }
+    }
+
+    /// 표시 설정을 저장 결과 · 네트워크를 기다리지 않고 그 자리에서 반영한다 (#165).
+    /// 선택 날짜 목록은 다시 정렬하고, 보이는 달의 그리드는 마지막 조회 결과로 다시 배치한다.
+    private func replaceSelectedDateSnapshot(id: String, _ transform: (CalendarEvent) -> CalendarEvent) {
+        let listIndex = eventsForSelectedDate.firstIndex(where: { $0.id == id })
+        let cal = Calendar.current
+        let monthKey = cal.date(from: cal.dateComponents([.year, .month], from: currentMonth))!
+        Logger.calendar.info("[표시 설정] 즉시 반영 — 목록 index \(listIndex.map(String.init) ?? "없음", privacy: .public), 월 캐시 \(self.monthResultsCache[monthKey] != nil)")
+        if let idx = listIndex {
+            var updated = eventsForSelectedDate
+            updated[idx] = transform(updated[idx])
+            withAnimation(.easeInOut(duration: 0.25)) {
+                eventsForSelectedDate = Self.sortedForList(updated)
+            }
+        }
+        if let cached = monthResultsCache[monthKey] {
+            let patched = cached.map { date, events in
+                (date, events.map { $0.id == id ? transform($0) : $0 })
+            }
+            monthResultsCache[monthKey] = patched
+            buildLayouts(from: patched, forMonth: currentMonth)
+        }
+    }
+
     func updateDisplaySettings(for event: CalendarEvent, priority: Int, isPinned: Bool, category: String? = nil) {
+        Logger.calendar.info("[표시 설정] 저장 요청 — source \(event.source.rawValue, privacy: .public), pinned \(isPinned), priority \(priority), dozy 캐시 \(self.dozyEventsByID[event.id] != nil)")
         if event.source == .dozy {
-            guard let dozy = dozyEventsByID[event.id] else { return }
+            guard let dozy = dozyEventsByID[event.id] else {
+                Logger.calendar.error("[표시 설정] dozyEventsByID 에 없음 — 즉시 반영 · 저장 생략")
+                return
+            }
+            let previous = (priority: dozy.priority, isPinned: dozy.isPinned, category: dozy.category, colorHex: dozy.colorHex)
             dozy.priority = priority
             dozy.isPinned = isPinned
             if let category {
@@ -816,16 +867,31 @@ final class CalendarViewModel: ObservableObject {
                     dozy.colorHex = cat.colorHex
                 }
             }
+            // 저장(Supabase 업로드)을 기다리지 않고 목록 · 월 그리드에 바로 반영한다 (#165).
+            replaceSelectedDateSnapshot(id: event.id) {
+                $0.withDisplay(priority: dozy.priority, isPinned: dozy.isPinned, category: dozy.category, colorHex: dozy.colorHex)
+            }
             updateEventUseCase.execute(dozy)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { [weak self] completion in
-                    if case .failure(let error) = completion {
-                        self?.reportFailure(error, context: "calendar.display_settings", toast: .eventUpdateFailed)
+                    guard let self, case .failure(let error) = completion else { return }
+                    // 실패 — 바로 반영한 값을 되돌린다
+                    dozy.priority = previous.priority
+                    dozy.isPinned = previous.isPinned
+                    dozy.category = previous.category
+                    dozy.colorHex = previous.colorHex
+                    self.replaceSelectedDateSnapshot(id: event.id) {
+                        $0.withDisplay(priority: previous.priority, isPinned: previous.isPinned,
+                                       category: previous.category, colorHex: previous.colorHex)
                     }
+                    self.reloadVisibleEvents()
+                    self.reportFailure(error, context: "calendar.display_settings", toast: .eventUpdateFailed)
                 }, receiveValue: { [weak self] in
-                    self?.toast = .displaySettingsSaved
-                    self?.fetchEventsForDate(self?.selectedDate ?? Date())
-                    self?.fetchEventsForMonth(force: true)
+                    guard let self else { return }
+                    self.toast = .displaySettingsSaved
+                    self.reloadVisibleEvents()
+                    // 홈 · 위젯 캐시도 다시 맞춘다
+                    NotificationCenter.default.post(name: .dozyEventChanged, object: self)
                 })
                 .store(in: &cancellables)
         } else {
@@ -833,24 +899,8 @@ final class CalendarViewModel: ObservableObject {
             Logger.calendar.debug("⚙️ updateDisplaySettings(non-dozy): id=\(event.id.prefix(12)) finalCategory=\(finalCategory) priority=\(priority) isPinned=\(isPinned)")
 
             // 1) eventsForSelectedDate 즉시 갱신 (SwiftData @Model 우회 — 직접 CalendarEvent 생성)
-            if let idx = eventsForSelectedDate.firstIndex(where: { $0.id == event.id }) {
-                let old = eventsForSelectedDate[idx]
-                eventsForSelectedDate[idx] = CalendarEvent(
-                    id: old.id, calendarId: old.calendarId, title: old.title,
-                    startDate: old.startDate, endDate: old.endDate,
-                    location: old.location, notes: old.notes, isAllDay: old.isAllDay,
-                    calendarName: old.calendarName, calendarColorHex: old.calendarColorHex,
-                    source: old.source,
-                    priority: priority, isPinned: isPinned, category: finalCategory,
-                    sharedCalendarID: old.sharedCalendarID,
-                    ownerID: old.ownerID,
-                    externalSource: old.externalSource,
-                    externalEventID: old.externalEventID,
-                    externalDeleted: old.externalDeleted
-                )
-                Logger.calendar.debug("⚙️ eventsForSelectedDate[\(idx)] updated → category=\(finalCategory)")
-            } else {
-                Logger.calendar.warning("⚠️ eventsForSelectedDate에서 event.id=\(event.id.prefix(12))를 찾지 못함")
+            replaceSelectedDateSnapshot(id: event.id) {
+                $0.withDisplay(priority: priority, isPinned: isPinned, category: finalCategory)
             }
 
             // 2) 기존 displaySettings가 있으면 인메모리도 갱신 (이후 fetchEventsForDate 시 applying 정합성)
@@ -909,6 +959,7 @@ final class CalendarViewModel: ObservableObject {
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] events in
                 guard let self else { return }
                 let results = self.groupEventsByDate(events, from: displayStart, to: displayEnd)
+                self.monthResultsCache[monthKey] = results
                 self.buildLayouts(from: results, forMonth: targetMonth)
                 self.loadedMonthKeys.insert(monthKey)
             })
@@ -1193,7 +1244,7 @@ final class CalendarViewModel: ObservableObject {
 
                 self.fetchEventsForDate(self.selectedDate, showLoading: false)
                 self.fetchEventsForMonth(force: true)
-                NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+                NotificationCenter.default.post(name: .dozyEventChanged, object: self)
                 self.cancelNotificationUseCase.execute(identifier: event.id)
                 if event.notificationMinutesBefore >= 0 {
                     self.scheduleNotificationUseCase.execute(for: event)
