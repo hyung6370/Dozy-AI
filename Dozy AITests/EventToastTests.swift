@@ -287,6 +287,89 @@ final class CalendarViewModelToastTests: XCTestCase {
         waitUntil { vm.toast != nil }
         XCTAssertEqual(vm.toast?.message, DozyToast.displaySettingsSaved.message)
     }
+    // MARK: - 표시 설정 즉시 반영 · 화면 간 갱신 (#165)
+
+    /// 알림을 받은 object 를 모은다 — `wait(for:)` 대신 RunLoop 대기로 확인 (#166 크래시 회피)
+    private func collectEventChanged(_ bag: inout Set<AnyCancellable>) -> () -> [AnyObject?] {
+        final class Box { var objects: [AnyObject?] = [] }
+        let box = Box()
+        NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .sink { box.objects.append($0.object as AnyObject?) }
+            .store(in: &bag)
+        return { box.objects }
+    }
+
+    func test_updateDisplaySettings_dozy_reflectsInListBeforeSave() {
+        let dozy = makeDozy()
+        vm.dozyEventsByID[dozy.id] = dozy
+        vm.eventsForSelectedDate = [dozy.toCalendarEvent()]
+        vm.updateDisplaySettings(for: dozy.toCalendarEvent(), priority: 2, isPinned: true)
+        // 저장 결과를 기다리지 않고 바로
+        XCTAssertEqual(vm.eventsForSelectedDate.first?.isPinned, true)
+        XCTAssertEqual(vm.eventsForSelectedDate.first?.priority, 2)
+    }
+
+    func test_updateDisplaySettings_dozy_pinMovesToTopImmediately() {
+        let earlier = makeTestEvent(title: "앞 일정", source: .apple)
+        let dozy = makeDozy("뒤 일정")
+        dozy.startDate = earlier.startDate.addingTimeInterval(3600)
+        dozy.endDate = dozy.startDate.addingTimeInterval(1800)
+        vm.dozyEventsByID[dozy.id] = dozy
+        vm.eventsForSelectedDate = [earlier, dozy.toCalendarEvent()]
+        vm.updateDisplaySettings(for: dozy.toCalendarEvent(), priority: 0, isPinned: true)
+        XCTAssertEqual(vm.eventsForSelectedDate.map(\.title), ["뒤 일정", "앞 일정"], "고정하면 그 자리에서 맨 위로")
+    }
+
+    func test_sortedForList_pinnedThenPriorityThenTime() {
+        let base = Date(timeIntervalSince1970: 1_775_000_000)
+        func ev(_ t: String, _ offset: TimeInterval, pinned: Bool = false, priority: Int = 0) -> CalendarEvent {
+            makeTestEvent(title: t, source: .apple).withDisplay(priority: priority, isPinned: pinned, category: "일반")
+                .shifted(to: base.addingTimeInterval(offset))
+        }
+        let sorted = CalendarViewModel.sortedForList([ev("C", 300), ev("B", 200, priority: 2), ev("A", 100), ev("P", 400, pinned: true)])
+        XCTAssertEqual(sorted.map(\.title), ["P", "B", "A", "C"])
+    }
+
+    func test_updateDisplaySettings_dozy_success_notifiesOtherScreens() {
+        var bag = Set<AnyCancellable>()
+        let posted = collectEventChanged(&bag)
+        let dozy = makeDozy()
+        vm.dozyEventsByID[dozy.id] = dozy
+        vm.updateDisplaySettings(for: dozy.toCalendarEvent(), priority: 1, isPinned: true)
+        waitUntil { !posted().isEmpty }
+        XCTAssertTrue(posted().contains { $0 === vm }, "홈이 알 수 있게 object: self 로 알린다")
+    }
+
+    func test_updateDisplaySettings_dozy_failure_revertsModelAndShowsFailure() {
+        dozyRepo.stubbedError = ToastTestSupport.failure
+        let dozy = makeDozy()
+        vm.dozyEventsByID[dozy.id] = dozy
+        vm.eventsForSelectedDate = [dozy.toCalendarEvent()]
+        vm.updateDisplaySettings(for: dozy.toCalendarEvent(), priority: 2, isPinned: true)
+        XCTAssertTrue(dozy.isPinned)
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.eventUpdateFailed.message)
+        XCTAssertFalse(dozy.isPinned, "실패하면 되돌린다")
+        XCTAssertEqual(dozy.priority, 0)
+    }
+
+    func test_dozyEventChanged_fromOtherScreen_reloadsVisibleEvents() {
+        vm.observeLocalEventChanges()   // 앱에서는 init(container:) 가 붙인다
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))   // 초기 로드가 끝나도록
+        let before = calendarService.fetchCallCount
+        NotificationCenter.default.post(name: .dozyEventChanged, object: nil)
+        waitUntil { calendarService.fetchCallCount > before }
+        XCTAssertGreaterThan(calendarService.fetchCallCount, before)
+    }
+
+    func test_dozyEventChanged_fromSelf_isIgnored() {
+        vm.observeLocalEventChanges()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        let before = calendarService.fetchCallCount
+        NotificationCenter.default.post(name: .dozyEventChanged, object: vm)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+        XCTAssertEqual(calendarService.fetchCallCount, before)
+    }
 }
 
 // MARK: - HomeViewModel
@@ -478,5 +561,53 @@ final class HomeViewModelToastTests: XCTestCase {
         vm.updateDisplaySettings(for: makeTestEvent(title: "외부", source: .apple), priority: 1, isPinned: true, category: nil)
         waitUntil { vm.toast != nil }
         XCTAssertEqual(vm.toast?.message, DozyToast.displaySettingsSaved.message)
+    }
+
+    // MARK: - 표시 설정 즉시 반영 · 화면 간 갱신 (#165)
+
+    func test_updateDisplaySettings_dozy_reflectsInTodayBeforeSave() {
+        let dozy = makeDozy()
+        vm.dozyEventsByID[dozy.id] = dozy
+        vm.todayEvents = [dozy.toCalendarEvent()]
+        vm.updateDisplaySettings(for: dozy.toCalendarEvent(), priority: 3, isPinned: true, category: nil)
+        XCTAssertEqual(vm.todayEvents.first?.isPinned, true)
+        XCTAssertEqual(vm.todayEvents.first?.priority, 3)
+    }
+
+    func test_updateDisplaySettings_dozy_success_notifiesCalendar() {
+        final class Box { var objects: [AnyObject?] = [] }
+        let box = Box()
+        var bag = Set<AnyCancellable>()
+        NotificationCenter.default.publisher(for: .dozyEventChanged)
+            .sink { box.objects.append($0.object as AnyObject?) }
+            .store(in: &bag)
+        let dozy = makeDozy()
+        vm.dozyEventsByID[dozy.id] = dozy
+        vm.updateDisplaySettings(for: dozy.toCalendarEvent(), priority: 1, isPinned: true, category: nil)
+        waitUntil { !box.objects.isEmpty }
+        XCTAssertTrue(box.objects.contains { $0 === vm })
+    }
+
+    func test_updateDisplaySettings_dozy_failure_revertsModelAndSnapshot() {
+        dozyRepo.stubbedError = ToastTestSupport.failure
+        let dozy = makeDozy()
+        vm.dozyEventsByID[dozy.id] = dozy
+        vm.todayEvents = [dozy.toCalendarEvent()]
+        vm.updateDisplaySettings(for: dozy.toCalendarEvent(), priority: 3, isPinned: true, category: nil)
+        waitUntil { vm.toast != nil }
+        XCTAssertEqual(vm.toast?.message, DozyToast.eventUpdateFailed.message)
+        XCTAssertFalse(dozy.isPinned)
+        XCTAssertEqual(vm.todayEvents.first?.isPinned, false)
+        XCTAssertEqual(vm.todayEvents.first?.priority, 0)
+    }
+}
+
+
+private extension CalendarEvent {
+    /// 테스트용 — 시작 시각만 옮긴 사본
+    func shifted(to start: Date) -> CalendarEvent {
+        CalendarEvent(id: id, calendarId: calendarId, title: title, startDate: start, endDate: start.addingTimeInterval(1800),
+                      location: location, notes: notes, isAllDay: isAllDay, calendarName: calendarName,
+                      calendarColorHex: calendarColorHex, source: source, priority: priority, isPinned: isPinned, category: category)
     }
 }
