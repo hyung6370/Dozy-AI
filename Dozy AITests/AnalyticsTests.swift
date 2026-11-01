@@ -153,6 +153,16 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
 
     private var analytics: MockAnalyticsService!
     private let baseDate = Date(timeIntervalSince1970: 1_775_000_000)
+    /// 테스트에서 만든 UseCase 를 테스트 인스턴스가 붙잡아 둔다.
+    /// Swift 6 전환(#152) 뒤로, 테스트 본문 끝에서 지역 UseCase 가 해제되면 isolated deinit 하위 호환 런타임
+    /// (`swift_task_deinitOnExecutorMainActorBackDeploy`)이 SIGABRT 를 낸다. 병렬 실행에서는 재시도로 가려졌고
+    /// 직렬 실행에서 드러났다. ViewModelTests 가 ViewModel 을 프로퍼티로 두는 것과 같은 이유.
+    private var retained: [AnyObject] = []
+
+    private func keep<T: AnyObject>(_ object: T) -> T {
+        retained.append(object)
+        return object
+    }
 
     override func setUp() async throws {
         try await super.setUp()
@@ -162,14 +172,14 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
     // CreateDozyEventUseCase
 
     func test_createEvent_tracksEventCreatedOnceWithMethod() throws {
-        let useCase = CreateDozyEventUseCase(repository: MockDozyEventRepository(), analytics: analytics)
+        let useCase = keep(CreateDozyEventUseCase(repository: MockDozyEventRepository(), analytics: analytics))
         let event = DozyEvent(title: "치과", startDate: baseDate, endDate: baseDate)
         try awaitPublisher(useCase.execute(event, method: .naturalLanguage))
         XCTAssertEqual(analytics.trackedEvents, [.eventCreated(method: .naturalLanguage)])
     }
 
     func test_createEvent_defaultsToManual() throws {
-        let useCase = CreateDozyEventUseCase(repository: MockDozyEventRepository(), analytics: analytics)
+        let useCase = keep(CreateDozyEventUseCase(repository: MockDozyEventRepository(), analytics: analytics))
         try awaitPublisher(useCase.execute(DozyEvent(title: "a", startDate: baseDate, endDate: baseDate)))
         XCTAssertEqual(analytics.trackedEvents, [.eventCreated(method: .manual)])
     }
@@ -177,13 +187,13 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
     func test_createEvent_whenSaveFails_tracksNothing() {
         let repo = MockDozyEventRepository()
         repo.stubbedSaveError = .unknown(underlying: NSError(domain: "test", code: 1))
-        let useCase = CreateDozyEventUseCase(repository: repo, analytics: analytics)
+        let useCase = keep(CreateDozyEventUseCase(repository: repo, analytics: analytics))
         XCTAssertThrowsError(try awaitPublisher(useCase.execute(DozyEvent(title: "a", startDate: baseDate, endDate: baseDate))))
         XCTAssertTrue(analytics.trackedEvents.isEmpty)
     }
 
     func test_createEvent_doesNotLeakEventContent() throws {
-        let useCase = CreateDozyEventUseCase(repository: MockDozyEventRepository(), analytics: analytics)
+        let useCase = keep(CreateDozyEventUseCase(repository: MockDozyEventRepository(), analytics: analytics))
         let secret = "비밀 병원 예약"
         try awaitPublisher(useCase.execute(DozyEvent(title: secret, startDate: baseDate, endDate: baseDate,
                                                      location: "강남", notes: "메모"), method: .manual))
@@ -200,7 +210,7 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
         let ai = MockAIService()
         ai.stubbedSummary = makeTestSummary()
         ai.stubbedEngineStatus = .onDevice
-        let useCase = GenerateDailySummaryUseCase(aiService: ai, repository: MockWorkLogRepository(), analytics: analytics)
+        let useCase = keep(GenerateDailySummaryUseCase(aiService: ai, repository: MockWorkLogRepository(), analytics: analytics))
         try awaitPublisher(useCase.execute(events: [], completedTasks: [], pendingTasks: [], memos: []))
         XCTAssertEqual(analytics.trackedEvents, [.summaryGenerated(engine: .onDevice)])
     }
@@ -208,7 +218,7 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
     func test_summary_backgroundGeneration_isNotTracked() throws {
         let ai = MockAIService()
         ai.stubbedSummary = makeTestSummary()
-        let useCase = GenerateDailySummaryUseCase(aiService: ai, repository: MockWorkLogRepository(), analytics: analytics)
+        let useCase = keep(GenerateDailySummaryUseCase(aiService: ai, repository: MockWorkLogRepository(), analytics: analytics))
         try awaitPublisher(useCase.execute(events: [], completedTasks: [], pendingTasks: [], memos: [], tracksEvent: false))
         XCTAssertTrue(analytics.trackedEvents.isEmpty)
     }
@@ -216,7 +226,7 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
     func test_summary_whenAIFails_tracksNothing() {
         let ai = MockAIService()
         ai.stubbedError = NSError(domain: "test", code: 1)
-        let useCase = GenerateDailySummaryUseCase(aiService: ai, repository: MockWorkLogRepository(), analytics: analytics)
+        let useCase = keep(GenerateDailySummaryUseCase(aiService: ai, repository: MockWorkLogRepository(), analytics: analytics))
         XCTAssertThrowsError(try awaitPublisher(useCase.execute(events: [], completedTasks: [], pendingTasks: [], memos: [])))
         XCTAssertTrue(analytics.trackedEvents.isEmpty)
     }
@@ -224,13 +234,13 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
     // 공유 캘린더
 
     func test_createSharedCalendar_tracksCreated() throws {
-        let useCase = CreateSharedCalendarUseCase(service: MockSharedCalendarService(), analytics: analytics)
+        let useCase = keep(CreateSharedCalendarUseCase(service: MockSharedCalendarService(), analytics: analytics))
         try awaitPublisher(useCase.execute(name: "우리"))
         XCTAssertEqual(analytics.trackedEvents, [.sharedCalendarCreated])
     }
 
     func test_joinSharedCalendar_tracksVia() throws {
-        let useCase = JoinSharedCalendarUseCase(service: MockSharedCalendarService(), analytics: analytics)
+        let useCase = keep(JoinSharedCalendarUseCase(service: MockSharedCalendarService(), analytics: analytics))
         try awaitPublisher(useCase.execute(inviteCode: "ABC123", via: .link))
         try awaitPublisher(useCase.execute(inviteCode: "ABC123"))
         XCTAssertEqual(analytics.trackedEvents, [.sharedCalendarJoined(via: .link), .sharedCalendarJoined(via: .code)])
@@ -239,7 +249,7 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
     func test_joinSharedCalendar_whenFails_tracksNothing() {
         let service = MockSharedCalendarService()
         service.stubbedError = .unknown(underlying: NSError(domain: "test", code: 1))
-        let useCase = JoinSharedCalendarUseCase(service: service, analytics: analytics)
+        let useCase = keep(JoinSharedCalendarUseCase(service: service, analytics: analytics))
         XCTAssertThrowsError(try awaitPublisher(useCase.execute(inviteCode: "BAD")))
         XCTAssertTrue(analytics.trackedEvents.isEmpty)
     }
@@ -247,7 +257,7 @@ final class AnalyticsUseCaseTrackingTests: XCTestCase {
     // 외부 일정 미러
 
     func test_mirror_tracksProviderOfOrigin() throws {
-        let useCase = MirrorExternalEventUseCase(repository: MockDozyEventRepository(), analytics: analytics)
+        let useCase = keep(MirrorExternalEventUseCase(repository: MockDozyEventRepository(), analytics: analytics))
         try awaitPublisher(useCase.execute(makeTestEvent(source: .google), to: "cal-1"))
         XCTAssertEqual(analytics.trackedEvents, [.externalEventMirrored(provider: .google)])
     }
