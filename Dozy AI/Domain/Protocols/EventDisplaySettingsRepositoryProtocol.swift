@@ -10,6 +10,14 @@ import Foundation
 import Combine
 
 protocol EventDisplaySettingsRepositoryProtocol {
-    /// 없으면 생성, 있으면 갱신 + Supabase 동기화
-    func save(eventID: String, priority: Int, isPinned: Bool, category: String) -> AnyPublisher<Void, Never>
+    /// 없으면 생성, 있으면 갱신 + Supabase 동기화 (업로드는 기다리지 않는다)
+    func save(eventID: String, priority: Int, isPinned: Bool, category: String) async
+}
+
+// MARK: - Combine 브리지 (#153 임시 — #156 에서 제거)
+
+extension EventDisplaySettingsRepositoryProtocol {
+    func save(eventID: String, priority: Int, isPinned: Bool, category: String) -> AnyPublisher<Void, Never> {
+        .bridge { () async in await self.save(eventID: eventID, priority: priority, isPinned: isPinned, category: category) }
+    }
 }

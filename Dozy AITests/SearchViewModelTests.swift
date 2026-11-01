@@ -22,9 +22,8 @@ private final class MockCalendarWriteService: CalendarWriteServiceProtocol {
 
 private final class MockDisplaySettingsRepository: EventDisplaySettingsRepositoryProtocol {
     private(set) var saved: [(eventID: String, priority: Int, isPinned: Bool, category: String)] = []
-    func save(eventID: String, priority: Int, isPinned: Bool, category: String) -> AnyPublisher<Void, Never> {
+    func save(eventID: String, priority: Int, isPinned: Bool, category: String) async {
         saved.append((eventID, priority, isPinned, category))
-        return Just(()).eraseToAnyPublisher()
     }
 }
 
@@ -131,6 +130,7 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertTrue(dozy.isPinned)
         XCTAssertEqual(dozy.category, "건강")
         XCTAssertEqual(dozy.colorHex, "#00FF00")
+        waitUntil { dozyRepo.updateCallCount == 1 }
         XCTAssertEqual(dozyRepo.updateCallCount, 1)
         XCTAssertTrue(displayRepo.saved.isEmpty)
     }
@@ -139,6 +139,7 @@ final class SearchViewModelTests: XCTestCase {
         let ev = makeTestEvent(title: "외부", source: .google, category: "업무")
         vm.applyDisplaySettings(event: ev, priority: 1, isPinned: false, category: nil,
                                 dozyEvents: [], categories: [])
+        waitUntil { displayRepo.saved.count == 1 }
         XCTAssertEqual(displayRepo.saved.count, 1)
         XCTAssertEqual(displayRepo.saved[0].eventID, ev.id)
         XCTAssertEqual(displayRepo.saved[0].category, "업무")
@@ -154,6 +155,7 @@ final class SearchViewModelTests: XCTestCase {
         vm.confirmMemoDelete()
         XCTAssertEqual(dozy.memos, ["기타"])
         XCTAssertEqual(dozy.updatedAt, now)
+        waitUntil { dozyRepo.updateCallCount == 1 }
         XCTAssertEqual(dozyRepo.updateCallCount, 1)
         XCTAssertNil(vm.pendingMemoDelete)
     }
@@ -164,6 +166,7 @@ final class SearchViewModelTests: XCTestCase {
         vm.requestMemoDelete("회의 메모", from: .workLog(log))
         vm.confirmMemoDelete()
         XCTAssertEqual(log.memos, ["a"])
+        waitUntil { workLogRepo.saveCallCount == 1 }
         XCTAssertEqual(workLogRepo.saveCallCount, 1)
         XCTAssertNil(vm.pendingMemoDelete)
     }

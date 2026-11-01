@@ -54,21 +54,21 @@ final class MockEventCompletionRepository: EventCompletionRepositoryProtocol {
     var stubbedError: DozyError? = nil
     private(set) var toggleCalledWith: (eventID: String, eventDate: Date)?
 
-    func fetchCompletions(for eventIDs: [String], on date: Date) -> AnyPublisher<[String: Bool], DozyError> {
-        Just([:]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchCompletions(for eventIDs: [String], on date: Date) async throws(DozyError) -> [String: Bool] {
+        [:]
     }
 
     /// 기간 조회 결과 (#72 SearchEventsUseCase)
     var stubbedPeriodCompletions: [EventCompletion] = []
 
-    func fetchCompletions(from start: Date, to end: Date) -> AnyPublisher<[EventCompletion], DozyError> {
-        Just(stubbedPeriodCompletions).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchCompletions(from start: Date, to end: Date) async throws(DozyError) -> [EventCompletion] {
+        stubbedPeriodCompletions
     }
 
-    func toggle(eventID: String, eventDate: Date) -> AnyPublisher<Bool, DozyError> {
+    func toggle(eventID: String, eventDate: Date) async throws(DozyError) -> Bool {
         toggleCalledWith = (eventID: eventID, eventDate: eventDate)
-        if let error = stubbedError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(stubbedToggleResult).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedError { throw error }
+        return stubbedToggleResult
     }
 }
 
@@ -84,41 +84,38 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
     /// 기간 조회 결과 (#72 SearchEventsUseCase)
     var stubbedPeriodEvents: [DozyEvent] = []
 
-    func fetchEvents(from: Date, to: Date) -> AnyPublisher<[DozyEvent], DozyError> {
-        Just(stubbedPeriodEvents).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchEvents(from: Date, to: Date) async throws(DozyError) -> [DozyEvent] {
+        stubbedPeriodEvents
     }
 
-    func fetchAllRecurring() -> AnyPublisher<[DozyEvent], DozyError> {
-        Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchAllRecurring() async throws(DozyError) -> [DozyEvent] {
+        []
     }
 
-    func save(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
-        if let error = stubbedSaveError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func save(_ event: DozyEvent) async throws(DozyError) {
+        if let error = stubbedSaveError { throw error }
     }
 
-    func update(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
+    func update(_ event: DozyEvent) async throws(DozyError) {
         updateCallCount += 1
         lastUpdatedEvent = event
-        if let error = stubbedError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedError { throw error }
     }
 
     /// delete 실패 시나리오용 (#143 — 삭제 실패 토스트)
     var stubbedDeleteError: DozyError? = nil
     private(set) var deleteCallCount = 0
 
-    func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
+    func delete(_ event: DozyEvent) async throws(DozyError) {
         deleteCallCount += 1
-        if let error = stubbedDeleteError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedDeleteError { throw error }
     }
 
     func mirrorExternalEvent(
         _ origin: CalendarEvent,
         to sharedCalendarID: String
-    ) -> AnyPublisher<DozyEvent, DozyError> {
-        let event = DozyEvent(
+    ) async throws(DozyError) -> DozyEvent {
+        DozyEvent(
             title: origin.title,
             startDate: origin.startDate,
             endDate: origin.endDate,
@@ -126,23 +123,18 @@ final class MockDozyEventRepository: DozyEventRepositoryProtocol {
             externalSource: origin.source.rawValue,
             externalEventID: origin.id
         )
-        return Just(event).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
 
-    func fetchMyExternalMirrors() -> AnyPublisher<[DozyEvent], DozyError> {
-        Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchMyExternalMirrors() async throws(DozyError) -> [DozyEvent] {
+        []
     }
 
     func applyExternalMirrorReconcile(
         updates: [ExternalMirrorUpdate],
         deletedIDs: [String]
-    ) -> AnyPublisher<Void, DozyError> {
-        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    ) async throws(DozyError) {}
 
-    func deleteExternalMirrors(ids: [String]) -> AnyPublisher<Void, DozyError> {
-        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    func deleteExternalMirrors(ids: [String]) async throws(DozyError) {}
 }
 
 // MARK: - MockAIService
@@ -180,41 +172,38 @@ final class MockWorkLogRepository: WorkLogRepositoryProtocol {
     private(set) var receivedDays: Int?
     private(set) var fetchRecentCallCount = 0
 
-    func fetchLog(for date: Date) -> AnyPublisher<WorkLog?, DozyError> {
-        if let error = stubbedFetchError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(stubbedLog).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchLog(for date: Date) async throws(DozyError) -> WorkLog? {
+        if let error = stubbedFetchError { throw error }
+        return stubbedLog
     }
 
-    func fetchRecentLogs(days: Int) -> AnyPublisher<[WorkLog], DozyError> {
+    func fetchRecentLogs(days: Int) async throws(DozyError) -> [WorkLog] {
         receivedDays = days
         fetchRecentCallCount += 1
-        if let error = stubbedFetchError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(stubbedRecentLogs).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedFetchError { throw error }
+        return stubbedRecentLogs
     }
 
     /// 오늘 WorkLog 가 없으면 새로 만들어 `stubbedLog` 로 기억한다 — 실제 저장소처럼 두 번째 호출은 같은 객체.
     private(set) var fetchOrCreateCallCount = 0
     private(set) var createdLogCount = 0
 
-    func fetchOrCreateLog(for date: Date) -> AnyPublisher<WorkLog, DozyError> {
+    func fetchOrCreateLog(for date: Date) async throws(DozyError) -> WorkLog {
         fetchOrCreateCallCount += 1
-        if let error = stubbedFetchError { return Fail(error: error).eraseToAnyPublisher() }
-        if let stubbedLog { return Just(stubbedLog).setFailureType(to: DozyError.self).eraseToAnyPublisher() }
+        if let error = stubbedFetchError { throw error }
+        if let stubbedLog { return stubbedLog }
         let log = WorkLog(date: date)
         stubbedLog = log
         createdLogCount += 1
-        return Just(log).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        return log
     }
 
-    func save(_ log: WorkLog) -> AnyPublisher<Void, DozyError> {
+    func save(_ log: WorkLog) async throws(DozyError) {
         saveCallCount += 1
-        if let error = stubbedSaveError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedSaveError { throw error }
     }
 
-    func delete(_ log: WorkLog) -> AnyPublisher<Void, DozyError> {
-        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    func delete(_ log: WorkLog) async throws(DozyError) {}
 }
 
 // MARK: - MockPeriodCalendarService (#72)
