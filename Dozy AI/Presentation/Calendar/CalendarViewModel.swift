@@ -898,12 +898,8 @@ final class CalendarViewModel: ObservableObject {
             let finalCategory = category ?? event.category
             Logger.calendar.debug("⚙️ updateDisplaySettings(non-dozy): id=\(event.id.prefix(12)) finalCategory=\(finalCategory) priority=\(priority) isPinned=\(isPinned)")
 
-            // 1) eventsForSelectedDate 즉시 갱신 (SwiftData @Model 우회 — 직접 CalendarEvent 생성)
-            replaceSelectedDateSnapshot(id: event.id) {
-                $0.withDisplay(priority: priority, isPinned: isPinned, category: finalCategory)
-            }
-
-            // 2) 기존 displaySettings가 있으면 인메모리도 갱신 (이후 fetchEventsForDate 시 applying 정합성)
+            // 1) 기존 displaySettings가 있으면 인메모리부터 갱신 — 아래 즉시 반영에서 그리드 배치(buildLayouts)가
+            //    이 값으로 덮어쓰므로 먼저 바꿔야 그리드가 이전 고정 값으로 그려지지 않는다 (#165 후속).
             if let settings = displaySettingsByID[event.id] {
                 settings.priority = priority
                 settings.isPinned = isPinned
@@ -911,6 +907,11 @@ final class CalendarViewModel: ObservableObject {
                 Logger.calendar.debug("⚙️ displaySettingsByID 갱신 완료")
             } else {
                 Logger.calendar.debug("⚙️ displaySettingsByID에 기존 항목 없음 (첫 저장)")
+            }
+
+            // 2) 목록 · 월 그리드 즉시 반영 (SwiftData @Model 우회 — 직접 CalendarEvent 생성)
+            replaceSelectedDateSnapshot(id: event.id) {
+                $0.withDisplay(priority: priority, isPinned: isPinned, category: finalCategory)
             }
 
             // 3) DB 저장 → 저장 후 fetch해서 displaySettingsByID 동기화

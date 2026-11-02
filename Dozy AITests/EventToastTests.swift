@@ -330,6 +330,25 @@ final class CalendarViewModelToastTests: XCTestCase {
         XCTAssertEqual(sorted.map(\.title), ["P", "B", "A", "C"])
     }
 
+    /// 외부 일정 — 이미 저장된 표시 설정(고정 안 함)이 있어도 그리드가 그 자리에서 고정으로 바뀐다 (#165 후속).
+    func test_updateDisplaySettings_external_withExistingSettings_updatesGridImmediately() {
+        // 지금 보이는 달 안의 날짜로 (makeTestEvent 는 2026-04-11 고정)
+        let cal = Calendar.current
+        let monthStart = cal.date(from: cal.dateComponents([.year, .month], from: vm.currentMonth))!
+        let ext = makeTestEvent(title: "외부 고정", source: .google)
+            .shifted(to: cal.date(byAdding: .hour, value: 24 * 10 + 9, to: monthStart)!)
+        calendarService.stubbedEvents = [ext]
+        vm.reloadVisibleEvents()
+        waitUntil { vm.weekLayouts.values.joined().contains { $0.eventId == ext.id } }
+        vm.displaySettingsByID[ext.id] = EventDisplaySettings(eventID: ext.id, priority: 0, isPinned: false)
+
+        vm.updateDisplaySettings(for: ext, priority: 0, isPinned: true)
+
+        let layouts = vm.weekLayouts.values.joined().filter { $0.eventId == ext.id }
+        XCTAssertFalse(layouts.isEmpty, "그리드에 외부 일정이 있어야 합니다")
+        XCTAssertTrue(layouts.allSatisfy(\.isPinned), "저장된 이전 설정이 아니라 새 고정 값으로 바로 배치")
+    }
+
     func test_updateDisplaySettings_dozy_success_notifiesOtherScreens() {
         var bag = Set<AnyCancellable>()
         let posted = collectEventChanged(&bag)
