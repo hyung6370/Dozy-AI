@@ -11,6 +11,8 @@ iOS · macOS 생산성 앱 (SwiftUI, SwiftData, Supabase). Clean Architecture + 
 | `/issue-start <번호>` | 이슈 분석 → 브랜치 생성 → 구현 계획 |
 | `/verify` | iOS · macOS 빌드 + 양쪽 테스트 타깃 실행 + 결과 요약 |
 | `/pr` | PR 본문 생성(요약 / 변경 사항 / 확인 / 참고) → 푸시 → PR 생성 |
+| `/device-test` | 개발 빌드 실기기 설치 → 로그인 상태 UI 테스트 · 임시 UI 테스트 → 스크린샷 · 크래시 로그로 판단 |
+| `/release` | 버전 올림 → TestFlight → 심사 제출 후 main 머지 · 태그 · 마일스톤 |
 
 ## Git 규칙
 
@@ -20,6 +22,8 @@ iOS · macOS 생산성 앱 (SwiftUI, SwiftData, Supabase). Clean Architecture + 
 - 브랜치: `feat/<kebab-case>`, `fix/<kebab-case>`. 기본 브랜치는 `dev`, PR 도 `dev` 로.
 - 마일스톤: 이슈는 반드시 마일스톤에 속한다. 이슈 번호를 커밋 제목과 PR 본문(`Closes #N`)에 연결한다.
 - 이슈·PR·커밋 본문은 한국어.
+- 키체인 인증 오류로 `git push` 가 실패하면 `git -c credential.helper= -c credential.helper='!gh auth git-credential' push ...` (gh 로그인은 되어 있다).
+- 빌드 · 테스트 뒤 스킴 파일 · xcstrings 재정렬 같은 Xcode 잡음이 생기면 커밋 전에 `git checkout --` 로 되돌린다.
 
 ## 아키텍처 규칙
 
@@ -77,13 +81,21 @@ xcodebuild -project "Dozy AI.xcodeproj" -scheme "Dozy AI (macOS)" -destination '
 - 푸시(#95): APNs 키 `4YB8D3627Y`(Team `7DVWGZFH6N`, Team scoped). Edge Function `send-push` 시크릿 `APNS_KEY_ID` · `APNS_TEAM_ID` · `APNS_BUNDLE_ID` · `APNS_PRIVATE_KEY` · `PUSH_WEBHOOK_SECRET`, DB Vault `push_function_url` · `push_webhook_secret`(Function 시크릿과 같은 값). Dev · Prod 비밀값은 서로 다르다. 시크릿 · Vault 등록과 SQL Editor 실행은 사용자가 직접(키 내용을 대화에 넣지 않는다). Debug 빌드는 sandbox 토큰.
 - Firebase(#90 Analytics · #117 Crashlytics): `GoogleService-Info.plist` 를 `Dozy AI/` · `Dozy AI (macOS)/` 에 둔다(공개 저장소라 .gitignore, 콘솔 프로젝트 `dozy-7fa39`). 없어도 빌드는 되고 Firebase 만 꺼진다. DEBUG 는 `-FIRAnalyticsDebugEnabled` 인자일 때만 수집. dSYM 은 Release 빌드 단계 "Upload dSYM to Crashlytics" 가 올린다. 테스트 크래시는 `-DozyCrashlyticsTestCrash`(스킴 Run › Info › Debug executable 해제 필수 — 디버거가 붙으면 기록 안 됨. 크래시 후 인자 빼고 재실행해야 전송). 비치명 오류는 `CrashReporting.record(error, context:)` — 메시지는 버리고 분류만 보낸다.
 
+## Swift Concurrency 전환 (#153 ~ #156)
+
+- 단발 호출은 `async throws(DozyError)`, 스트림(@Published · NotificationCenter · debounce)은 Combine 유지.
+- **같은 이름 브리지**: 프로토콜 요구사항은 async, 확장에 같은 이름의 동기 `AnyPublisher` 판(`AnyPublisher.bridge { … }`, `Domain/Protocols/AsyncPublisherBridge.swift`). 동기 문맥은 Publisher 판, `await` 문맥은 async 판을 고른다 — UseCase · ViewModel 은 #154 · #155 전까지 무수정. 브리지 제거는 #156.
+- typed throws 클로저 안 `catch` 는 `do throws(DozyError)` 를 명시해야 타입이 잡힌다.
+- async 판이 없는 시스템 콜백(EventKit `fetchReminders`, GoogleSignIn 토큰 갱신)은 `@Sendable` 콜백 + continuation. 콜백 안에서 쓰는 매퍼는 `nonisolated`. 메인 액터로 추론된 클로저가 다른 큐에서 불리면 Swift 6 런타임 격리 검사로 앱이 죽는다(#152) — 단위 테스트로 안 잡히니 실기기(`/device-test`)로 확인.
+- 테스트: 목이 async 가 되면 호출 기록이 한 차례 늦게 남는다 → 클래스의 RunLoop `waitUntil` 로 기다린다. async 테스트 안에서 RunLoop 대기를 쓰면 메인 액터가 막혀 브리지가 안 돈다.
+
 ## 이슈 · PR 템플릿
 
 이슈: `## 배경` → `## 작업 내용`(체크박스, Domain/Data/Presentation 등 소제목) → `## 설계 메모` → `## 범위 제외` → `## 검증`(체크박스) → `## 참고`.
 PR: `Closes #N` → `## 요약` → `## 변경 사항`(**굵은 항목명** + 설명) → `## 확인`(빌드·테스트는 체크, 실기기는 미체크로 남김) → `## 참고`(알려진 동작 · 범위 밖).
 구현을 마치면 이슈 본문 체크박스를 갱신하고 `## 구현 메모` 를 덧붙인다.
 
-## 현재 로드맵 (2026-11-03 기준)
+## 현재 로드맵 (2026-11-04 기준)
 
 - v2.0.3: 완료 (2026-10-27, 마일스톤 닫힘). 마지막 항목 #71 Live Activity 는 PR #96, 앱 아이콘 Iconsax 교체는 PR #97 로 머지.
 - macOS v2.0.3: 완료 (2026-10-28 심사 제출, 마일스톤 #11 닫힘, 태그 `macos-v2.0.3`). #100 자연어 입력(음성 제외) · #101 저녁 요약 알림 + 저녁 체크 · #107 테마 팔레트 · #102 AI 엔진 행 · 버전 2.0.3 (15) · #103 · #110 수정 · #112 테스트. Google 캘린더는 OAuth 검증 대기로 macOS 비활성.
@@ -91,5 +103,9 @@ PR: `Closes #N` → `## 요약` → `## 변경 사항`(**굵은 항목명** + �
 - v2.0.5 ~ v2.0.9: **앱 유지보수 전용** (2026-10-30 결정). 버그 수정 · 안정화만 넣고 신규 기능 · 수익화는 넣지 않는다.
 - v2.0.5 유지보수: 완료 (2026-10-30 심사 제출, 태그 `v2.0.5`, 빌드 164). #137 홈 메모 전송 버튼(PR #138) · #139 로그인 애니메이션(PR #140) · #141 잠금화면 카드 상시 다크(PR #142) · #143 · #144 결과 토스트 `DozyToast`(PR #145 · #146) · #147 반복 일정 계속 기본 · 요약(PR #150). 반복 규칙 확장은 v2.1.0 #148 · #149.
 - v2.0.6 Swift 6 + 회귀 수정: 완료 (2026-11-03 심사 제출, 태그 `v2.0.6`, 빌드 165, 마일스톤 #14). #152 Swift 6 언어 모드(PR #160 · #161 · #162) · 실기기 회귀 수정(PR #163 — 캡처 저장 크래시 · 위젯 사용 중 메모 저장 실패 `DozySchema` 단일 스키마, 운영 v2.0.5 `no such table: ZWORKLOG` · 첫 실행 Google 일정 누락) · #153 1단계 SwiftData 저장소 async(PR #164) · #165 상단 고정 · 우선순위 즉시 반영(PR #167 · #168).
-- v2.0.7 Swift Concurrency 이어서 (마일스톤 #15, 2026-11-03 v2.0.6 에서 이동): #153 Data async 2단계~ → #154 UseCase async + 테스트 → #155 ViewModel 화면별 → #156 브리지 · 잔여 정리 · #166 직렬 테스트 isolated deinit 재시작. 원칙: 단발 호출은 async/await, 스트림(@Published · NotificationCenter · debounce/throttle)은 Combine 유지.
+- v2.0.7 Swift Concurrency 이어서 (마일스톤 #15, 2026-11-03 v2.0.6 에서 이동). 원칙: 단발 호출은 async/await, 스트림(@Published · NotificationCenter · debounce/throttle)은 Combine 유지.
+  - #153 Data async — PR 1 SwiftData 저장소(#164) · PR 2 EventKit · 알림(#172) · PR 3 네트워크 캘린더 + 캘린더 조회 · 쓰기 프로토콜(#173) 완료. **다음: PR 4** 공유 캘린더 · 동기화(`SharedCalendarServiceProtocol` · `SharedCalendarService` · `SyncService` · `NotificationRepository`) → PR 5 로그인 계열(`AuthService` · `GoogleSignInService` · `NaverSignInService` 내부만 async — 두 로그인 서비스의 토큰 받기는 PR 3 에서 이미 async). 진행 상황 · 구현 메모는 이슈 #153 본문.
+  - 이후 #154 UseCase async + 테스트 → #155 ViewModel 화면별 → #156 브리지 · 잔여 정리 · #166 직렬 테스트 isolated deinit 재시작.
+  - PR 3 실기기 미확인: Google 일정 수정 · 삭제, 공유 캘린더 미러(원본 수정 → 공유본 갱신).
+- v2.0.6 출시 후 할 일: 심사 결과 확인 → Crashlytics 에서 `no such table: ZWORKLOG` 소멸 확인 → 필요하면 Prod `min_ios_version` 2.0.6.
 - v2.1.0 수익화 (2026-10-30 v2.0.5 에서 이동): #91 RevenueCat → #92 Pro 게이팅 → #93 페이월 → #119 광고(iOS 무료 사용자 한정 · 비맞춤 · ATT 없음, 핵심 화면 제외, Pro 는 광고 제거) → #94 글로벌 출시 · #126 Live Activity 푸시. #91 Grandfather 기준은 v2.1.0 이전 설치.
