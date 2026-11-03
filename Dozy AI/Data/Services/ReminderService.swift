@@ -10,7 +10,6 @@
 //  Domain 모델(TaskItem)은 EventKit을 전혀 모릅니다.
 
 import Foundation
-import Combine
 import EventKit
 
 final class ReminderService: ReminderServiceProtocol {
@@ -19,109 +18,69 @@ final class ReminderService: ReminderServiceProtocol {
 
     // MARK: - 권한 요청
 
-    func requestAccess() -> AnyPublisher<Bool, DozyError> {
-        Future { [eventStore] promise in
-            eventStore.requestFullAccessToReminders { granted, error in
-                if let error {
-                    promise(.failure(.reminderFetchFailed(underlying: error)))
-                } else {
-                    promise(.success(granted))
-                }
-            }
+    func requestAccess() async throws(DozyError) -> Bool {
+        do {
+            return try await eventStore.requestFullAccessToReminders()
+        } catch {
+            throw .reminderFetchFailed(underlying: error)
         }
-        // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
-        .receive(on: DispatchQueue.main)
-        .eraseToAnyPublisher()
     }
 
     // MARK: - 완료된 리마인더 조회
 
-    func fetchCompletedReminders(for date: Date) -> AnyPublisher<[TaskItem], DozyError> {
-        requestAccessIfNeeded()
-            .flatMap { [eventStore] _ -> AnyPublisher<[TaskItem], DozyError> in
-                Future { promise in
-                    let predicate = eventStore.predicateForCompletedReminders(
-                        withCompletionDateStarting: date.startOfDay,
-                        ending: date.startOfNextDay,
-                        calendars: nil
-                    )
-
-                    eventStore.fetchReminders(matching: predicate) { reminders in
-                        let tasks = (reminders ?? [])
-                            .map { $0.toTaskItem() }           // ← Mapper 사용
-                            .sorted {
-                                ($0.completedDate ?? .distantPast) < ($1.completedDate ?? .distantPast)
-                            }
-                        promise(.success(tasks))
-                    }
-                }
-                // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
-                .receive(on: DispatchQueue.main)
-                .eraseToAnyPublisher()
-            }
-            .eraseToAnyPublisher()
+    func fetchCompletedReminders(for date: Date) async throws(DozyError) -> [TaskItem] {
+        try await requestAccessIfNeeded()
+        let predicate = eventStore.predicateForCompletedReminders(
+            withCompletionDateStarting: date.startOfDay,
+            ending: date.startOfNextDay,
+            calendars: nil
+        )
+        return await fetchTasks(matching: predicate).sorted {
+            ($0.completedDate ?? .distantPast) < ($1.completedDate ?? .distantPast)
+        }
     }
 
     // MARK: - 미완료 리마인더 조회
 
-    func fetchPendingReminders() -> AnyPublisher<[TaskItem], DozyError> {
-        requestAccessIfNeeded()
-            .flatMap { [eventStore] _ -> AnyPublisher<[TaskItem], DozyError> in
-                Future { promise in
-                    let predicate = eventStore.predicateForIncompleteReminders(
-                        withDueDateStarting: nil,
-                        ending: nil,
-                        calendars: nil
-                    )
-
-                    eventStore.fetchReminders(matching: predicate) { reminders in
-                        let tasks = (reminders ?? [])
-                            .map { $0.toTaskItem() }           // ← Mapper 사용
-                            .sorted { lhs, rhs in
-                                if lhs.priority != rhs.priority {
-                                    return lhs.priority < rhs.priority
-                                }
-                                return (lhs.dueDate ?? .distantFuture) < (rhs.dueDate ?? .distantFuture)
-                            }
-                        promise(.success(tasks))
-                    }
-                }
-                // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
-                .receive(on: DispatchQueue.main)
-                .eraseToAnyPublisher()
+    func fetchPendingReminders() async throws(DozyError) -> [TaskItem] {
+        try await requestAccessIfNeeded()
+        let predicate = eventStore.predicateForIncompleteReminders(
+            withDueDateStarting: nil,
+            ending: nil,
+            calendars: nil
+        )
+        return await fetchTasks(matching: predicate).sorted { lhs, rhs in
+            if lhs.priority != rhs.priority {
+                return lhs.priority < rhs.priority
             }
-            .eraseToAnyPublisher()
+            return (lhs.dueDate ?? .distantFuture) < (rhs.dueDate ?? .distantFuture)
+        }
     }
 
     // MARK: - Private Helpers
 
-    private func requestAccessIfNeeded() -> AnyPublisher<Void, DozyError> {
-        Future { [eventStore] promise in
-            let status = EKEventStore.authorizationStatus(for: .reminder)
-
-            switch status {
-            case .fullAccess, .authorized:
-                promise(.success(()))
-
-            case .notDetermined:
-                eventStore.requestFullAccessToReminders { granted, _ in
-                    if granted {
-                        promise(.success(()))
-                    } else {
-                        promise(.failure(.reminderAccessDenied))
-                    }
-                }
-
-            case .denied, .restricted, .writeOnly:
-                promise(.failure(.reminderAccessDenied))
-
-            @unknown default:
-                promise(.failure(.reminderAccessDenied))
+    /// `fetchReminders` 는 async 판이 없다. 콜백은 EventKit 내부 큐에서 불리므로 `@Sendable` 로 두고
+    /// (메인 액터 클로저로 추론되면 Swift 6 런타임 격리 검사로 죽는다, #152) 그 안에서 값 타입으로 바꿔 넘긴다.
+    private func fetchTasks(matching predicate: NSPredicate) async -> [TaskItem] {
+        await withCheckedContinuation { (continuation: CheckedContinuation<[TaskItem], Never>) in
+            eventStore.fetchReminders(matching: predicate) { @Sendable reminders in
+                continuation.resume(returning: (reminders ?? []).map { $0.toTaskItem() })
             }
         }
-        // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
-        .receive(on: DispatchQueue.main)
-        .eraseToAnyPublisher()
+    }
+
+    private func requestAccessIfNeeded() async throws(DozyError) {
+        switch EKEventStore.authorizationStatus(for: .reminder) {
+        case .fullAccess, .authorized:
+            return
+        case .notDetermined:
+            let granted = (try? await eventStore.requestFullAccessToReminders()) ?? false
+            guard granted else { throw .reminderAccessDenied }
+        case .denied, .restricted, .writeOnly:
+            throw .reminderAccessDenied
+        @unknown default:
+            throw .reminderAccessDenied
+        }
     }
 }
 
@@ -130,7 +89,7 @@ final class ReminderService: ReminderServiceProtocol {
 // 변환 로직을 Data 계층(이 파일) 안에 캡슐화합니다.
 
 private extension EKReminder {
-    func toTaskItem() -> TaskItem {
+    nonisolated func toTaskItem() -> TaskItem {
         TaskItem(
             id: calendarItemIdentifier,
             title: title ?? "제목 없음",

@@ -32,19 +32,17 @@ final class MockReminderService: ReminderServiceProtocol {
     var stubbedPending: [TaskItem] = []
     var stubbedError: DozyError? = nil
 
-    func fetchCompletedReminders(for date: Date) -> AnyPublisher<[TaskItem], DozyError> {
-        if let error = stubbedError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(stubbedCompleted).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchCompletedReminders(for date: Date) async throws(DozyError) -> [TaskItem] {
+        if let error = stubbedError { throw error }
+        return stubbedCompleted
     }
 
-    func fetchPendingReminders() -> AnyPublisher<[TaskItem], DozyError> {
-        if let error = stubbedError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(stubbedPending).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func fetchPendingReminders() async throws(DozyError) -> [TaskItem] {
+        if let error = stubbedError { throw error }
+        return stubbedPending
     }
 
-    func requestAccess() -> AnyPublisher<Bool, DozyError> {
-        Just(true).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    func requestAccess() async throws(DozyError) -> Bool { true }
 }
 
 // MARK: - MockEventCompletionRepository
