@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Combine
 import OSLog
 
 final class ExternalMirrorSyncService {
@@ -22,7 +21,7 @@ final class ExternalMirrorSyncService {
     private let sourceManager: CalendarSourceManager
 
     /// 한 번에 여러 reconcile이 돌지 않도록 직렬화.
-    private var inFlight: AnyCancellable?
+    private var inFlight: Task<Void, Never>?
 
     init(
         repository: DozyEventRepositoryProtocol,
@@ -45,47 +44,25 @@ final class ExternalMirrorSyncService {
             return
         }
         Logger.mirrorSync.info("[동기화] 🔄 외부 미러 reconcile 시작")
-        inFlight = repository.fetchMyExternalMirrors()
-            .flatMap { [weak self] mirrors -> AnyPublisher<ReconcileResult, DozyError> in
-                guard let self else {
-                    return Just(ReconcileResult.empty).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-                }
-                return self.computeReconcile(mirrors: mirrors)
-            }
-            .flatMap { [weak self] result -> AnyPublisher<Void, DozyError> in
-                guard let self else {
-                    return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-                }
+        inFlight = Task { [weak self] in
+            guard let self else { completion?(); return }
+            do throws(DozyError) {
+                let mirrors = try await repository.fetchMyExternalMirrors()
+                let result = try await computeReconcile(mirrors: mirrors)
                 Logger.mirrorSync.info("[동기화] 📝 업데이트 \(result.updates.count)건 / 삭제 마킹 \(result.deletedIDs.count)건 / 영구 삭제 \(result.permanentDeleteIDs.count)건")
                 // 먼저 flag/필드 반영 → 그 다음 유예 지난 스냅샷 영구 삭제.
                 // 순서를 뒤집으면 방금 삭제한 id에 대해 apply 단계에서 no-op이 되므로 결과적으로는 같지만, 의미상 마킹 먼저가 자연스러움.
-                return self.repository.applyExternalMirrorReconcile(
-                    updates: result.updates,
-                    deletedIDs: result.deletedIDs
-                )
-                .flatMap { [weak self] _ -> AnyPublisher<Void, DozyError> in
-                    guard let self else {
-                        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-                    }
-                    guard !result.permanentDeleteIDs.isEmpty else {
-                        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-                    }
-                    return self.repository.deleteExternalMirrors(ids: result.permanentDeleteIDs)
+                try await repository.applyExternalMirrorReconcile(updates: result.updates, deletedIDs: result.deletedIDs)
+                if !result.permanentDeleteIDs.isEmpty {
+                    try await repository.deleteExternalMirrors(ids: result.permanentDeleteIDs)
                 }
-                .eraseToAnyPublisher()
+                Logger.mirrorSync.info("[동기화] ✅ reconcile 완료")
+            } catch {
+                Logger.mirrorSync.error("[동기화] ❌ reconcile 실패: \(error.localizedDescription)")
             }
-            .sink(
-                receiveCompletion: { [weak self] result in
-                    if case .failure(let error) = result {
-                        Logger.mirrorSync.error("[동기화] ❌ reconcile 실패: \(error.localizedDescription)")
-                    } else {
-                        Logger.mirrorSync.info("[동기화] ✅ reconcile 완료")
-                    }
-                    self?.inFlight = nil
-                    completion?()
-                },
-                receiveValue: { _ in }
-            )
+            inFlight = nil
+            completion?()
+        }
     }
 
     /// reconcile 결과 집계.
@@ -100,62 +77,36 @@ final class ExternalMirrorSyncService {
     // MARK: - 계산 로직
 
     /// 미러 스냅샷을 source별로 나누고, 각 source의 원본을 범위 fetch한 뒤 매칭 결과를 돌려준다.
-    private func computeReconcile(
-        mirrors: [DozyEvent]
-    ) -> AnyPublisher<ReconcileResult, DozyError> {
-        guard !mirrors.isEmpty else {
-            return Just(ReconcileResult.empty).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-        }
+    private func computeReconcile(mirrors: [DozyEvent]) async throws(DozyError) -> ReconcileResult {
+        guard !mirrors.isEmpty else { return .empty }
 
         let appleMirrors = mirrors.filter { $0.externalSource == CalendarSource.apple.rawValue }
         let googleMirrors = mirrors.filter { $0.externalSource == CalendarSource.google.rawValue }
 
-        let applePublisher = reconcilePublisher(
-            for: .apple,
-            mirrors: appleMirrors,
-            fetch: { [weak self] start, end in
-                guard let self else {
-                    return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-                }
-                return self.appleService.fetchEvents(from: start, to: end)
-            }
+        // Apple 실패는 전파, Google 실패는 빈 목록 (기존 Publisher 판과 같은 규칙).
+        let apple = try await reconcile(for: .apple, mirrors: appleMirrors) { [appleService] start, end throws(DozyError) in
+            try await appleService.fetchEvents(from: start, to: end)
+        }
+        let google = try await reconcile(for: .google, mirrors: googleMirrors) { [googleService] start, end throws(DozyError) in
+            (try? await googleService.fetchEvents(from: start, to: end)) ?? []
+        }
+        return ReconcileResult(
+            updates: apple.updates + google.updates,
+            deletedIDs: apple.deletedIDs + google.deletedIDs,
+            permanentDeleteIDs: apple.permanentDeleteIDs + google.permanentDeleteIDs
         )
-
-        let googlePublisher = reconcilePublisher(
-            for: .google,
-            mirrors: googleMirrors,
-            fetch: { [weak self] start, end in
-                guard let self else {
-                    return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-                }
-                return self.googleService.fetchEvents(from: start, to: end)
-                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-            }
-        )
-
-        return Publishers.Zip(applePublisher, googlePublisher)
-            .map { apple, google in
-                ReconcileResult(
-                    updates: apple.updates + google.updates,
-                    deletedIDs: apple.deletedIDs + google.deletedIDs,
-                    permanentDeleteIDs: apple.permanentDeleteIDs + google.permanentDeleteIDs
-                )
-            }
-            .eraseToAnyPublisher()
     }
 
-    private func reconcilePublisher(
+    private func reconcile(
         for source: CalendarSource,
         mirrors: [DozyEvent],
-        fetch: @escaping (Date, Date) -> AnyPublisher<[CalendarEvent], DozyError>
-    ) -> AnyPublisher<ReconcileResult, DozyError> {
-        guard !mirrors.isEmpty else {
-            return Just(ReconcileResult.empty).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-        }
+        fetch: (Date, Date) async throws(DozyError) -> [CalendarEvent]
+    ) async throws(DozyError) -> ReconcileResult {
+        guard !mirrors.isEmpty else { return .empty }
         // 해당 소스가 비활성화면 원본 조회 불가 → 이번 사이클은 skip (삭제 마킹도 하지 않음).
         guard sourceManager.isEnabled(source) else {
             Logger.mirrorSync.info("ℹ️ \(source.rawValue) 소스 비활성 — 이번 reconcile은 skip")
-            return Just(ReconcileResult.empty).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+            return .empty
         }
 
         let cal = Calendar.current
@@ -166,54 +117,51 @@ final class ExternalMirrorSyncService {
         let rangeEnd = cal.date(byAdding: .day, value: 1, to: maxEnd) ?? maxEnd
         let ttl = Self.staleMirrorTTL
 
-        return fetch(rangeStart, rangeEnd)
-            .map { origins -> ReconcileResult in
-                // 반복 일정은 occurrence 마다 동일한 externalEventID(EventKit eventIdentifier)를
-                // 공유하므로 id 가 중복될 수 있다. uniqueKeysWithValues 는 중복 키에서 트랩하므로
-                // grouping 으로 묶고, 미러는 startDate 가 가장 가까운 occurrence 에 매칭한다.
-                let originsByID = Dictionary(grouping: origins, by: { $0.id })
-                var updates: [ExternalMirrorUpdate] = []
-                var deletedIDs: [String] = []
-                var permanentDeleteIDs: [String] = []
-                let now = Date()
+        let origins = try await fetch(rangeStart, rangeEnd)
+        // 반복 일정은 occurrence 마다 동일한 externalEventID(EventKit eventIdentifier)를
+        // 공유하므로 id 가 중복될 수 있다. uniqueKeysWithValues 는 중복 키에서 트랩하므로
+        // grouping 으로 묶고, 미러는 startDate 가 가장 가까운 occurrence 에 매칭한다.
+        let originsByID = Dictionary(grouping: origins, by: { $0.id })
+        var updates: [ExternalMirrorUpdate] = []
+        var deletedIDs: [String] = []
+        var permanentDeleteIDs: [String] = []
+        let now = Date()
 
-                for mirror in mirrors {
-                    guard let extID = mirror.externalEventID else { continue }
-                    let origin = originsByID[extID]?.min {
-                        abs($0.startDate.timeIntervalSince(mirror.startDate))
-                            < abs($1.startDate.timeIntervalSince(mirror.startDate))
-                    }
-                    if let origin {
-                        if Self.hasDrift(mirror: mirror, origin: origin) || mirror.externalDeleted {
-                            updates.append(ExternalMirrorUpdate(
-                                id: mirror.id,
-                                title: origin.title,
-                                startDate: origin.startDate,
-                                endDate: origin.endDate,
-                                isAllDay: origin.isAllDay,
-                                location: origin.location,
-                                notes: origin.notes,
-                                colorHex: origin.calendarColorHex
-                            ))
-                        }
-                    } else if !mirror.externalDeleted {
-                        // 처음 원본 누락 감지 — 마킹만. externalLastSyncedAt이 now로 갱신되며
-                        // 이게 유예 기간의 기준 타임스탬프가 된다.
-                        deletedIDs.append(mirror.id)
-                    } else if let syncedAt = mirror.externalLastSyncedAt,
-                              now.timeIntervalSince(syncedAt) >= ttl {
-                        // 이미 deleted 상태에서 유예 기간(3일)이 지났고 여전히 원본 없음 → 영구 삭제.
-                        permanentDeleteIDs.append(mirror.id)
-                    }
-                    // else: deleted 상태이나 유예 내 — 아무것도 안 하고 유지.
-                }
-                return ReconcileResult(
-                    updates: updates,
-                    deletedIDs: deletedIDs,
-                    permanentDeleteIDs: permanentDeleteIDs
-                )
+        for mirror in mirrors {
+            guard let extID = mirror.externalEventID else { continue }
+            let origin = originsByID[extID]?.min {
+                abs($0.startDate.timeIntervalSince(mirror.startDate))
+                    < abs($1.startDate.timeIntervalSince(mirror.startDate))
             }
-            .eraseToAnyPublisher()
+            if let origin {
+                if Self.hasDrift(mirror: mirror, origin: origin) || mirror.externalDeleted {
+                    updates.append(ExternalMirrorUpdate(
+                        id: mirror.id,
+                        title: origin.title,
+                        startDate: origin.startDate,
+                        endDate: origin.endDate,
+                        isAllDay: origin.isAllDay,
+                        location: origin.location,
+                        notes: origin.notes,
+                        colorHex: origin.calendarColorHex
+                    ))
+                }
+            } else if !mirror.externalDeleted {
+                // 처음 원본 누락 감지 — 마킹만. externalLastSyncedAt이 now로 갱신되며
+                // 이게 유예 기간의 기준 타임스탬프가 된다.
+                deletedIDs.append(mirror.id)
+            } else if let syncedAt = mirror.externalLastSyncedAt,
+                      now.timeIntervalSince(syncedAt) >= ttl {
+                // 이미 deleted 상태에서 유예 기간(3일)이 지났고 여전히 원본 없음 → 영구 삭제.
+                permanentDeleteIDs.append(mirror.id)
+            }
+            // else: deleted 상태이나 유예 내 — 아무것도 안 하고 유지.
+        }
+        return ReconcileResult(
+            updates: updates,
+            deletedIDs: deletedIDs,
+            permanentDeleteIDs: permanentDeleteIDs
+        )
     }
 
     /// 스냅샷 필드와 원본 필드 간 차이가 있는지.

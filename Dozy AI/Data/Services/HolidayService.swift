@@ -52,13 +52,13 @@ final class HolidayService {
     
     // MARK: - 조회 API
     
-    func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+    func fetchEvents(for date: Date) -> [CalendarEvent] {
         let day = Calendar.current.startOfDay(for: date)
         let events = (indexByDay[day] ?? []).map { Self.makeCalendarEvent(from: $0, on: day) }
-        return Just(events).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        return events
     }
     
-    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+    func fetchEvents(from start: Date, to end: Date) -> [CalendarEvent] {
         let cal = Calendar.current
         let startDay = cal.startOfDay(for: start)
         let endDay   = cal.startOfDay(for: end)   // exclusive
@@ -69,7 +69,7 @@ final class HolidayService {
             }
         }
         events.sort { $0.startDate < $1.startDate }
-        return Just(events).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        return events
     }
     
     // MARK: - CalendarEvent 매핑

@@ -11,7 +11,6 @@
 //
 
 import Foundation
-import Combine
 
 final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServiceProtocol {
 
@@ -51,8 +50,8 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     }
     #endif
 
-    func requestAccess() -> AnyPublisher<Bool, DozyError> {
-        appleService.requestAccess()
+    func requestAccess() async throws(DozyError) -> Bool {
+        try await appleService.requestAccess()
     }
 
     func invalidateGoogleCache() {
@@ -61,102 +60,76 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
         #endif
     }
 
-    func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
-        var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
-
-        let appleEnabled = sourceManager.isEnabled(.apple)
-        #if os(iOS)
-        let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
-        #else
-        let googleEnabled = false
-        #endif
-
-        if appleEnabled {
-            // 공휴일 데이터는 항상 Dozy 자체 데이터(공공데이터포털)로만 노출 — Apple 의 시스템
-            // 한국 공휴일 캘린더(subscription)는 항상 제외해서 중복 표시 방지.
-            publishers.append(
-                appleService.fetchEvents(for: date, excludeSubscriptions: true)
-                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-            )
-        }
-        #if os(iOS)
-        if googleEnabled, let google = googleService {
-            publishers.append(
-                google.fetchEvents(for: date)
-                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-            )
-        }
-        #endif
-        publishers.append(dozyService.fetchEvents(for: date))
-        // 공휴일은 사용자 토글 없이 항상 ON — 한국 공휴일은 표시 기본값.
-        publishers.append(
-            holidayService.fetchEvents(for: date)
-                .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-        )
-
-        return Publishers.MergeMany(publishers)
-            .collect()
-            .map { arrays -> [CalendarEvent] in
-                var all = arrays.flatMap { $0 }
-                // Apple이 활성화된 경우 Google 공휴일 캘린더 이벤트 제외
-                if appleEnabled && googleEnabled {
-                    all = all.filter { event in
-                        guard event.source == .google else { return true }
-                        return !(event.calendarId?.contains("#holiday@group.v.calendar.google.com") ?? false)
-                    }
-                }
-                return Self.dedupe(all)
-            }
-            .eraseToAnyPublisher()
+    func fetchEvents(for date: Date) async throws(DozyError) -> [CalendarEvent] {
+        try await mergedEvents(.day(date))
     }
 
     // MARK: - 날짜 범위 조회 (인사이트용)
 
-    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
-        var publishers: [AnyPublisher<[CalendarEvent], DozyError>] = []
+    func fetchEvents(from start: Date, to end: Date) async throws(DozyError) -> [CalendarEvent] {
+        try await mergedEvents(.range(start, end))
+    }
 
+    private enum Span {
+        case day(Date)
+        case range(Date, Date)
+    }
+
+    /// 소스별 결과를 합친다. Apple · Google 실패는 빈 목록으로 넘기고(한 소스 실패로 전체가 비지 않게), Dozy 실패만 전파한다 —
+    /// 기존 MergeMany 판의 replaceError 와 같은 규칙. Google(네트워크)은 다른 소스와 동시에 시작한다.
+    private func mergedEvents(_ span: Span) async throws(DozyError) -> [CalendarEvent] {
         let appleEnabled = sourceManager.isEnabled(.apple)
         #if os(iOS)
-        let googleEnabled = sourceManager.isEnabled(.google) && googleService != nil
+        let google = sourceManager.isEnabled(.google) ? googleService : nil
+        let googleEnabled = google != nil
+        async let googleEvents: [CalendarEvent] = Self.googleEvents(google, span)
         #else
         let googleEnabled = false
         #endif
 
+        var all: [CalendarEvent] = []
         if appleEnabled {
-            publishers.append(
-                appleService.fetchEvents(from: start, to: end, excludeSubscriptions: true)
-                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-            )
+            // 공휴일 데이터는 항상 Dozy 자체 데이터(공공데이터포털)로만 노출 — Apple 의 시스템
+            // 한국 공휴일 캘린더(subscription)는 항상 제외해서 중복 표시 방지.
+            switch span {
+            case .day(let date):
+                all += (try? await appleService.fetchEvents(for: date, excludeSubscriptions: true)) ?? []
+            case .range(let start, let end):
+                all += (try? await appleService.fetchEvents(from: start, to: end, excludeSubscriptions: true)) ?? []
+            }
+        }
+        // 공휴일은 사용자 토글 없이 항상 ON — 한국 공휴일은 표시 기본값.
+        switch span {
+        case .day(let date):
+            all += try await dozyService.fetchEvents(for: date)
+            all += holidayService.fetchEvents(for: date)
+        case .range(let start, let end):
+            all += try await dozyService.fetchEvents(from: start, to: end)
+            all += holidayService.fetchEvents(from: start, to: end)
         }
         #if os(iOS)
-        if googleEnabled, let google = googleService {
-            publishers.append(
-                google.fetchEvents(from: start, to: end)
-                    .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-            )
-        }
+        all += await googleEvents
         #endif
-        publishers.append(dozyService.fetchEvents(from: start, to: end))
-        publishers.append(
-            holidayService.fetchEvents(from: start, to: end)
-                .replaceError(with: []).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-        )
 
-        return Publishers.MergeMany(publishers)
-            .collect()
-            .map { arrays -> [CalendarEvent] in
-                var all = arrays.flatMap { $0 }
-                // Apple이 활성화된 경우 Google 공휴일 캘린더 이벤트 제외
-                if appleEnabled && googleEnabled {
-                    all = all.filter { event in
-                        guard event.source == .google else { return true }
-                        return !(event.calendarId?.contains("#holiday@group.v.calendar.google.com") ?? false)
-                    }
-                }
-                return Self.dedupe(all)
+        // Apple이 활성화된 경우 Google 공휴일 캘린더 이벤트 제외
+        if appleEnabled && googleEnabled {
+            all = all.filter { event in
+                guard event.source == .google else { return true }
+                return !(event.calendarId?.contains("#holiday@group.v.calendar.google.com") ?? false)
             }
-            .eraseToAnyPublisher()
+        }
+        return Self.dedupe(all)
     }
+
+    #if os(iOS)
+    private static func googleEvents(_ google: GoogleCalendarService?, _ span: Span) async -> [CalendarEvent] {
+        guard let google else { return [] }
+        switch span {
+        case .day(let date): return (try? await google.fetchEvents(for: date)) ?? []
+        case .range(let start, let end): return (try? await google.fetchEvents(from: start, to: end)) ?? []
+        }
+    }
+    #endif
 
     // MARK: - Dedupe
 
@@ -197,35 +170,28 @@ final class CompositeCalendarSerivce: CalendarServiceProtocol, CalendarWriteServ
     }
 
     // MARK: - CalendarWriteServiceProtocol
-    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
+    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) async throws(DozyError) {
         switch event.source {
-        case .apple: return appleService.updateEvent(event, with: edit)
-        case .google:
-            #if os(iOS)
-            guard let google = googleService else {
-                return Fail(error: .dataNotFound).eraseToAnyPublisher()
-            }
-            return google.updateEvent(event, with: edit)
-            #else
-            return Fail(error: .dataNotFound).eraseToAnyPublisher()
-            #endif
-        default: return Fail(error: .dataNotFound).eraseToAnyPublisher()
+        case .apple: try await appleService.updateEvent(event, with: edit)
+        case .google: try await googleWriter().updateEvent(event, with: edit)
+        default: throw .dataNotFound
         }
     }
 
-    func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
+    func deleteEvent(_ event: CalendarEvent) async throws(DozyError) {
         switch event.source {
-        case .apple:  return appleService.deleteEvent(event)
-        case .google:
-            #if os(iOS)
-            guard let google = googleService else {
-                return Fail(error: .dataNotFound).eraseToAnyPublisher()
-            }
-            return google.deleteEvent(event)
-            #else
-            return Fail(error: .dataNotFound).eraseToAnyPublisher()
-            #endif
-        default:      return Fail(error: .dataNotFound).eraseToAnyPublisher()
+        case .apple: try await appleService.deleteEvent(event)
+        case .google: try await googleWriter().deleteEvent(event)
+        default: throw .dataNotFound
         }
+    }
+
+    private func googleWriter() throws(DozyError) -> CalendarWriteServiceProtocol {
+        #if os(iOS)
+        guard let googleService else { throw .dataNotFound }
+        return googleService
+        #else
+        throw .dataNotFound
+        #endif
     }
 }

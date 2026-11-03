@@ -14,15 +14,13 @@ final class MockCalendarService: CalendarServiceProtocol {
     var stubbedError: DozyError? = nil
     private(set) var fetchCallCount = 0
 
-    func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+    func fetchEvents(for date: Date) async throws(DozyError) -> [CalendarEvent] {
         fetchCallCount += 1
-        if let error = stubbedError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(stubbedEvents).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedError { throw error }
+        return stubbedEvents
     }
 
-    func requestAccess() -> AnyPublisher<Bool, DozyError> {
-        Just(true).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    func requestAccess() async throws(DozyError) -> Bool { true }
 }
 
 // MARK: - MockReminderService
@@ -212,19 +210,15 @@ final class MockPeriodCalendarService: CalendarServiceProtocol {
     var stubbedError: DozyError? = nil
     private(set) var rangeCalls: [(start: Date, end: Date)] = []
 
-    func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
-        Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    func fetchEvents(for date: Date) async throws(DozyError) -> [CalendarEvent] { [] }
 
-    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
+    func fetchEvents(from start: Date, to end: Date) async throws(DozyError) -> [CalendarEvent] {
         rangeCalls.append((start, end))
-        if let error = stubbedError { return Fail(error: error).eraseToAnyPublisher() }
-        return Just(stubbedEvents).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+        if let error = stubbedError { throw error }
+        return stubbedEvents
     }
 
-    func requestAccess() -> AnyPublisher<Bool, DozyError> {
-        Just(true).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    func requestAccess() async throws(DozyError) -> Bool { true }
 }
 
 // MARK: - MockQueryParsingService (#72)

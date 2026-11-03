@@ -17,14 +17,12 @@ private final class StubCalendarWriteService: CalendarWriteServiceProtocol {
     var updateError: DozyError?
     var deleteError: DozyError?
 
-    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
-        if let updateError { return Fail(error: updateError).eraseToAnyPublisher() }
-        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) async throws(DozyError) {
+        if let updateError { throw updateError }
     }
 
-    func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
-        if let deleteError { return Fail(error: deleteError).eraseToAnyPublisher() }
-        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
+    func deleteEvent(_ event: CalendarEvent) async throws(DozyError) {
+        if let deleteError { throw deleteError }
     }
 }
 

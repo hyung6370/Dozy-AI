@@ -65,22 +65,14 @@ final class NaverSignInService: NSObject, ObservableObject {
         }
     }
     
-    func getValidAccessToken() -> AnyPublisher<String, DozyError> {
-        Future<String, DozyError> { [weak self] promise in
-            guard let inst = self?.instance else {
-                promise(.failure(.naverSignInFailed))
-                return
-            }
-            if inst.isValidAccessTokenExpireTimeNow() {
-                promise(.success(inst.accessToken ?? ""))
-            } else {
-                inst.requestAccessTokenWithRefreshToken()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    promise(.success(inst.accessToken ?? ""))
-                }
-            }
+    /// 캘린더 API 용 액세스 토큰 (#153 PR 3 에서 async 로). 만료됐으면 갱신을 요청하고 1초 뒤 값을 쓴다 (기존 동작 그대로).
+    func getValidAccessToken() async throws(DozyError) -> String {
+        guard let inst = instance else { throw .naverSignInFailed }
+        if !inst.isValidAccessTokenExpireTimeNow() {
+            inst.requestAccessTokenWithRefreshToken()
+            try? await Task.sleep(for: .seconds(1))
         }
-        .eraseToAnyPublisher()
+        return inst.accessToken ?? ""
     }
 
     // MARK: - URL 처리
