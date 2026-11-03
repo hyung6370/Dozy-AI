@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 final class NaverCalendarService: CalendarServiceProtocol {
     
@@ -18,71 +17,42 @@ final class NaverCalendarService: CalendarServiceProtocol {
     }
     
     // MARK: - CalendarServiceProtocol
-    
-    func requestAccess() -> AnyPublisher<Bool, DozyError> {
-        Just(signInService.isSignedIn)
-            .setFailureType(to: DozyError.self)
-            .eraseToAnyPublisher()
+
+    func requestAccess() async throws(DozyError) -> Bool {
+        signInService.isSignedIn
     }
-    
-    func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
-        guard signInService.isSignedIn else {
-            return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-        }
-        
-        return signInService.getValidAccessToken()
-            .flatMap { [weak self] token -> AnyPublisher<[CalendarEvent], DozyError> in
-                guard let self else {
-                    return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-                }
-                return self.fetchNaverEvents(for: date, token: token)
-            }
-            .eraseToAnyPublisher()
-    }
-    
-    // MARK: - Private
-    
-    private func fetchNaverEvents(for date: Date, token: String) -> AnyPublisher<[CalendarEvent], DozyError> {
+
+    /// 실패는 빈 목록 (기존 Publisher 판의 replaceError 와 같음).
+    func fetchEvents(for date: Date) async throws(DozyError) -> [CalendarEvent] {
+        guard signInService.isSignedIn else { return [] }
+        let token = try await signInService.getValidAccessToken()
+
         let fmt = DateFormatter()
         fmt.dateFormat = "yyyyMMdd"
-        let startStr = fmt.string(from: date.startOfDay)
-        let endStr = fmt.string(from: date.startOfNextDay)
-        
-        guard var components = URLComponents(string: "\(baseURL)/get.json") else {
-            return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-        }
+        guard var components = URLComponents(string: "\(baseURL)/get.json") else { return [] }
         components.queryItems = [
-            URLQueryItem(name: "startDt", value: startStr),
-            URLQueryItem(name: "endDt", value: endStr)
+            URLQueryItem(name: "startDt", value: fmt.string(from: date.startOfDay)),
+            URLQueryItem(name: "endDt", value: fmt.string(from: date.startOfNextDay))
         ]
-        guard let url = components.url else {
-            return Just([]).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-        }
-        
+        guard let url = components.url else { return [] }
+
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        return URLSession.shared.dataTaskPublisher(for: request)
-            // Swift 6: URLSession 큐에서 값이 온다 — 아래 tryMap 등 메인 액터 추론 클로저 전에 메인으로 넘긴다.
-            .receive(on: DispatchQueue.main)
-            .map(\.data)
-            .tryMap { data -> [CalendarEvent] in
-#if DEBUG
-                print("[NaverCalendar] raw response: \(String(data: data, encoding: .utf8) ?? "nil")")
-#endif
-                
-                let decoded = try JSONDecoder().decode(NaverCalendarResponse.self, from: data)
-                return (decoded.calendars ?? []).flatMap { calendar in
-                    (calendar.schedules ?? []).compactMap {
-                        $0.toCalendarEvent(
-                            calendarName: calendar.calendarName ?? "네이버 캘린더",
-                            colorHex: "#03C75A"
-                        )
-                    }
-                }
+
+        guard let (data, _) = try? await URLSession.shared.data(for: request),
+              let decoded = try? JSONDecoder().decode(NaverCalendarResponse.self, from: data) else {
+            return []
+        }
+    #if DEBUG
+        print("[NaverCalendar] raw response: \(String(data: data, encoding: .utf8) ?? "nil")")
+    #endif
+        return (decoded.calendars ?? []).flatMap { calendar in
+            (calendar.schedules ?? []).compactMap {
+                $0.toCalendarEvent(
+                    calendarName: calendar.calendarName ?? "네이버 캘린더",
+                    colorHex: "#03C75A"
+                )
             }
-            .replaceError(with: [])
-            .setFailureType(to: DozyError.self)
-            .eraseToAnyPublisher()
+        }
     }
 }

@@ -11,13 +11,10 @@ import Combine
 
 private final class MockCalendarWriteService: CalendarWriteServiceProtocol {
     private(set) var updateCallCount = 0
-    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
+    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) async throws(DozyError) {
         updateCallCount += 1
-        return Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
     }
-    func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
-        Just(()).setFailureType(to: DozyError.self).eraseToAnyPublisher()
-    }
+    func deleteEvent(_ event: CalendarEvent) async throws(DozyError) {}
 }
 
 private final class MockDisplaySettingsRepository: EventDisplaySettingsRepositoryProtocol {
@@ -101,6 +98,9 @@ final class SearchViewModelTests: XCTestCase {
         vm.query = "회의"
         vm.query = ""
         vm.query = "운동"
+        // 목이 async 라 호출 기록이 한 차례 늦게 남는다 (#153) — 기록을 기다린 뒤, 더 늘지 않는지 본다.
+        waitUntil { !calendarService.rangeCalls.isEmpty }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
         XCTAssertEqual(calendarService.rangeCalls.count, 1)
         let call = calendarService.rangeCalls[0]
         let cal = Calendar.current

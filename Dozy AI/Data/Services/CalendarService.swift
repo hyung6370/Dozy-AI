@@ -10,7 +10,6 @@
 //  Domain 모델(CalendarEvent)은 EventKit을 전혀 모릅니다.
 
 import Foundation
-import Combine
 import EventKit
 
 final class CalendarService {
@@ -102,32 +101,15 @@ final class CalendarService {
     }
 }
 
-// MARK: - CalendarServiceProtocol Combine 판 (#153 임시)
-// 프로토콜은 Google · Naver · Dozy · 합성 서비스와 함께 PR 3 에서 async 로 바꾼다. 그때까지 async 구현을 브리지로 감싼다.
+// MARK: - CalendarServiceProtocol
 
 extension CalendarService: CalendarServiceProtocol {
-    func requestAccess() -> AnyPublisher<Bool, DozyError> {
-        .bridge { () async throws(DozyError) -> Bool in try await self.requestAccess() }
+    func fetchEvents(for date: Date) async throws(DozyError) -> [CalendarEvent] {
+        try await fetchEvents(for: date, excludeSubscriptions: false)
     }
 
-    func fetchEvents(for date: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
-        fetchEvents(for: date, excludeSubscriptions: false)
-    }
-
-    func fetchEvents(for date: Date, excludeSubscriptions: Bool) -> AnyPublisher<[CalendarEvent], DozyError> {
-        .bridge { () async throws(DozyError) -> [CalendarEvent] in
-            try await self.fetchEvents(for: date, excludeSubscriptions: excludeSubscriptions)
-        }
-    }
-
-    func fetchEvents(from start: Date, to end: Date) -> AnyPublisher<[CalendarEvent], DozyError> {
-        fetchEvents(from: start, to: end, excludeSubscriptions: false)
-    }
-
-    func fetchEvents(from start: Date, to end: Date, excludeSubscriptions: Bool) -> AnyPublisher<[CalendarEvent], DozyError> {
-        .bridge { () async throws(DozyError) -> [CalendarEvent] in
-            try await self.fetchEvents(from: start, to: end, excludeSubscriptions: excludeSubscriptions)
-        }
+    func fetchEvents(from start: Date, to end: Date) async throws(DozyError) -> [CalendarEvent] {
+        try await fetchEvents(from: start, to: end, excludeSubscriptions: false)
     }
 }
 
@@ -173,9 +155,9 @@ private extension EKEvent {
     }
 }
 
-// MARK: - 쓰기 (수정 · 삭제)
+// MARK: - CalendarWriteServiceProtocol (수정 · 삭제)
 
-extension CalendarService {
+extension CalendarService: CalendarWriteServiceProtocol {
 
     func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) async throws(DozyError) {
         try await requestAccessIfNeeded()
@@ -218,18 +200,5 @@ extension CalendarService {
         } catch {
             throw .calendarWriteFailed(underlying: error)
         }
-    }
-}
-
-// MARK: - CalendarWriteServiceProtocol Combine 판 (#153 임시)
-// 프로토콜은 Google · 합성 서비스와 함께 PR 3 에서 async 로 바꾼다.
-
-extension CalendarService: CalendarWriteServiceProtocol {
-    func updateEvent(_ event: CalendarEvent, with edit: CalendarEventEditRequest) -> AnyPublisher<Void, DozyError> {
-        .bridge { () async throws(DozyError) in try await self.updateEvent(event, with: edit) }
-    }
-
-    func deleteEvent(_ event: CalendarEvent) -> AnyPublisher<Void, DozyError> {
-        .bridge { () async throws(DozyError) in try await self.deleteEvent(event) }
     }
 }

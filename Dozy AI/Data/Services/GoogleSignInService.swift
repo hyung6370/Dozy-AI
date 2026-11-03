@@ -70,27 +70,24 @@ final class GoogleSignInService: ObservableObject {
         }
     }
     
-    func getValidAccessToken() -> AnyPublisher<String, DozyError> {
-        Future { promise in
-            guard let user = GIDSignIn.sharedInstance.currentUser else {
-                promise(.failure(.googleSignInFailed(underlying: nil)))
-                return
-            }
-            user.refreshTokensIfNeeded { refreshed, error in
+    /// 캘린더 API 용 액세스 토큰 — 필요하면 갱신한다 (#153 PR 3 에서 async 로).
+    /// 갱신 콜백은 SDK 내부 큐에서 불릴 수 있어 `@Sendable` 로 두고 값만 넘긴다 (메인 액터 클로저면 Swift 6 런타임 격리 검사로 죽는다, #152).
+    func getValidAccessToken() async throws(DozyError) -> String {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            throw .googleSignInFailed(underlying: nil)
+        }
+        let result: Result<String, DozyError> = await withCheckedContinuation { continuation in
+            user.refreshTokensIfNeeded { @Sendable refreshed, error in
                 if let error {
-                    promise(.failure(.googleSignInFailed(underlying: error)))
-                    return
+                    continuation.resume(returning: .failure(.googleSignInFailed(underlying: error)))
+                } else if let token = refreshed?.accessToken.tokenString {
+                    continuation.resume(returning: .success(token))
+                } else {
+                    continuation.resume(returning: .failure(.googleSignInFailed(underlying: nil)))
                 }
-                guard let token = refreshed?.accessToken.tokenString else {
-                    promise(.failure(.googleSignInFailed(underlying: nil)))
-                    return
-                }
-                promise(.success(token))
             }
         }
-        // Swift 6: 시스템 콜백 큐에서 끝난다 — 메인 액터로 추론된 하류 클로저(sink · flatMap)가 런타임 격리 검사에 걸리지 않게 메인으로 넘긴다.
-        .receive(on: DispatchQueue.main)
-        .eraseToAnyPublisher()
+        return try result.get()
     }
     
     // MARK: - Private
