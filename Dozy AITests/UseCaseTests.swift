@@ -9,6 +9,7 @@ import Combine
 
 // MARK: - FetchTodayDataUseCase Tests
 
+@MainActor
 final class FetchTodayDataUseCaseTests: XCTestCase {
 
     private var calendarService: MockCalendarService!
@@ -16,15 +17,15 @@ final class FetchTodayDataUseCaseTests: XCTestCase {
     private var useCase: FetchTodayDataUseCase!
     private var cancellables = Set<AnyCancellable>()
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         calendarService = MockCalendarService()
         reminderService = MockReminderService()
         useCase = FetchTodayDataUseCase(calendarService: calendarService,
                                         reminderService: reminderService)
     }
 
-    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+    override func tearDown() async throws { cancellables.removeAll(); try await super.tearDown() }
 
     func test_execute_returnsEventsAndTasks() throws {
         calendarService.stubbedEvents    = [makeTestEvent(title: "팀 미팅")]
@@ -90,19 +91,20 @@ final class FetchTodayDataUseCaseTests: XCTestCase {
 
 // MARK: - ToggleCalendarEventCompletionUseCase Tests
 
+@MainActor
 final class ToggleCalendarEventCompletionUseCaseTests: XCTestCase {
 
     private var repository: MockEventCompletionRepository!
     private var useCase: ToggleCalendarEventCompletionUseCase!
     private var cancellables = Set<AnyCancellable>()
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         repository = MockEventCompletionRepository()
         useCase = ToggleCalendarEventCompletionUseCase(repository: repository)
     }
 
-    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+    override func tearDown() async throws { cancellables.removeAll(); try await super.tearDown() }
 
     func test_execute_passesCorrectEventIDToRepository() throws {
         let eventID = "test-event-123"
@@ -147,6 +149,7 @@ final class ToggleCalendarEventCompletionUseCaseTests: XCTestCase {
 
 // MARK: - ToggleDozyEventCompletionUseCase Tests
 
+@MainActor
 final class ToggleDozyEventCompletionUseCaseTests: XCTestCase {
 
     private var repository: MockDozyEventRepository!
@@ -158,13 +161,13 @@ final class ToggleDozyEventCompletionUseCaseTests: XCTestCase {
         return Calendar.current.date(from: c)!
     }()
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         repository = MockDozyEventRepository()
         useCase = ToggleDozyEventCompletionUseCase(repository: repository)
     }
 
-    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+    override func tearDown() async throws { cancellables.removeAll(); try await super.tearDown() }
 
     func test_execute_togglesFalseToTrue() throws {
         let event = DozyEvent(title: "이벤트", startDate: baseDate, endDate: baseDate)
@@ -211,6 +214,7 @@ final class ToggleDozyEventCompletionUseCaseTests: XCTestCase {
 
 // MARK: - GenerateDailySummaryUseCase Tests
 
+@MainActor
 final class GenerateDailySummaryUseCaseTests: XCTestCase {
 
     private var aiService: MockAIService!
@@ -218,14 +222,14 @@ final class GenerateDailySummaryUseCaseTests: XCTestCase {
     private var useCase: GenerateDailySummaryUseCase!
     private var cancellables = Set<AnyCancellable>()
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         aiService  = MockAIService()
         repository = MockWorkLogRepository()
         useCase    = GenerateDailySummaryUseCase(aiService: aiService, repository: repository)
     }
 
-    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+    override func tearDown() async throws { cancellables.removeAll(); try await super.tearDown() }
 
     func test_execute_returnsSummaryFromAI() throws {
         aiService.stubbedSummary = makeTestSummary(summaryText: "Dozy가 생성한 요약")
@@ -288,6 +292,7 @@ final class GenerateDailySummaryUseCaseTests: XCTestCase {
 
 // MARK: - ToggleEventCompletionUseCase Tests (홈·캘린더 공용 토글)
 
+@MainActor
 final class ToggleEventCompletionUseCaseTests: XCTestCase {
 
     private var dozyRepository: MockDozyEventRepository!
@@ -300,8 +305,8 @@ final class ToggleEventCompletionUseCaseTests: XCTestCase {
         return Calendar.current.date(from: c)!
     }()
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         dozyRepository = MockDozyEventRepository()
         completionRepository = MockEventCompletionRepository()
         useCase = ToggleEventCompletionUseCase(
@@ -310,7 +315,7 @@ final class ToggleEventCompletionUseCaseTests: XCTestCase {
         )
     }
 
-    override func tearDown() { cancellables.removeAll(); super.tearDown() }
+    override func tearDown() async throws { cancellables.removeAll(); try await super.tearDown() }
 
     // MARK: target 규칙
 
@@ -389,13 +394,14 @@ final class ToggleEventCompletionUseCaseTests: XCTestCase {
 
 /// 홈 메모가 일정 로딩 결과(todayLog)에 묶이지 않는지 — 오늘 WorkLog 가 없어도 메모가 저장되고,
 /// 저장 실패 시 붙였던 메모가 되돌려지는지 고정한다.
+@MainActor
 final class SaveWorkLogUseCaseTests: XCTestCase {
 
     private var repository: MockWorkLogRepository!
     private var useCase: SaveWorkLogUseCase!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         repository = MockWorkLogRepository()
         useCase = SaveWorkLogUseCase(repository: repository)
     }

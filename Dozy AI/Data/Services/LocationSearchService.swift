@@ -54,7 +54,9 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
     // MARK: - MKLocalSearchCompleterDelegate
     
     nonisolated func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        let results = completer.results
+        // MKLocalSearchCompletion 은 Sendable 표시가 없다. delegate 가 넘긴 배열을 메인 액터로 옮긴 뒤
+        // 이 스레드에서는 다시 만지지 않으므로 unsafe 로 경계를 넘긴다.
+        nonisolated(unsafe) let results = completer.results
         Task { @MainActor in self.completions = results }
     }
     

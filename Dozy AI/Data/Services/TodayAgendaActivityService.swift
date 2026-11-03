@@ -97,7 +97,13 @@ final class TodayAgendaActivityService: LiveActivityServiceProtocol {
         }
 
         // 예약 종료된 것이 지금 계획과 같은 내용이면 그대로 둔다 (같은 종료 시각에 사라진다).
-        if snapshot.isFinal, let same = endedToday.first(where: { $0.content.state == state }) {
+        // `first(where:)` 대신 for 문 — 메인 액터에서 만든 클로저를 넘기면 endedToday(비-Sendable Activity 배열)가
+        // 메인 액터 영역에 합쳐져, 뒤의 `ended.end(...)`(@concurrent) 호출을 Swift 6 가 경계 위반으로 본다.
+        var same: Activity<TodayAgendaAttributes>?
+        if snapshot.isFinal {
+            for ended in endedToday where ended.content.state == state { same = ended; break }
+        }
+        if let same {
             for ended in endedToday where ended.id != same.id { await ended.end(nil, dismissalPolicy: .immediate) }
             Logger.liveActivity.debug("[아젠다] 예약 종료 상태 유지 — id \(same.id, privacy: .public)")
             return

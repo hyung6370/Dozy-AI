@@ -8,7 +8,7 @@ import SwiftData
 // MARK: - V1: UserCategory 추가 이전
 
 enum SchemaV1: VersionedSchema {
-    static var versionIdentifier = Schema.Version(1, 0, 0)
+    static let versionIdentifier = Schema.Version(1, 0, 0)
     static var models: [any PersistentModel.Type] {
         [
             WorkLog.self,
@@ -24,7 +24,7 @@ enum SchemaV1: VersionedSchema {
 // MARK: - V2: UserCategory (id, updatedAt 포함) 추가
 
 enum SchemaV2: VersionedSchema {
-    static var versionIdentifier = Schema.Version(2, 0, 0)
+    static let versionIdentifier = Schema.Version(2, 0, 0)
     static var models: [any PersistentModel.Type] {
         [
             WorkLog.self,

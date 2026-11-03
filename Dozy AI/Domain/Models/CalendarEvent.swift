@@ -10,7 +10,8 @@
 
 import Foundation
 
-struct CalendarEvent: Identifiable, Codable, Hashable {
+// 순수 값 타입 — @Model(nonisolated) · 인텐트 · 위젯에서도 만들므로 메인 액터에 묶지 않는다.
+nonisolated struct CalendarEvent: Identifiable, Codable, Hashable {
     let id: String
     let calendarId: String?
     let title: String
@@ -101,7 +102,7 @@ struct CalendarEvent: Identifiable, Codable, Hashable {
     }
 }
 
-extension CalendarEvent {
+nonisolated extension CalendarEvent {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
@@ -126,7 +127,27 @@ extension CalendarEvent {
     }
 }
 
-extension CalendarEvent {
+nonisolated extension CalendarEvent {
+    /// 표시 설정(우선순위 · 고정 · 카테고리 · 색)만 바꾼 스냅샷.
+    /// 저장(Supabase 업로드)을 기다리지 않고 목록에 바로 반영할 때 쓴다 (#165).
+    func withDisplay(priority: Int, isPinned: Bool, category: String, colorHex: String? = nil) -> CalendarEvent {
+        CalendarEvent(
+            id: id, calendarId: calendarId, title: title,
+            startDate: startDate, endDate: endDate,
+            location: location, notes: notes, isAllDay: isAllDay,
+            calendarName: calendarName, calendarColorHex: colorHex ?? calendarColorHex,
+            source: source,
+            priority: priority,
+            isPinned: isPinned,
+            category: category,
+            sharedCalendarID: sharedCalendarID,
+            ownerID: ownerID,
+            externalSource: externalSource,
+            externalEventID: externalEventID,
+            externalDeleted: externalDeleted
+        )
+    }
+
     func applying(_ settings: EventDisplaySettings?) -> CalendarEvent {
         guard let settings else { return self }
         return CalendarEvent(

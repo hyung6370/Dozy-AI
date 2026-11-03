@@ -13,6 +13,7 @@ import Foundation
 @testable import Dozy_AI
 
 @Suite("PatternAnalysisService")
+@MainActor
 struct PatternAnalysisServiceTests {
 
     private let sut = PatternAnalysisService()

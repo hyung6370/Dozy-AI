@@ -9,7 +9,8 @@
 
 import Foundation
 
-enum PasswordPolicy {
+// 순수 검증 규칙 — DozyError(nonisolated) 문구에서도 읽는다.
+nonisolated enum PasswordPolicy {
 
     static let minLength = 8
     static let maxLength = 72   // bcrypt 한계

@@ -17,9 +17,9 @@ import WidgetKit
 
 struct ToggleEventCompletionIntent: LiveActivityIntent {
 
-    static var title: LocalizedStringResource = "일정 완료 토글"
-    static var description = IntentDescription("위젯과 잠금화면에서 오늘 일정의 완료 상태를 토글합니다.")
-    static var isDiscoverable: Bool = false
+    static let title: LocalizedStringResource = "일정 완료 토글"
+    static let description = IntentDescription("위젯과 잠금화면에서 오늘 일정의 완료 상태를 토글합니다.")
+    static let isDiscoverable: Bool = false
 
     /// 위젯이 보여주는 CalendarEvent 의 stable id.
     /// (Dozy 비반복: DozyEvent.id, Apple/Google/반복: source id 또는 occurrence id)
@@ -63,12 +63,8 @@ struct ToggleEventCompletionIntent: LiveActivityIntent {
             return
         }
 
-        let schema = Schema([
-            TodayEventCache.self,
-            DozyEvent.self,
-            EventCompletion.self,
-            UserCategory.self,
-        ])
+        // 앱과 같은 전체 스키마 — 부분 스키마로 열면 WorkLog 등 테이블이 지워진다 (DozySchema 참고).
+        let schema = DozySchema.schema
         let config = ModelConfiguration(schema: schema, url: storeURL)
         guard let container = try? ModelContainer(for: schema, configurations: [config]) else {
             #if DEBUG

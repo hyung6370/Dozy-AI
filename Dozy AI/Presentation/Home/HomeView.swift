@@ -1005,7 +1005,10 @@ private struct TossScrollIntrospector: UIViewRepresentable {
             // contentOffset.y 가 -adjustedContentInset.top 보다 더 작아질 때 (= 위로 끌려 내려갔을 때)
             // 그 차이가 곧 당김 거리.
             offsetObservation = sv.observe(\.contentOffset, options: [.new]) { [weak self] scroll, _ in
-                let pull = max(0, -scroll.contentOffset.y - scroll.adjustedContentInset.top)
+                // UIScrollView 의 contentOffset KVO 는 메인 스레드에서 온다 — 격리만 알려 주고 읽는다.
+                let pull = MainActor.assumeIsolated {
+                    max(0, -scroll.contentOffset.y - scroll.adjustedContentInset.top)
+                }
                 DispatchQueue.main.async {
                     self?.onPullUpdate?(pull)
                 }

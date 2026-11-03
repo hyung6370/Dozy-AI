@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum CalendarSource: String, Codable, CaseIterable, Hashable {
+nonisolated enum CalendarSource: String, Codable, CaseIterable, Hashable {
     case apple = "apple"
     case google = "google"
     case naver = "naver"

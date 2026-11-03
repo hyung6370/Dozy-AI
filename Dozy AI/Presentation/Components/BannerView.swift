@@ -107,8 +107,11 @@ struct BannerView: View {
     
     private func startTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-            withAnimation(.easeInOut(duration: 0.4)) {
-                currentIndex = (currentIndex + 1) % items.count
+            // 메인 런루프에 예약한 타이머라 콜백은 항상 메인 스레드 — 격리만 알려 준다.
+            MainActor.assumeIsolated {
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    currentIndex = (currentIndex + 1) % items.count
+                }
             }
         }
     }

@@ -8,6 +8,7 @@
 import XCTest
 @testable import Dozy_AI
 
+@MainActor
 final class PasswordFailLimiterTests: XCTestCase {
 
     // MARK: - Initial state

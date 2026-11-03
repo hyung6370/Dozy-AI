@@ -112,11 +112,15 @@ struct SharedCalendarEditView: View {
             .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
 
             if isOwner {
+                // PhotosPicker 라벨 클로저는 Sendable 이라 메인 액터 값을 안에서 읽을 수 없다 — 밖에서 계산해 넘긴다.
+                let pickerTitle = currentCalendar.imagePath == nil ? String(localized: "사진 추가") : String(localized: "사진 변경")
+                let pickerFont = DozyFont.subheadlineEmphasized
+                let pickerColor = DozyColor.Brand.primary
                 HStack(spacing: DozySpacing.md) {
                     PhotosPicker(selection: $photoItem, matching: .images) {
-                        Text(currentCalendar.imagePath == nil ? "사진 추가" : "사진 변경")
-                            .font(DozyFont.subheadlineEmphasized)
-                            .foregroundStyle(DozyColor.Brand.primary)
+                        Text(pickerTitle)
+                            .font(pickerFont)
+                            .foregroundStyle(pickerColor)
                     }
                     .buttonStyle(.borderless)
                     .disabled(isUploadingImage)

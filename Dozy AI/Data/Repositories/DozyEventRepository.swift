@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 import SwiftData
 import Supabase
 import OSLog
@@ -20,268 +19,216 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
         self.modelContainer = modelContainer
     }
     
-    func fetchEvents(from startDate: Date, to endDate: Date) -> AnyPublisher<[DozyEvent], DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                let context = modelContainer.mainContext
-                let start = startDate
-                let end = endDate
+    private var context: ModelContext { modelContainer.mainContext }
 
-                let predicate = #Predicate<DozyEvent> {
-                    $0.startDate < end && $0.endDate >= start
-                }
-                let descriptor = FetchDescriptor<DozyEvent>(
-                    predicate: predicate,
-                    sortBy: [SortDescriptor(\.startDate)]
-                )
-                do {
-                    let all = try context.fetch(descriptor)
-                    let filtered = await Self.filterByCurrentAccount(all)
-                    promise(.success(filtered))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+    func fetchEvents(from startDate: Date, to endDate: Date) async throws(DozyError) -> [DozyEvent] {
+        let start = startDate
+        let end = endDate
+        let predicate = #Predicate<DozyEvent> {
+            $0.startDate < end && $0.endDate >= start
         }
-        .eraseToAnyPublisher()
-    }
-    
-    func save(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                let context = modelContainer.mainContext
-                context.insert(event)
-                do {
-                    try context.save()
-                    await Self.upsertToSupabase(event)
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+        let descriptor = FetchDescriptor<DozyEvent>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.startDate)]
+        )
+        let all: [DozyEvent]
+        do {
+            all = try context.fetch(descriptor)
+        } catch {
+            throw .saveFailed(underlying: error)
         }
-        .eraseToAnyPublisher()
+        return await Self.filterByCurrentAccount(all)
     }
 
-    func update(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                event.updatedAt = Date()
-                do {
-                    try modelContainer.mainContext.save()
-                    // 로그아웃 직후 clearAllLocalData 가 race 로 로컬을 비우는 동안
-                    // fire-and-forget Task 가 supabase.auth.session 가드에 막히거나
-                    // 네트워크가 끊겨 메모/필드가 Supabase 에 영영 안 올라가던 버그가 있어
-                    // upsert 를 inline await 로 보장.
-                    await Self.upsertToSupabase(event)
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+    func save(_ event: DozyEvent) async throws(DozyError) {
+        context.insert(event)
+        do {
+            try context.save()
+        } catch {
+            throw .saveFailed(underlying: error)
         }
-        .eraseToAnyPublisher()
+        await Self.upsertToSupabase(event)
+    }
+
+    func update(_ event: DozyEvent) async throws(DozyError) {
+        event.updatedAt = Date()
+        do {
+            try context.save()
+        } catch {
+            throw .saveFailed(underlying: error)
+        }
+        // 로그아웃 직후 clearAllLocalData 가 race 로 로컬을 비우는 동안
+        // fire-and-forget Task 가 supabase.auth.session 가드에 막히거나
+        // 네트워크가 끊겨 메모/필드가 Supabase 에 영영 안 올라가던 버그가 있어
+        // upsert 를 inline await 로 보장.
+        await Self.upsertToSupabase(event)
     }
 
     func mirrorExternalEvent(
         _ origin: CalendarEvent,
         to sharedCalendarID: String
-    ) -> AnyPublisher<DozyEvent, DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                guard let ownerID = try? await supabase.auth.session.user.id.uuidString.lowercased() else {
-                    promise(.failure(.dataNotFound))
-                    return
-                }
-                let context = modelContainer.mainContext
-                let originSourceRaw = origin.source.rawValue
-                let originID = origin.id
-
-                // 같은 원본 + 소유자 조합의 스냅샷이 이미 있으면 공유 대상만 갱신.
-                let predicate = #Predicate<DozyEvent> {
-                    $0.ownerID == ownerID
-                        && $0.externalSource == originSourceRaw
-                        && $0.externalEventID == originID
-                }
-                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
-                let existing = (try? context.fetch(descriptor))?.first
-
-                let now = Date()
-                let event: DozyEvent
-                if let existing {
-                    existing.sharedCalendarID = sharedCalendarID
-                    existing.title = origin.title
-                    existing.startDate = origin.startDate
-                    existing.endDate = origin.endDate
-                    existing.isAllDay = origin.isAllDay
-                    existing.location = origin.location
-                    existing.notes = origin.notes
-                    existing.colorHex = origin.calendarColorHex
-                    existing.externalDeleted = false
-                    existing.externalLastSyncedAt = now
-                    existing.updatedAt = now
-                    event = existing
-                } else {
-                    let snapshot = DozyEvent(
-                        title: origin.title,
-                        startDate: origin.startDate,
-                        endDate: origin.endDate,
-                        isAllDay: origin.isAllDay,
-                        location: origin.location,
-                        notes: origin.notes,
-                        colorHex: origin.calendarColorHex,
-                        sharedCalendarID: sharedCalendarID,
-                        ownerID: ownerID,
-                        externalSource: origin.source.rawValue,
-                        externalEventID: origin.id,
-                        externalLastSyncedAt: now,
-                        externalDeleted: false
-                    )
-                    context.insert(snapshot)
-                    event = snapshot
-                }
-
-                do {
-                    try context.save()
-                    await Self.upsertToSupabase(event)
-                    promise(.success(event))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+    ) async throws(DozyError) -> DozyEvent {
+        guard let ownerID = try? await supabase.auth.session.user.id.uuidString.lowercased() else {
+            throw .dataNotFound
         }
-        .eraseToAnyPublisher()
+        let originSourceRaw = origin.source.rawValue
+        let originID = origin.id
+
+        // 같은 원본 + 소유자 조합의 스냅샷이 이미 있으면 공유 대상만 갱신.
+        let predicate = #Predicate<DozyEvent> {
+            $0.ownerID == ownerID
+                && $0.externalSource == originSourceRaw
+                && $0.externalEventID == originID
+        }
+        let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
+        let existing = (try? context.fetch(descriptor))?.first
+
+        let now = Date()
+        let event: DozyEvent
+        if let existing {
+            existing.sharedCalendarID = sharedCalendarID
+            existing.title = origin.title
+            existing.startDate = origin.startDate
+            existing.endDate = origin.endDate
+            existing.isAllDay = origin.isAllDay
+            existing.location = origin.location
+            existing.notes = origin.notes
+            existing.colorHex = origin.calendarColorHex
+            existing.externalDeleted = false
+            existing.externalLastSyncedAt = now
+            existing.updatedAt = now
+            event = existing
+        } else {
+            let snapshot = DozyEvent(
+                title: origin.title,
+                startDate: origin.startDate,
+                endDate: origin.endDate,
+                isAllDay: origin.isAllDay,
+                location: origin.location,
+                notes: origin.notes,
+                colorHex: origin.calendarColorHex,
+                sharedCalendarID: sharedCalendarID,
+                ownerID: ownerID,
+                externalSource: origin.source.rawValue,
+                externalEventID: origin.id,
+                externalLastSyncedAt: now,
+                externalDeleted: false
+            )
+            context.insert(snapshot)
+            event = snapshot
+        }
+
+        do {
+            try context.save()
+        } catch {
+            throw .saveFailed(underlying: error)
+        }
+        await Self.upsertToSupabase(event)
+        return event
     }
 
-    func fetchMyExternalMirrors() -> AnyPublisher<[DozyEvent], DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                guard let ownerID = try? await supabase.auth.session.user.id.uuidString.lowercased() else {
-                    promise(.success([]))
-                    return
-                }
-                let context = modelContainer.mainContext
-                let predicate = #Predicate<DozyEvent> {
-                    $0.ownerID == ownerID && $0.externalSource != nil
-                }
-                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
-                do {
-                    let results = try context.fetch(descriptor)
-                    promise(.success(results))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+    func fetchMyExternalMirrors() async throws(DozyError) -> [DozyEvent] {
+        guard let ownerID = try? await supabase.auth.session.user.id.uuidString.lowercased() else {
+            return []
         }
-        .eraseToAnyPublisher()
+        let predicate = #Predicate<DozyEvent> {
+            $0.ownerID == ownerID && $0.externalSource != nil
+        }
+        do {
+            return try context.fetch(FetchDescriptor<DozyEvent>(predicate: predicate))
+        } catch {
+            throw .saveFailed(underlying: error)
+        }
     }
 
     func applyExternalMirrorReconcile(
         updates: [ExternalMirrorUpdate],
         deletedIDs: [String]
-    ) -> AnyPublisher<Void, DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                let context = modelContainer.mainContext
-                let touchedIDs = Set(updates.map(\.id)).union(deletedIDs)
-                guard !touchedIDs.isEmpty else { promise(.success(())); return }
-                let idArray = Array(touchedIDs)
-                let predicate = #Predicate<DozyEvent> { idArray.contains($0.id) }
-                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
-                let events = (try? context.fetch(descriptor)) ?? []
-                let byID = Dictionary(uniqueKeysWithValues: events.map { ($0.id, $0) })
-                let now = Date()
-                var touched: [DozyEvent] = []
+    ) async throws(DozyError) {
+        let touchedIDs = Set(updates.map(\.id)).union(deletedIDs)
+        guard !touchedIDs.isEmpty else { return }
+        let idArray = Array(touchedIDs)
+        let predicate = #Predicate<DozyEvent> { idArray.contains($0.id) }
+        let events = (try? context.fetch(FetchDescriptor<DozyEvent>(predicate: predicate))) ?? []
+        let byID = Dictionary(uniqueKeysWithValues: events.map { ($0.id, $0) })
+        let now = Date()
+        var touched: [DozyEvent] = []
 
-                for update in updates {
-                    guard let event = byID[update.id] else { continue }
-                    event.title = update.title
-                    event.startDate = update.startDate
-                    event.endDate = update.endDate
-                    event.isAllDay = update.isAllDay
-                    event.location = update.location
-                    event.notes = update.notes
-                    event.colorHex = update.colorHex
-                    event.externalDeleted = false
-                    event.externalLastSyncedAt = now
-                    event.updatedAt = now
-                    touched.append(event)
-                }
-                for id in deletedIDs {
-                    guard let event = byID[id], !event.externalDeleted else { continue }
-                    event.externalDeleted = true
-                    event.externalLastSyncedAt = now
-                    event.updatedAt = now
-                    touched.append(event)
-                }
-
-                guard !touched.isEmpty else { promise(.success(())); return }
-                do {
-                    try context.save()
-                    // Apple/Google reconcile 경로 — VM 을 거치지 않고 sync 가 직접 mirror DozyEvent
-                    // 를 갱신하므로, TodayEventCache 가 stale 해질 수 있다. HomeViewModel 이
-                    // 다음 loadTodayData 에서 cache 를 갱신하지만, 위젯에는 즉시 reload 힌트만
-                    // 미리 던져 둔다 (OS 가 적당히 coalesce).
-                    WidgetCenter.shared.reloadAllTimelines()
-                    for event in touched {
-                        await Self.upsertToSupabase(event)
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+        for update in updates {
+            guard let event = byID[update.id] else { continue }
+            event.title = update.title
+            event.startDate = update.startDate
+            event.endDate = update.endDate
+            event.isAllDay = update.isAllDay
+            event.location = update.location
+            event.notes = update.notes
+            event.colorHex = update.colorHex
+            event.externalDeleted = false
+            event.externalLastSyncedAt = now
+            event.updatedAt = now
+            touched.append(event)
         }
-        .eraseToAnyPublisher()
+        for id in deletedIDs {
+            guard let event = byID[id], !event.externalDeleted else { continue }
+            event.externalDeleted = true
+            event.externalLastSyncedAt = now
+            event.updatedAt = now
+            touched.append(event)
+        }
+
+        guard !touched.isEmpty else { return }
+        do {
+            try context.save()
+        } catch {
+            throw .saveFailed(underlying: error)
+        }
+        // Apple/Google reconcile 경로 — VM 을 거치지 않고 sync 가 직접 mirror DozyEvent
+        // 를 갱신하므로, TodayEventCache 가 stale 해질 수 있다. HomeViewModel 이
+        // 다음 loadTodayData 에서 cache 를 갱신하지만, 위젯에는 즉시 reload 힌트만
+        // 미리 던져 둔다 (OS 가 적당히 coalesce).
+        WidgetCenter.shared.reloadAllTimelines()
+        for event in touched {
+            await Self.upsertToSupabase(event)
+        }
     }
 
-    func deleteExternalMirrors(ids: [String]) -> AnyPublisher<Void, DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                guard !ids.isEmpty else { promise(.success(())); return }
-                let context = modelContainer.mainContext
-                let idSet = Set(ids)
-                let predicate = #Predicate<DozyEvent> { idSet.contains($0.id) }
-                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
-                let events = (try? context.fetch(descriptor)) ?? []
-                let deletedIDs = events.map(\.id)
-                for event in events { context.delete(event) }
-                do {
-                    try context.save()
-                    // 외부 미러 영구 삭제 — sync 경로. 위젯에 reload 힌트.
-                    WidgetCenter.shared.reloadAllTimelines()
-                    Task {
-                        // Supabase 배치 delete — Realtime DELETE가 파트너 기기로 전파됨.
-                        try? await supabase.from("dozy_events")
-                            .delete()
-                            .in("id", values: deletedIDs)
-                            .execute()
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+    func deleteExternalMirrors(ids: [String]) async throws(DozyError) {
+        guard !ids.isEmpty else { return }
+        let idSet = Set(ids)
+        let predicate = #Predicate<DozyEvent> { idSet.contains($0.id) }
+        let events = (try? context.fetch(FetchDescriptor<DozyEvent>(predicate: predicate))) ?? []
+        let deletedIDs = events.map(\.id)
+        for event in events { context.delete(event) }
+        do {
+            try context.save()
+        } catch {
+            throw .saveFailed(underlying: error)
         }
-        .eraseToAnyPublisher()
+        // 외부 미러 영구 삭제 — sync 경로. 위젯에 reload 힌트.
+        WidgetCenter.shared.reloadAllTimelines()
+        // Supabase 배치 delete — Realtime DELETE가 파트너 기기로 전파됨. 기다리지 않는다 (기존 동작).
+        Task { await Self.deleteFromSupabase(ids: deletedIDs) }
     }
 
-    func delete(_ event: DozyEvent) -> AnyPublisher<Void, DozyError> {
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                let context = modelContainer.mainContext
-                let eventID = event.id
-                context.delete(event)
-                do {
-                    try context.save()
-                    Task { await Self.deleteFromSupabase(eventID: eventID) }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+    /// Supabase 배치 삭제. `PostgrestResponse` 는 Sendable 이 아니라 메인 액터 Task 안에서 await 하면
+    /// Swift 6 에서 경계 위반이 된다 — nonisolated 헬퍼에서 결과를 바로 버린다.
+    nonisolated private static func deleteFromSupabase(ids: [String]) async {
+        _ = try? await supabase.from("dozy_events")
+            .delete()
+            .in("id", values: ids)
+            .execute()
+    }
+
+    func delete(_ event: DozyEvent) async throws(DozyError) {
+        let eventID = event.id
+        context.delete(event)
+        do {
+            try context.save()
+        } catch {
+            throw .saveFailed(underlying: error)
         }
-        .eraseToAnyPublisher()
+        // 기다리지 않는다 (기존 동작).
+        Task { await Self.deleteFromSupabase(eventID: eventID) }
     }
 
     // MARK: - Supabase 즉시 동기화
@@ -331,26 +278,18 @@ final class DozyEventRepository: DozyEventRepositoryProtocol {
 
     private static func deleteFromSupabase(eventID: String) async {
         guard (try? await supabase.auth.session) != nil else { return }
-        try? await supabase.from("dozy_events").delete().eq("id", value: eventID).execute()
+        _ = try? await supabase.from("dozy_events").delete().eq("id", value: eventID).execute()
     }
     
-    func fetchAllRecurring() -> AnyPublisher<[DozyEvent], DozyError> {
-
-        Future { [modelContainer] promise in
-            Task { @MainActor in
-                let context = modelContainer.mainContext
-                let predicate = #Predicate<DozyEvent> { $0.recurrenceRule != "none" }
-                let descriptor = FetchDescriptor<DozyEvent>(predicate: predicate)
-                do {
-                    let all = try context.fetch(descriptor)
-                    let filtered = await Self.filterByCurrentAccount(all)
-                    promise(.success(filtered))
-                } catch {
-                    promise(.failure(.saveFailed(underlying: error)))
-                }
-            }
+    func fetchAllRecurring() async throws(DozyError) -> [DozyEvent] {
+        let predicate = #Predicate<DozyEvent> { $0.recurrenceRule != "none" }
+        let all: [DozyEvent]
+        do {
+            all = try context.fetch(FetchDescriptor<DozyEvent>(predicate: predicate))
+        } catch {
+            throw .saveFailed(underlying: error)
         }
-        .eraseToAnyPublisher()
+        return await Self.filterByCurrentAccount(all)
     }
 
     /// 현재 로그인 계정 기준으로 이벤트 필터링.

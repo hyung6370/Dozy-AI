@@ -42,7 +42,8 @@ final class SummaryReminderService {
     nonisolated(unsafe) static var backgroundSummaryProvider: (() async throws -> BackgroundSummaryResult)?
 
     #if os(iOS)
-    static let backgroundTaskIdentifier = "com.dozy-ai.Dozy-AI.summaryRefresh"
+    /// nonisolated 인 scheduleBackgroundRefresh · AppDelegate 등록에서 읽는다.
+    nonisolated static let backgroundTaskIdentifier = "com.dozy-ai.Dozy-AI.summaryRefresh"
 
     /// 백그라운드 갱신 때 잠금화면 "오늘 아젠다" Live Activity 를 지금 시각 기준으로 다시 맞춘다 (#71).
     /// 시작은 못 하지만(포그라운드 전용) 이미 떠 있는 것의 current/next 전환·종료는 여기서 따라잡는다.
@@ -298,6 +299,9 @@ final class SummaryReminderService {
         let settings = SummaryReminderSettings.load()
         if settings.isEnabled { scheduleBackgroundRefresh(settings) }
 
+        // BGAppRefreshTask 는 Sendable 표시가 없다. 시스템이 넘긴 객체를 메인 액터 Task 와 expirationHandler 양쪽에서
+        // setTaskCompleted 만 부르므로(스레드 안전) unsafe 로 경계를 넘긴다.
+        nonisolated(unsafe) let task = task
         let work = Task { @MainActor in
             // 요약 설정과 무관하게 Live Activity 는 먼저 맞춘다 — 비용이 거의 없다.
             await backgroundLiveActivityRefresh?()

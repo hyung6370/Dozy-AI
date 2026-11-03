@@ -7,7 +7,8 @@
 
 import Foundation
 
-extension Date {
+// 순수 날짜 계산 — @Model init 등 nonisolated 문맥에서도 쓴다.
+nonisolated extension Date {
     
     /// 해당 날짜의 시작 시점 (00:00:00)
     var startOfDay: Date {
@@ -60,7 +61,7 @@ extension Date {
     }
 }
 
-extension Calendar {
+nonisolated extension Calendar {
     /// 달력 헤더용 요일 심볼 — 항상 일요일 시작.
     /// ko: ["일","월",…] (기존과 동일) / en: ["SUN","MON",…]
     static func headerWeekdaySymbols(locale: Locale = .current) -> [String] {

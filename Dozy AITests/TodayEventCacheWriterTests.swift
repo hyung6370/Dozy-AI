@@ -15,8 +15,8 @@ final class TodayEventCacheWriterTests: XCTestCase {
 
     private var container: ModelContainer!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
         let schema = Schema([
             TodayEventCache.self,
             DozyEvent.self,
@@ -27,9 +27,9 @@ final class TodayEventCacheWriterTests: XCTestCase {
         container = try ModelContainer(for: schema, configurations: config)
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         container = nil
-        try super.tearDownWithError()
+        try await super.tearDown()
     }
 
     // MARK: - upsertSingleDozyEvent

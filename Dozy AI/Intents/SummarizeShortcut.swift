@@ -13,9 +13,9 @@ import SwiftData
 
 struct SummarizeTodayIntent: AppIntent {
 
-    static var title: LocalizedStringResource = "오늘 요약"
-    static var description = IntentDescription("오늘 일정을 한 줄로 요약해 알려줍니다.")
-    static var openAppWhenRun: Bool = false
+    static let title: LocalizedStringResource = "오늘 요약"
+    static let description = IntentDescription("오늘 일정을 한 줄로 요약해 알려줍니다.")
+    static let openAppWhenRun: Bool = false
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<String> {

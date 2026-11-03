@@ -37,12 +37,13 @@ enum DozyBackgroundTheme: String, CaseIterable, Identifiable {
     static let storageKey = "iosBackgroundTheme"
     static let defaultTheme: DozyBackgroundTheme = .system
 
-    /// 위젯과 메인 앱이 공유할 App Group identifier.
-    static let appGroupID = "group.com.dozy-ai.shared"
+    /// 위젯과 메인 앱이 공유할 App Group identifier. sharedDefaults(nonisolated) 기본값에서 읽으므로 같이 뺀다.
+    nonisolated static let appGroupID = "group.com.dozy-ai.shared"
 
     /// `@AppStorage(store:)` 에 넘길 shared UserDefaults — 위젯도 같은 store 를 봄.
     /// suite 가 nil 인 경우 (entitlement 누락 등) standard 로 fallback.
-    static let sharedDefaults: UserDefaults =
+    /// UserDefaults 는 Sendable 표시가 없지만 스레드 안전(Apple 문서) — 위젯 · 앱 양쪽 nonisolated 문맥에서 읽어 unsafe 로 둔다.
+    nonisolated(unsafe) static let sharedDefaults: UserDefaults =
         UserDefaults(suiteName: appGroupID) ?? .standard
 
     /// 기존 사용자의 standard UserDefaults 에 있던 테마를 App Group 으로 1회 이전.

@@ -5,7 +5,8 @@
 
 import OSLog
 
-extension Logger {
+// Logger 는 스레드 안전. BGTask · AppDelegate 콜백 · 위젯 등 nonisolated 문맥에서도 쓰므로 확장 전체를 메인 액터에서 뺀다.
+nonisolated extension Logger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.dozy.ai"
 
     static let app      = Logger(subsystem: subsystem, category: "App")
@@ -23,7 +24,7 @@ extension Logger {
     /// 홈 메모 저장 (#137)
     static let memo = Logger(subsystem: subsystem, category: "Memo")
     /// APNs 토큰 · 공유 캘린더 푸시 (#95). AppDelegate 콜백 · 비동기 등록에서 쓰므로 메인 액터에 묶지 않는다.
-    nonisolated static let push = Logger(subsystem: subsystem, category: "Push")
+    static let push = Logger(subsystem: subsystem, category: "Push")
     /// 백그라운드 크래시 리포팅에서도 쓰므로 메인 액터에 묶지 않는다 (#117). Logger 는 스레드 안전.
-    nonisolated static let analytics = Logger(subsystem: subsystem, category: "Analytics")
+    static let analytics = Logger(subsystem: subsystem, category: "Analytics")
 }

@@ -39,7 +39,8 @@ final class SpeechService: SpeechServiceProtocol {
     
     func requestAuthorization() async -> SpeechAuthorizationStatus {
         let speech = await withCheckedContinuation { continuation in
-            SFSpeechRecognizer.requestAuthorization { continuation.resume(returning: $0) }
+            // 임의 큐에서 불린다 — @Sendable 로 메인 액터 추론을 끊는다 (Swift 6 런타임 격리 검사).
+            SFSpeechRecognizer.requestAuthorization { @Sendable status in continuation.resume(returning: status) }
         }
         switch speech {
         case .denied: return .denied
@@ -88,8 +89,11 @@ final class SpeechService: SpeechServiceProtocol {
         }
         inputNode.removeTap(onBus: 0)
         // tap 콜백은 오디오 스레드 - self 상태를 건드리지 말고 request에만 append
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-            request.append(buffer)
+        // Swift 6: 블록이 Sendable 표시가 없어 메인 액터로 추론되면 오디오 스레드에서 런타임 격리 검사에 걸린다.
+        // @Sendable 로 격리를 끊는다. request 는 append 만 하는 스레드 안전 API 라 unsafe 로 넘긴다.
+        nonisolated(unsafe) let tapRequest = request
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { @Sendable buffer, _ in
+            tapRequest.append(buffer)
         }
         audioEngine.prepare()
         do {

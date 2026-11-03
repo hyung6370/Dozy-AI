@@ -10,7 +10,7 @@
 
 import Foundation
 
-struct TaskItem: Identifiable, Codable, Hashable {
+nonisolated struct TaskItem: Identifiable, Codable, Hashable {
     let id: String
     let title: String
     let isCompleted: Bool

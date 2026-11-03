@@ -16,14 +16,14 @@ import Foundation
 
 struct CreateQuickEventIntent: AppIntent {
 
-    static var title: LocalizedStringResource = "새 일정 추가"
-    static var description = IntentDescription("Dozy 위젯에서 빠르게 새 일정을 추가합니다.")
+    static let title: LocalizedStringResource = "새 일정 추가"
+    static let description = IntentDescription("Dozy 위젯에서 빠르게 새 일정을 추가합니다.")
 
     /// 탭 시 메인 앱을 활성화하고 perform 을 메인 앱 프로세스에서 실행.
-    static var openAppWhenRun: Bool = true
+    static let openAppWhenRun: Bool = true
 
     /// Shortcuts 앱에서 노출되어도 무방.
-    static var isDiscoverable: Bool = true
+    static let isDiscoverable: Bool = true
 
     init() {}
 

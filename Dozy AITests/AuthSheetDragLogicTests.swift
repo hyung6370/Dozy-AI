@@ -9,6 +9,7 @@
 import XCTest
 @testable import Dozy_AI
 
+@MainActor
 final class AuthSheetDragLogicTests: XCTestCase {
 
     /// AuthSheetView 와 동일한 임계값.
