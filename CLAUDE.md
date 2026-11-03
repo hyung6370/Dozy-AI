@@ -83,12 +83,13 @@ xcodebuild -project "Dozy AI.xcodeproj" -scheme "Dozy AI (macOS)" -destination '
 PR: `Closes #N` → `## 요약` → `## 변경 사항`(**굵은 항목명** + 설명) → `## 확인`(빌드·테스트는 체크, 실기기는 미체크로 남김) → `## 참고`(알려진 동작 · 범위 밖).
 구현을 마치면 이슈 본문 체크박스를 갱신하고 `## 구현 메모` 를 덧붙인다.
 
-## 현재 로드맵 (2026-10-30 기준)
+## 현재 로드맵 (2026-11-03 기준)
 
 - v2.0.3: 완료 (2026-10-27, 마일스톤 닫힘). 마지막 항목 #71 Live Activity 는 PR #96, 앱 아이콘 Iconsax 교체는 PR #97 로 머지.
 - macOS v2.0.3: 완료 (2026-10-28 심사 제출, 마일스톤 #11 닫힘, 태그 `macos-v2.0.3`). #100 자연어 입력(음성 제외) · #101 저녁 요약 알림 + 저녁 체크 · #107 테마 팔레트 · #102 AI 엔진 행 · 버전 2.0.3 (15) · #103 · #110 수정 · #112 테스트. Google 캘린더는 OAuth 검증 대기로 macOS 비활성.
 - v2.0.4 측정 + 기능 강화: 완료 (2026-10-29 심사 제출, 태그 `v2.0.4`, 빌드 163). #90 Firebase Analytics(PR #116) → #117 Crashlytics(PR #118) → #72 자연어 질의(PR #121 · #123) → #95 APNs 푸시(공유 캘린더 파트너 알림, PR #127, Dev · Prod Supabase 반영 2026-10-29) · #129 공유 캘린더 리디자인 · #130 다크 탭바 필 · #135 dSYM 자동 업로드. Live Activity 푸시는 #126 으로 분리 — ContentState 개수는 Apple · Google 합산이라 서버가 정확히 못 만든다. iOS 강제 업데이트 `min_ios_version` = 2.0.5 (2026-10-31, Prod `app_config`; 2.0.3 은 2026-10-28).
 - v2.0.5 ~ v2.0.9: **앱 유지보수 전용** (2026-10-30 결정). 버그 수정 · 안정화만 넣고 신규 기능 · 수익화는 넣지 않는다.
 - v2.0.5 유지보수: 완료 (2026-10-30 심사 제출, 태그 `v2.0.5`, 빌드 164). #137 홈 메모 전송 버튼(PR #138) · #139 로그인 애니메이션(PR #140) · #141 잠금화면 카드 상시 다크(PR #142) · #143 · #144 결과 토스트 `DozyToast`(PR #145 · #146) · #147 반복 일정 계속 기본 · 요약(PR #150). 반복 규칙 확장은 v2.1.0 #148 · #149.
-- v2.0.6 Swift 6 + Swift Concurrency (마일스톤 #14): #152 Swift 6 언어 모드 → #153 Data async → #154 UseCase async + 테스트 → #155 ViewModel 화면별 → #156 브리지 · 잔여 정리. 원칙: 단발 호출은 async/await, 스트림(@Published · NotificationCenter · debounce/throttle)은 Combine 유지.
+- v2.0.6 Swift 6 + 회귀 수정: 완료 (2026-11-03 심사 제출, 태그 `v2.0.6`, 빌드 165, 마일스톤 #14). #152 Swift 6 언어 모드(PR #160 · #161 · #162) · 실기기 회귀 수정(PR #163 — 캡처 저장 크래시 · 위젯 사용 중 메모 저장 실패 `DozySchema` 단일 스키마, 운영 v2.0.5 `no such table: ZWORKLOG` · 첫 실행 Google 일정 누락) · #153 1단계 SwiftData 저장소 async(PR #164) · #165 상단 고정 · 우선순위 즉시 반영(PR #167 · #168).
+- v2.0.7 Swift Concurrency 이어서 (마일스톤 #15, 2026-11-03 v2.0.6 에서 이동): #153 Data async 2단계~ → #154 UseCase async + 테스트 → #155 ViewModel 화면별 → #156 브리지 · 잔여 정리 · #166 직렬 테스트 isolated deinit 재시작. 원칙: 단발 호출은 async/await, 스트림(@Published · NotificationCenter · debounce/throttle)은 Combine 유지.
 - v2.1.0 수익화 (2026-10-30 v2.0.5 에서 이동): #91 RevenueCat → #92 Pro 게이팅 → #93 페이월 → #119 광고(iOS 무료 사용자 한정 · 비맞춤 · ATT 없음, 핵심 화면 제외, Pro 는 광고 제거) → #94 글로벌 출시 · #126 Live Activity 푸시. #91 Grandfather 기준은 v2.1.0 이전 설치.
