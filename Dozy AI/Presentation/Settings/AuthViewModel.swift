@@ -654,10 +654,7 @@ final class AuthViewModel: ObservableObject {
     // MARK: - Private
 
     private func requestNotificationPermissionIfNeeded() {
-        let notificationService = NotificationService()
-        notificationService.requestAuthorization()
-            .sink { _ in }
-            .store(in: &cancellables)
+        Task { _ = await NotificationService().requestAuthorization() }
     }
 
     private func syncAfterLogin(userID: String) {

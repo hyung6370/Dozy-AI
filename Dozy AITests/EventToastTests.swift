@@ -29,7 +29,7 @@ private final class StubCalendarWriteService: CalendarWriteServiceProtocol {
 }
 
 private final class StubNotificationService: NotificationServiceProtocol {
-    func requestAuthorization() -> AnyPublisher<Bool, Never> { Just(true).eraseToAnyPublisher() }
+    func requestAuthorization() async -> Bool { true }
     func schedule(identifier: String, title: String, body: String, triggerDate: Date) {}
     func cancel(identifier: String) {}
 }
